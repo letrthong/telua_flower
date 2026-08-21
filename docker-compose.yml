@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web_service:
+    container_name: telua_python_flower
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app/
+      - /app/dist/
+      - /app/node_modules/
+    stdin_open: true
+    tty: true
