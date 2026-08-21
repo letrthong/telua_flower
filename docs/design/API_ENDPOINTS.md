@@ -73,7 +73,8 @@
   "recipient": {
     "name": "Trần Thị B",
     "phone": "0911223344",
-    "address": "123 Cách Mạng Tháng 8, P.5, Q.3, TP.HCM"
+    "address": "123 Cách Mạng Tháng 8, P.5, Q.3, TP.HCM",
+    "deliveryNotes": "Tòa nhà Bitexco, Tầng 12 - Công ty FPT, gọi trước khi đến 15 phút hoặc gửi lễ tân"
   },
   "delivery": {
     "deliveryDate": "2026-08-25",
