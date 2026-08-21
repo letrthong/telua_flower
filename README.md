@@ -1,80 +1,142 @@
-# 🏨 Lữ Quán (Luquan) - Nền tảng Kết nối & Phê duyệt Khách sạn
+# 🌸 Nở Hoa Thả Bình (`telua_flower`) - Đặt Hoa Tươi Online Giao Tận Nơi
 
-Một ứng dụng Web tĩnh (Single Page Application) hiện đại, mượt mà giúp quản lý, hiển thị và kết nối trực tiếp với các khách sạn trên bản đồ. Dự án được thiết kế tối ưu cho cả giao diện máy tính (Desktop) và thiết bị di động (Mobile).
+**Nở Hoa Thả Bình** là nền tảng thương mại điện tử chuyên cung cấp hoa tươi thiết kế độc bản, kệ hoa chúc mừng/khai trương và các mẫu bình cắm hoa nghệ thuật cao cấp ("Thả Bình"), kết hợp dịch vụ giao hoa hỏa tốc 2H tại TP. Hồ Chí Minh.
 
-## ✨ Tính năng nổi bật
+- **Slogan:** *Trao gửi yêu thương*
+- **Showroom:** 183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh
+- **Hotline:** 0976.491.322 | **Email:** cskh@nohoathabinh.vn
 
-- **Giao diện đa thiết bị:** Hoạt động như một App Native trên Mobile (vuốt chuyển mượt mà giữa Bản đồ & Danh sách).
-- **Bản đồ tương tác (Leaflet):** Hiển thị trực quan vị trí khách sạn, hỗ trợ chọn tọa độ khi đăng ký mới.
-- **Tìm kiếm & Lọc thông minh:** Tự động trích xuất danh sách Tỉnh/Thành phố từ dữ liệu địa chỉ; tìm kiếm theo tên không dấu.
-- **Đăng ký Khách sạn mới:** Biểu mẫu cho phép người dùng nhập thông tin và thả ghim chọn vị trí trên bản đồ.
-- **Phân hệ Admin (Quản trị):** Xác thực tài khoản Admin để duyệt/từ chối/xóa các yêu cầu đăng ký khách sạn.
+---
 
-## 🛠 Công nghệ sử dụng
+## ✨ Tính Năng Nổi Bật
 
-- **Giao diện:** HTML5, CSS3, [Tailwind CSS (CDN)](https://tailwindcss.com/)
-- **Logic & Trạng thái:** [React 18](https://reactjs.org/) (Sử dụng trực tiếp qua CDN với Babel transpiler)
-- **Bản đồ:** [Leaflet.js](https://leafletjs.com/) & OpenStreetMap
-- **Icon:** [Lucide Icons](https://lucide.dev/)
-- **Lưu trữ dữ liệu:** Tệp cấu hình JSON tĩnh (`hotelInfo.json`)
-- https://pypi.org/project/pygeohash/
+- **Trưng bày sản phẩm đa dạng:** Danh mục Bó hoa tươi, Kệ hoa khai trương/chúc mừng, Bình cắm hoa nghệ thuật cao cấp kèm nhãn nổi bật (`Hot`, `Mới`, `Bán chạy`, Giảm giá).
+- **Hệ thống đa ngôn ngữ tự động (i18n):** Hỗ trợ đầy đủ 5 ngôn ngữ (🇻🇳 Tiếng Việt, 🇬🇧 English, 🇯🇵 日本語, 🇰🇷 한국어, 🇨🇳 中文) với cơ chế lưu ngôn ngữ vào `localStorage` của trình duyệt.
+- **Giỏ hàng & Đặt mua tiện lợi:** Thêm sản phẩm nhanh, huy hiệu giỏ hàng động (Mini Cart animation), thông báo Toast đa ngữ tức thì.
+- **Định vị Showroom (Store Locator):** Bản đồ Google Maps nhúng trực tiếp, nút chỉ đường và tính năng **"Sao chép địa chỉ"** 1-chạm vào clipboard.
+- **Tương tác đa kênh:** Nút Hotline nổi với hiệu ứng rung chuông (`pulse-hotline`) và nút Chat Zalo Official Account (`pulse-zalo`) hỗ trợ 24/7.
+- **Tối ưu hiệu năng vượt trội:** Lazy Loading cho toàn bộ hình ảnh kết hợp hiệu ứng Skeleton Shimmer Loader chống giật layout (CLS).
+- **Thiết kế Responsive hoàn hảo:** Tương thích mượt mà trên mọi thiết bị: Mobile (iOS/Android), Tablet và Desktop.
 
-## 📂 Cấu trúc thư mục
+---
+
+## 🛠 Công Nghệ Sử Dụng (Tech Stack)
+
+- **Frontend:**
+  - HTML5 Semantic & [Tailwind CSS](https://tailwindcss.com/)
+  - JavaScript Module hóa (Vanilla ES6+ trong thư mục `js/`)
+  - Icons: [FontAwesome 6](https://fontawesome.com/)
+  - Typography: Google Fonts ([Quicksand](https://fonts.google.com/specimen/Quicksand), [Playfair Display](https://fonts.google.com/specimen/Playfair+Display), Noto Sans đa ngữ)
+- **Frontend Tooling:** [Vite](https://vitejs.dev/) + `vite-plugin-singlefile`
+- **Backend:** Python 3.11, [Flask](https://flask.palletsprojects.com/), `Flask-CORS`
+- **Đóng gói & Triển khai:** [Docker](https://www.docker.com/), Docker Compose, Bash Script (`cli_docker.sh`)
+
+---
+
+## 📂 Cấu Trúc Thư Mục (Project Structure)
 
 ```text
-hotel_connect/
+telua_flower/
 │
-├── index.html               # Chứa toàn bộ giao diện HTML và logic React (JSX)
-├── js/
-│   ├── api.js               # Module gọi API, quản lý endpoint động, các hàm fetch dữ liệu
-│   └── hotel_connect.js     # React App chính: giao diện, logic, đồng bộ URL, quản trị, toast...
-│   └── components/
-│       ├── MapComponents.js # Các component bản đồ (Leaflet, marker, picker...)
-│       └── Icon.js          # Component icon SVG (Lucide, custom...)
-│   └── utils.js             # Hàm tiện ích chung (Base64, GPS, Haversine...)
-├── config/
-│   ├── hotel_schema.json    # Tệp dự phòng cấu trúc dữ liệu khách sạn (chuẩn backend Flask)
-│   ├── hochiminh_hotels.json # Danh sách khách sạn Hồ Chí Minh (và các file *.json cho từng thành phố)
-│   └── ...                  # Các file dữ liệu khách sạn khác
-├── src/
-│   └── services.py         # Flask backend: RESTful API quản lý khách sạn, schema, duyệt yêu cầu
-├── README.md                # Tài liệu hướng dẫn (File này)
+├── index.html                   # Giao diện Web chính của Nở Hoa Thả Bình
+├── package.json                 # Cấu hình frontend dependencies & Vite scripts
+├── vite.config.js               # Cấu hình Vite build bundle
+├── tailwind.config.js           # Cấu hình bảng màu & font chữ Tailwind
+├── postcss.config.js            # Cấu hình PostCSS
+├── requirements.txt             # Python backend dependencies (Flask, Flask-CORS...)
+├── Dockerfile                   # Docker build (Python + Node.js + Vite build)
+├── docker-compose.yml           # Docker Compose service cấu hình container
+├── cli_docker.sh                # Script CLI quản lý build, chạy, test trên Ubuntu/Docker
+│
+├── js/                          # Mã nguồn JavaScript module hóa
+│   ├── products.js              # Dữ liệu mock danh mục sản phẩm hoa & bình
+│   ├── translations.js          # Từ điển đa ngôn ngữ (vi, en, ja, ko, zh)
+│   ├── i18n.js                  # Logic chuyển đổi ngôn ngữ & Web Cache
+│   ├── utils.js                 # Tiện ích: Lazy loading, Toast, Google Maps, Clipboard
+│   └── flower_app.js            # Ứng dụng chính: Render sản phẩm, giỏ hàng, menu mobile
+│
+├── src/                         # Backend Flask
+│   ├── app.py                   # Flask server phục vụ index.html & static files
+│   └── unittest/                # Bộ kiểm thử tự động
+│       └── test_app_routing.py  # Unit test kiểm tra routing, root discovery & static assets
+│
+├── config/                      # Thư mục cấu hình & backup
+│   └── index.html               # Bản sao index.html dự phòng
+│
+└── docs/                        # Tài liệu kỹ thuật chi tiết
+    ├── README.md                # Mục lục tài liệu kỹ thuật
+    ├── DOCKER_UBUNTU_GUIDE.md   # Hướng dẫn build & chạy Docker trên Ubuntu
+    └── requirements/            # Tài liệu phân tích yêu cầu nghiệp vụ
+        ├── README.md
+        └── PRODUCT_REQUIREMENTS.md  # Đặc tả yêu cầu sản phẩm (PRD), CRM, nhân sự, chi nhánh
 ```
 
-## 🚀 Hướng dẫn Cài đặt và Chạy dự án
-
-**Lưu ý khi chạy và phát triển cục bộ:**
-- Tất cả API của frontend hiện đã được cấu hình dạng **relative path** (`/api/...`).
-- Khi phát triển cục bộ bằng Vite (`npm run dev`), các request `/api` sẽ được tự động proxy tới Flask Backend (mặc định cổng `5000`) thông qua cấu hình proxy trong `vite.config.js`. Do đó, bạn không cần phải cấu hình cứng địa chỉ IP nữa.
-
-
-Ứng dụng sử dụng API `fetch()` của trình duyệt để đọc dữ liệu khách sạn từ các tệp JSON trong thư mục `config/` (ví dụ: `hochiminh_hotels.json`, `danang_hotels.json`, ...). Bạn **không thể** nhấp đúp để mở file `index.html` trực tiếp (giao thức `file://` sẽ bị lỗi CORS). Bạn cần chạy dự án thông qua một Local Web Server.
-
-### Cách 1: Sử dụng VS Code (Khuyên dùng)
-1. Mở thư mục chứa dự án bằng Visual Studio Code.
-2. Cài đặt tiện ích mở rộng **Live Server** (Tác giả: Ritwick Dey).
-3. Nhấp chuột phải vào file `index.html` và chọn **"Open with Live Server"**.
-4. Trình duyệt sẽ tự động mở dự án tại `http://127.0.0.1:5500`.
-
-
-### Cách 2: Sử dụng Flask Backend trên Docker (Khuyên dùng khi cần test API động)
-1. Đảm bảo đã cài Docker trên máy.
-2. Clone repo mẫu backend Flask hỗ trợ CORS tại: [ubuntu-python_cors](https://github.com/letrthong/docker/tree/master/ubuntu-python_cors)
-3. Làm theo hướng dẫn trong repo để build và chạy container Flask backend.
-4. Đảm bảo các file JSON dữ liệu khách sạn được mount vào đúng vị trí container (thường là /app/config/).
-5. Truy cập frontend tại `http://localhost:8000` hoặc port bạn đã cấu hình.
-
-  
-## 🔐 Thông tin quản trị (Admin)
-
-- Để truy cập chế độ Admin, nhấn vào biểu tượng ổ khóa (Lock) ở góc phải màn hình.
-- **Mật mã mặc định:** `1234`
-- *Lưu ý: Mọi thao tác Thêm/Sửa/Xóa hiện tại chỉ lưu trữ trên phiên làm việc (RAM) của trình duyệt. Dữ liệu sẽ khôi phục về ban đầu khi làm mới trang (F5).*
-
- 
 ---
-*Phát triển cho hệ sinh thái Lữ Quán - Vận hành bởi nongtrang.vn*
 
+## 🚀 Hướng Dẫn Cài Đặt & Chạy Ứng Dụng
 
+### Cách 1: Chạy bằng Docker trên Ubuntu (Khuyên dùng)
+Toàn bộ môi trường build Vite và Flask backend đều được đóng gói tự động bên trong Docker. Bạn chỉ cần:
 
-http://192.168.124.129:5000/luquan/ 
+```bash
+# 1. Cấp quyền thực thi cho script
+chmod +x cli_docker.sh
+
+# 2. Khởi động và build container
+./cli_docker.sh start
+```
+Mở trình duyệt truy cập: `http://localhost:5000` (hoặc `http://<IP_UBUNTU>:5000`).
+
+---
+
+### Cách 2: Chạy trực tiếp với Python Flask (Local)
+Yêu cầu máy đã cài Python 3.9 trở lên:
+
+```bash
+# 1. Cài đặt các thư viện phụ thuộc
+pip install -r requirements.txt
+
+# 2. Khởi chạy Flask server
+python src/app.py
+```
+Mở trình duyệt truy cập: `http://localhost:5000`.
+
+---
+
+### Cách 3: Chạy Frontend với Vite (Hot Reload Development)
+Yêu cầu máy đã cài Node.js 18 trở lên:
+
+```bash
+# 1. Cài đặt npm packages
+npm install --legacy-peer-deps
+
+# 2. Chạy dev server
+npm run dev
+
+# 3. Build bundle sản phẩm
+npm run build
+```
+
+---
+
+## 🧪 Chạy Kiểm Thử (Unit Tests)
+
+### Chạy qua Docker Container trên Ubuntu:
+```bash
+./cli_docker.sh run_unittest
+```
+
+### Chạy trên máy cục bộ với Python:
+```bash
+python -m unittest discover -s src/unittest -p "test_*.py"
+```
+
+---
+
+## 📖 Tài Liệu Tham Khảo Thêm
+
+- 📋 [Tài Liệu Yêu Cầu Sản Phẩm (PRD)](docs/requirements/PRODUCT_REQUIREMENTS.md)
+- 🐳 [Hướng Dẫn Triển Khai Docker Trên Ubuntu (English Guide)](docs/DOCKER_UBUNTU_GUIDE.md)
+
+---
+*© 2026 Bản quyền thuộc về Nở Hoa Thả Bình - Trao gửi yêu thương.*
