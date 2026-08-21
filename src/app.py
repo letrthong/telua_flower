@@ -1,84 +1,81 @@
-from operator import index
 import os
-import json
-from json_utils import read_json_file, write_json_file
-from hotel_schema_service import read_schema, write_schema, create_schema_item, update_schema_item, delete_schema_item
-import logging
 import sys
-import threading
-from flask import Flask, render_template, jsonify, request, abort, send_from_directory
+import logging
+from flask import Flask, send_file, abort
 from flask_cors import cross_origin
-import uuid
-from math import radians, sin, cos, sqrt, atan2
-from geo_utils import haversine
-from datetime import datetime, timezone
 
-# Import all constants from hotel_constants.py
-from hotel_constants import HOTEL_CONFIG_DIR as CONFIG_DIR, HotelField, HotelStatus
-from hotel_helpers import get_hotel_file_path, read_requests, write_requests, read_reports, write_reports, validate_hotel_request, update_status
-
-# Cấu hình logging hiển thị ra terminal
+# Cấu hình logging
 logging.basicConfig(level=logging.INFO)
 sys.stdout.reconfigure(line_buffering=True)
 
-app = Flask(__name__, template_folder='/app')
+# Xác định thư mục gốc của telua_flower (hỗ trợ cả Windows và Docker /app)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+TELUA_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
-# Đảm bảo đường dẫn này đúng với cấu trúc thư mục của bạn
-template_dir = "/app/"
-template_dir_base = "./"
-os.makedirs(CONFIG_DIR, exist_ok=True)
-
-# --- API Quản lý hotel_schema.json ---
-# Import and register the RESTful blueprint
-from restful_blueprint_hotel_connect import hotel_connect_api
-app.register_blueprint(hotel_connect_api)
+app = Flask(__name__, template_folder=TELUA_ROOT)
 
 
-@app.route('/luquan/')
-@app.route('/')
-@app.route('/luquan/<path:page_name>')
+def get_index_file():
+    """
+    Tìm file index.html theo thứ tự ưu tiên:
+    1. dist/index.html (file frontend đã build qua Vite)
+    2. index.html (file html gốc tại thư mục dự án)
+    3. config/index.html (file html dự phòng)
+    4. Docker paths (/app/dist/index.html, /app/index.html)
+    """
+    candidates = [
+        os.path.join(TELUA_ROOT, "dist", "index.html"),
+        os.path.join(TELUA_ROOT, "index.html"),
+        os.path.join(TELUA_ROOT, "config", "index.html"),
+        "/app/dist/index.html",
+        "/app/index.html",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return None
+
+
+def resolve_static_file(relative_path):
+    """
+    Tìm file tài nguyên tĩnh trong các thư mục của telua_flower
+    (dist, js, config, static hoặc thư mục gốc)
+    """
+    subdirs = ["", "dist", "js", "config", "src/static"]
+    for sub in subdirs:
+        full_path = os.path.abspath(os.path.join(TELUA_ROOT, sub, relative_path))
+        if os.path.isfile(full_path):
+            return full_path
+    return None
+
+
+@app.route("/")
+@app.route("/index.html")
 @cross_origin()
-def hotel_connect_resource_sub(page_name=None):
-    # 1. Xử lý mặc định cho index (ưu tiên file đã build trong dist)
-    if not page_name or page_name.strip() == "/":
-        dist_index_path = os.path.join(template_dir, "dist", "index.html")
-        if os.path.exists(dist_index_path):
-            return send_from_directory(os.path.join(template_dir, "dist"), "index.html")
-        
-        # Fallback cross-platform cho chạy cục bộ ngoài Docker (Windows)
-        local_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist"))
-        local_index = os.path.join(local_dist, "index.html")
-        if os.path.exists(local_index):
-            return send_from_directory(local_dist, "index.html")
-            
-        return render_template("index.html")
+def index():
+    """Phục vụ file index.html cho trang chủ"""
+    index_path = get_index_file()
+    if index_path:
+        return send_file(index_path)
+    abort(404, description="index.html not found")
 
-    # Đường dẫn gốc tới thư mục hotel_connect
-    directory = os.path.join(template_dir, "")
 
-    try:
-        # 2. Xử lý các file tài nguyên tĩnh (js, json, css, png, v.v.)
-        static_extensions = ('.js', '.json', '.css', '.png', '.jpg', '.svg', '.ico')
+@app.route("/<path:filename>")
+@cross_origin()
+def static_files(filename):
+    """Phục vụ các file tĩnh (js, css, json, hình ảnh...) và các trang html con"""
+    file_path = resolve_static_file(filename)
+    if file_path:
+        return send_file(file_path)
 
-        # Kiểm tra xem page_name có kết thúc bằng đuôi file tĩnh không
-        if any(page_name.endswith(ext) for ext in static_extensions):
-            return send_from_directory(directory, page_name)
+    # Nếu không có đuôi mở rộng, kiểm tra xem có file .html tương ứng không
+    if "." not in filename:
+        html_file = resolve_static_file(f"{filename}.html")
+        if html_file:
+            return send_file(html_file)
 
-        # 3. Xử lý các route điều hướng (không có dấu chấm - giả định là page .html)
-        if '.' not in page_name:
-            return render_template(f"{page_name}.html")
+    abort(404, description=f"File not found: {filename}")
 
-        # 4. Nếu có đuôi file khác (như .html cụ thể)
-        return render_template(f"{page_name}")
-
-    except Exception as e:
-        print(f"Lỗi truy cập file: {page_name} - Error: {e}")
-        abort(404)
 
 if __name__ == "__main__":
-    # Khởi tạo geohash index cho nearby search
-    from restful_blueprint_hotel_connect import init_geohash_index
-    init_geohash_index()
-    
-    # Tắt debug để tránh Werkzeug Reloader quét file liên tục gây tràn RAM
     app.run(host="0.0.0.0", port=5000, threaded=True)
