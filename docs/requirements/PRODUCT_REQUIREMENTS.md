@@ -16,9 +16,9 @@
 
 ## 2. Mục Tiêu Ứng Dụng (Business & Product Goals)
 
-1. **Thương mại điện tử tinh gọn:** Cung cấp trải nghiệm chọn mẫu hoa và đặt mua online nhanh chóng, trực quan, mượt mà trên cả điện thoại di động và máy tính.
-2. **Tiếp cận khách hàng quốc tế:** Hệ thống đa ngôn ngữ (5 ngôn ngữ) giúp du khách, người nước ngoài và đối tác quốc tế dễ dàng xem sản phẩm và đặt hoa tại Việt Nam.
-3. **Quản trị vận hành chuỗi chi nhánh:** Hỗ trợ đăng nhập phân quyền đa cấp để quản lý khách hàng (CRM), quản lý nhân sự từng chi nhánh và theo dõi hoạt động toàn hệ thống showroom.
+1. **Thương mại điện tử tinh gọn & Trải nghiệm quà tặng hoàn hảo:** Cung cấp trải nghiệm chọn mẫu hoa, hẹn giờ giao, viết thiệp/in banner và đặt mua online nhanh chóng trên cả điện thoại di động và máy tính.
+2. **Tiếp cận khách hàng quốc tế & Kiều bào:** Hệ thống 5 ngôn ngữ kết hợp cổng thanh toán quốc tế và chuyển khoản tự động (VietQR, Visa/Mastercard) giúp khách nước ngoài dễ dàng đặt hoa tặng đối tác tại Việt Nam.
+3. **Quản trị vận hành chuỗi chi nhánh:** Hỗ trợ phân quyền đăng nhập đa cấp để quản lý khách hàng (CRM), phân ca nhân sự, quản lý tồn kho theo ngày và báo cáo hao hụt hoa tươi.
 4. **Chuyển đổi khách hàng đa kênh:** Kết nối tức thì khách hàng với tư vấn viên qua Hotline, Zalo OA và các kênh trực tiếp tại chi nhánh.
 
 ---
@@ -27,167 +27,128 @@
 
 | Vai trò (Role) | Mô tả & Trách nhiệm | Chức năng chính được cấp quyền |
 | :--- | :--- | :--- |
-| **Khách hàng (Customer)** | Người mua hoa cá nhân, doanh nghiệp B2B, khách quốc tế | Xem sản phẩm, đặt hàng, quản lý lịch sử mua hàng, tích điểm, sổ địa chỉ |
-| **Nhân viên (Staff / Florist / Sales)** | Thợ cắm hoa, nhân viên tư vấn bán hàng tại chi nhánh | Tiếp nhận đơn hàng, cập nhật tiến độ cắm hoa, chụp ảnh hoa thực tế trước khi giao, báo cáo tồn kho hoa tươi |
-| **Quản lý chi nhánh (Branch Manager)** | Trưởng showroom / Quản lý từng chi nhánh | Quản lý nhân viên chi nhánh, giám sát tiến độ giao hàng 2H, quản lý tồn kho tại điểm bán, báo cáo doanh số chi nhánh |
-| **Quản trị viên cấp cao (Admin / Owner)** | Chủ chuỗi cửa hàng, Quản lý toàn hệ thống | Quản lý toàn bộ chi nhánh, quản lý danh sách nhân sự toàn hệ thống, quản lý cơ sở dữ liệu khách hàng (CRM), cấu hình hệ thống |
+| **Khách hàng (Customer)** | Người mua hoa cá nhân, doanh nghiệp B2B, khách quốc tế | Đặt hoa, chọn ngày giờ giao, viết thiệp, thanh toán online, quản lý đơn hàng, tích điểm |
+| **Nhân viên (Staff / Florist / Sales)** | Thợ cắm hoa, nhân viên tư vấn bán hàng tại chi nhánh | Tiếp nhận đơn, cập nhật tiến độ cắm hoa, **chụp ảnh hoa thực tế tải lên gửi khách**, báo cáo hao hụt hoa |
+| **Quản lý chi nhánh (Branch Manager)** | Trưởng showroom / Quản lý từng chi nhánh | Phân ca nhân viên, duyệt ảnh hoa, quản lý kho hoa chi nhánh, báo cáo doanh thu & hủy hoa cuối ngày |
+| **Quản trị viên cấp cao (Admin / Owner)** | Chủ chuỗi cửa hàng, Quản lý toàn hệ thống | Quản lý toàn bộ chi nhánh, quản trị nhân sự toàn chuỗi, CRM khách hàng, cấu hình cổng thanh toán |
 
 ---
 
-## 4. Yêu Cầu Chức Năng (Functional Requirements)
+## 4. Danh Sách Yêu Cầu Chức Năng (Functional Requirements)
 
 ### 🌸 FR-1: Danh Mục & Trưng Bày Sản Phẩm (Product Catalog)
-- **Hiển thị sản phẩm theo nhóm:**
-  - *Bó Hoa Tươi*: Các mẫu hoa thiết kế dạng bó sang trọng.
-  - *Kệ Hoa Tươi*: Kệ hoa chúc mừng, khai trương phát tài phát lộc.
-  - *Bình Cắm Hoa ("Thả Bình")*: Các mẫu bình thủy tinh, gốm sứ nghệ thuật cao cấp.
+- **Hiển thị sản phẩm theo nhóm:** Bó hoa tươi, Kệ hoa khai trương/chúc mừng, Bình cắm hoa nghệ thuật ("Thả Bình").
 - **Chi tiết thẻ sản phẩm (Product Card):**
-  - Hình ảnh sản phẩm chất lượng cao kèm hiệu ứng zoom hover.
+  - Hình ảnh độ phân giải cao kèm hiệu ứng zoom hover.
   - Nhãn trạng thái nổi bật (Badge): `Hot`, `Mới`, `-7%`, `Bán chạy`.
   - Giá gốc (gạch ngang) và giá khuyến mãi nổi bật.
-  - Nút **"Thêm giỏ hàng"** xuất hiện mượt mà khi di chuột hoặc tương tác trên mobile.
+  - Trạng thái tồn kho tại showroom: 🟢 Còn nhiều (Giao 2H) / 🟠 Sắp hết / 🔴 Hết hàng.
+  - Nút **"Thêm giỏ hàng"** xuất hiện mượt mà.
 
 ### 🌐 FR-2: Hệ Thống Đa Ngôn Ngữ Tự Động (i18n & Web Cache)
-- Hỗ trợ đầy đủ **5 ngôn ngữ**:
-  - 🇻🇳 Tiếng Việt (`vi` - Mặc định)
-  - 🇬🇧 English (`en`)
-  - 🇯🇵 日本語 (`ja`)
-  - 🇰🇷 한국어 (`ko`)
-  - 🇨🇳 中文 (`zh`)
-- **Cơ chế hoạt động:**
-  - Chuyển đổi tức thì không cần reload trang (Client-side translation).
-  - Tự động lưu ngôn ngữ đã chọn vào `localStorage` (`anne_flower_lang`) để ghi nhớ cho các lần truy cập sau.
-  - SelectBox chọn ngôn ngữ đồng bộ trên cả thanh Header Desktop và Menu Mobile.
+- Hỗ trợ đầy đủ **5 ngôn ngữ**: 🇻🇳 Tiếng Việt (`vi`), 🇬🇧 English (`en`), 🇯🇵 日本語 (`ja`), 🇰🇷 한국어 (`ko`), 🇨🇳 中文 (`zh`).
+- Chuyển đổi tức thì phía Client (không reload trang) và lưu ngôn ngữ vào `localStorage` (`anne_flower_lang`).
 
 ### 🛒 FR-3: Giỏ Hàng & Tương Tác Đặt Hàng (Shopping Cart)
-- **Thêm sản phẩm nhanh:** Nhấn nút trên thẻ sản phẩm để tăng số lượng giỏ hàng.
-- **Biểu tượng giỏ hàng (Mini Cart):** Hiển thị số lượng sản phẩm trên header kèm animation nhấp nháy (`animate-bounce`).
-- **Thông báo Toast:** Hiển thị thông báo góc dưới màn hình ("Đã thêm vào giỏ hàng thành công!") được dịch theo ngôn ngữ hiện tại.
-- **Kiểm tra giỏ hàng:** Xem tổng số lượng hoặc cảnh báo khi giỏ hàng trống.
+- Thêm sản phẩm nhanh 1-chạm, Mini-cart badge thời gian thực kèm hiệu ứng `animate-bounce`.
+- Toast thông báo đa ngôn ngữ khi thêm sản phẩm thành công.
 
 ### 📍 FR-4: Định Vị Showroom & Bản Đồ (Store Locator)
-- **Thông tin cửa hàng:**
-  - Địa chỉ: `183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh`.
-  - Giờ mở cửa: `07:00 - 21:00` (Tất cả các ngày trong tuần, kể cả ngày lễ).
-  - Tiện ích: Chỗ đậu ô tô/xe máy miễn phí, thiết kế hoa theo yêu cầu, tặng thiệp cao cấp.
-- **Chức năng tương tác:**
-  - Nút **"Chỉ Đường Đến Shop"**: Mở trực tiếp Google Maps với tọa độ chính xác.
-  - Nút **"Sao Chép Địa Chỉ"**: Tự động copy địa chỉ vào clipboard và hiện Toast thông báo.
-  - Bản đồ Google Maps nhúng trực tiếp trên trang.
+- Hiển thị thông tin Showroom (Địa chỉ, giờ mở cửa, tiện ích đậu xe, hotline).
+- Nút **"Chỉ Đường Đến Shop"** mở Google Maps và nút **"Sao Chép Địa Chỉ"** 1-chạm vào clipboard.
 
 ### 📞 FR-5: Kênh Liên Hệ Nhanh (Contact & Engagement)
-- **Floating Contact Bar:**
-  - Nút gọi Hotline (`0976.491.322`) với hiệu ứng rung chuông nổi bật (`pulse-hotline`).
-  - Nút chat Zalo Official Account (`pulse-zalo`) hỗ trợ khách hàng tức thì.
-- **Form đăng ký nhận tin (Newsletter):** Nhập email nhận voucher giảm giá 10%.
+- Nút gọi Hotline nổi với hiệu ứng rung chuông (`pulse-hotline`) và nút Chat Zalo OA (`pulse-zalo`).
+- Form đăng ký email nhận ưu đãi 10%.
 
 ### 📱 FR-6: Menu Di Động & Tìm Kiếm (Mobile Menu & Search)
-- Menu Sidebar trượt từ cạnh trái màn hình cho người dùng điện thoại.
-- Thanh tìm kiếm sản phẩm nhanh chóng (Desktop & Mobile).
+- Menu Sidebar trượt từ cạnh trái cho điện thoại, thanh tìm kiếm sản phẩm nhanh.
 
 ---
 
-### 🔐 FR-7: Hệ Thống Đăng Nhập & Xác Thực Phân Quyền (Authentication & RBAC)
-
-#### 1. Phương thức đăng nhập:
-- **Khách hàng:** Đăng nhập qua Số điện thoại / Email + Mật khẩu (hoặc mã OTP gửi về SMS/Zalo).
-- **Nhân viên & Quản lý:** Đăng nhập qua tài khoản nội bộ (Username/Password) được cấp phép theo từng Chi nhánh cụ thể.
-
-#### 2. Điều hướng giao diện sau khi đăng nhập (Post-Login Redirection Flow):
-- **Khách hàng (Customer)** $\rightarrow$ Chuyển về **Trang chủ** hoặc **Trang hồ sơ cá nhân (`/account`)** hoặc quay lại bước thanh toán giỏ hàng.
-- **Nhân viên (Staff)** $\rightarrow$ Chuyển vào **Cổng thao tác nhân viên (`/portal/staff`)** để nhận đơn cắm hoa và cập nhật trạng thái đơn.
-- **Quản lý chi nhánh (Branch Manager)** $\rightarrow$ Chuyển vào **Bảng điều khiển chi nhánh (`/portal/branch-manager`)** để quản lý nhân sự, kho và tiến độ giao 2H.
-- **Quản trị viên (Super Admin)** $\rightarrow$ Chuyển vào **Bảng quản trị toàn hệ thống (`/portal/admin`)** với toàn quyền giám sát chuỗi.
+### ⏰ FR-7: Đặt Lịch Giao Hoa Theo Ngày & Khung Giờ (Scheduled Delivery & Time Slots)
+- **Chọn ngày giao hàng (Date Picker):** Cho phép khách đặt trước hoa tối đa 30 ngày (sinh nhật, khai trương, 14/2, 8/3, 20/10...).
+- **Chọn khung giờ giao hàng (Time Slots):**
+  - Khung giờ tiêu chuẩn: `07:00 - 09:00`, `09:00 - 11:00`, `11:00 - 13:00`, `13:00 - 15:00`, `15:00 - 17:00`, `17:00 - 19:00`, `19:00 - 21:00`.
+  - Tùy chọn **"Giao Hỏa Tốc trong 2H"** (Áp dụng cho các đơn cần gấp trong ngày).
+- **Hạn mức khung giờ (Slot Capacity):** Giới hạn tối đa số đơn cắm hoa trong mỗi khung giờ để đảm bảo chất lượng cắm hoa và giao đúng giờ.
 
 ---
 
-### 📊 Ma Trận Phân Quyền Sau Khi Đăng Nhập (Role-Permission Matrix)
-
-Ký hiệu: 
-- `Full`: Toàn quyền (Tạo, Đọc, Sửa, Xóa).
-- `Branch`: Quyền trong phạm vi Chi nhánh trực thuộc.
-- `Own`: Chỉ thao tác với dữ liệu của chính mình.
-- `Read`: Chỉ xem.
-- `-`: Không có quyền truy cập.
-
-| Chức năng & Tài nguyên hệ thống | Khách hàng (Customer) | Nhân viên (Staff) | Quản lý chi nhánh (Branch Manager) | Quản trị viên (Super Admin) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Xem sản phẩm & Đặt hoa online** | `Full` | `Read` | `Read` | `Full` |
-| **Quản lý giỏ hàng & Sổ địa chỉ cá nhân** | `Own` | `Own` | `Own` | `Full` |
-| **Xem & Cập nhật trạng thái đơn hàng** | `Own (Xem)` | `Branch (Cập nhật)` | `Branch (Quản lý)` | `Full (Toàn chuỗi)` |
-| **Chụp ảnh sản phẩm thực tế trước giao** | - | `Branch (Upload)` | `Branch (Duyệt/Sửa)` | `Full` |
-| **Quản lý kho hoa tươi nhập hàng ngày** | - | `Branch (Xem/Báo hỏng)` | `Branch (Nhập/Xuất kho)` | `Full (Tổng kho)` |
-| **Quản lý nhân sự & Phân ca làm việc** | - | `Own (Xem ca)` | `Branch (Phân ca/Chấm công)` | `Full (Toàn hệ thống)` |
-| **Báo cáo doanh số & Hiệu suất chi nhánh** | - | - | `Branch (Báo cáo)` | `Full (Báo cáo tổng hợp)` |
-| **Quản lý danh sách chi nhánh (GPS, Radius)** | - | - | `Branch (Xem)` | `Full (Thêm/Sửa/Đóng)` |
-| **Cơ sở dữ liệu khách hàng (CRM & Tích điểm)** | `Own (Xem điểm)` | `Branch (Tra cứu SĐT)` | `Branch (Xem danh sách)` | `Full (Phân khúc & Marketing)` |
-| **Cấu hình hệ thống & Phân quyền User** | - | - | - | `Full` |
+### 💌 FR-8: Cá Nhân Hóa Thiệp Chúc Mừng & In Băng Rôn (Custom Card, Banner & Sender Options)
+- **Nhập nội dung Thiệp chúc mừng:** Khách nhập lời chúc để nhân viên in/viết tay lên thiệp cao cấp tặng kèm.
+- **Nhập nội dung Băng rôn / Ribbon:** Dành cho Kệ hoa chúc mừng, khai trương (VD: *"Công ty CP Công Nghệ ABC Kính Chúc Khai Trương Hồng Phát"*).
+- **Phân tách thông tin Người Tặng & Người Nhận:**
+  - Tùy chọn 1: *Tôi là người nhận hoa* (tự động điền thông tin).
+  - Tùy chọn 2: *Gửi tặng người khác* (Nhập riêng họ tên, SĐT, địa chỉ người nhận và thông tin người tặng để gửi hóa đơn).
+- **Tùy chọn "Gửi hoa ẩn danh (Bí mật người gửi)":** Người giao hoa không tiết lộ danh tính người đặt khi trao hoa, tạo bất ngờ cho người nhận.
 
 ---
 
-### 👥 FR-8: Quản Lý Khách Hàng (Customer Management - CRM)
-- **Hồ sơ khách hàng:**
-  - Thông tin liên hệ: Họ tên, Số điện thoại, Email, Ngày sinh nhật (tự động kích hoạt ưu đãi hoa sinh nhật).
-  - Sổ địa chỉ giao hàng: Lưu nhiều địa chỉ nhận hoa thường dùng (nhà riêng, công ty, địa chỉ người nhận tặng).
-- **Phân loại & Chăm sóc khách hàng:**
-  - Nhóm khách: Khách hàng lẻ, Khách hàng thân thiết (VIP), Khách hàng doanh nghiệp (B2B - lưu mã số thuế và thông tin xuất hóa đơn đỏ).
-  - Lịch sử đơn hàng và tổng giá trị chi tiêu (LTV - Lifetime Value).
-  - Ghi chú sở thích của khách hàng (loại hoa yêu thích, màu sắc kiêng kỵ, phong cách cắm ưa thích).
-- **Chương trình tích điểm & Tri ân:**
-  - Hạng thành viên: Bạc (Silver), Vàng (Gold), Kim Cương (Diamond).
-  - Mã giảm giá và voucher quà tặng cá nhân hóa theo từng tài khoản.
+### 💳 FR-9: Cổng Thanh Toán Trực Tuyến Tự Động (Payment Gateway Integration)
+- **Thanh toán chuyển khoản tự động (VietQR):**
+  - Sinh mã QR động chứa đúng Số tiền và Mã đơn hàng.
+  - Web tự động xác nhận đơn sau khi khách chuyển khoản thành công (trong 5 giây).
+- **Thanh toán Thẻ Quốc Tế (Visa / MasterCard / JCB):** Dành cho khách du lịch và kiều bào ở nước ngoài gửi hoa về Việt Nam.
+- **Thanh toán Ví Điện Tử (MoMo / ZaloPay).**
+- **Thanh toán tiền mặt khi nhận hoa (COD):** Chỉ áp dụng cho đơn mà Người đặt chính là Người nhận.
 
 ---
 
-### 👔 FR-9: Quản Lý Nhân Viên (Staff Management)
-- **Quản lý danh sách nhân sự theo Chi nhánh:**
-  - Thông tin nhân viên: Mã nhân viên, Họ tên, Số điện thoại, Email, Chi nhánh trực thuộc, Chức danh (Thợ cắm hoa / Tư vấn bán hàng / Thu ngân / Giao hàng).
-  - Trạng thái làm việc: Đang làm việc, Nghỉ phép, Đã nghỉ việc.
-- **Phân quyền và phân công nhiệm vụ:**
-  - Phân công ca làm việc và gán đơn hàng cho nhân viên xử lý.
-  - Quyền cập nhật trạng thái đơn: *Đã tiếp nhận $\rightarrow$ Đang cắm hoa $\rightarrow$ Đã chụp ảnh xác nhận $\rightarrow$ Đang giao hàng $\rightarrow$ Hoàn tất*.
-- **Theo dõi hiệu suất (KPI):**
-  - Số lượng đơn hoa hoàn thành theo ca/tháng.
-  - Tỷ lệ hài lòng và phản hồi đánh giá từ khách hàng.
+### 🔐 FR-10: Cổng Đăng Nhập Đơn Nhất & Phân Quyền Động (Single Login & RBAC)
+- **Cổng đăng nhập duy nhất:** Tất cả người dùng đăng nhập tại cùng một điểm truy cập bằng SĐT/Email + Mật khẩu.
+- **Tự động nhận diện Role & Điều hướng:**
+  - `customer` $\rightarrow$ Trang chủ / Hồ sơ cá nhân `/account`
+  - `florist` $\rightarrow$ Cổng thợ cắm hoa `/portal/staff`
+  - `sales_consultant` $\rightarrow$ Cổng tiếp nhận đơn `/portal/sales`
+  - `branch_manager` $\rightarrow$ Dashboard chi nhánh `/portal/branch-manager`
+  - `super_admin` $\rightarrow$ Bảng quản trị toàn hệ thống `/portal/admin`
+- **Bảo mật JWT Token:** Token mã hóa chứa `userId`, `role`, `branchId` và thời gian hết hạn `exp`.
 
 ---
 
-### 🏢 FR-10: Quản Lý Chuỗi Chi Nhánh & Showroom (Branch Management)
-- **Thông tin chi nhánh:**
-  - Mã chi nhánh, Tên chi nhánh (VD: *Chi nhánh Q.10*, *Chi nhánh Q.1*, *Chi nhánh Thảo Điền*).
-  - Địa chỉ chi tiết và tọa độ định vị GPS (Lat, Lng) phục vụ điều phối đơn hàng gần nhất.
-  - Hotline và giờ hoạt động riêng của từng chi nhánh.
-  - Người quản lý phụ trách chi nhánh (Branch Manager).
-- **Bán kính và khu vực phục vụ:**
-  - Thiết lập bán kính giao hàng hỏa tốc 2H cho từng chi nhánh.
-  - Tự động định tuyến gán đơn hàng mới cho chi nhánh gần địa chỉ người nhận nhất để tối ưu thời gian giao.
-- **Quản lý kho hàng & Báo cáo chi nhánh:**
-  - Quản lý số lượng hoa tươi nhập mới mỗi ngày tại chi nhánh.
-  - Báo cáo doanh số bán hàng, tỷ lệ hủy đơn, báo cáo doanh thu theo chi nhánh.
+### 👥 FR-11: Quản Lý Khách Hàng - CRM & Hạng Thành Viên
+- Quản lý hồ sơ, ngày sinh nhật (tự động gửi mã giảm giá hoa sinh nhật), sổ nhiều địa chỉ nhận hàng.
+- Phân nhóm khách (Khách lẻ, VIP, Doanh nghiệp B2B xuất hóa đơn VAT).
+- Tích điểm đổi quà: Hạng Bạc (Silver), Vàng (Gold), Kim Cương (Diamond).
+
+---
+
+### 👔 FR-12: Quản Lý Nhân Viên & Quy Trình Cắm Hoa Thực Tế
+- Quản lý nhân sự theo chi nhánh, phân ca làm việc, đánh giá KPI.
+- **Quy trình cắm hoa chuẩn:** *Nhận đơn $\rightarrow$ Thợ cắm hoa $\rightarrow$ **Chụp ảnh thật hoa gửi khách duyệt qua Web/Zalo** $\rightarrow$ Shipper giao hàng $\rightarrow$ Ký nhận*.
+
+---
+
+### 🏬 FR-13: Quản Lý Chuỗi Chi Nhánh & Điều Phối Đơn Hàng Thông Minh
+- Quản lý danh sách chi nhánh kèm tọa độ GPS (phục vụ tự động gán đơn cho chi nhánh gần người nhận nhất).
+- Thiết lập bán kính giao hàng 2H cho từng chi nhánh.
+- Tự động điều phối đơn sang chi nhánh lân cận nếu chi nhánh gần nhất hết hàng.
+
+---
+
+### 🥀 FR-14: Quản Lý Hao Hụt & Báo Cáo Hủy Hoa Tươi Cuối Ngày (Spoilage & Wastage)
+- Quản lý chi nhánh nhập phiếu kiểm kê cành hoa bị dập hỏng/héo cuối mỗi ca làm việc.
+- Thống kê tỷ lệ hao hụt theo từng loại hoa (Hoa hồng, tulip, lily...) để tối ưu hóa kế hoạch nhập hàng ngày hôm sau.
+- Tự động trừ chi phí hao hụt vào báo cáo tài chính chi nhánh.
 
 ---
 
 ## 5. Yêu Cầu Phi Chức Năng (Non-Functional Requirements)
 
 ### ⚡ NFR-1: Hiệu Năng & Tải Trang (Performance)
-- **Lazy Loading:** Tất cả ảnh sản phẩm được gắn thuộc tính `loading="lazy"` kết hợp giải mã bất đồng bộ `decoding="async"`.
-- **Skeleton Shimmer Loader:** Hiển thị khung chờ gradient lấp lánh trong lúc ảnh tải từ mạng về, chống vỡ giao diện (CLS - Cumulative Layout Shift).
+- Lazy Loading toàn bộ ảnh sản phẩm, Skeleton Shimmer Loader chống vỡ layout (CLS).
+- Tốc độ tải trang dưới 1.5 giây.
 
-### 🎨 NFR-2: Giao Diện & Trải Nghiệm (Design & Aesthetics)
-- **Bảng màu:**
-  - Màu chủ đạo (`primary`): Hồng sen sang trọng (`#d81b60`).
-  - Màu nhấn (`accent`): Hồng phấn ngọt ngào (`#ff4081`).
-  - Màu nền (`light`): Trắng ngọc trai tinh khôi (`#fdfbfb`).
-- **Typography:**
-  - Font nội dung chính: `Quicksand`, `Noto Sans JP/KR/SC` (đa ngữ, mềm mại).
-  - Font tiêu đề: `Playfair Display` (serif sang trọng, quý phái).
-- **Thiết kế Responsive:** Tương thích chuẩn xác trên Mobile (iOS/Android), Tablet và Desktop.
+### 🎨 NFR-2: Giao Diện & Thẩm Mỹ (Design & Aesthetics)
+- Tông màu chủ đạo hồng sen sang trọng (`#d81b60`), font Quicksand & Playfair Display mềm mại, quý phái.
+- Responsive 100% trên Mobile, Tablet, Desktop.
 
-### 🛡️ NFR-3: Bảo Mật & Phân Quyền (Security & Access Control)
-- **JWT & Route Guard:** Token mã hóa chứa thông tin vai trò (`role`) và mã chi nhánh (`branch_id`). Chặn truy cập trái phép bằng Frontend Route Guards và Backend Middleware (trả mã `401 Unauthorized` hoặc `403 Forbidden`).
-- **Phân lập dữ liệu chi nhánh (Data Isolation):** Quản lý chi nhánh và nhân viên chỉ được xem và thao tác dữ liệu thuộc chi nhánh của mình, không được can thiệp dữ liệu chi nhánh khác.
+### 🛡️ NFR-3: Bảo Mật & Phân Lập Dữ Liệu (Security & Data Isolation)
+- Bảo vệ đa tầng: Frontend Route Guards + Backend Flask `@require_role` Decorators.
+- Phân lập dữ liệu: Quản lý và nhân viên chi nhánh chỉ xem và xử lý dữ liệu thuộc chi nhánh mình.
 
-### 🏗️ NFR-4: Kiến Trúc Hệ Thống (System Architecture)
-- **Frontend:** HTML5, Tailwind CSS, Modular JavaScript trong thư mục `js/` (`products.js`, `translations.js`, `i18n.js`, `utils.js`, `flower_app.js`).
-- **Backend:** Python Flask phục vụ giao diện, API xác thực và quản lý dữ liệu.
-- **Triển khai:** Đóng gói container Docker, build và khởi chạy 1-lệnh qua `cli_docker.sh` trên Ubuntu Linux.
+### 🏗️ NFR-4: Kiến Trúc Hệ Thống & Triển Khai (Architecture & Deployment)
+- Frontend: HTML5, Tailwind CSS, Modular JS (`products.js`, `translations.js`, `i18n.js`, `utils.js`, `flower_app.js`).
+- Backend: Python Flask RESTful API.
+- Triển khai: Đóng gói Docker hoàn chỉnh, quản lý bằng `cli_docker.sh` trên Ubuntu Linux.
