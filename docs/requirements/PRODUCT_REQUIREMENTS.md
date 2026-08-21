@@ -88,13 +88,40 @@
 ---
 
 ### 🔐 FR-7: Hệ Thống Đăng Nhập & Xác Thực Phân Quyền (Authentication & RBAC)
-- **Phương thức đăng nhập:**
-  - Đăng nhập dành cho Khách hàng: Qua Số điện thoại / Email + Mật khẩu (hoặc OTP / Social Login).
-  - Đăng nhập dành cho Quản trị / Nhân viên: Tài khoản nội bộ được cấp phép theo Chi nhánh.
-- **Tính năng bảo mật:**
-  - JWT / Session Token an toàn, mã hóa mật khẩu (Bcrypt / Argon2).
-  - Kiểm soát phiên đăng nhập, tự động đăng xuất khi hết hạn token.
-  - Phân quyền động theo Role: Khách hàng, Nhân viên (Staff), Quản lý chi nhánh (Branch Manager), Quản trị viên (Super Admin).
+
+#### 1. Phương thức đăng nhập:
+- **Khách hàng:** Đăng nhập qua Số điện thoại / Email + Mật khẩu (hoặc mã OTP gửi về SMS/Zalo).
+- **Nhân viên & Quản lý:** Đăng nhập qua tài khoản nội bộ (Username/Password) được cấp phép theo từng Chi nhánh cụ thể.
+
+#### 2. Điều hướng giao diện sau khi đăng nhập (Post-Login Redirection Flow):
+- **Khách hàng (Customer)** $\rightarrow$ Chuyển về **Trang chủ** hoặc **Trang hồ sơ cá nhân (`/account`)** hoặc quay lại bước thanh toán giỏ hàng.
+- **Nhân viên (Staff)** $\rightarrow$ Chuyển vào **Cổng thao tác nhân viên (`/portal/staff`)** để nhận đơn cắm hoa và cập nhật trạng thái đơn.
+- **Quản lý chi nhánh (Branch Manager)** $\rightarrow$ Chuyển vào **Bảng điều khiển chi nhánh (`/portal/branch-manager`)** để quản lý nhân sự, kho và tiến độ giao 2H.
+- **Quản trị viên (Super Admin)** $\rightarrow$ Chuyển vào **Bảng quản trị toàn hệ thống (`/portal/admin`)** với toàn quyền giám sát chuỗi.
+
+---
+
+### 📊 Ma Trận Phân Quyền Sau Khi Đăng Nhập (Role-Permission Matrix)
+
+Ký hiệu: 
+- `Full`: Toàn quyền (Tạo, Đọc, Sửa, Xóa).
+- `Branch`: Quyền trong phạm vi Chi nhánh trực thuộc.
+- `Own`: Chỉ thao tác với dữ liệu của chính mình.
+- `Read`: Chỉ xem.
+- `-`: Không có quyền truy cập.
+
+| Chức năng & Tài nguyên hệ thống | Khách hàng (Customer) | Nhân viên (Staff) | Quản lý chi nhánh (Branch Manager) | Quản trị viên (Super Admin) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Xem sản phẩm & Đặt hoa online** | `Full` | `Read` | `Read` | `Full` |
+| **Quản lý giỏ hàng & Sổ địa chỉ cá nhân** | `Own` | `Own` | `Own` | `Full` |
+| **Xem & Cập nhật trạng thái đơn hàng** | `Own (Xem)` | `Branch (Cập nhật)` | `Branch (Quản lý)` | `Full (Toàn chuỗi)` |
+| **Chụp ảnh sản phẩm thực tế trước giao** | - | `Branch (Upload)` | `Branch (Duyệt/Sửa)` | `Full` |
+| **Quản lý kho hoa tươi nhập hàng ngày** | - | `Branch (Xem/Báo hỏng)` | `Branch (Nhập/Xuất kho)` | `Full (Tổng kho)` |
+| **Quản lý nhân sự & Phân ca làm việc** | - | `Own (Xem ca)` | `Branch (Phân ca/Chấm công)` | `Full (Toàn hệ thống)` |
+| **Báo cáo doanh số & Hiệu suất chi nhánh** | - | - | `Branch (Báo cáo)` | `Full (Báo cáo tổng hợp)` |
+| **Quản lý danh sách chi nhánh (GPS, Radius)** | - | - | `Branch (Xem)` | `Full (Thêm/Sửa/Đóng)` |
+| **Cơ sở dữ liệu khách hàng (CRM & Tích điểm)** | `Own (Xem điểm)` | `Branch (Tra cứu SĐT)` | `Branch (Xem danh sách)` | `Full (Phân khúc & Marketing)` |
+| **Cấu hình hệ thống & Phân quyền User** | - | - | - | `Full` |
 
 ---
 
@@ -118,7 +145,7 @@
   - Trạng thái làm việc: Đang làm việc, Nghỉ phép, Đã nghỉ việc.
 - **Phân quyền và phân công nhiệm vụ:**
   - Phân công ca làm việc và gán đơn hàng cho nhân viên xử lý.
-  - Quyền cập nhật trạng thái đơn: *Đã tiếp nhận -> Đang cắm hoa -> Đã chụp ảnh xác nhận -> Đang giao hàng -> Hoàn tất*.
+  - Quyền cập nhật trạng thái đơn: *Đã tiếp nhận $\rightarrow$ Đang cắm hoa $\rightarrow$ Đã chụp ảnh xác nhận $\rightarrow$ Đang giao hàng $\rightarrow$ Hoàn tất*.
 - **Theo dõi hiệu suất (KPI):**
   - Số lượng đơn hoa hoàn thành theo ca/tháng.
   - Tỷ lệ hài lòng và phản hồi đánh giá từ khách hàng.
@@ -156,7 +183,11 @@
   - Font tiêu đề: `Playfair Display` (serif sang trọng, quý phái).
 - **Thiết kế Responsive:** Tương thích chuẩn xác trên Mobile (iOS/Android), Tablet và Desktop.
 
-### 🏗️ NFR-3: Kiến Trúc Hệ Thống (System Architecture)
+### 🛡️ NFR-3: Bảo Mật & Phân Quyền (Security & Access Control)
+- **JWT & Route Guard:** Token mã hóa chứa thông tin vai trò (`role`) và mã chi nhánh (`branch_id`). Chặn truy cập trái phép bằng Frontend Route Guards và Backend Middleware (trả mã `401 Unauthorized` hoặc `403 Forbidden`).
+- **Phân lập dữ liệu chi nhánh (Data Isolation):** Quản lý chi nhánh và nhân viên chỉ được xem và thao tác dữ liệu thuộc chi nhánh của mình, không được can thiệp dữ liệu chi nhánh khác.
+
+### 🏗️ NFR-4: Kiến Trúc Hệ Thống (System Architecture)
 - **Frontend:** HTML5, Tailwind CSS, Modular JavaScript trong thư mục `js/` (`products.js`, `translations.js`, `i18n.js`, `utils.js`, `flower_app.js`).
 - **Backend:** Python Flask phục vụ giao diện, API xác thực và quản lý dữ liệu.
 - **Triển khai:** Đóng gói container Docker, build và khởi chạy 1-lệnh qua `cli_docker.sh` trên Ubuntu Linux.
