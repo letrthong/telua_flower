@@ -122,6 +122,22 @@
 
 ---
 
+### 📲 FR-15: Hệ Thống Thông Báo Tự Động Đa Kênh (Zalo ZNS / SMS / Email)
+- Tự động gửi tin nhắn Zalo/SMS/Email kèm link ảnh chụp hoa thực tế khi thợ cắm hoa hoàn thành.
+- Tự động thông báo khi Shipper bắt đầu giao và khi người nhận đã nhận hoa thành công.
+
+---
+
+### 🧾 FR-16: Hỗ Trợ Xuất Hóa Đơn Điện Tử VAT Doanh Nghiệp (B2B E-Invoice)
+- Form nhập Mã số thuế (MST), Tên công ty, Địa chỉ và Email nhận hóa đơn đỏ điện tử (tự động tra cứu MST từ cổng Tổng cục Thuế).
+
+---
+
+### 🖨️ FR-17: Mẫu In Phiếu Giao Hàng & Tem Dán Bó Hoa (Print Slip Template)
+- Nút in phiếu giao hàng chuẩn khổ in nhiệt K80 và khổ A5 dán lên bó hoa/kệ hoa với đầy đủ thông tin người nhận, ghi chú chỉ dẫn địa chỉ và lời chúc thiệp/banner.
+
+---
+
 ## 5. Yêu Cầu Phi Chức Năng (Non-Functional Requirements)
 
 ### ⚡ NFR-1: Hiệu Năng & Tải Trang (Performance)
