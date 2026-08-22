@@ -84,12 +84,14 @@ Tiến độ: [░░░░░░░░░░░░░░░░░░░░] 0% 
 
 ---
 
-### [ ] TASK 07: Hàng Rào Giá An Toàn (Price Levels), CMS Sửa Hoa & Voucher
+### [ ] TASK 07: Hàng Rào Giá An Toàn (Price Levels), CMS Sửa Hoa, Khuyến Mãi & Biên Dịch Đa Ngôn Ngữ Động
 - [ ] Viết logic ràng buộc giá: $\text{minPrice} \le \text{Giá} \le \text{maxPrice}$ theo 4 Price Levels.
 - [ ] Chặn báo lỗi đỏ khi nhân viên nhập giá phá giá hoặc gõ nhầm số 0.
 - [ ] Tạo giao diện `/portal/products` cho nhân viên sửa nhanh giá bán & nội dung hoa.
 - [ ] Tạo giao diện `/portal/promotions` với công tắc Bật/Tắt (ON/OFF) 1-chạm cho Voucher & Banner.
-- [ ] Viết `src/unittest/test_price_governance.py` và test thành công.
+- [ ] **Tạo giao diện `/portal/translations` cho Admin/Quản lý chỉnh sửa trực tiếp bản dịch 5 ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung) và nội dung các khối trang (Slogan, Hotline, Showroom, Giờ mở cửa, Chính sách)**.
+- [ ] Viết `src/services/translation_service.py` đọc/ghi `config/translations.json` và API `PUT /api/admin/translations`.
+- [ ] Viết `src/unittest/test_price_governance.py` và `src/unittest/test_translation_service.py` chạy Pass 100%.
 
 ---
 
