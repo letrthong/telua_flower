@@ -1,0 +1,43 @@
+[
+  {
+    "id": "cust_001",
+    "phone": "0987654321",
+    "fullName": "Nguyễn Văn A",
+    "email": "nva@gmail.com",
+    "birthday": "1995-10-20",
+    "tier": "gold",
+    "loyaltyPoints": 450,
+    "totalSpent": 4500000,
+    "orderCount": 5,
+    "flowerPreferences": "Thích hoa hồng Ohara pastel và Tulip, không thích hoa màu vàng",
+    "savedAddresses": [
+      {
+        "label": "Công ty",
+        "recipientName": "Trần Thị Mai",
+        "phone": "0911223344",
+        "address": "Tòa nhà Bitexco, Tầng 12 - Số 2 Hải Triều, Q.1, TP.HCM",
+        "deliveryNotes": "Gửi Lễ tân nếu người nhận đang họp."
+      },
+      {
+        "label": "Nhà riêng",
+        "recipientName": "Nguyễn Văn A",
+        "phone": "0987654321",
+        "address": "123 Nguyễn Thị Minh Khai, P.6, Q.3, TP.HCM",
+        "deliveryNotes": "Nhà trong hẻm đối diện công viên"
+      }
+    ],
+    "createdAt": "2026-01-15T00:00:00Z"
+  },
+  {
+    "id": "cust_1787408884",
+    "phone": "0910408884",
+    "fullName": "Khách Hàng Mới Test",
+    "email": "test_0910408884@gmail.com",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-22T14:28:04Z"
+  }
+]

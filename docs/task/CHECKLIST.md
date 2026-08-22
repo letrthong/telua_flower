@@ -6,13 +6,13 @@
 ## 📊 Tiến Độ Tổng Thể (Overall Progress)
 
 ```text
-Tiến độ: [░░░░░░░░░░░░░░░░░░░░] 0% (0/8 Task hoàn thành)
+Tiến độ: [██████░░░░░░░░░░░░░░] 25.0% (2/8 Task hoàn thành)
 ```
 
 | Task | Tên Phân Hệ | Trạng Thái | Ngày Hoàn Thành | Kết Quả Unit Test |
 | :---: | :--- | :---: | :---: | :---: |
-| **01** | Khởi Tạo Dữ Liệu JSON & Storage Service | 🔴 **TODO** | -- | Chưa chạy |
-| **02** | Hệ Thống Đăng Nhập & Phân Quyền JWT (5 Roles) | 🔴 **TODO** | -- | Chưa chạy |
+| **01** | Khởi Tạo Dữ Liệu JSON & Storage Service | 🟢 **DONE** | 2026-08-22 | Pass 10/10 Test cases |
+| **02** | Hệ Thống Đăng Nhập & Phân Quyền JWT (5 Roles) | 🟢 **DONE** | 2026-08-22 | Pass 10/10 Test cases |
 | **03** | Giao Diện Bán Hàng, Hẹn Giờ, Thiệp & Banner | 🔴 **TODO** | -- | Chưa chạy |
 | **04** | Cổng Thanh Toán VietQR & Báo Tin Zalo | 🔴 **TODO** | -- | Chưa chạy |
 | **05** | Cổng Thợ Cắm Hoa, Upload Ảnh Thật & In Bill K80 | 🔴 **TODO** | -- | Chưa chạy |
@@ -26,24 +26,24 @@ Tiến độ: [░░░░░░░░░░░░░░░░░░░░] 0% 
 
 ## 📝 Checklist Chi Tiết Từng Bước Code & Nghiệm Thu
 
-### [ ] TASK 01: Khởi Tạo Cấu Trúc Dữ Liệu JSON & Storage Service
-- [ ] Tạo `config/branches.json` (Showroom Q.10, Q.1, Thảo Điền).
-- [ ] Tạo `config/users.json` (5 tài khoản mẫu cho 5 Roles).
-- [ ] Tạo `config/price_levels.json` (4 Phân tầng mức giá chuẩn).
-- [ ] Tạo `config/products.json` (Danh mục hoa & bình cắm hoa nghệ thuật).
-- [ ] Tạo `config/promotions.json` (Voucher khuyến mãi mẫu).
-- [ ] Tạo `config/orders/orders_2026_08.json` (Phân mảnh đơn hàng theo tháng).
-- [ ] Viết `src/services/data_service.py` (Đọc/Ghi an toàn, phân trang `page/limit`).
-- [ ] Viết `src/unittest/test_data_service.py` và chạy test Pass 100%.
+### [x] TASK 01: Khởi Tạo Cấu Trúc Dữ Liệu JSON & Storage Service
+- [x] Tạo `config/branches.json` (Showroom Q.10, Q.1, Thảo Điền).
+- [x] Tạo `config/users.json` (5 tài khoản mẫu cho 5 Roles).
+- [x] Tạo `config/price_levels.json` (4 Phân tầng mức giá chuẩn).
+- [x] Tạo `config/products.json` (Danh mục hoa & bình cắm hoa nghệ thuật).
+- [x] Tạo `config/promotions.json` (Voucher khuyến mãi mẫu).
+- [x] Tạo `config/orders/orders_2026_08.json` (Phân mảnh đơn hàng theo tháng).
+- [x] Viết `src/services/data_service.py` (Đọc/Ghi an toàn, phân trang `page/limit`).
+- [x] Viết `src/unittest/test_data_service.py` và chạy test Pass 100%.
 
 ---
 
-### [ ] TASK 02: Hệ Thống Đăng Nhập Đơn Nhất & Phân Quyền JWT (5 Roles)
-- [ ] Viết `src/services/auth_service.py` (Bcrypt hash, sinh JWT Token chứa `role` & `branchId`).
-- [ ] Viết `src/decorators/auth_decorator.py` (`@require_role` chặn `401`/`403`).
-- [ ] Tạo các API endpoints: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`.
-- [ ] Viết `js/auth.js` lưu token vào `localStorage` và tự động điều hướng theo Role.
-- [ ] Viết `src/unittest/test_auth_service.py` và chạy test Pass 100%.
+### [x] TASK 02: Hệ Thống Đăng Nhập Đơn Nhất & Phân Quyền JWT (5 Roles)
+- [x] Viết `src/services/auth_service.py` (Bcrypt/PBKDF2 hash, sinh JWT Token chứa `role` & `branchId`).
+- [x] Viết `src/decorators/auth_decorator.py` (`@require_role` chặn `401`/`403`).
+- [x] Tạo các API endpoints: `POST /api/auth/login`, `GET /api/auth/me`, `POST /api/auth/logout`.
+- [x] Viết `js/auth.js` lưu token vào `localStorage` và tự động điều hướng theo Role.
+- [x] Viết `src/unittest/test_auth_service.py` và chạy test Pass 100%.
 
 ---
 

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "promo_2010",
+    "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+    "code": "PHUNU15",
+    "discountType": "percentage",
+    "discountValue": 15,
+    "maxDiscountAmount": 150000,
+    "minOrderAmount": 400000,
+    "startDate": "2026-10-01T00:00:00Z",
+    "endDate": "2026-10-31T23:59:59Z",
+    "usageLimit": 200,
+    "usedCount": 45,
+    "topBarMessage": "🔥 ƯU ĐÃI 20/10: Nhập mã PHUNU15 giảm 15% + Tặng thiệp hoa thiết kế!",
+    "heroBannerUrl": "https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=1200",
+    "isActive": true
+  },
+  {
+    "id": "promo_anne10",
+    "title": "Khách Hàng Mới Thân Thiết",
+    "code": "ANNE10",
+    "discountType": "percentage",
+    "discountValue": 10,
+    "maxDiscountAmount": 100000,
+    "minOrderAmount": 300000,
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2026-12-31T23:59:59Z",
+    "usageLimit": 1000,
+    "usedCount": 210,
+    "topBarMessage": "🌸 Giảm ngay 10% cho đơn hàng đầu tiên với mã ANNE10",
+    "heroBannerUrl": "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=1200",
+    "isActive": true
+  },
+  {
+    "id": "promo_freeship",
+    "title": "Miễn Phí Giao Hàng Bán Kính 5km",
+    "code": "FREESHIP",
+    "discountType": "fixed",
+    "discountValue": 35000,
+    "maxDiscountAmount": 35000,
+    "minOrderAmount": 500000,
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2026-12-31T23:59:59Z",
+    "usageLimit": 500,
+    "usedCount": 89,
+    "topBarMessage": "🚚 Miễn phí vận chuyển cho đơn hàng từ 500K",
+    "heroBannerUrl": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=1200",
+    "isActive": true
+  }
+]

@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from flask import Flask, send_file, abort
+from flask import Flask, request, jsonify, send_file, abort
 from flask_cors import cross_origin
 
 # Cấu hình logging
@@ -11,6 +11,13 @@ sys.stdout.reconfigure(line_buffering=True)
 # Xác định thư mục gốc của telua_flower (hỗ trợ cả Windows và Docker /app)
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 TELUA_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
+from services.auth_service import authenticate_user, register_customer
+from services.data_service import get_user_by_id
+from decorators.auth_decorator import require_auth, require_role
 
 app = Flask(__name__, template_folder=TELUA_ROOT)
 
@@ -48,6 +55,92 @@ def resolve_static_file(relative_path):
             return full_path
     return None
 
+
+# ==========================================
+# CÁC API ENDPOINTS XÁC THỰC (AUTHENTICATION)
+# ==========================================
+
+@app.route("/api/auth/login", methods=["POST"])
+@cross_origin()
+def api_login():
+    """
+    Cổng đăng nhập duy nhất cho cả 5 vai trò.
+    Body: { "identifier": "0909123456" / "admin@nohoathabinh.vn", "password": "..." }
+    """
+    data = request.get_json(silent=True) or {}
+    identifier = data.get("identifier") or data.get("phone") or data.get("email") or ""
+    password = data.get("password") or ""
+
+    success, auth_data, error_msg = authenticate_user(identifier, password)
+    if not success:
+        return jsonify({"success": False, "message": error_msg}), 401
+
+    return jsonify({
+        "success": True,
+        "message": "Đăng nhập thành công",
+        "data": auth_data
+    }), 200
+
+
+@app.route("/api/auth/register", methods=["POST"])
+@cross_origin()
+def api_register():
+    """
+    Đăng ký tài khoản khách hàng mới.
+    Body: { "phone": "...", "fullName": "...", "password": "...", "email": "..." }
+    """
+    data = request.get_json(silent=True) or {}
+    phone = data.get("phone") or ""
+    full_name = data.get("fullName") or data.get("name") or ""
+    password = data.get("password") or ""
+    email = data.get("email") or ""
+
+    success, auth_data, error_msg = register_customer(phone, full_name, password, email)
+    if not success:
+        return jsonify({"success": False, "message": error_msg}), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đăng ký tài khoản thành công",
+        "data": auth_data
+    }), 201
+
+
+@app.route("/api/auth/me", methods=["GET"])
+@cross_origin()
+@require_auth
+def api_get_me():
+    """
+    Lấy thông tin tài khoản hiện tại từ JWT Token.
+    """
+    current_user = request.current_user
+    user_record = get_user_by_id(current_user.get("userId"))
+    if not user_record:
+        return jsonify({"success": False, "message": "Không tìm thấy thông tin tài khoản"}), 404
+
+    # Loại bỏ hash mật khẩu
+    safe_info = {k: v for k, v in user_record.items() if k != "passwordHash"}
+    return jsonify({
+        "success": True,
+        "data": safe_info
+    }), 200
+
+
+@app.route("/api/auth/logout", methods=["POST"])
+@cross_origin()
+def api_logout():
+    """
+    Đăng xuất (Client chủ động xóa token khỏi localStorage).
+    """
+    return jsonify({
+        "success": True,
+        "message": "Đăng xuất thành công"
+    }), 200
+
+
+# ==========================================
+# PHỤC VỤ STATIC FILES & TRANG CHỦ
+# ==========================================
 
 @app.route("/")
 @app.route("/index.html")

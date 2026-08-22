@@ -1,0 +1,68 @@
+[
+  {
+    "id": "staff_admin",
+    "phone": "0900000000",
+    "email": "admin@nohoathabinh.vn",
+    "fullName": "Tổng Quản Trị Hệ Thống",
+    "passwordHash": "pbkdf2:sha256:260000$h8eL9mP2$c07ff4f04c6e3b5e40e3692aa0c46bc56041a6697b4f597920ab3e0f9b3be37c",
+    "role": "super_admin",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-21T00:00:00Z"
+  },
+  {
+    "id": "staff_001",
+    "phone": "0909123456",
+    "email": "mai.tran@nohoathabinh.vn",
+    "fullName": "Trần Thị Mai",
+    "passwordHash": "pbkdf2:sha256:260000$h8eL9mP2$c07ff4f04c6e3b5e40e3692aa0c46bc56041a6697b4f597920ab3e0f9b3be37c",
+    "role": "branch_manager",
+    "branchId": "branch_q10",
+    "isActive": true,
+    "createdAt": "2026-08-21T00:00:00Z"
+  },
+  {
+    "id": "staff_002",
+    "phone": "0909654321",
+    "email": "lan.le@nohoathabinh.vn",
+    "fullName": "Lê Ngọc Lan",
+    "passwordHash": "pbkdf2:sha256:260000$h8eL9mP2$c07ff4f04c6e3b5e40e3692aa0c46bc56041a6697b4f597920ab3e0f9b3be37c",
+    "role": "florist",
+    "branchId": "branch_q10",
+    "isActive": true,
+    "createdAt": "2026-08-21T00:00:00Z"
+  },
+  {
+    "id": "staff_003",
+    "phone": "0909777888",
+    "email": "hoa.nguyen@nohoathabinh.vn",
+    "fullName": "Nguyễn Thanh Hòa",
+    "passwordHash": "pbkdf2:sha256:260000$h8eL9mP2$c07ff4f04c6e3b5e40e3692aa0c46bc56041a6697b4f597920ab3e0f9b3be37c",
+    "role": "sales_consultant",
+    "branchId": "branch_q10",
+    "isActive": true,
+    "createdAt": "2026-08-21T00:00:00Z"
+  },
+  {
+    "id": "cust_001",
+    "phone": "0987654321",
+    "email": "nva@gmail.com",
+    "fullName": "Nguyễn Văn A",
+    "passwordHash": "pbkdf2:sha256:260000$h8eL9mP2$c07ff4f04c6e3b5e40e3692aa0c46bc56041a6697b4f597920ab3e0f9b3be37c",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-21T00:00:00Z"
+  },
+  {
+    "id": "cust_1787408884",
+    "phone": "0910408884",
+    "email": "test_0910408884@gmail.com",
+    "fullName": "Khách Hàng Mới Test",
+    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-22T14:28:04Z"
+  }
+]
