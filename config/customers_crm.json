@@ -99,5 +99,17 @@
     "orderCount": 0,
     "savedAddresses": [],
     "createdAt": "2026-08-22T15:00:40Z"
+  },
+  {
+    "id": "cust_1787411186",
+    "phone": "0910411186",
+    "fullName": "Khách Hàng Mới Test",
+    "email": "test_0910411186@gmail.com",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-22T15:06:26Z"
   }
 ]

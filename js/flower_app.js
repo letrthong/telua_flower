@@ -19,6 +19,10 @@ function renderProducts(products, containerId) {
                <span class="text-primary font-bold text-sm md:text-base">${product.salePrice}</span>`
             : `<span class="text-primary font-bold text-sm md:text-base">${product.salePrice}</span>`;
 
+        const numericPrice = parseInt(product.salePrice.replace(/[^\d]/g, ''), 10) || 420000;
+        const safeName = product.name.replace(/'/g, "\\'");
+        const prodId = product.id || `prod_${product.name.toLowerCase().replace(/\s+/g, '_')}`;
+
         html += `
             <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100">
                 ${badgeHtml}
@@ -27,7 +31,7 @@ function renderProducts(products, containerId) {
                     
                     <!-- Nút Thêm vào giỏ hàng (Hiển thị khi hover) -->
                     <div class="absolute inset-0 bg-black bg-opacity-20 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
-                        <button onclick="addToCart()" class="bg-primary hover:bg-primaryHover text-white w-full py-2 rounded font-semibold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-md">
+                        <button onclick="addToCart('${prodId}', '${safeName}', ${numericPrice}, '${product.image}')" class="bg-primary hover:bg-primaryHover text-white w-full py-2 rounded font-semibold text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-md">
                             <i class="fa-solid fa-cart-plus mr-1"></i> <span data-i18n="btn_add_to_cart">${btnText}</span>
                         </button>
                     </div>
@@ -47,38 +51,10 @@ function renderProducts(products, containerId) {
     }
 }
 
-// 2. Logic Giỏ hàng
-let cartItemCount = 0;
-
-function addToCart() {
-    cartItemCount++;
-    const cartCountElement = document.getElementById('cartCount');
-    if (cartCountElement) {
-        cartCountElement.textContent = cartItemCount;
-        cartCountElement.classList.add('animate-bounce');
-        setTimeout(() => cartCountElement.classList.remove('animate-bounce'), 1000);
-    }
-
-    // Hiện Toast đa ngôn ngữ
-    const toastMsg = (typeof translations !== 'undefined' && translations[currentLang] && translations[currentLang].toast_added_cart)
-        ? translations[currentLang].toast_added_cart
-        : "Đã thêm vào giỏ hàng thành công!";
-    if (typeof showToast === 'function') {
-        showToast(toastMsg);
-    }
-}
-
+// 2. Logic Giỏ hàng (Ủy quyền sang js/checkout.js)
 function toggleCart() {
-    if (cartItemCount === 0) {
-        const emptyMsg = (typeof translations !== 'undefined' && translations[currentLang] && translations[currentLang].cart_empty_alert)
-            ? translations[currentLang].cart_empty_alert
-            : 'Giỏ hàng của bạn đang trống. Hãy chọn sản phẩm hoa tươi hoặc bình cắm hoa nhé!';
-        alert(emptyMsg);
-    } else {
-        let alertMsg = (typeof translations !== 'undefined' && translations[currentLang] && translations[currentLang].cart_checkout_alert)
-            ? translations[currentLang].cart_checkout_alert
-            : `Giỏ hàng của bạn hiện có {n} sản phẩm. Chức năng thanh toán đang được xử lý!`;
-        alert(alertMsg.replace('{n}', cartItemCount));
+    if (typeof toggleCartDrawer === 'function') {
+        toggleCartDrawer();
     }
 }
 

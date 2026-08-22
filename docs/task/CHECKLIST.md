@@ -6,14 +6,14 @@
 ## 📊 Tiến Độ Tổng Thể (Overall Progress)
 
 ```text
-Tiến độ: [██████░░░░░░░░░░░░░░] 25.0% (2/8 Task hoàn thành)
+Tiến độ: [█████████░░░░░░░] 37.5% (3/8 Task hoàn thành)
 ```
 
 | Task | Tên Phân Hệ | Trạng Thái | Ngày Hoàn Thành | Kết Quả Unit Test |
-| :---: | :--- | :---: | :---: | :---: |
+| :---: | :--- | :---: | :--- | :--- |
 | **01** | Khởi Tạo Dữ Liệu JSON & Storage Service | 🟢 **DONE** | 2026-08-22 | Pass 10/10 Test cases |
-| **02** | Hệ Thống Đăng Nhập & Phân Quyền JWT (5 Roles) | 🟢 **DONE** | 2026-08-22 | Pass 10/10 Test cases |
-| **03** | Giao Diện Bán Hàng, Hẹn Giờ, Thiệp & Banner | 🔴 **TODO** | -- | Chưa chạy |
+| **02** | Hệ Thống Đăng Nhập & Phân Quyền JWT (5 Roles) | 🟢 **DONE** | 2026-08-22 | Pass 14/14 Test cases |
+| **03** | Giao Diện Bán Hàng, Hẹn Giờ, Thiệp & Banner | 🟢 **DONE** | 2026-08-22 | Pass 7 Python + 4 JS Tests |
 | **04** | Cổng Thanh Toán VietQR & Báo Tin Zalo | 🔴 **TODO** | -- | Chưa chạy |
 | **05** | Cổng Thợ Cắm Hoa, Upload Ảnh Thật & In Bill K80 | 🔴 **TODO** | -- | Chưa chạy |
 | **06** | Quản Lý Tồn Kho Theo Ngày, Ma Trận & Điều Phối | 🔴 **TODO** | -- | Chưa chạy |
@@ -47,14 +47,15 @@ Tiến độ: [██████░░░░░░░░░░░░░░] 25.
 
 ---
 
-### [ ] TASK 03: Nâng Cấp Giao Diện Bán Hàng, Hẹn Giờ, Thiệp & Banner
-- [ ] Thêm Modal Đặt Hàng trên `index.html` với Date Picker (30 ngày) và Time Slots.
-- [ ] Thêm ô Ghi chú chỉ dẫn địa chỉ người nhận (`deliveryNotes`).
-- [ ] Thêm ô Lời chúc viết thiệp và in Dải ruy-băng / Banner kệ hoa.
-- [ ] Thêm tùy chọn "Gửi hoa ẩn danh (Bí mật người gửi)".
-- [ ] Đồng bộ từ điển 5 ngôn ngữ trong `js/translations.js`.
-- [ ] Viết `src/services/order_service.py` (`POST /api/orders`).
-- [ ] Viết `js/unittest/test-checkout.js` và test giao diện mượt mà trên Mobile & Desktop.
+### [x] TASK 03: Nâng Cấp Giao Diện Bán Hàng, Hẹn Giờ, Thiệp & Banner
+- [x] Thêm Modal Đặt Hàng trên `index.html` với Date Picker (30 ngày) và Time Slots.
+- [x] Thêm ô Ghi chú chỉ dẫn địa chỉ người nhận (`deliveryNotes`).
+- [x] Thêm ô Lời chúc viết thiệp và in Dải ruy-băng / Banner kệ hoa.
+- [x] Thêm tùy chọn "Gửi hoa ẩn danh (Bí mật người gửi)".
+- [x] Đồng bộ từ điển 5 ngôn ngữ trong `js/translations.js`.
+- [x] Viết `src/services/order_service.py` (`POST /api/orders`, `GET /api/delivery/slots`).
+- [x] Viết `js/checkout.js` và `js/unittest/test-checkout.js`.
+- [x] Viết `src/unittest/test_order_service.py` và chạy test Pass 100%.
 
 ---
 

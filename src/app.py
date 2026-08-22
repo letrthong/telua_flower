@@ -15,9 +15,14 @@ TELUA_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
-from services.auth_service import authenticate_user, register_customer
-from services.data_service import get_user_by_id
-from decorators.auth_decorator import require_auth, require_role
+from services.auth_service import authenticate_user, register_customer, verify_jwt_token
+from services.data_service import get_user_by_id, get_order_by_id, read_orders_by_month
+from services.order_service import (
+    get_available_delivery_slots,
+    create_order,
+    assign_nearest_branch
+)
+from decorators.auth_decorator import require_auth, require_role, can_access_branch
 
 app = Flask(__name__, template_folder=TELUA_ROOT)
 
@@ -135,6 +140,120 @@ def api_logout():
     return jsonify({
         "success": True,
         "message": "Đăng xuất thành công"
+    }), 200
+
+
+# ==========================================
+# CÁC API ENDPOINTS ĐẶT HÀNG & GIAO HOA (TASK 03)
+# ==========================================
+
+@app.route("/api/delivery/slots", methods=["GET"])
+@cross_origin()
+def api_delivery_slots():
+    """
+    Lấy danh sách khung giờ giao hàng còn trống theo ngày đã chọn (trong vòng 30 ngày).
+    Query: ?date=YYYY-MM-DD
+    """
+    date_str = request.args.get("date") or ""
+    slots = get_available_delivery_slots(date_str)
+    return jsonify({
+        "success": True,
+        "data": {
+            "date": date_str,
+            "slots": slots
+        }
+    }), 200
+
+
+@app.route("/api/orders", methods=["POST"])
+@cross_origin()
+def api_create_order():
+    """
+    Tạo đơn hàng hoa tươi mới.
+    Hỗ trợ cả khách vãng lai và khách đã đăng nhập.
+    """
+    order_data = request.get_json(silent=True) or {}
+    
+    # Kiểm tra xem có token đăng nhập không
+    auth_header = request.headers.get("Authorization", "")
+    authenticated_user = None
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:].strip()
+        is_valid, payload, _ = verify_jwt_token(token)
+        if is_valid:
+            authenticated_user = payload
+
+    success, new_order, err_msg = create_order(order_data, authenticated_user=authenticated_user)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err_msg or "Không thể tạo đơn hàng"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đặt hàng thành công! Vui lòng hoàn tất thanh toán.",
+        "data": new_order
+    }), 201
+
+
+@app.route("/api/orders/<order_id>", methods=["GET"])
+@cross_origin()
+def api_get_order(order_id):
+    """
+    Tra cứu chi tiết đơn hàng theo ID.
+    """
+    order = get_order_by_id(order_id)
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    return jsonify({
+        "success": True,
+        "data": order
+    }), 200
+
+
+@app.route("/api/orders/my-orders", methods=["GET"])
+@cross_origin()
+@require_auth
+def api_my_orders():
+    """
+    Lấy danh sách đơn hàng của khách hàng hiện tại.
+    """
+    current_user = request.current_user
+    user_id = current_user.get("userId")
+    user_phone = current_user.get("phone")
+
+    # Đọc đơn hàng tháng hiện tại
+    all_orders = read_orders_by_month()
+    my_orders = [
+        o for o in all_orders
+        if (o.get("customerId") == user_id) or (o.get("sender", {}).get("phone") == user_phone)
+    ]
+
+    return jsonify({
+        "success": True,
+        "data": my_orders
+    }), 200
+
+
+@app.route("/api/branch/<branch_id>/orders", methods=["GET"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_branch_orders(branch_id):
+    """
+    Lấy danh sách đơn hàng được gán cho chi nhánh.
+    """
+    current_user = request.current_user
+    if not can_access_branch(current_user, branch_id):
+        return jsonify({"success": False, "message": "Bạn không có quyền truy cập chi nhánh này"}), 403
+
+    all_orders = read_orders_by_month()
+    branch_orders = [o for o in all_orders if o.get("branchId") == branch_id]
+
+    return jsonify({
+        "success": True,
+        "data": branch_orders
     }), 200
 
 

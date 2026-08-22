@@ -773,6 +773,207 @@
         <span>Đã thêm vào giỏ hàng thành công!</span>
     </div>
 
+    <!-- ================= CART DRAWER (GIỎ HÀNG BÊN PHẢI) ================= -->
+    <div id="cartOverlay" onclick="toggleCartDrawer(false)" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-[180] hidden transition-opacity"></div>
+    <div id="cartDrawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-[190] transform translate-x-full transition-transform duration-300 flex flex-col">
+        <!-- Header Drawer -->
+        <div class="p-5 border-b border-gray-100 flex items-center justify-between bg-pink-50/40">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-bag-shopping text-primary text-lg"></i>
+                <h3 class="font-serif text-lg font-bold text-gray-800" data-i18n="cart_drawer_title">Giỏ Hàng Của Bạn</h3>
+            </div>
+            <button onclick="toggleCartDrawer(false)" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition shadow-xs">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Items Container (Scrollable) -->
+        <div id="cartDrawerItems" class="flex-1 p-5 overflow-y-auto space-y-3">
+            <!-- Render danh sách qua JS -->
+        </div>
+
+        <!-- Footer Drawer -->
+        <div class="p-5 border-t border-gray-100 bg-gray-50/60 space-y-3">
+            <div class="flex justify-between items-center text-sm font-semibold text-gray-600">
+                <span data-i18n="cart_subtotal_lbl">Tạm tính:</span>
+                <span id="cartDrawerSubtotal" class="font-bold text-primary text-base">0₫</span>
+            </div>
+            <p class="text-[11px] text-gray-400">💡 Miễn phí vận chuyển cho đơn hàng hoa tươi từ 500.000₫</p>
+            <button id="btnDrawerCheckout" onclick="openCheckoutModal()" class="w-full py-3.5 bg-primary hover:bg-primaryHover text-white font-bold text-sm rounded-xl shadow-lg shadow-pink-200 transition duration-300 flex items-center justify-center">
+                Tiến Hành Đặt Hoa <i class="fa-solid fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= CHECKOUT MODAL (ĐẶT HOA HẸN GIỜ 30 NGÀY) ================= -->
+    <div id="checkoutModal" onclick="if (event.target === this) closeCheckoutModal();" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-fadeIn relative border border-pink-100 max-h-[92vh] flex flex-col">
+            <!-- Close Button -->
+            <button onclick="closeCheckoutModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center transition z-10">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-pink-50 via-white to-pink-50 px-6 py-4 border-b border-gray-100 flex-shrink-0 flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-pink-100 text-primary flex items-center justify-center text-lg shadow-inner">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <div>
+                    <h3 class="font-serif text-lg sm:text-xl font-bold text-gray-800">Đặt Hoa Giao Tận Nơi</h3>
+                    <p class="text-xs text-gray-500">Hẹn giờ 30 ngày • Tặng thiệp & ruy-băng • Giao hỏa tốc 2H</p>
+                </div>
+            </div>
+
+            <!-- Form Content (Scrollable) -->
+            <form id="checkoutForm" onsubmit="handleCheckoutSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+                <div id="checkoutErrorMsg" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <!-- 1. THỜI GIAN GIAO HOA (HẸN GIỜ) -->
+                <div class="bg-pink-50/40 p-4 rounded-xl border border-pink-100 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-primary flex items-center">
+                            <i class="fa-solid fa-calendar-days mr-1.5"></i> 1. Thời Gian Giao Hoa
+                        </span>
+                        <!-- Toggle Hỏa tốc 2H -->
+                        <label class="inline-flex items-center cursor-pointer text-xs font-bold text-gray-700">
+                            <input type="checkbox" id="checkoutIsExpress2H" onchange="toggleExpress2H()" class="sr-only peer">
+                            <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                            <span class="ms-2 text-primary font-bold">⚡ Hỏa Tốc 2H</span>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Ngày giao hoa (Chọn trong 30 ngày) *</label>
+                            <select id="checkoutDeliveryDate" onchange="onDeliveryDateChange()" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-primary transition" required>
+                                <!-- Render 30 ngày qua JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Khung giờ giao hàng *</label>
+                            <select id="checkoutTimeSlot" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-primary transition" required>
+                                <option value="09:00 - 11:00">09:00 - 11:00 (Sáng)</option>
+                                <option value="14:00 - 16:00">14:00 - 16:00 (Chiều)</option>
+                                <option value="17:00 - 19:00">17:00 - 19:00 (Tan tầm)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. THÔNG TIN NGƯỜI NHẬN & CHỈ DẪN ĐỊA CHỈ -->
+                <div class="space-y-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
+                        <i class="fa-solid fa-location-dot text-primary mr-1.5"></i> 2. Thông Tin Người Nhận
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Họ tên người nhận *</label>
+                            <input type="text" id="checkoutRecipientName" placeholder="Ví dụ: Trần Thị Mai" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Số điện thoại nhận hoa *</label>
+                            <input type="tel" id="checkoutRecipientPhone" placeholder="0911223344" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Địa chỉ giao hoa chi tiết *</label>
+                        <input type="text" id="checkoutRecipientAddress" placeholder="Số nhà, tên đường, Phường/Xã, Quận/Huyện, TP.HCM..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Chỉ dẫn địa chỉ giao (deliveryNotes)</label>
+                        <input type="text" id="checkoutDeliveryNotes" placeholder="Ví dụ: Tòa nhà Bitexco, Tầng 12 - Công ty FPT, gọi trước 15p hoặc gửi Lễ tân..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition">
+                    </div>
+                </div>
+
+                <!-- 3. THIỆP CHÚC MỪNG & BANNER RUY-BĂNG -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
+                        <i class="fa-solid fa-envelope-open-text text-accent mr-1.5"></i> 3. Lời Chúc Viết Thiệp & Banner Ruy-băng (Miễn phí)
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Lời chúc viết tay trên thiệp</label>
+                            <textarea id="checkoutCardMessage" rows="2" placeholder="Chúc em sinh nhật vui vẻ, luôn xinh đẹp và hạnh phúc..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary transition resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Nội dung dải ruy-băng / Banner kệ hoa</label>
+                            <textarea id="checkoutRibbonBanner" rows="2" placeholder="Ví dụ: Công ty ABC Chúc Mừng Khai Trương Hồng Phát" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary transition resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. THÔNG TIN NGƯỜI GỬI & TÙY CHỌN ẨN DANH -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
+                            <i class="fa-solid fa-user-tag text-primary mr-1.5"></i> 4. Thông Tin Người Gửi
+                        </span>
+                        <!-- Tùy chọn gửi hoa bí mật (Ẩn danh) -->
+                        <label class="inline-flex items-center cursor-pointer text-xs font-bold text-purple-700">
+                            <input type="checkbox" id="checkoutIsAnonymous" class="sr-only peer">
+                            <div class="relative w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
+                            <span class="ms-1.5">🎭 Gửi hoa bí mật (Ẩn danh)</span>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Họ tên của bạn *</label>
+                            <input type="text" id="checkoutSenderName" placeholder="Nguyễn Văn A" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Số điện thoại *</label>
+                            <input type="tel" id="checkoutSenderPhone" placeholder="0987654321" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Email nhận hóa đơn</label>
+                            <input type="email" id="checkoutSenderEmail" placeholder="email@gmail.com" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. MÃ GIẢM GIÁ & TỔNG KẾT CHI PHÍ -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="checkoutVoucherInput" placeholder="Nhập mã voucher (PHUNU15, FREESHIP, ANNE10...)" class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-primary transition">
+                        <button type="button" onclick="handleApplyVoucher()" class="px-4 py-2 bg-gray-800 hover:bg-black text-white text-xs font-bold rounded-xl transition">Áp Dụng</button>
+                    </div>
+                    <span id="checkoutVoucherMsg" class="hidden text-xs"></span>
+
+                    <div class="pt-2 border-t border-gray-200 space-y-1.5 text-xs text-gray-600">
+                        <div class="flex justify-between"><span>Tiền hàng:</span><span id="summarySubtotal" class="font-bold text-gray-800">0₫</span></div>
+                        <div class="flex justify-between"><span>Phí vận chuyển:</span><span id="summaryShipping" class="font-bold text-gray-800">35.000₫</span></div>
+                        <div class="flex justify-between text-green-600 font-bold"><span>Giảm giá voucher:</span><span id="summaryDiscount">0₫</span></div>
+                        <div class="flex justify-between text-sm sm:text-base font-extrabold text-primary pt-2 border-t border-gray-200">
+                            <span>Tổng thanh toán:</span>
+                            <span id="summaryTotal">0₫</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. PHƯƠNG THỨC THANH TOÁN -->
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-700 block mb-2">5. Phương Thức Thanh Toán</span>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center p-3 border border-pink-200 bg-pink-50/50 rounded-xl cursor-pointer font-bold text-gray-800">
+                            <input type="radio" name="paymentMethod" value="vietqr" checked class="text-primary mr-2">
+                            <span>⚡ Quét mã VietQR (Tự động)</span>
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer font-semibold text-gray-700 hover:bg-gray-50">
+                            <input type="radio" name="paymentMethod" value="cod" class="text-primary mr-2">
+                            <span>💵 Thanh toán tiền mặt (COD)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Nút Submit -->
+                <button type="submit" id="btnSubmitOrder" class="w-full py-4 bg-primary hover:bg-primaryHover text-white font-extrabold text-sm sm:text-base rounded-xl shadow-lg shadow-pink-200 transition duration-300 flex items-center justify-center">
+                    Hoàn Tất Đặt Hoa <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- ================= AUTHENTICATION MODAL (LOGIN & REGISTER) ================= -->
     <div id="authModal" onclick="if (event.target === this) closeAuthModal();" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] items-center justify-center p-4" style="display: none;">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fadeIn relative border border-pink-100 max-h-[90vh] flex flex-col">
@@ -907,6 +1108,7 @@
     <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/utils.js"></script>
     <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/checkout.js"></script>
     <script type="module" src="js/flower_app.js"></script>
 </body>
 </html>
