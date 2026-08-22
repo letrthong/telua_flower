@@ -483,9 +483,9 @@ function updateAuthUI() {
                     </div>
                     
                     ${isStaff ? `
-                        <a href="${portalUrl}" class="flex items-center px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition mx-2 my-2 rounded-lg shadow-sm">
-                            <i class="fa-solid fa-gauge-high mr-2"></i> Vào Bảng Quản Trị
-                        </a>
+                        <button onclick="openAdminPortalModal()" class="w-full flex items-center px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-lg shadow-sm">
+                            <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
+                        </button>
                     ` : `
                         <div class="px-4 py-2 text-xs text-gray-700 flex justify-between items-center border-b border-gray-50">
                             <span>Điểm tích lũy:</span>
