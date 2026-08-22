@@ -581,19 +581,25 @@ if (typeof window !== "undefined") {
     window.logout = logout;
 }
 
-// Hỗ trợ Node / Module nếu cần
-if (typeof module !== "undefined" && module.exports) {
-    module.exports = {
-        saveAuthToken,
-        getAuthToken,
-        getCurrentUser,
-        clearAuth,
-        isLoggedIn,
-        decodeJWTPayload,
-        login,
-        register,
-        logout,
-        fetchWithAuth,
-        checkRoutePermission
-    };
-}
+export {
+    saveAuthToken,
+    getAuthToken,
+    getCurrentUser,
+    clearAuth,
+    isLoggedIn,
+    decodeJWTPayload,
+    login,
+    register,
+    logout,
+    fetchWithAuth,
+    checkRoutePermission,
+    openAuthModal,
+    closeAuthModal,
+    switchAuthTab,
+    fillDemoAccount,
+    handleLoginSubmit,
+    handleRegisterSubmit,
+    togglePasswordVisibility,
+    toggleUserDropdown,
+    updateAuthUI
+};
