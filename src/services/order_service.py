@@ -74,12 +74,16 @@ def assign_nearest_branch(
 
     # 2. Định vị thông minh dựa theo tên Quận/Huyện trong địa chỉ
     addr_lower = (address or "").lower()
-    if any(q in addr_lower for q in ["quận 2", "q.2", "q2", "thảo điền", "thao dien", "thủ đức", "thu duc", "quận 9", "q.9"]):
+    
+    # Kiểm tra Q10 / Q3 / Q5 / Q11 trước (tránh 'quận 10' bị match nhầm bởi 'quận 1')
+    if any(q in addr_lower for q in ["quận 10", "q.10", "q10", "quận 3", "q.3", "q3", "quận 5", "q.5", "q5", "quận 11", "q.11", "q11", "tân bình", "tan binh", "tân phú", "tan phu"]):
+        return "branch_q10"
+    elif any(q in addr_lower for q in ["quận 2", "q.2", "q2", "thảo điền", "thao dien", "thủ đức", "thu duc", "quận 9", "q.9"]):
         return "branch_thao_dien"
-    elif any(q in addr_lower for q in ["quận 1", "q.1", "q1", "quận 4", "q.4", "bình thạnh", "binh thanh", "phú nhuận", "phu nhuan"]):
+    elif any(q in addr_lower for q in ["quận 1", "q.1", "q1", "quận 4", "q.4", "q4", "bình thạnh", "binh thanh", "phú nhuận", "phu nhuan"]):
         return "branch_q1"
     else:
-        # Mặc định về Flagship Q10 (phục vụ Q10, Q3, Q5, Q6, Q11, Tân Bình, Tân Phú...)
+        # Mặc định về Flagship Q10
         return "branch_q10"
 
 

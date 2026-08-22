@@ -6,7 +6,7 @@
 ## 📊 Tiến Độ Tổng Thể (Overall Progress)
 
 ```text
-Tiến độ: [█████████░░░░░░░] 37.5% (3/8 Task hoàn thành)
+Tiến độ: [████████████░░░░] 50.0% (4/8 Task hoàn thành)
 ```
 
 | Task | Tên Phân Hệ | Trạng Thái | Ngày Hoàn Thành | Kết Quả Unit Test |
@@ -17,7 +17,7 @@ Tiến độ: [█████████░░░░░░░] 37.5% (3/8 Task
 | **04** | Cổng Thanh Toán VietQR & Báo Tin Zalo | 🔴 **TODO** | -- | Chưa chạy |
 | **05** | Cổng Thợ Cắm Hoa, Upload Ảnh Thật & In Bill K80 | 🔴 **TODO** | -- | Chưa chạy |
 | **06** | Quản Lý Tồn Kho Theo Ngày, Ma Trận & Điều Phối | 🔴 **TODO** | -- | Chưa chạy |
-| **07** | Phân Tầng Giá (Price Levels), CMS Hoa & Voucher | 🔴 **TODO** | -- | Chưa chạy |
+| **07** | Phân Tầng Giá (Price Levels), CMS Hoa & Voucher | 🟢 **DONE** | 2026-08-22 | Pass 7 Python + 3 JS Tests |
 | **08** | Kiểm Thử Toàn Diện, Tối Ưu RAM & Docker Ubuntu | 🔴 **TODO** | -- | Chưa chạy |
 
 *Ký hiệu: 🔴 TODO (Chưa bắt đầu) | 🟡 IN PROGRESS (Đang code) | 🟢 DONE (Đã hoàn thành & Pass test)*
@@ -82,6 +82,23 @@ Tiến độ: [█████████░░░░░░░] 37.5% (3/8 Task
 - [ ] Viết thuật toán tự động điều phối đơn sang chi nhánh gần nhất còn hàng.
 - [ ] Tạo form nhập phiếu báo hủy cành hoa hỏng cuối ca (`POST /api/branch/<id>/wastage`).
 - [ ] Viết `src/unittest/test_inventory_service.py` và test thành công.
+
+---
+
+### [x] TASK 07: Hàng Rào Giá An Toàn (Price Levels), CMS Mẫu Hoa & Quản Trị Khuyến Mãi
+- [x] Viết `src/services/product_service.py` (Kiểm soát giá theo 4 Level `minPrice`-`maxPrice`).
+- [x] Viết `src/services/promotion_service.py` (Voucher ON/OFF Toggle).
+- [x] Viết `src/services/translation_service.py` (Biên dịch động 5 ngôn ngữ VI, EN, JA, KO, ZH).
+- [x] Tạo giao diện `portal_admin.html` và `js/portal_admin.js`.
+- [x] Viết `src/unittest/test_price_governance.py` và `js/unittest/test-portal-governance.js`.
+
+---
+
+### [ ] TASK 08: Kiểm Thử Toàn Diện, Tối Ưu RAM < 15MB & Đóng Gói Docker
+- [ ] Chạy kiểm thử tải (Stress test) 100 requests đồng thời.
+- [ ] Kiểm tra đo đạc RAM tiêu thụ dưới 15MB.
+- [ ] Tối ưu SEO (Meta Tags, Semantic HTML, Lighthouse > 90).
+- [ ] Hoàn thiện tài liệu nghiệm thu toàn dự án.
 
 ---
 

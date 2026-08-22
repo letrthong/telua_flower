@@ -6,9 +6,9 @@
     "email": "nva@gmail.com",
     "birthday": "1995-10-20",
     "tier": "gold",
-    "loyaltyPoints": 450,
-    "totalSpent": 4500000,
-    "orderCount": 5,
+    "loyaltyPoints": 534,
+    "totalSpent": 5340000,
+    "orderCount": 6,
     "flowerPreferences": "Thích hoa hồng Ohara pastel và Tulip, không thích hoa màu vàng",
     "savedAddresses": [
       {
@@ -111,5 +111,56 @@
     "orderCount": 0,
     "savedAddresses": [],
     "createdAt": "2026-08-22T15:06:26Z"
+  },
+  {
+    "id": "cust_1787412009",
+    "phone": "0910412009",
+    "fullName": "Khách Hàng Mới Test",
+    "email": "test_0910412009@gmail.com",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-22T15:20:09Z"
+  },
+  {
+    "id": "cust_1787412029",
+    "phone": "0909999888",
+    "fullName": "Người Yêu Cũ",
+    "email": "",
+    "tier": "silver",
+    "loyaltyPoints": 45,
+    "totalSpent": 455000,
+    "orderCount": 1,
+    "flowerPreferences": "",
+    "savedAddresses": [],
+    "createdAt": "2026-08-22T15:20:29Z"
+  },
+  {
+    "id": "cust_1787412030",
+    "phone": "0911000222",
+    "fullName": "Test Voucher",
+    "email": "",
+    "tier": "silver",
+    "loyaltyPoints": 71,
+    "totalSpent": 714000,
+    "orderCount": 1,
+    "flowerPreferences": "",
+    "savedAddresses": [],
+    "createdAt": "2026-08-22T15:20:30Z"
+  },
+  {
+    "id": "cust_1787412033",
+    "phone": "0988776655",
+    "fullName": "Khách Test API",
+    "email": "",
+    "tier": "silver",
+    "loyaltyPoints": 45,
+    "totalSpent": 455000,
+    "orderCount": 1,
+    "flowerPreferences": "",
+    "savedAddresses": [],
+    "createdAt": "2026-08-22T15:20:33Z"
   }
 ]

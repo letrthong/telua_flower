@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cổng Quản Trị Hệ Thống - Nở Hoa Thả Bình</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#D9777F',
+                        primaryHover: '#C45D66',
+                        secondary: '#FBF7F4',
+                        accent: '#E6A15C',
+                        darkText: '#333333'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-darkText font-sans min-h-screen flex flex-col antialiased">
+    <!-- Top Header -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="/" class="flex items-center space-x-2 text-primary font-serif font-bold text-xl hover:opacity-90 transition">
+                    <i class="fa-solid fa-spa text-2xl"></i>
+                    <span>NỞ HOA THẢ BÌNH</span>
+                </a>
+                <span class="text-xs bg-pink-100 text-primary font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Admin Portal</span>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 text-xs font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-xl">
+                    <i class="fa-solid fa-user-shield text-primary"></i>
+                    <span id="adminUserName">Tổng Quản Trị Viên</span>
+                    <span id="adminUserRole" class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold">super_admin</span>
+                </div>
+                <a href="/" class="text-xs text-gray-500 hover:text-primary transition flex items-center">
+                    <i class="fa-solid fa-store mr-1"></i> Về Website
+                </a>
+                <button onclick="logout()" class="text-xs text-red-500 hover:text-red-700 font-bold transition flex items-center">
+                    <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Đăng xuất
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-gray-200 space-x-8">
+            <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-sm border-b-2 border-primary text-primary transition flex items-center">
+                <i class="fa-solid fa-flower-tulip mr-2 text-base"></i> Quản Lý Mẫu Hoa (Catalogue CMS)
+            </button>
+            <button onclick="switchAdminTab('promotions')" id="tabBtnPromotions" class="py-3 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center">
+                <i class="fa-solid fa-ticket-simple mr-2 text-base"></i> Khuyến Mãi & Voucher
+            </button>
+            <button onclick="switchAdminTab('translations')" id="tabBtnTranslations" class="py-3 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center">
+                <i class="fa-solid fa-language mr-2 text-base"></i> Biên Dịch Đa Ngôn Ngữ (5 Thứ Tiếng)
+            </button>
+        </div>
+
+        <!-- ================= TAB 1: QUẢN LÝ SẢN PHẨM ================= -->
+        <section id="tabContentProducts" class="space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Danh Mục Hoa Tươi & Catalogue</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Tự động kiểm soát giá an toàn theo 4 tầng mức giá (Price Guardrails)</p>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <select id="filterProductCategory" onchange="loadAdminProducts()" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                        <option value="">Tất cả danh mục</option>
+                        <option value="bo_hoa">Bó Hoa Tươi</option>
+                        <option value="ke_hoa">Kệ Hoa Sự Kiện</option>
+                        <option value="binh_hoa">Bình Hoa Nghệ Thuật</option>
+                        <option value="gio_hoa">Giỏ Hoa Vintage</option>
+                        <option value="lan_ho_diep">Lan Hồ Điệp</option>
+                    </select>
+                    <button onclick="openProductModal()" class="px-4 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center flex-shrink-0">
+                        <i class="fa-solid fa-plus mr-1.5"></i> Thêm Mẫu Hoa Mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Products -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                            <tr>
+                                <th class="p-4">Hình ảnh</th>
+                                <th class="p-4">Tên sản phẩm</th>
+                                <th class="p-4">Danh mục</th>
+                                <th class="p-4">Phân tầng giá</th>
+                                <th class="p-4">Giá bán</th>
+                                <th class="p-4">Tồn kho Showroom</th>
+                                <th class="p-4">Trạng thái</th>
+                                <th class="p-4 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                            <!-- Render qua JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: QUẢN LÝ KHUYẾN MÃI ================= -->
+        <section id="tabContentPromotions" class="space-y-6 hidden">
+            <div class="flex justify-between items-center bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Chiến Dịch Khuyến Mãi & Voucher</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Bật/Tắt (ON/OFF) voucher và banner ưu đãi 1-chạm</p>
+                </div>
+                <button onclick="openPromotionModal()" class="px-4 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center">
+                    <i class="fa-solid fa-plus mr-1.5"></i> Tạo Voucher Mới
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5" id="promotionsGrid">
+                <!-- Render qua JS -->
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: BIÊN DỊCH ĐA NGÔN NGỮ ================= -->
+        <section id="tabContentTranslations" class="space-y-6 hidden">
+            <div class="flex justify-between items-center bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">Biên Dịch Đa Ngôn Ngữ Động (Dynamic i18n Matrix)</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Chỉnh sửa trực tiếp 5 thứ tiếng (VI, EN, JA, KO, ZH) lưu ngay vào hệ thống</p>
+                </div>
+                <button onclick="saveAllTranslations()" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Toàn Bộ Bản Dịch
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden p-4 space-y-4">
+                <div class="flex justify-between items-center">
+                    <input type="text" id="searchTranslationKey" oninput="filterTranslations()" placeholder="Tìm kiếm theo khóa (VD: site_title, top_hotline...)" class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs w-80 focus:outline-none focus:border-primary">
+                    <span class="text-xs text-gray-400">💡 Thay đổi có hiệu lực ngay lập tức trên trang chủ website</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                            <tr>
+                                <th class="p-3 w-40">Khóa (Key)</th>
+                                <th class="p-3">🇻🇳 Tiếng Việt</th>
+                                <th class="p-3">🇬🇧 English</th>
+                                <th class="p-3">🇯🇵 日本語</th>
+                                <th class="p-3">🇰🇷 한국어</th>
+                                <th class="p-3">🇨🇳 中文</th>
+                            </tr>
+                        </thead>
+                        <tbody id="translationsTableBody" class="divide-y divide-gray-100 font-medium">
+                            <!-- Render qua JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= MODAL THÊM / SỬA MẪU HOA ================= -->
+    <div id="productModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] items-center justify-center p-4" style="display: none;">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 max-h-[90vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-pink-50/50 border-b border-gray-100 flex justify-between items-center">
+                <h3 id="productModalTitle" class="font-bold text-base text-gray-800">Thêm Mẫu Hoa Mới Vào Catalogue</h3>
+                <button onclick="closeProductModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="productForm" onsubmit="handleProductSubmit(event)" class="p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="editProductId">
+                <div id="productModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Mẫu Hoa *</label>
+                        <input type="text" id="prodName" placeholder="VD: Mây Trắng Bồng Bềnh" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Danh mục *</label>
+                        <select id="prodCategory" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white" required>
+                            <option value="bo_hoa">Bó Hoa Tươi (bo_hoa)</option>
+                            <option value="ke_hoa">Kệ Hoa Khai Trương / Sự Kiện (ke_hoa)</option>
+                            <option value="binh_hoa">Bình Hoa Gốm Nghệ Thuật (binh_hoa)</option>
+                            <option value="gio_hoa">Giỏ Hoa Vintage (gio_hoa)</option>
+                            <option value="lan_ho_diep">Lan Hồ Điệp (lan_ho_diep)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- PRICE GOVERNANCE SECTION -->
+                <div class="p-4 bg-pink-50/60 rounded-xl border border-pink-100 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase text-primary flex items-center">
+                            <i class="fa-solid fa-shield-halved mr-1.5"></i> Hàng Rào Phân Tầng Mức Giá (Price Governance)
+                        </span>
+                        <span id="priceRangeHint" class="text-[11px] font-bold text-pink-700 bg-white px-2 py-0.5 rounded-md border border-pink-200">
+                            Khung giá: 300,000₫ - 550,000₫
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">Phân Tầng Mức Giá *</label>
+                            <select id="prodPriceLevel" onchange="onPriceLevelChange()" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary" required>
+                                <option value="price_lvl_01">LV_01: Phổ Thông (300k - 550k)</option>
+                                <option value="price_lvl_02">LV_02: Cao Cấp (600k - 950k)</option>
+                                <option value="price_lvl_03">LV_03: Sang Trọng (1.000k - 2.500k)</option>
+                                <option value="price_lvl_04">LV_04: Độc Bản VIP (2.600k - 15.000k)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1">Giá Bán Niêm Yết (VND) *</label>
+                            <input type="number" id="prodPriceNumber" oninput="validateLivePrice()" placeholder="420000" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary" required>
+                            <span id="livePriceWarning" class="text-[10px] text-red-500 font-bold mt-1 hidden block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Link Ảnh Sản Phẩm *</label>
+                    <input type="url" id="prodImage" placeholder="https://images.unsplash.com/photo-..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Thành Phần Hoa (Flower Composition)</label>
+                    <input type="text" id="prodFlowerComposition" placeholder="VD: Hồng Ohara (12 cành), Cúc Tana, Hoa Sao Xanh, Lá Bạc Dollar" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Kho Q.10</label>
+                        <input type="number" id="prodStockQ10" value="10" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Kho Q.1</label>
+                        <input type="number" id="prodStockQ1" value="5" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Kho Thảo Điền</label>
+                        <input type="number" id="prodStockTD" value="5" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                    <button type="submit" id="btnSaveProduct" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Mẫu Hoa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="js/portal_admin.js"></script>
+</body>
+</html>

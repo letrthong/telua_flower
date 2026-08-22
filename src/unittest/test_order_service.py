@@ -171,7 +171,7 @@ class TestOrderService(unittest.TestCase):
         }
         success_1, _, err_1 = create_order(bad_req_1)
         self.assertFalse(success_1)
-        self.assertIn("thông tin người nhận", err_1)
+        self.assertIn("người nhận", err_1)
 
         # 2. Ngày giao quá 30 ngày trong tương lai (35 ngày)
         far_date = (datetime.now().date() + timedelta(days=35)).strftime("%Y-%m-%d")

@@ -16,11 +16,27 @@ if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
 from services.auth_service import authenticate_user, register_customer, verify_jwt_token
-from services.data_service import get_user_by_id, get_order_by_id, read_orders_by_month
+from services.data_service import get_user_by_id, get_order_by_id, read_orders_by_month, get_price_levels
 from services.order_service import (
     get_available_delivery_slots,
     create_order,
     assign_nearest_branch
+)
+from services.product_service import (
+    list_products,
+    create_or_update_product,
+    toggle_product_active,
+    delete_product
+)
+from services.promotion_service import (
+    list_all_promotions,
+    toggle_promotion,
+    create_or_update_promotion
+)
+from services.translation_service import (
+    get_all_translations,
+    batch_update_translations,
+    update_translation_key
 )
 from decorators.auth_decorator import require_auth, require_role, can_access_branch
 
@@ -255,6 +271,136 @@ def api_branch_orders(branch_id):
         "success": True,
         "data": branch_orders
     }), 200
+
+
+# ==========================================
+# CÁC API ENDPOINTS QUẢN TRỊ SẢN PHẨM & GIÁ (TASK 07)
+# ==========================================
+
+@app.route("/api/price-levels", methods=["GET"])
+@cross_origin()
+def api_get_price_levels():
+    """Lấy danh sách 4 phân tầng giá chuẩn kèm hạn mức min/max."""
+    levels = get_price_levels()
+    return jsonify({"success": True, "data": levels}), 200
+
+
+@app.route("/api/products", methods=["GET"])
+@cross_origin()
+def api_get_products():
+    """Lấy danh sách sản phẩm hoa tươi (hỗ trợ lọc theo category, search, active)."""
+    category = request.args.get("category")
+    search = request.args.get("search")
+    is_active_param = request.args.get("active")
+    is_active = True if is_active_param == "true" else (False if is_active_param == "false" else None)
+
+    prods = list_products(category=category, search=search, is_active=is_active)
+    return jsonify({"success": True, "data": prods}), 200
+
+
+@app.route("/api/admin/products", methods=["POST"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_create_product():
+    """Thêm mẫu hoa mới vào Catalogue (có kiểm tra hàng rào giá an toàn)."""
+    payload = request.get_json(silent=True) or {}
+    success, new_prod, err_msg = create_or_update_product(payload)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({"success": True, "message": "Thêm mẫu hoa thành công", "data": new_prod}), 201
+
+
+@app.route("/api/admin/products/<product_id>", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_update_product(product_id):
+    """Cập nhật thông tin và giá bán mẫu hoa."""
+    payload = request.get_json(silent=True) or {}
+    success, updated_prod, err_msg = create_or_update_product(payload, product_id=product_id)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({"success": True, "message": "Cập nhật sản phẩm thành công", "data": updated_prod}), 200
+
+
+@app.route("/api/admin/products/<product_id>/toggle", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_toggle_product(product_id):
+    """Ẩn / Hiện mẫu hoa trên website."""
+    success, updated_prod, err_msg = toggle_product_active(product_id)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({"success": True, "message": "Đã đổi trạng thái sản phẩm", "data": updated_prod}), 200
+
+
+@app.route("/api/admin/products/<product_id>", methods=["DELETE"])
+@cross_origin()
+@require_role(["super_admin"])
+def api_delete_product(product_id):
+    """Xóa mẫu hoa khỏi danh mục (Chỉ Super Admin)."""
+    success, err_msg = delete_product(product_id)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({"success": True, "message": "Đã xóa sản phẩm thành công"}), 200
+
+
+# ==========================================
+# CÁC API ENDPOINTS KHUYẾN MÃI & VOUCHER (TASK 07)
+# ==========================================
+
+@app.route("/api/promotions", methods=["GET"])
+@cross_origin()
+def api_get_promotions():
+    """Lấy danh sách tất cả khuyến mãi & voucher."""
+    promos = list_all_promotions()
+    return jsonify({"success": True, "data": promos}), 200
+
+
+@app.route("/api/admin/promotions", methods=["POST"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_create_promotion():
+    """Tạo mới voucher khuyến mãi."""
+    payload = request.get_json(silent=True) or {}
+    success, new_promo, err = create_or_update_promotion(payload)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Tạo voucher thành công", "data": new_promo}), 201
+
+
+@app.route("/api/admin/promotions/<promo_id>/toggle", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_toggle_promotion(promo_id):
+    """Gạt công tắc Bật/Tắt (ON/OFF) voucher khuyến mãi."""
+    success, updated_promo, err = toggle_promotion(promo_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Đã cập nhật trạng thái voucher", "data": updated_promo}), 200
+
+
+# ==========================================
+# CÁC API ENDPOINTS BIÊN DỊCH ĐA NGÔN NGỮ (TASK 07)
+# ==========================================
+
+@app.route("/api/translations", methods=["GET"])
+@cross_origin()
+def api_get_translations():
+    """Lấy từ điển đa ngôn ngữ 5 thứ tiếng."""
+    data = get_all_translations()
+    return jsonify({"success": True, "data": data}), 200
+
+
+@app.route("/api/admin/translations", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_update_translations():
+    """Cập nhật ma trận biên dịch động 5 ngôn ngữ."""
+    payload = request.get_json(silent=True) or {}
+    success, data, err = batch_update_translations(payload)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Cập nhật từ điển đa ngôn ngữ thành công", "data": data}), 200
 
 
 # ==========================================

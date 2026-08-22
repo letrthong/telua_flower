@@ -1,67 +1,83 @@
 // Quản lý chuyển đổi ngôn ngữ và Web Cache (localStorage)
 let currentLang = 'vi';
 
-function setLanguage(lang) {
-    if (!translations[lang]) lang = 'vi';
+export function setLanguage(lang) {
+    const trans = (typeof window !== 'undefined' && window.translations) ? window.translations : (typeof translations !== 'undefined' ? translations : {});
+    if (!trans[lang]) lang = 'vi';
     currentLang = lang;
+    if (typeof window !== 'undefined') window.currentLang = lang;
 
     // 1. Lưu vào Web Storage / Cache của trình duyệt
     try {
-        localStorage.setItem('anne_flower_lang', lang);
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('anne_flower_lang', lang);
+        }
     } catch (e) {
         console.warn("Storage not accessible:", e);
     }
 
     // 2. Cập nhật thuộc tính lang cho thẻ html
-    document.documentElement.lang = lang;
+    if (typeof document !== 'undefined') {
+        document.documentElement.lang = lang;
 
-    // 3. Cập nhật tiêu đề trang
-    if (translations[lang] && translations[lang].site_title) {
-        document.title = translations[lang].site_title;
+        // 3. Cập nhật tiêu đề trang
+        if (trans[lang] && trans[lang].site_title) {
+            document.title = trans[lang].site_title;
+        }
+
+        // 4. Đồng bộ giá trị của SelectBox Desktop & Mobile
+        const selDesktop = document.getElementById('langSelectBoxDesktop');
+        if (selDesktop) selDesktop.value = lang;
+
+        const selMobile = document.getElementById('langSelectBoxMobile');
+        if (selMobile) selMobile.value = lang;
+
+        // 5. Cập nhật icon checkmark trong Mobile Menu
+        ['vi', 'en', 'ja', 'ko', 'zh'].forEach(l => {
+            const checkEl = document.querySelector(`.lang-check-${l}`);
+            if (checkEl) {
+                if (l === lang) checkEl.classList.remove('hidden');
+                else checkEl.classList.add('hidden');
+            }
+        });
+
+        // 6. Dịch toàn bộ các thẻ có thuộc tính data-i18n
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (trans[lang] && trans[lang][key]) {
+                el.innerHTML = trans[lang][key];
+            }
+        });
+
+        // 7. Dịch placeholder của các ô input
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (trans[lang] && trans[lang][key]) {
+                el.setAttribute('placeholder', trans[lang][key]);
+            }
+        });
+
+        // 8. Đóng các dropdown ngôn ngữ nếu đang mở
+        const langMenu = document.getElementById('langDropdownMenu');
+        if (langMenu) langMenu.classList.add('hidden');
+        const langMenuMobile = document.getElementById('langDropdownMenuMobile');
+        if (langMenuMobile) langMenuMobile.classList.add('hidden');
+
+        // 9. Render lại sản phẩm
+        if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
+            window.renderAllProducts();
+        } else if (typeof renderProducts === 'function') {
+            const boHoa = (typeof window !== 'undefined' && window.products_bo_hoa) || (typeof products_bo_hoa !== 'undefined' ? products_bo_hoa : []);
+            const keHoa = (typeof window !== 'undefined' && window.products_ke_hoa) || (typeof products_ke_hoa !== 'undefined' ? products_ke_hoa : []);
+            const binhHoa = (typeof window !== 'undefined' && window.products_binh_hoa) || (typeof products_binh_hoa !== 'undefined' ? products_binh_hoa : []);
+            renderProducts(boHoa, 'bo-hoa-grid');
+            renderProducts(keHoa, 'ke-hoa-grid');
+            renderProducts(binhHoa, 'binh-hoa-grid');
+        }
     }
+}
 
-    // 4. Đồng bộ giá trị của SelectBox Desktop & Mobile
-    const selDesktop = document.getElementById('langSelectBoxDesktop');
-    if (selDesktop) selDesktop.value = lang;
-
-    const selMobile = document.getElementById('langSelectBoxMobile');
-    if (selMobile) selMobile.value = lang;
-
-    // 5. Cập nhật icon checkmark trong Mobile Menu
-    ['vi', 'en', 'ja', 'ko', 'zh'].forEach(l => {
-        const checkEl = document.querySelector(`.lang-check-${l}`);
-        if (checkEl) {
-            if (l === lang) checkEl.classList.remove('hidden');
-            else checkEl.classList.add('hidden');
-        }
-    });
-
-    // 6. Dịch toàn bộ các thẻ có thuộc tính data-i18n
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[lang] && translations[lang][key]) {
-            el.innerHTML = translations[lang][key];
-        }
-    });
-
-    // 7. Dịch placeholder của các ô input
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-        const key = el.getAttribute('data-i18n-placeholder');
-        if (translations[lang] && translations[lang][key]) {
-            el.setAttribute('placeholder', translations[lang][key]);
-        }
-    });
-
-    // 8. Đóng các dropdown ngôn ngữ nếu đang mở
-    const langMenu = document.getElementById('langDropdownMenu');
-    if (langMenu) langMenu.classList.add('hidden');
-    const langMenuMobile = document.getElementById('langDropdownMenuMobile');
-    if (langMenuMobile) langMenuMobile.classList.add('hidden');
-
-    // 9. Render lại sản phẩm nếu các hàm render đã sẵn sàng
-    if (typeof renderProducts === 'function' && typeof products_bo_hoa !== 'undefined') {
-        renderProducts(products_bo_hoa, 'bo-hoa-grid');
-        renderProducts(products_ke_hoa, 'ke-hoa-grid');
-        renderProducts(products_binh_hoa, 'binh-hoa-grid');
-    }
+if (typeof window !== 'undefined') {
+    window.currentLang = currentLang;
+    window.setLanguage = setLanguage;
 }
