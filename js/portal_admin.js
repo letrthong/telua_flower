@@ -13,37 +13,43 @@ let allAdminProducts = [];
 let allAdminPromotions = [];
 let allAdminTranslations = {};
 
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Kiểm tra quyền truy cập (Route Guard)
-    checkAdminAccess();
-
-    // 2. Nạp dữ liệu ban đầu
-    loadAdminProducts();
-    onPriceLevelChange();
-});
-
-export function checkAdminAccess() {
-    if (typeof getCurrentUser !== "function" || typeof getAuthToken !== "function") return;
-
-    const user = getCurrentUser();
-    const token = getAuthToken();
-
-    if (!token || !user) {
-        alert("Vui lòng đăng nhập bằng tài khoản Quản trị viên!");
-        window.location.href = "/";
+export function openAdminPortalModal() {
+    const user = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+    if (!user || (user.role !== "super_admin" && user.role !== "branch_manager")) {
+        alert("Chức năng Quản Trị chỉ dành cho Super Admin hoặc Quản Lý Chi Nhánh!");
         return;
     }
 
-    if (user.role !== "super_admin" && user.role !== "branch_manager") {
-        alert("Bạn không có quyền truy cập trang quản trị này!");
-        window.location.href = "/";
-        return;
-    }
+    const modal = document.getElementById("adminPortalModal");
+    if (!modal) return;
 
     const nameEl = document.getElementById("adminUserName");
     const roleEl = document.getElementById("adminUserRole");
     if (nameEl) nameEl.textContent = user.fullName || "Quản trị viên";
     if (roleEl) roleEl.textContent = user.role;
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    loadAdminProducts();
+    onPriceLevelChange();
+}
+
+export function closeAdminPortalModal() {
+    const modal = document.getElementById("adminPortalModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function checkAdminAccess() {
+    if (typeof getCurrentUser !== "function" || typeof getAuthToken !== "function") return;
+    const user = getCurrentUser();
+    const nameEl = document.getElementById("adminUserName");
+    const roleEl = document.getElementById("adminUserRole");
+    if (nameEl && user) nameEl.textContent = user.fullName || "Quản trị viên";
+    if (roleEl && user) roleEl.textContent = user.role;
 }
 
 export function switchAdminTab(tabName) {
@@ -464,6 +470,8 @@ export async function saveAllTranslations() {
 
 // Global binding
 if (typeof window !== "undefined") {
+    window.openAdminPortalModal = openAdminPortalModal;
+    window.closeAdminPortalModal = closeAdminPortalModal;
     window.switchAdminTab = switchAdminTab;
     window.loadAdminProducts = loadAdminProducts;
     window.openProductModal = openProductModal;
