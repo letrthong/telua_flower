@@ -138,6 +138,12 @@
 
 ---
 
+### 🌐 FR-18: Quản Trị Nội Dung & Biên Dịch Đa Ngôn Ngữ Động (Dynamic i18n & Content CMS)
+- Giao diện ma trận cho Admin/Quản lý chỉnh sửa trực tiếp nội dung từng câu/chữ của cả 5 ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung) và lưu xuống `config/translations.json` thay vì viết code cố định.
+- Cho phép cập nhật linh hoạt nội dung các khối trang (Slogan, Hotline, Giờ hoạt động, Giới thiệu Showroom, Chính sách) và tự động đồng bộ trên toàn bộ website.
+
+---
+
 ## 5. Yêu Cầu Phi Chức Năng (Non-Functional Requirements)
 
 ### ⚡ NFR-1: Hiệu Năng & Tải Trang (Performance)
