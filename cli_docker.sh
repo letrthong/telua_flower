@@ -90,7 +90,7 @@ case "$ACTION" in
         sleep 3
         
         echo "--> Copying built index.html from container to host..."
-        docker cp telua_python_flask:/app/dist/index.html ./config/index.html || echo "Warning: Failed to copy index.html from container"
+        docker cp telua_python_flower:/app/dist/index.html ./config/index.html || echo "Warning: Failed to copy index.html from container"
         
         echo "--> Attaching to container logs..."
         docker compose logs -f
