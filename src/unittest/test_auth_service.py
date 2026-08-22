@@ -178,6 +178,61 @@ class TestAuthService(unittest.TestCase):
         self.assertTrue(can_access_branch(manager_q10, "branch_q10"))
         self.assertFalse(can_access_branch(manager_q10, "branch_thao_dien"))
 
+    def test_11_login_via_admin_email_and_phone(self):
+        """Kiểm tra đăng nhập cho Super Admin qua cả Email và SĐT"""
+        # Đăng nhập bằng Email
+        success_email, data_email, err_email = authenticate_user("admin@nohoathabinh.vn", "123456")
+        self.assertTrue(success_email, f"Lỗi đăng nhập admin bằng email: {err_email}")
+        self.assertEqual(data_email["role"], "super_admin")
+        self.assertEqual(data_email["redirectUrl"], "/portal/admin")
+
+        # Đăng nhập bằng Số điện thoại
+        success_phone, data_phone, err_phone = authenticate_user("0900000000", "123456")
+        self.assertTrue(success_phone, f"Lỗi đăng nhập admin bằng SĐT: {err_phone}")
+        self.assertEqual(data_phone["role"], "super_admin")
+
+    def test_12_login_invalid_password_rejection(self):
+        """Kiểm tra chặn đăng nhập khi mật khẩu sai"""
+        success, data, err = authenticate_user("admin@nohoathabinh.vn", "sai_mat_khau_999")
+        self.assertFalse(success)
+        self.assertIsNone(data)
+        self.assertIn("không chính xác", err)
+
+    def test_13_login_nonexistent_user_rejection(self):
+        """Kiểm tra chặn đăng nhập tài khoản không tồn tại"""
+        success, data, err = authenticate_user("0999999999", "123456")
+        self.assertFalse(success)
+        self.assertIsNone(data)
+        self.assertIn("không chính xác", err)
+
+    def test_14_locked_account_rejection(self):
+        """Kiểm tra chặn tài khoản đã bị khóa (isActive = False)"""
+        # Tạo mock user bị khóa và test hàm xác thực
+        from services.data_service import get_users, save_users
+        users = get_users()
+        # Thêm tạm 1 user bị khóa
+        locked_user = {
+            "id": "locked_001",
+            "phone": "0999000111",
+            "email": "locked@nohoathabinh.vn",
+            "fullName": "Tài Khoản Bị Khóa",
+            "passwordHash": hash_password("123456"),
+            "role": "customer",
+            "branchId": None,
+            "isActive": False,
+            "createdAt": "2026-08-21T00:00:00Z"
+        }
+        users.append(locked_user)
+        save_users(users)
+
+        success, data, err = authenticate_user("0999000111", "123456")
+        self.assertFalse(success)
+        self.assertIn("tạm khóa", err)
+
+        # Dọn dẹp user test
+        clean_users = [u for u in get_users() if u.get("id") != "locked_001"]
+        save_users(clean_users)
+
 
 if __name__ == "__main__":
     unittest.main()

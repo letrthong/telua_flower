@@ -1,5 +1,5 @@
 // Dữ liệu mock sản phẩm (Nở Hoa Thả Bình)
-export const products_bo_hoa = [
+const products_bo_hoa = [
     {
         name: "Mây Trắng Bồng Bềnh",
         originalPrice: "450,000₫",
@@ -30,7 +30,7 @@ export const products_bo_hoa = [
     }
 ];
 
-export const products_ke_hoa = [
+const products_ke_hoa = [
     {
         name: "Kệ Hoa Khai Trương Phát Lộc",
         originalPrice: "2,650,000₫",
@@ -61,7 +61,7 @@ export const products_ke_hoa = [
     }
 ];
 
-export const products_binh_hoa = [
+const products_binh_hoa = [
     {
         name: "Bình Thủy Tinh Hổ Phách Cao Cấp",
         originalPrice: "550,000₫",
@@ -97,4 +97,12 @@ if (typeof window !== 'undefined') {
     window.products_bo_hoa = products_bo_hoa;
     window.products_ke_hoa = products_ke_hoa;
     window.products_binh_hoa = products_binh_hoa;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        products_bo_hoa,
+        products_ke_hoa,
+        products_binh_hoa
+    };
 }

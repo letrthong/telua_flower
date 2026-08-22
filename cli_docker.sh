@@ -74,8 +74,8 @@ fi
 
 case "$ACTION" in
     start)
-        echo "--> Stopping existing containers..."
-        docker compose down
+        echo "--> Stopping existing containers & clearing stale volumes..."
+        docker compose down -v
         if [ "$BUILD_CACHE" = "false" ]; then
             echo "--> Building images with --no-cache..."
             docker compose build --no-cache

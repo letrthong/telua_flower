@@ -1,7 +1,7 @@
 // Hệ thống từ điển đa ngôn ngữ (i18n)
 // Hỗ trợ: vi (Tiếng Việt), en (English), ja (日本語), ko (한국어), zh (中文)
 
-export const translations = {
+const translations = {
     vi: {
         site_title: "Nở Hoa Thả Bình - Đặt Hoa Online Giao Tận Nơi",
         top_hotline: "Hotline: 0976.491.322",
@@ -469,7 +469,7 @@ export const translations = {
     }
 };
 
-export const langLabels = {
+const langLabels = {
     vi: "🇻🇳 Tiếng Việt",
     en: "🇬🇧 English",
     ja: "🇯🇵 日本語",
@@ -477,7 +477,7 @@ export const langLabels = {
     zh: "🇨🇳 中文"
 };
 
-export const langShortCodes = {
+const langShortCodes = {
     vi: "VI",
     en: "EN",
     ja: "JA",
@@ -490,4 +490,12 @@ if (typeof window !== 'undefined') {
     window.translations = translations;
     window.langLabels = langLabels;
     window.langShortCodes = langShortCodes;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        translations,
+        langLabels,
+        langShortCodes
+    };
 }

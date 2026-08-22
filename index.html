@@ -210,10 +210,11 @@
                     <i class="fa-solid fa-chevron-down text-[7px] text-gray-400 absolute right-1.5 pointer-events-none z-10"></i>
                 </div>
 
-                <div
-                    class="hidden md:flex flex-col items-center text-gray-600 hover:text-primary cursor-pointer transition">
-                    <i class="fa-regular fa-user text-xl mb-1"></i>
-                    <span class="text-xs font-semibold" data-i18n="account">Tài khoản</span>
+                <div id="accountBtn" class="hidden md:flex flex-col items-center">
+                    <div onclick="openAuthModal('login')" class="flex flex-col items-center text-gray-600 hover:text-primary cursor-pointer transition">
+                        <i class="fa-regular fa-user text-xl mb-1"></i>
+                        <span class="text-xs font-semibold" data-i18n="account">Tài khoản</span>
+                    </div>
                 </div>
                 <div class="relative flex flex-col items-center text-gray-600 hover:text-primary cursor-pointer transition group"
                     onclick="toggleCart()">
@@ -721,7 +722,13 @@
             </div>
 
             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
-                <p data-i18n="footer_copyright">&copy; 2026 Bản quyền thuộc về Công ty TNHH Nở Hoa Thả Bình.</p>
+                <div class="flex flex-col md:flex-row items-center space-y-1 md:space-y-0 md:space-x-3 text-center md:text-left">
+                    <p data-i18n="footer_copyright">&copy; 2026 Bản quyền thuộc về Công ty TNHH Nở Hoa Thả Bình.</p>
+                    <span class="hidden md:inline text-gray-600">|</span>
+                    <p class="text-xs text-gray-400">
+                        <i class="fa-solid fa-code-branch text-pink-400 mr-1"></i> Build: <span class="text-pink-300 font-mono font-bold" id="buildTimestamp">2026-08-22 21:46:00 (UTC+7)</span>
+                    </p>
+                </div>
                 <div class="flex space-x-4 mt-4 md:mt-0">
                     <i class="fa-brands fa-cc-visa text-2xl text-gray-500 hover:text-white transition"></i>
                     <i class="fa-brands fa-cc-mastercard text-2xl text-gray-500 hover:text-white transition"></i>
@@ -766,11 +773,140 @@
         <span>Đã thêm vào giỏ hàng thành công!</span>
     </div>
 
+    <!-- ================= AUTHENTICATION MODAL (LOGIN & REGISTER) ================= -->
+    <div id="authModal" onclick="if (event.target === this) closeAuthModal();" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] items-center justify-center p-4" style="display: none;">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fadeIn relative border border-pink-100 max-h-[90vh] flex flex-col">
+            <!-- Close Button -->
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center transition z-10">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-pink-50 via-white to-pink-50 p-6 text-center border-b border-gray-100 flex-shrink-0">
+                <div class="w-12 h-12 rounded-full bg-pink-100 text-primary mx-auto flex items-center justify-center text-xl mb-2 shadow-inner">
+                    <i class="fa-solid fa-spa"></i>
+                </div>
+                <h3 class="font-serif text-xl font-bold text-gray-800">Nở Hoa Thả Bình</h3>
+                <p class="text-xs text-gray-500 mt-1">Cổng Đăng Nhập Đơn Nhất & Khách Hàng Thân Thiết</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-gray-200 bg-gray-50 flex-shrink-0">
+                <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-3 text-sm font-bold text-primary border-b-2 border-primary transition">
+                    Đăng Nhập
+                </button>
+                <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-3 text-sm font-semibold text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition">
+                    Đăng Ký Mới
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto space-y-4">
+                <!-- FORM ĐĂNG NHẬP -->
+                <form id="loginFormContainer" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                    <div id="loginError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100 flex items-center">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Số điện thoại hoặc Email</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" id="loginIdentifier" placeholder="0909123456 hoặc email..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mật khẩu</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-sm">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input type="password" id="loginPassword" placeholder="••••••••" class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                            <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center">
+                                <i id="loginEyeIcon" class="fa-solid fa-eye text-gray-400 hover:text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-primary hover:bg-primaryHover text-white font-bold text-sm rounded-xl shadow-lg shadow-pink-200 transition duration-300 flex items-center justify-center">
+                        Đăng Nhập <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+
+                    <!-- Khối tài khoản thử nghiệm nhanh (Quick Demo Logins) -->
+                    <div class="pt-3 border-t border-gray-100">
+                        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 text-center">⚡ Đăng nhập thử nghiệm 1-chạm (Demo Roles)</p>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs">
+                            <button type="button" onclick="fillDemoAccount('admin@nohoathabinh.vn')" class="p-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-left font-medium border border-purple-100 transition flex items-center">
+                                <span class="mr-1.5">👑</span> <div><div class="font-bold">Super Admin</div><div class="text-[10px] text-purple-500">Toàn quyền hệ thống</div></div>
+                            </button>
+                            <button type="button" onclick="fillDemoAccount('0909123456')" class="p-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-left font-medium border border-blue-100 transition flex items-center">
+                                <span class="mr-1.5">🏬</span> <div><div class="font-bold">Quản Lý Q.10</div><div class="text-[10px] text-blue-500">Showroom Q10 Flagship</div></div>
+                            </button>
+                            <button type="button" onclick="fillDemoAccount('0909654321')" class="p-2 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-lg text-left font-medium border border-pink-100 transition flex items-center">
+                                <span class="mr-1.5">🌸</span> <div><div class="font-bold">Thợ Cắm Hoa</div><div class="text-[10px] text-pink-500">Cổng cắm hoa & ảnh</div></div>
+                            </button>
+                            <button type="button" onclick="fillDemoAccount('0909777888')" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-left font-medium border border-amber-100 transition flex items-center">
+                                <span class="mr-1.5">💼</span> <div><div class="font-bold">Tư Vấn Sales</div><div class="text-[10px] text-amber-500">Tiếp nhận & tư vấn đơn</div></div>
+                            </button>
+                            <button type="button" onclick="fillDemoAccount('0987654321')" class="col-span-2 p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-left font-medium border border-emerald-100 transition flex items-center justify-between">
+                                <div class="flex items-center"><span class="mr-1.5">🛒</span> <span class="font-bold">Khách Hàng (Anh Nguyễn Văn A)</span></div>
+                                <span class="text-[10px] bg-emerald-200 text-emerald-800 px-1.5 py-0.5 rounded font-bold">50 Điểm</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- FORM ĐĂNG KÝ KHÁCH HÀNG -->
+                <form id="registerFormContainer" onsubmit="handleRegisterSubmit(event)" class="space-y-4 hidden">
+                    <div id="registerError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100">
+                    </div>
+
+                    <div class="p-3 bg-pink-50 text-primary text-xs rounded-xl border border-pink-100 flex items-center">
+                        <i class="fa-solid fa-gift text-base mr-2"></i>
+                        <span>Đăng ký thành viên ngay hôm nay để nhận <strong>50 điểm thưởng chào mừng</strong> và ưu đãi tích lũy!</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Họ và tên <span class="text-red-500">*</span></label>
+                        <input type="text" id="regFullName" placeholder="Ví dụ: Nguyễn Thị Mai" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Số điện thoại <span class="text-red-500">*</span></label>
+                        <input type="tel" id="regPhone" placeholder="0912345678" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Email (Nhận hóa đơn điện tử & ưu đãi)</label>
+                        <input type="email" id="regEmail" placeholder="email@gmail.com" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:bg-white transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mật khẩu (ít nhất 6 ký tự) <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <input type="password" id="regPassword" placeholder="••••••••" class="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary focus:bg-white transition" required minlength="6">
+                            <button type="button" onclick="togglePasswordVisibility('regPassword', 'regEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center">
+                                <i id="regEyeIcon" class="fa-solid fa-eye text-gray-400 hover:text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnRegisterSubmit" class="w-full py-3 bg-primary hover:bg-primaryHover text-white font-bold text-sm rounded-xl shadow-lg shadow-pink-200 transition duration-300 flex items-center justify-center">
+                        Đăng Ký Tài Khoản <i class="fa-solid fa-gift ml-2"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modular JavaScript Files -->
     <script src="js/products.js"></script>
     <script src="js/translations.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/flower_app.js"></script>
 </body>
 </html>

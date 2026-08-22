@@ -25,17 +25,17 @@ app = Flask(__name__, template_folder=TELUA_ROOT)
 def get_index_file():
     """
     Tìm file index.html theo thứ tự ưu tiên:
-    1. dist/index.html (file frontend đã build qua Vite)
-    2. index.html (file html gốc tại thư mục dự án)
+    1. index.html (file html cập nhật trực tiếp tại thư mục dự án)
+    2. dist/index.html (file frontend đã build qua Vite)
     3. config/index.html (file html dự phòng)
-    4. Docker paths (/app/dist/index.html, /app/index.html)
+    4. Docker paths (/app/index.html, /app/dist/index.html)
     """
     candidates = [
-        os.path.join(TELUA_ROOT, "dist", "index.html"),
         os.path.join(TELUA_ROOT, "index.html"),
+        os.path.join(TELUA_ROOT, "dist", "index.html"),
         os.path.join(TELUA_ROOT, "config", "index.html"),
-        "/app/dist/index.html",
         "/app/index.html",
+        "/app/dist/index.html",
     ]
     for path in candidates:
         if os.path.exists(path):
