@@ -23,6 +23,7 @@ else:
 
 # Sub-directories
 FLOWER_ORDERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "orders")
+PRODUCTS_DIR = os.path.join(FLOWER_CONFIG_DIR, "products")
 
 # File paths chuẩn hóa
 USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "staff_users.json") if os.path.exists(os.path.join(FLOWER_CONFIG_DIR, "staff_users.json")) else os.path.join(FLOWER_CONFIG_DIR, "users.json")
@@ -30,6 +31,7 @@ STAFF_USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "staff_users.json")
 CUSTOMERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "customers.json")
 BRANCHES_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "branches.json")
 PRODUCTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "products.json")
+CATEGORIES_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "categories.json")
 PRICE_LEVELS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "price_levels.json")
 PROMOTIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "promotions.json")
 TRANSLATIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "translations.json")

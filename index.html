@@ -356,8 +356,8 @@
 
     <section class="py-12 bg-white">
         <div class="container mx-auto max-w-7xl px-4">
-            <div class="flex flex-wrap justify-center gap-4 md:gap-8">
-                <!-- Category Item -->
+            <div id="storefrontQuickCategories" class="flex flex-wrap justify-center gap-4 md:gap-8">
+                <!-- Render động qua JS theo danh sách isActive: true -->
                 <div class="flex flex-col items-center group cursor-pointer w-24 md:w-32">
                     <div
                         class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition p-1 img-skeleton">
@@ -1139,6 +1139,9 @@
                 <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-spa mr-1.5 text-base"></i> Mẫu Hoa & Bảng Giá
                 </button>
+                <button onclick="switchAdminTab('categories')" id="tabBtnCategories" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-layer-group mr-1.5 text-base text-pink-600"></i> Danh Mục Hoa
+                </button>
                 <button onclick="switchAdminTab('staff')" id="tabBtnStaff" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-user-tie mr-1.5 text-base"></i> Nhân Sự Nội Bộ
                 </button>
@@ -1197,6 +1200,43 @@
                                     </tr>
                                 </thead>
                                 <tbody id="productsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <!-- Render qua JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB: QUẢN LÝ DANH MỤC HOA ĐỘNG ================= -->
+                <section id="tabContentCategories" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800">Quản Lý Danh Mục Mẫu Hoa & Cấu Hình Ẩn / Hiện</h4>
+                            <p class="text-[11px] text-gray-500">Thêm danh mục mới, chỉnh sửa icon/ảnh và Bật/Tắt hiển thị trực tiếp trên giao diện bán hàng Frontend</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openCategoryModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
+                                <i class="fa-solid fa-plus mr-1"></i> Thêm Danh Mục Mới
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Categories Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Hình ảnh & Icon</th>
+                                        <th class="p-3">Tên danh mục & Mã ID</th>
+                                        <th class="p-3">Mô tả danh mục</th>
+                                        <th class="p-3">Thứ tự</th>
+                                        <th class="p-3">Trạng thái (Status)</th>
+                                        <th class="p-3">Ngày Tạo / Sửa</th>
+                                        <th class="p-3 text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoriesTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
                                     <!-- Render qua JS -->
                                 </tbody>
                             </table>
@@ -1556,6 +1596,153 @@
                 <div class="flex justify-end gap-3 pt-3 border-t border-gray-100">
                     <button type="button" onclick="closeUserModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
                     <button type="submit" id="btnSaveUser" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Nhân Sự</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL XEM CHI TIẾT SẢN PHẨM (ON-DEMAND LAZY LOAD) ================= -->
+    <div id="productQuickDetailModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 max-h-[92vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-pink-50/50 border-b border-gray-100 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span id="detailBadge" class="bg-accent text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">Mới</span>
+                    <h3 id="detailProdName" class="font-bold text-base text-gray-800 line-clamp-1">Đang tải sản phẩm...</h3>
+                </div>
+                <button onclick="closeProductQuickDetail()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div id="detailLoadingSpinner" class="p-12 flex flex-col items-center justify-center space-y-3">
+                <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
+                <span class="text-xs text-gray-400 font-medium">Đang tải chi tiết & album ảnh...</span>
+            </div>
+
+            <div id="detailContentBody" class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
+                    <!-- Gallery / Image -->
+                    <div class="space-y-2">
+                        <div class="rounded-xl overflow-hidden border border-gray-200 aspect-square bg-gray-50 shadow-inner">
+                            <img id="detailMainImg" src="" alt="Hoa tươi" class="w-full h-full object-cover">
+                        </div>
+                        <div id="detailGalleryThumbnails" class="flex gap-2 overflow-x-auto py-1">
+                            <!-- Render thumbnails gallery -->
+                        </div>
+                    </div>
+
+                    <!-- Specs & Story -->
+                    <div class="space-y-3.5 text-xs text-gray-700">
+                        <div>
+                            <div class="flex items-baseline space-x-2">
+                                <span id="detailSalePrice" class="text-xl font-extrabold text-primary">0₫</span>
+                                <span id="detailOrigPrice" class="text-xs text-gray-400 line-through"></span>
+                            </div>
+                            <span id="detailCategoryLabel" class="inline-block mt-1 px-2.5 py-0.5 bg-pink-50 text-primary font-bold text-[10px] rounded-md border border-pink-100">Bó Hoa Tươi</span>
+                        </div>
+
+                        <!-- Story / Description -->
+                        <div class="bg-gray-50/80 p-3 rounded-xl border border-gray-100">
+                            <h4 class="font-bold text-gray-800 mb-1"><i class="fa-solid fa-quote-left text-primary mr-1"></i> Ý Nghĩa & Thiết Kế</h4>
+                            <p id="detailDescription" class="text-gray-600 leading-relaxed italic text-[11px]">—</p>
+                        </div>
+
+                        <!-- Flower Composition -->
+                        <div>
+                            <span class="font-bold text-gray-800 block mb-1"><i class="fa-solid fa-spa text-primary mr-1"></i> Thành Phần Hoa:</span>
+                            <p id="detailComposition" class="text-gray-600 bg-white p-2.5 rounded-xl border border-gray-200 text-[11px]">—</p>
+                        </div>
+
+                        <!-- Care Tips & Dimensions -->
+                        <div class="grid grid-cols-2 gap-2 text-[11px]">
+                            <div class="bg-amber-50/50 p-2.5 rounded-xl border border-amber-100">
+                                <span class="font-bold text-amber-800 block"><i class="fa-solid fa-ruler-combined mr-1"></i> Kích Thước</span>
+                                <span id="detailDimension" class="text-gray-600">—</span>
+                            </div>
+                            <div class="bg-green-50/50 p-2.5 rounded-xl border border-green-100">
+                                <span class="font-bold text-green-800 block"><i class="fa-solid fa-hand-holding-droplet mr-1"></i> Giữ Hoa Tươi</span>
+                                <span id="detailCareTips" class="text-gray-600 line-clamp-2">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Stock at Showrooms -->
+                        <div class="pt-2 border-t border-gray-100">
+                            <span class="font-bold text-gray-700 block text-[11px] mb-1.5"><i class="fa-solid fa-store text-primary mr-1"></i> Tồn kho tại Showroom:</span>
+                            <div id="detailStockGrid" class="flex flex-wrap gap-2">
+                                <!-- Render stock tags -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+                <button type="button" onclick="closeProductQuickDetail()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Đóng</button>
+                <button type="button" id="btnQuickAddToCart" class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition flex items-center">
+                    <i class="fa-solid fa-cart-plus mr-1.5"></i> Thêm Vào Giỏ Hàng
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL THÊM / SỬA DANH MỤC HOA ================= -->
+    <div id="categoryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[220] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-pink-100 max-h-[92vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-pink-50/50 border-b border-gray-100 flex justify-between items-center">
+                <h3 id="categoryModalTitle" class="font-bold text-base text-gray-800">Thêm Danh Mục Hoa Mới</h3>
+                <button onclick="closeCategoryModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="categoryForm" onsubmit="handleCategorySubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="editCategoryId">
+                <div id="categoryModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mã ID Danh Mục *</label>
+                        <input type="text" id="catIdInput" placeholder="vd: bo_hoa, lan_ho_diep" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Viết liền không dấu, gạch dưới</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Danh Mục *</label>
+                        <input type="text" id="catName" placeholder="vd: Bó Hoa Tươi" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">URL Hình Ảnh Đại Diện</label>
+                    <input type="url" id="catImage" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Icon FontAwesome</label>
+                        <input type="text" id="catIcon" placeholder="fa-solid fa-spa" value="fa-solid fa-spa" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:outline-none focus:border-primary focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Thứ Tự Sắp Xếp (Order)</label>
+                        <input type="number" id="catOrder" value="1" min="1" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Danh Mục</label>
+                    <textarea id="catDescription" rows="2" placeholder="Ghi chú ngắn về nhóm sản phẩm này..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white"></textarea>
+                </div>
+
+                <div class="flex items-center space-x-2 pt-2 bg-pink-50/50 p-3 rounded-xl border border-pink-100">
+                    <input type="checkbox" id="catIsActive" checked class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                    <div>
+                        <label for="catIsActive" class="text-xs font-bold text-gray-800 cursor-pointer block">🟢 Hiển thị danh mục trên Frontend (Storefront)</label>
+                        <span class="text-[10px] text-gray-500 block">Nếu bỏ tick, danh mục và các mẫu hoa thuộc nhóm này sẽ tạm thời ẩn khỏi giao diện khách hàng.</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                    <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                    <button type="submit" id="btnSaveCategory" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Danh Mục</button>
                 </div>
             </form>
         </div>

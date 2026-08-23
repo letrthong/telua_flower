@@ -37,16 +37,23 @@
 
 ---
 
-### 🌸 2. Nhóm Sản Phẩm & Danh Mục (`/api/products`)
+### 🌸 2. Nhóm Sản Phẩm & Danh Mục (`/api/products` & `/api/categories`)
 
 | Method | Endpoint | Quyền hạn | Mô tả |
 | :--- | :--- | :---: | :--- |
+| `GET` | `/api/categories` | Public | Lấy danh sách danh mục hoa đang Bật hiển thị trên Frontend (`isActive=true`) |
+| `GET` | `/api/admin/categories` | Admin, Manager | Xem toàn bộ danh mục (cả đang hiện và đang ẩn) |
+| `POST` | `/api/admin/categories` | Admin, Manager | Thêm mới danh mục hoa tươi |
+| `PUT` | `/api/admin/categories/<id>` | Admin, Manager | Sửa tên, icon, thứ tự sắp xếp và mô tả danh mục |
+| `PATCH`| `/api/admin/categories/<id>/toggle` | Admin, Manager | **Bật/Tắt hiển thị danh mục 1-chạm trên Frontend** |
+| `DELETE`| `/api/admin/categories/<id>` | `super_admin` | Xóa danh mục hoa tươi |
 | `GET` | `/api/products` | Public | Lấy danh sách sản phẩm (hỗ trợ lọc theo `category`, `search`, `badge`) |
 | `GET` | `/api/products/<id>` | Public | Lấy chi tiết sản phẩm |
 | `GET` | `/api/products/<id>/stock` | Public | Xem số lượng tồn kho của sản phẩm tại từng showroom (🟢/🟠/🔴) |
 | `POST` | `/api/admin/products` | Admin, Manager | Đăng mẫu hoa mới lên website |
 | `PUT` | `/api/admin/products/<id>` | Admin, Manager | Cập nhật thông tin, giá bán, hình ảnh |
 | `DELETE`| `/api/admin/products/<id>` | Admin, Manager | Ẩn hoặc xóa sản phẩm |
+
 
 ---
 

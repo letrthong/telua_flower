@@ -254,6 +254,219 @@ def save_price_levels(price_levels: List[Dict[str, Any]]) -> bool:
     return success
 
 
+# 2b. Danh Mục Hoa Tươi (Categories) - Hỗ trợ cache LRU, Timestamps & Xóa Mềm (Soft Delete)
+@functools.lru_cache(maxsize=32)
+def _get_cached_categories() -> List[Dict[str, Any]]:
+    return read_json(get_config_path("categories.json"), default=[])
+
+
+def get_categories(use_cache: bool = True, active_only: bool = False, include_deleted: bool = True) -> List[Dict[str, Any]]:
+    cats = _get_cached_categories() if use_cache else read_json(get_config_path("categories.json"), default=[])
+    if active_only:
+        return [c for c in cats if c.get("isActive") is not False and c.get("status") != "deleted" and not c.get("isDeleted")]
+    if not include_deleted:
+        return [c for c in cats if c.get("status") != "deleted" and not c.get("isDeleted")]
+    return cats
+
+
+def get_category_by_id(category_id: str) -> Optional[Dict[str, Any]]:
+    for c in get_categories(use_cache=False, include_deleted=True):
+        if c.get("id") == category_id:
+            return c
+    return None
+
+
+def save_categories(categories: List[Dict[str, Any]]) -> bool:
+    try:
+        categories.sort(key=lambda x: int(x.get("order", 99)))
+    except Exception:
+        pass
+    success = write_json(get_config_path("categories.json"), categories)
+    _get_cached_categories.cache_clear()
+    return success
+
+
+def move_category_order(cat_id: str, direction: str) -> Tuple[bool, Optional[List[Dict[str, Any]]], Optional[str]]:
+    """
+    Di chuyển thứ tự hiển thị của danh mục lên (up) hoặc xuống (down) 1 bậc:
+    - Tự động hoán đổi số thứ tự (order) với danh mục liền kề.
+    - Cập nhật updatedAt.
+    """
+    categories = get_categories(use_cache=False, include_deleted=True)
+    categories.sort(key=lambda x: int(x.get("order", 99)))
+    
+    idx = next((i for i, c in enumerate(categories) if c.get("id") == cat_id), -1)
+    if idx == -1:
+        return False, None, "Không tìm thấy danh mục"
+
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    if direction == "up":
+        if idx == 0:
+            return False, None, "Danh mục này đã ở vị trí đầu tiên"
+        # Hoán đổi với phần tử phía trước
+        prev_idx = idx - 1
+        curr_order = categories[idx].get("order", idx + 1)
+        prev_order = categories[prev_idx].get("order", prev_idx + 1)
+        if curr_order == prev_order:
+            categories[idx]["order"] = prev_order
+            categories[prev_idx]["order"] = prev_order + 1
+        else:
+            categories[idx]["order"], categories[prev_idx]["order"] = prev_order, curr_order
+        categories[idx]["updatedAt"] = now_iso
+        categories[prev_idx]["updatedAt"] = now_iso
+
+    elif direction == "down":
+        if idx >= len(categories) - 1:
+            return False, None, "Danh mục này đã ở vị trí cuối cùng"
+        # Hoán đổi với phần tử phía sau
+        next_idx = idx + 1
+        curr_order = categories[idx].get("order", idx + 1)
+        next_order = categories[next_idx].get("order", next_idx + 1)
+        if curr_order == next_order:
+            categories[idx]["order"] = next_order + 1
+            categories[next_idx]["order"] = next_order
+        else:
+            categories[idx]["order"], categories[next_idx]["order"] = next_order, curr_order
+        categories[idx]["updatedAt"] = now_iso
+        categories[next_idx]["updatedAt"] = now_iso
+
+    else:
+        return False, None, "Hướng di chuyển không hợp lệ (chỉ hỗ trợ 'up' hoặc 'down')"
+
+    # Chuẩn hóa lại thứ tự 1, 2, 3, 4...
+    categories.sort(key=lambda x: int(x.get("order", 99)))
+    for i, c in enumerate(categories):
+        c["order"] = i + 1
+
+    save_categories(categories)
+    return True, categories, None
+
+
+
+def create_or_update_category(
+    cat_data: Dict[str, Any],
+    cat_id: Optional[str] = None
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    name = (cat_data.get("name") or "").strip()
+    if not name:
+        return False, None, "Vui lòng nhập tên danh mục"
+
+    categories = get_categories(use_cache=False, include_deleted=True)
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    order = int(cat_data.get("order") or len(categories) + 1)
+    icon = (cat_data.get("icon") or "fa-solid fa-spa").strip()
+    image = (cat_data.get("image") or "").strip()
+    description = (cat_data.get("description") or "").strip()
+    is_active = bool(cat_data.get("isActive", True))
+    status = cat_data.get("status") or ("active" if is_active else "inactive")
+
+    if cat_id:
+        for i, c in enumerate(categories):
+            if c.get("id") == cat_id:
+                categories[i]["name"] = name
+                categories[i]["order"] = order
+                categories[i]["icon"] = icon
+                if image: categories[i]["image"] = image
+                categories[i]["description"] = description
+                categories[i]["isActive"] = is_active
+                categories[i]["status"] = status
+                if status == "deleted":
+                    categories[i]["isDeleted"] = True
+                    categories[i]["deletedAt"] = categories[i].get("deletedAt") or now_iso
+                else:
+                    categories[i]["isDeleted"] = False
+                    categories[i]["deletedAt"] = None
+                categories[i]["updatedAt"] = now_iso
+                save_categories(categories)
+                return True, categories[i], None
+        return False, None, "Không tìm thấy danh mục cần sửa"
+    else:
+        new_id = (cat_data.get("id") or "").strip().lower()
+        if not new_id:
+            new_id = f"cat_{int(time.time()) % 100000}"
+        
+        if any(c.get("id") == new_id for c in categories):
+            return False, None, f"Mã danh mục '{new_id}' đã tồn tại"
+
+        new_cat = {
+            "id": new_id,
+            "name": name,
+            "slug": new_id.replace("_", "-"),
+            "image": image or "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
+            "icon": icon,
+            "order": order,
+            "status": status,
+            "isActive": is_active,
+            "isDeleted": False,
+            "description": description,
+            "createdAt": now_iso,
+            "updatedAt": now_iso
+        }
+        categories.append(new_cat)
+        categories.sort(key=lambda x: x.get("order", 99))
+        save_categories(categories)
+        return True, new_cat, None
+
+
+def toggle_category_active(cat_id: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    categories = get_categories(use_cache=False, include_deleted=True)
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for i, c in enumerate(categories):
+        if c.get("id") == cat_id:
+            if c.get("status") == "deleted" or c.get("isDeleted"):
+                return False, None, "Danh mục này đang ở trạng thái Đã Xóa (deleted). Hãy bấm Khôi Phục trước khi Bật/Tắt."
+
+            new_active = not categories[i].get("isActive", True)
+            categories[i]["isActive"] = new_active
+            categories[i]["status"] = "active" if new_active else "inactive"
+            categories[i]["updatedAt"] = now_iso
+            save_categories(categories)
+            return True, categories[i], None
+    return False, None, "Không tìm thấy danh mục"
+
+
+def delete_category(cat_id: str) -> Tuple[bool, Optional[str]]:
+    """
+    Xóa mềm (Soft Delete) danh mục:
+    - Đổi status = 'deleted', isActive = False, isDeleted = True
+    - Ghi nhận deletedAt và updatedAt, giữ nguyên dữ liệu trong JSON không xóa vật lý.
+    """
+    categories = get_categories(use_cache=False, include_deleted=True)
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for i, c in enumerate(categories):
+        if c.get("id") == cat_id:
+            categories[i]["status"] = "deleted"
+            categories[i]["isDeleted"] = True
+            categories[i]["isActive"] = False
+            categories[i]["deletedAt"] = now_iso
+            categories[i]["updatedAt"] = now_iso
+            save_categories(categories)
+            return True, None
+    return False, "Không tìm thấy danh mục cần xóa"
+
+
+def restore_category(cat_id: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Khôi phục danh mục đã bị xóa mềm:
+    - Đổi status = 'active', isActive = True, isDeleted = False, deletedAt = None
+    """
+    categories = get_categories(use_cache=False, include_deleted=True)
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for i, c in enumerate(categories):
+        if c.get("id") == cat_id:
+            categories[i]["status"] = "active"
+            categories[i]["isDeleted"] = False
+            categories[i]["isActive"] = True
+            categories[i]["deletedAt"] = None
+            categories[i]["updatedAt"] = now_iso
+            save_categories(categories)
+            return True, categories[i], None
+    return False, None, "Không tìm thấy danh mục cần khôi phục"
+
+
+
+
 # 3. Nhân Sự & Người Dùng Nội Bộ (Staff & Users)
 def get_staff_users() -> List[Dict[str, Any]]:
     staff_file = get_config_path("staff_users.json")
@@ -309,12 +522,32 @@ def get_user_by_phone_or_email(identifier: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-# 4. Sản Phẩm Hoa & Bình Cắm (Products)
+# 4. Sản Phẩm Hoa & Bình Cắm (Products - Summary & Detail Lazy Loading)
+def get_product_detail_path(product_id: str) -> str:
+    products_dir = os.path.join(FLOWER_CONFIG_DIR, "products")
+    if not os.path.exists(products_dir):
+        os.makedirs(products_dir, exist_ok=True)
+    return os.path.join(products_dir, f"{product_id}.json")
+
+
 def get_products() -> List[Dict[str, Any]]:
+    """Lấy danh mục tóm tắt siêu nhẹ cho toàn bộ sản phẩm (phục vụ Grid & List)."""
     return read_json(get_config_path("products.json"), default=[])
 
 
 def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Lấy thông tin chi tiết đầy đủ của một sản phẩm (On-demand Lazy Load):
+    - Ưu tiên đọc file chi tiết riêng config/anne/products/{product_id}.json
+    - Nếu chưa có file chi tiết riêng -> đọc từ products.json
+    """
+    detail_file = get_product_detail_path(product_id)
+    if os.path.exists(detail_file):
+        detail = read_json(detail_file, default=None)
+        if detail:
+            return detail
+
+    # Fallback tìm trong products.json
     products = get_products()
     for p in products:
         if p.get("id") == product_id:
@@ -322,8 +555,16 @@ def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def save_product_detail(product_id: str, product_data: Dict[str, Any]) -> bool:
+    """Lưu file chi tiết riêng cho sản phẩm vào config/anne/products/{product_id}.json."""
+    detail_file = get_product_detail_path(product_id)
+    return write_json(detail_file, product_data)
+
+
 def save_products(products: List[Dict[str, Any]]) -> bool:
+    """Lưu danh mục sản phẩm tóm tắt vào products.json."""
     return write_json(get_config_path("products.json"), products)
+
 
 
 # 5. Khuyến Mãi & Voucher (Promotions)

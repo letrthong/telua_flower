@@ -8,6 +8,8 @@ from services.data_service import (
     get_products,
     save_products,
     get_product_by_id,
+    save_product_detail,
+    get_product_detail_path,
     get_price_levels,
     get_price_level_by_id,
     get_branches
@@ -127,33 +129,58 @@ def create_or_update_product(
         if existing_index == -1:
             return False, None, f"Không tìm thấy sản phẩm với mã '{product_id}'"
 
-        target_prod = products[existing_index]
-        target_prod.update({
+        old_detail = get_product_by_id(product_id) or {}
+        
+        # 1. Chi tiết đầy đủ
+        full_detail = {
+            "id": product_id,
             "name": name,
             "category": category,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
             "originalPrice": formatted_orig_price,
-            "badge": product_data.get("badge") or target_prod.get("badge", ""),
-            "image": product_data.get("image") or target_prod.get("image", ""),
-            "gallery": product_data.get("gallery") or target_prod.get("gallery", []),
-            "description": product_data.get("description") or target_prod.get("description", ""),
-            "flowerComposition": product_data.get("flowerComposition") or target_prod.get("flowerComposition", ""),
-            "dimension": product_data.get("dimension") or target_prod.get("dimension", ""),
-            "careTips": product_data.get("careTips") or target_prod.get("careTips", ""),
+            "badge": product_data.get("badge") or old_detail.get("badge", ""),
+            "image": product_data.get("image") or old_detail.get("image", ""),
+            "gallery": product_data.get("gallery") or old_detail.get("gallery", []),
+            "description": product_data.get("description") or old_detail.get("description", ""),
+            "flowerComposition": product_data.get("flowerComposition") or old_detail.get("flowerComposition", ""),
+            "dimension": product_data.get("dimension") or old_detail.get("dimension", ""),
+            "careTips": product_data.get("careTips") or old_detail.get("careTips", ""),
             "stockByBranch": stock_by_branch,
-            "dailyQuota": int(product_data.get("dailyQuota") or target_prod.get("dailyQuota", 15)),
-            "isActive": product_data.get("isActive", target_prod.get("isActive", True)),
+            "dailyQuota": int(product_data.get("dailyQuota") or old_detail.get("dailyQuota", 15)),
+            "isActive": product_data.get("isActive", old_detail.get("isActive", True)),
             "updatedAt": now_iso
-        })
+        }
+        # Lưu file chi tiết riêng config/anne/products/{product_id}.json
+        save_product_detail(product_id, full_detail)
+
+        # 2. Bản ghi tóm tắt cho products.json (loại bỏ gallery, description dài, composition, careTips)
+        summary_prod = {
+            "id": product_id,
+            "name": name,
+            "category": category,
+            "priceLevelId": price_level_id,
+            "priceNumber": price_number,
+            "salePrice": formatted_sale_price,
+            "originalPrice": formatted_orig_price,
+            "badge": full_detail["badge"],
+            "image": full_detail["image"],
+            "stockByBranch": stock_by_branch,
+            "dailyQuota": full_detail["dailyQuota"],
+            "isActive": full_detail["isActive"],
+            "updatedAt": now_iso
+        }
+        products[existing_index] = summary_prod
         save_products(products)
-        return True, target_prod, None
+        return True, full_detail, None
 
     else:
         # Tạo mới sản phẩm
         new_id = product_data.get("id") or f"{category}_{int(datetime.now().timestamp())}"
-        new_prod = {
+        
+        # 1. Chi tiết đầy đủ
+        full_detail = {
             "id": new_id,
             "name": name,
             "category": category,
@@ -174,29 +201,68 @@ def create_or_update_product(
             "createdAt": now_iso,
             "updatedAt": now_iso
         }
-        products.insert(0, new_prod)
+        # Lưu file chi tiết riêng config/anne/products/{new_id}.json
+        save_product_detail(new_id, full_detail)
+
+        # 2. Bản ghi tóm tắt cho products.json
+        summary_prod = {
+            "id": new_id,
+            "name": name,
+            "category": category,
+            "priceLevelId": price_level_id,
+            "priceNumber": price_number,
+            "salePrice": formatted_sale_price,
+            "originalPrice": formatted_orig_price,
+            "badge": full_detail["badge"],
+            "image": full_detail["image"],
+            "stockByBranch": stock_by_branch,
+            "dailyQuota": full_detail["dailyQuota"],
+            "isActive": True,
+            "updatedAt": now_iso
+        }
+        products.insert(0, summary_prod)
         save_products(products)
-        return True, new_prod, None
+        return True, full_detail, None
 
 
 def toggle_product_active(product_id: str, is_active: Optional[bool] = None) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
     """Ẩn hoặc kích hoạt lại sản phẩm trên website."""
     products = get_products()
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     for p in products:
         if p.get("id") == product_id:
-            p["isActive"] = (not p.get("isActive", True)) if is_active is None else is_active
-            p["updatedAt"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+            new_active = (not p.get("isActive", True)) if is_active is None else is_active
+            p["isActive"] = new_active
+            p["updatedAt"] = now_iso
             save_products(products)
+
+            # Cập nhật cả file chi tiết nếu có
+            detail = get_product_by_id(product_id)
+            if detail:
+                detail["isActive"] = new_active
+                detail["updatedAt"] = now_iso
+                save_product_detail(product_id, detail)
+
             return True, p, None
     return False, None, f"Không tìm thấy sản phẩm '{product_id}'"
 
 
 def delete_product(product_id: str) -> Tuple[bool, Optional[str]]:
-    """Xóa sản phẩm khỏi danh mục."""
+    """Xóa sản phẩm khỏi danh mục summary và file chi tiết."""
     products = get_products()
     initial_len = len(products)
     clean_products = [p for p in products if p.get("id") != product_id]
     if len(clean_products) == initial_len:
         return False, f"Không tìm thấy sản phẩm '{product_id}'"
     save_products(clean_products)
+
+    # Xóa file chi tiết nếu có
+    detail_path = get_product_detail_path(product_id)
+    if os.path.exists(detail_path):
+        try:
+            os.remove(detail_path)
+        except OSError:
+            pass
+
     return True, None
+

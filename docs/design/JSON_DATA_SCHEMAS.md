@@ -102,7 +102,55 @@ Lưu trữ tài khoản khách hàng đăng ký mua hoa, tích điểm và hạn
 
 ---
 
-### 📊 3. `config/price_levels.json` - 4 Phân Tầng Mức Giá & Hàng Rào Giá An Toàn
+### 🗂️ 3. `config/categories.json` - Danh Mục Mẫu Hoa Động, Timestamps & Xóa Mềm (Soft Delete)
+Lưu trữ danh sách các danh mục hoa tươi, ngày tạo (`createdAt`), ngày sửa (`updatedAt`), icon, thứ tự sắp xếp và trạng thái (`status: "active" | "inactive" | "deleted"`):
+```json
+[
+  {
+    "id": "bo_hoa",
+    "name": "Bó Hoa Tươi",
+    "slug": "bo-hoa",
+    "image": "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?w=200",
+    "icon": "fa-solid fa-spa",
+    "order": 1,
+    "status": "active",
+    "isActive": true,
+    "isDeleted": false,
+    "description": "Các mẫu bó hoa tươi thiết kế cao cấp cho sinh nhật, tình yêu, tốt nghiệp",
+    "createdAt": "2026-08-21T00:00:00Z",
+    "updatedAt": "2026-08-23T20:00:00Z"
+  },
+  {
+    "id": "hoa_cuoi",
+    "name": "Hoa Cưới & Cầm Tay",
+    "slug": "hoa-cuoi",
+    "image": "https://images.unsplash.com/photo-1519741497674-611481863552?w=200",
+    "icon": "fa-solid fa-heart",
+    "order": 6,
+    "status": "inactive",
+    "isActive": false,
+    "isDeleted": false,
+    "description": "Hoa cưới cầm tay cô dâu, hoa cài áo và trang trí lễ cưới",
+    "createdAt": "2026-08-21T00:00:00Z",
+    "updatedAt": "2026-08-23T20:00:00Z"
+  },
+  {
+    "id": "cat_old",
+    "name": "Danh Mục Cũ",
+    "slug": "danh-muc-cu",
+    "status": "deleted",
+    "isActive": false,
+    "isDeleted": true,
+    "deletedAt": "2026-08-23T20:10:00Z",
+    "createdAt": "2026-08-21T00:00:00Z",
+    "updatedAt": "2026-08-23T20:10:00Z"
+  }
+]
+```
+
+---
+
+### 📊 4. `config/price_levels.json` - 4 Phân Tầng Mức Giá & Hàng Rào Giá An Toàn
 ```json
 [
   {
@@ -142,7 +190,8 @@ Lưu trữ tài khoản khách hàng đăng ký mua hoa, tích điểm và hạn
 
 ---
 
-### 🌸 4. `config/products.json` - Danh Mục Sản Phẩm Hoa & Bình
+### 🌸 5. `config/products.json` - Danh Mục Sản Phẩm Tóm Tắt (Summary Catalog - Siêu Nhẹ & Tốc Độ Cao)
+Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ sản phẩm ngoài Grid và Bảng danh mục mà không làm nặng trang:
 ```json
 [
   {
@@ -155,22 +204,50 @@ Lưu trữ tài khoản khách hàng đăng ký mua hoa, tích điểm và hạn
     "priceNumber": 420000,
     "badge": "-7%",
     "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
-    "gallery": [
-      "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=800"
-    ],
-    "description": "Bó hoa tone trắng dịu êm kết hợp hoa sao xanh thanh lịch.",
-    "flowerComposition": "Hồng trắng Ohara (10 cành), Cúc Tana, Hoa Sao Xanh, Lá Bạc Dollar",
-    "dimension": "Cao 50cm x Rộng 40cm",
-    "careTips": "Cắt gốc 45 độ, phun sương nhẹ cánh hoa mỗi sáng.",
     "stockByBranch": {
-      "branch_q10": 10,
-      "branch_q1": 2,
-      "branch_thao_dien": 0
+      "branch_q10": 12,
+      "branch_q1": 6,
+      "branch_thao_dien": 4
     },
+    "dailyQuota": 20,
     "isActive": true,
     "updatedAt": "2026-08-22T07:00:00Z"
   }
 ]
+```
+
+---
+
+### 🔍 5b. `config/products/{product_id}.json` - Chi Tiết Đầy Đủ Từng Sản Phẩm (On-Demand Lazy Load)
+File chi tiết riêng biệt được nạp qua API `GET /api/products/<id>` khi người dùng nhấp vào xem chi tiết hoặc khi Admin mở form sửa:
+```json
+{
+  "id": "bo_hoa_01",
+  "name": "Mây Trắng Bồng Bềnh",
+  "category": "bo_hoa",
+  "priceLevelId": "price_lvl_01",
+  "originalPrice": "450,000₫",
+  "salePrice": "420,000₫",
+  "priceNumber": 420000,
+  "badge": "-7%",
+  "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
+  "gallery": [
+    "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=800",
+    "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=800"
+  ],
+  "description": "Bó hoa tone trắng dịu êm kết hợp hoa sao xanh thanh lịch.",
+  "flowerComposition": "Hồng trắng Ohara (10 cành), Cúc Tana, Hoa Sao Xanh, Lá Bạc Dollar",
+  "dimension": "Cao 50cm x Rộng 40cm",
+  "careTips": "Cắt gốc 45 độ, phun sương nhẹ cánh hoa mỗi sáng.",
+  "stockByBranch": {
+    "branch_q10": 12,
+    "branch_q1": 6,
+    "branch_thao_dien": 4
+  },
+  "dailyQuota": 20,
+  "isActive": true,
+  "updatedAt": "2026-08-22T07:00:00Z"
+}
 ```
 
 ---

@@ -31,7 +31,12 @@ from services.data_service import (
     get_product_by_id,
     get_branches,
     create_or_update_branch,
-    toggle_branch_active
+    toggle_branch_active,
+    get_categories,
+    create_or_update_category,
+    toggle_category_active,
+    delete_category,
+    restore_category
 )
 from services.order_service import (
     get_available_delivery_slots,
@@ -293,6 +298,104 @@ def api_branch_orders(branch_id):
         "success": True,
         "data": branch_orders
     }), 200
+
+
+# ==========================================
+# CÁC API DANH MỤC HOA TƯƠI (CATEGORIES MANAGEMENT)
+# ==========================================
+
+@flower_connect_api.route("/categories", methods=["GET"])
+@flower_legacy_api.route("/categories", methods=["GET"])
+@cross_origin()
+def api_get_public_categories():
+    """Lấy danh sách các danh mục hoa đang Bật hiển thị trên Frontend."""
+    categories = get_categories(use_cache=True, active_only=True)
+    # Sắp xếp theo order
+    categories.sort(key=lambda x: x.get("order", 99))
+    return jsonify({"success": True, "data": categories}), 200
+
+
+@flower_connect_api.route("/admin/categories", methods=["GET"])
+@flower_legacy_api.route("/admin/categories", methods=["GET"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_categories():
+    """Lấy toàn bộ danh sách danh mục (cả đang hiện và đang ẩn) cho Admin."""
+    categories = get_categories(use_cache=False, active_only=False)
+    categories.sort(key=lambda x: x.get("order", 99))
+    return jsonify({"success": True, "data": categories}), 200
+
+
+@flower_connect_api.route("/admin/categories", methods=["POST"])
+@flower_legacy_api.route("/admin/categories", methods=["POST"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_create_category():
+    """Tạo mới danh mục hoa tươi."""
+    payload = request.get_json(silent=True) or {}
+    success, new_cat, err_msg = create_or_update_category(payload)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({"success": True, "message": "Tạo danh mục thành công", "data": new_cat}), 201
+
+
+@flower_connect_api.route("/admin/categories/<cat_id>", methods=["PUT"])
+@flower_legacy_api.route("/admin/categories/<cat_id>", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_update_category(cat_id):
+    """Cập nhật thông tin danh mục hoa tươi."""
+    payload = request.get_json(silent=True) or {}
+    success, updated_cat, err_msg = create_or_update_category(payload, cat_id=cat_id)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({"success": True, "message": "Cập nhật danh mục thành công", "data": updated_cat}), 200
+
+
+@flower_connect_api.route("/admin/categories/<cat_id>/toggle", methods=["PATCH"])
+@flower_legacy_api.route("/admin/categories/<cat_id>/toggle", methods=["PATCH"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_toggle_category(cat_id):
+    """Bật/Tắt hiển thị danh mục hoa tươi trên Frontend (isActive)."""
+    success, toggled_cat, err_msg = toggle_category_active(cat_id)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    status_str = "Hiển thị" if toggled_cat.get("isActive") else "Ẩn"
+    return jsonify({
+        "success": True,
+        "message": f"Đã chuyển trạng thái danh mục sang: {status_str}",
+        "data": toggled_cat
+    }), 200
+
+
+@flower_connect_api.route("/admin/categories/<cat_id>", methods=["DELETE"])
+@flower_legacy_api.route("/admin/categories/<cat_id>", methods=["DELETE"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_delete_category(cat_id):
+    """Xóa mềm danh mục (đổi status='deleted', isActive=False, giữ nguyên record trong JSON)."""
+    success, err_msg = delete_category(cat_id)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({"success": True, "message": "Đã chuyển danh mục sang trạng thái Đã Xóa (Soft Deleted)"}), 200
+
+
+@flower_connect_api.route("/admin/categories/<cat_id>/restore", methods=["PATCH"])
+@flower_legacy_api.route("/admin/categories/<cat_id>/restore", methods=["PATCH"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_restore_category(cat_id):
+    """Khôi phục danh mục đã xóa mềm (status='active', isActive=True)."""
+    success, restored_cat, err_msg = restore_category(cat_id)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({
+        "success": True,
+        "message": "Khôi phục danh mục thành công",
+        "data": restored_cat
+    }), 200
+
 
 
 # ==========================================

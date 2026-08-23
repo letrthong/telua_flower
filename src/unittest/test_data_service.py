@@ -219,6 +219,44 @@ class TestDataService(unittest.TestCase):
         # Đổi lại về 'arranging' để giữ dữ liệu mẫu nhất quán
         update_order_status("ord_20260822_001", "arranging", year_month="2026_08")
 
+    def test_11_categories_crud_and_toggle(self):
+        """Kiểm tra đọc ghi, cập nhật và bật/tắt hiển thị danh mục hoa (isActive)"""
+        from services.data_service import (
+            get_categories,
+            get_category_by_id,
+            create_or_update_category,
+            toggle_category_active,
+            delete_category
+        )
+        cats = get_categories(use_cache=False)
+        self.assertIsInstance(cats, list)
+        self.assertGreaterEqual(len(cats), 1)
+
+        # Lấy danh mục chỉ active
+        active_cats = get_categories(use_cache=False, active_only=True)
+        self.assertTrue(all(c.get("isActive") is not False for c in active_cats))
+
+        # Thêm danh mục test mới
+        test_cat_data = {
+            "id": "cat_test_event",
+            "name": "Hoa Sự Kiện Test",
+            "order": 99,
+            "isActive": True
+        }
+        success, new_cat, err = create_or_update_category(test_cat_data)
+        self.assertTrue(success)
+        self.assertEqual(new_cat["id"], "cat_test_event")
+
+        # Toggle ẩn danh mục
+        success, toggled, err = toggle_category_active("cat_test_event")
+        self.assertTrue(success)
+        self.assertFalse(toggled["isActive"])
+
+        # Xóa danh mục test
+        success, err = delete_category("cat_test_event")
+        self.assertTrue(success)
+
 
 if __name__ == "__main__":
     unittest.main()
+

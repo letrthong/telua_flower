@@ -46,18 +46,18 @@ export function renderProducts(products, containerId) {
         html += `
             <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100">
                 ${badgeHtml}
-                <div class="relative h-48 md:h-64 overflow-hidden cursor-pointer">
-                    <img src="${prodImg}" alt="${product.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" class="product-img w-full h-full object-cover">
+                <div onclick="openProductQuickDetail('${prodId}')" class="relative h-48 md:h-64 overflow-hidden cursor-pointer">
+                    <img src="${prodImg}" alt="${product.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" class="product-img w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     
                     <!-- Nút Thêm vào giỏ hàng (Hiển thị khi hover) -->
-                    <div class="absolute inset-0 bg-black/30 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
+                    <div class="absolute inset-0 bg-black/30 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4" onclick="event.stopPropagation()">
                         <button onclick="addToCart('${prodId}', '${safeName}', ${numericPrice}, '${prodImg}')" class="bg-primary hover:bg-primaryHover text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-md flex items-center justify-center">
                             <i class="fa-solid fa-cart-plus mr-1.5"></i> <span data-i18n="btn_add_to_cart">${btnText}</span>
                         </button>
                     </div>
                 </div>
                 <div class="p-4 flex flex-col flex-grow text-center">
-                    <h3 class="font-bold text-gray-800 text-sm md:text-base mb-2 flex-grow hover:text-primary cursor-pointer line-clamp-2">${product.name}</h3>
+                    <h3 onclick="openProductQuickDetail('${prodId}')" class="font-bold text-gray-800 text-sm md:text-base mb-2 flex-grow hover:text-primary cursor-pointer line-clamp-2">${product.name}</h3>
                     <div class="mt-auto">
                         ${priceHtml}
                     </div>
@@ -66,6 +66,115 @@ export function renderProducts(products, containerId) {
         `;
     });
     container.innerHTML = html;
+}
+
+/**
+ * Mở Modal Xem Chi Tiết Sản Phẩm (Lazy Load on-demand từ /api/products/<id>)
+ */
+export async function openProductQuickDetail(productId) {
+    const modal = document.getElementById("productQuickDetailModal");
+    const spinner = document.getElementById("detailLoadingSpinner");
+    const body = document.getElementById("detailContentBody");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+    if (spinner) spinner.classList.remove("hidden");
+    if (body) body.classList.add("hidden");
+
+    let prod = null;
+
+    // 1. Thử gọi API /api/products/<productId>
+    try {
+        const res = await fetch(`/api/products/${productId}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+                prod = json.data;
+            }
+        }
+    } catch (e) {
+        console.log("Fetching API failed, using fallback mock product.");
+    }
+
+    // 2. Nếu không có từ API -> Tìm trong mock lists
+    if (!prod) {
+        const allMocks = [
+            ...(window.products_bo_hoa || products_bo_hoa || []),
+            ...(window.products_ke_hoa || products_ke_hoa || []),
+            ...(window.products_binh_hoa || products_binh_hoa || [])
+        ];
+        prod = allMocks.find(p => p.id === productId || p.name === productId);
+    }
+
+    if (prod) {
+        const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "420000").replace(/[^\d]/g, ''), 10) || 420000;
+        const safeName = (prod.name || "").replace(/'/g, "\\'");
+        const prodImg = prod.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+
+        // Điền thông tin vào modal
+        document.getElementById("detailProdName").textContent = prod.name;
+        document.getElementById("detailBadge").textContent = prod.badge || "Mẫu Mới";
+        document.getElementById("detailSalePrice").textContent = prod.salePrice || `${numericPrice.toLocaleString()}₫`;
+        document.getElementById("detailOrigPrice").textContent = prod.originalPrice && prod.originalPrice !== prod.salePrice ? prod.originalPrice : "";
+        document.getElementById("detailCategoryLabel").textContent = prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP";
+        document.getElementById("detailDescription").textContent = prod.description || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
+        document.getElementById("detailComposition").textContent = prod.flowerComposition || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
+        document.getElementById("detailDimension").textContent = prod.dimension || "Kích thước tiêu chuẩn";
+        document.getElementById("detailCareTips").textContent = prod.careTips || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
+        document.getElementById("detailMainImg").src = prodImg;
+
+        // Gallery thumbnails
+        const galleryContainer = document.getElementById("detailGalleryThumbnails");
+        if (galleryContainer) {
+            const galleryList = Array.isArray(prod.gallery) && prod.gallery.length > 0 ? prod.gallery : [prodImg];
+            let galHtml = '';
+            galleryList.forEach(imgUrl => {
+                galHtml += `
+                    <div onclick="document.getElementById('detailMainImg').src='${imgUrl}'" class="w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-primary flex-shrink-0 transition">
+                        <img src="${imgUrl}" class="w-full h-full object-cover">
+                    </div>
+                `;
+            });
+            galleryContainer.innerHTML = galHtml;
+        }
+
+        // Tồn kho tại showroom
+        const stockContainer = document.getElementById("detailStockGrid");
+        if (stockContainer) {
+            const stock = prod.stockByBranch || { "branch_q10": 10, "branch_q1": 5, "branch_thao_dien": 4 };
+            let stockHtml = `
+                <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.10: <b class="text-primary">${stock.branch_q10 ?? 0}</b></span>
+                <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.1: <b class="text-primary">${stock.branch_q1 ?? 0}</b></span>
+                <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Thảo Điền: <b class="text-primary">${stock.branch_thao_dien ?? 0}</b></span>
+            `;
+            stockContainer.innerHTML = stockHtml;
+        }
+
+        // Gắn sự kiện nút Thêm Giỏ Hàng
+        const btnAdd = document.getElementById("btnQuickAddToCart");
+        if (btnAdd) {
+            btnAdd.onclick = () => {
+                if (typeof addToCart === "function") {
+                    addToCart(prod.id || productId, safeName, numericPrice, prodImg);
+                }
+                closeProductQuickDetail();
+            };
+        }
+
+        if (spinner) spinner.classList.add("hidden");
+        if (body) body.classList.remove("hidden");
+    } else {
+        if (spinner) spinner.innerHTML = `<span class="text-red-500 font-bold text-xs">Không tìm thấy thông tin sản phẩm này.</span>`;
+    }
+}
+
+export function closeProductQuickDetail() {
+    const modal = document.getElementById("productQuickDetailModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
 }
 
 /**
@@ -136,8 +245,50 @@ export function initMobileMenu() {
     }
 }
 
+/**
+ * Render danh mục nhanh trên Storefront từ API /api/categories
+ */
+export async function renderStorefrontCategories() {
+    const container = document.getElementById('storefrontQuickCategories');
+    if (!container) return;
+
+    try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+                let html = '';
+                json.data.forEach((cat) => {
+                    const fallbackImg = "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?w=200";
+                    const img = cat.image || fallbackImg;
+                    html += `
+                        <div onclick="document.getElementById('products')?.scrollIntoView({behavior: 'smooth'})" class="flex flex-col items-center group cursor-pointer w-24 md:w-32 transition transform hover:-translate-y-1">
+                            <div class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-pink-100 group-hover:border-primary transition p-1 shadow-sm bg-white">
+                                <img src="${img}" alt="${cat.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" class="product-img w-full h-full object-cover rounded-full">
+                            </div>
+                            <span class="mt-2.5 font-bold text-gray-800 group-hover:text-primary transition text-xs md:text-sm text-center line-clamp-1">${cat.name}</span>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        }
+    } catch (e) {
+        console.log("Using static categories.");
+    }
+}
+
 // 3. Khởi chạy khi tải xong trang (DOM Content Loaded)
 function initApp() {
+    initMobileMenu();
+    renderStorefrontCategories();
+    renderAllProducts();
+    
+    // Tự động kiểm tra đăng nhập khi mở app
+    if (typeof checkAuthStatus === 'function') {
+        checkAuthStatus();
+    }
+
     // 1. Đọc ngôn ngữ từ Cache
     let cachedLang = 'vi';
     try {
@@ -148,22 +299,18 @@ function initApp() {
         cachedLang = 'vi';
     }
 
-    // 2. Render sản phẩm ngay lập tức
-    renderAllProducts();
-
     // 3. Thiết lập ngôn ngữ
     if (typeof setLanguage === 'function') {
         setLanguage(cachedLang);
     }
-
-    // 4. Gắn các sự kiện menu mobile
-    initMobileMenu();
 }
 
 if (typeof window !== 'undefined') {
     window.renderProducts = renderProducts;
     window.renderAllProducts = renderAllProducts;
     window.initMobileMenu = initMobileMenu;
+    window.openProductQuickDetail = openProductQuickDetail;
+    window.closeProductQuickDetail = closeProductQuickDetail;
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initApp);

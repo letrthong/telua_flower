@@ -106,7 +106,7 @@ export function switchAdminTab(tabName) {
     // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
     if (tabName === "users") tabName = "staff";
 
-    const tabs = ["products", "staff", "customers", "branches", "promotions", "translations"];
+    const tabs = ["products", "categories", "staff", "customers", "branches", "promotions", "translations"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -121,12 +121,334 @@ export function switchAdminTab(tabName) {
         }
     });
 
+    if (tabName === "categories") loadAdminCategories();
     if (tabName === "staff") loadAdminUsers();
     if (tabName === "customers") loadAdminCustomers();
     if (tabName === "branches") loadAdminBranches();
     if (tabName === "promotions") loadAdminPromotions();
     if (tabName === "translations") loadAdminTranslations();
 }
+
+// ==========================================
+// 0. QUẢN LÝ DANH MỤC HOA ĐỘNG (CATEGORIES CMS)
+// ==========================================
+
+let allAdminCategories = [];
+
+export async function loadAdminCategories() {
+    const tbody = document.getElementById("categoriesTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400 font-medium">Đang tải danh mục hoa từ hệ thống...</td></tr>`;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        const res = await fetch("/api/admin/categories", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data)) {
+            allAdminCategories = json.data;
+            renderCategoriesTable(allAdminCategories);
+            populateCategoryDropdowns(allAdminCategories);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải danh mục"}</td></tr>`;
+        }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+    }
+}
+
+function renderCategoriesTable(categories) {
+    const tbody = document.getElementById("categoriesTableBody");
+    if (!tbody) return;
+
+    if (categories.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Chưa có danh mục nào được tạo.</td></tr>`;
+        return;
+    }
+
+    let html = "";
+    categories.forEach((cat) => {
+        const isDeleted = cat.status === "deleted" || cat.isDeleted === true;
+        const isActive = cat.isActive !== false && !isDeleted;
+
+        let statusBadge = "";
+        if (isDeleted) {
+            statusBadge = `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-200">🔴 Đã Xóa Mềm</span>`;
+        } else if (isActive) {
+            statusBadge = `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-green-200">🟢 Đang Bán (Active)</span>`;
+        } else {
+            statusBadge = `<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-full border border-gray-200">⚪ Đã Ẩn (Inactive)</span>`;
+        }
+
+        const fallbackImg = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+        const catImg = cat.image || fallbackImg;
+        const iconClass = cat.icon || "fa-solid fa-spa";
+        const createdDate = cat.createdAt ? cat.createdAt.replace("T", " ").replace("Z", "") : "—";
+        const updatedDate = cat.updatedAt ? cat.updatedAt.replace("T", " ").replace("Z", "") : createdDate;
+
+        const rowBg = isDeleted ? "bg-red-50/20 opacity-75" : "hover:bg-pink-50/20";
+
+        html += `
+            <tr class="${rowBg} transition border-b border-gray-100">
+                <td class="p-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="${catImg}" alt="${cat.name}" class="w-10 h-10 object-cover rounded-xl border border-gray-200 shadow-2xs ${isDeleted ? 'grayscale' : ''}">
+                        <div class="w-7 h-7 rounded-lg bg-pink-50 text-primary flex items-center justify-center text-xs">
+                            <i class="${iconClass}"></i>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-3">
+                    <div class="font-bold text-gray-800 text-sm ${isDeleted ? 'line-through text-gray-400' : ''}">${cat.name}</div>
+                    <div class="text-[10px] text-gray-400 font-mono">Mã ID: <span class="text-primary font-semibold">${cat.id}</span></div>
+                </td>
+                <td class="p-3">
+                    <span class="text-xs text-gray-500 line-clamp-1 max-w-[180px]">${cat.description || "—"}</span>
+                </td>
+                <td class="p-3">
+                    <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-700 font-extrabold text-xs flex items-center justify-center">
+                        ${cat.order || 1}
+                    </span>
+                </td>
+                <td class="p-3">${statusBadge}</td>
+                <td class="p-3 text-[11px] text-gray-500 font-mono leading-tight">
+                    <div><span class="text-gray-400">Tạo:</span> ${createdDate}</div>
+                    <div><span class="text-gray-400">Sửa:</span> ${updatedDate}</div>
+                </td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center space-x-1.5">
+                        ${!isDeleted ? `
+                            <button onclick="editCategory('${cat.id}')" title="Chỉnh sửa danh mục" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="toggleCategory('${cat.id}')" title="${isActive ? 'Ẩn khỏi web' : 'Hiện trên web'}" class="px-2.5 py-1 ${isActive ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-green-50 hover:bg-green-100 text-green-700'} rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid ${isActive ? 'fa-eye-slash' : 'fa-eye'} mr-1"></i> ${isActive ? 'Ẩn' : 'Hiện'}
+                            </button>
+                            <button onclick="deleteCategory('${cat.id}', '${cat.name}')" title="Xóa mềm danh mục (vẫn lưu trong json)" class="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        ` : `
+                            <button onclick="restoreCategory('${cat.id}', '${cat.name}')" title="Khôi phục lại danh mục này" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> Khôi Phục
+                            </button>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+export function openCategoryModal(isEdit = false) {
+    const modal = document.getElementById("categoryModal");
+    const title = document.getElementById("categoryModalTitle");
+    const form = document.getElementById("categoryForm");
+    const errBox = document.getElementById("categoryModalError");
+
+    if (!modal) return;
+    if (errBox) errBox.classList.add("hidden");
+
+    if (!isEdit && form) {
+        form.reset();
+        document.getElementById("editCategoryId").value = "";
+        document.getElementById("catIdInput").disabled = false;
+        document.getElementById("catOrder").value = allAdminCategories.length + 1;
+        document.getElementById("catIsActive").checked = true;
+        if (title) title.textContent = "Thêm Danh Mục Hoa Mới";
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+export function closeCategoryModal() {
+    const modal = document.getElementById("categoryModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function editCategory(catId) {
+    const cat = allAdminCategories.find((c) => c.id === catId);
+    if (!cat) return;
+
+    document.getElementById("editCategoryId").value = cat.id;
+    const idInput = document.getElementById("catIdInput");
+    if (idInput) {
+        idInput.value = cat.id;
+        idInput.disabled = true; // Không cho sửa ID khi update
+    }
+    document.getElementById("catName").value = cat.name || "";
+    document.getElementById("catImage").value = cat.image || "";
+    document.getElementById("catIcon").value = cat.icon || "fa-solid fa-spa";
+    document.getElementById("catOrder").value = cat.order || 1;
+    document.getElementById("catDescription").value = cat.description || "";
+    document.getElementById("catIsActive").checked = cat.isActive !== false;
+
+    const title = document.getElementById("categoryModalTitle");
+    if (title) title.textContent = `Chỉnh Sửa Danh Mục: ${cat.name}`;
+
+    openCategoryModal(true);
+}
+
+export async function handleCategorySubmit(event) {
+    if (event) event.preventDefault();
+
+    const editId = document.getElementById("editCategoryId").value;
+    const catId = (document.getElementById("catIdInput").value || "").trim().toLowerCase().replace(/\s+/g, "_");
+    const name = document.getElementById("catName").value.trim();
+    const image = document.getElementById("catImage").value.trim();
+    const icon = document.getElementById("catIcon").value.trim() || "fa-solid fa-spa";
+    const order = parseInt(document.getElementById("catOrder").value, 10) || 1;
+    const description = document.getElementById("catDescription").value.trim();
+    const isActive = document.getElementById("catIsActive").checked;
+
+    if (!name) {
+        alert("Vui lòng nhập tên danh mục!");
+        return;
+    }
+
+    const payload = {
+        id: editId || catId,
+        name,
+        image,
+        icon,
+        order,
+        description,
+        isActive,
+        status: isActive ? "active" : "inactive"
+    };
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const isEdit = !!editId;
+    const url = isEdit ? `/api/admin/categories/${editId}` : "/api/admin/categories";
+    const method = isEdit ? "PUT" : "POST";
+    const errBox = document.getElementById("categoryModalError");
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            closeCategoryModal();
+            loadAdminCategories();
+            alert(isEdit ? "Cập nhật danh mục thành công!" : "🎉 Tạo danh mục mới thành công!");
+        } else {
+            if (errBox) {
+                errBox.textContent = json.message || "Lỗi lưu danh mục";
+                errBox.classList.remove("hidden");
+            } else {
+                alert(json.message || "Lỗi lưu danh mục");
+            }
+        }
+    } catch (e) {
+        if (errBox) {
+            errBox.textContent = "Lỗi kết nối: " + e.message;
+            errBox.classList.remove("hidden");
+        }
+    }
+}
+
+export async function toggleCategory(catId) {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/categories/${catId}/toggle`, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            loadAdminCategories();
+        } else {
+            alert(json.message || "Lỗi cập nhật trạng thái");
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+    }
+}
+
+export async function deleteCategory(catId, catName) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa danh mục "${catName}" (ID: ${catId})?\n(Dữ liệu sẽ được đánh dấu 'deleted' và giữ nguyên trong JSON)`)) return;
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/categories/${catId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            loadAdminCategories();
+            alert("Đã chuyển danh mục sang trạng thái Đã Xóa (Soft Deleted) thành công!");
+        } else {
+            alert(json.message || "Không thể xóa danh mục");
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+    }
+}
+
+export async function restoreCategory(catId, catName) {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/categories/${catId}/restore`, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            loadAdminCategories();
+            alert(`🎉 Đã khôi phục danh mục "${catName || catId}" thành công!`);
+        } else {
+            alert(json.message || "Lỗi khôi phục danh mục");
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+    }
+}
+
+
+export function populateCategoryDropdowns(categories) {
+    if (!Array.isArray(categories)) return;
+
+    // 1. Dropdown lọc danh mục ở trang Admin Sản Phẩm
+    const filterSelect = document.getElementById("filterProductCategory");
+    if (filterSelect) {
+        const currentVal = filterSelect.value;
+        let opts = `<option value="">Tất cả danh mục</option>`;
+        categories.forEach((c) => {
+            opts += `<option value="${c.id}">${c.name} (${c.id})</option>`;
+        });
+        filterSelect.innerHTML = opts;
+        if (currentVal) filterSelect.value = currentVal;
+    }
+
+    // 2. Dropdown chọn danh mục trong Modal Thêm/Sửa Mẫu Hoa
+    const prodCatSelect = document.getElementById("prodCategory");
+    if (prodCatSelect) {
+        const currentVal = prodCatSelect.value;
+        let opts = "";
+        categories.forEach((c) => {
+            opts += `<option value="${c.id}">${c.name}</option>`;
+        });
+        prodCatSelect.innerHTML = opts;
+        if (currentVal) prodCatSelect.value = currentVal;
+    }
+}
+
 
 // ==========================================
 // 1. QUẢN LÝ NHÂN SỰ NỘI BỘ (STAFF & RBAC)
@@ -935,9 +1257,26 @@ export function closeProductModal() {
     }
 }
 
-export function editProduct(productId) {
-    const prod = allAdminProducts.find((p) => p.id === productId);
+export async function editProduct(productId) {
+    let prod = allAdminProducts.find((p) => p.id === productId);
     if (!prod) return;
+
+    openProductModal(true);
+    const title = document.getElementById("productModalTitle");
+    if (title) title.textContent = `Đang tải chi tiết: ${prod.name}...`;
+
+    // Tải chi tiết đầy đủ từ API /api/products/<productId> (Lazy load)
+    try {
+        const res = await fetch(`/api/products/${productId}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+                prod = json.data;
+            }
+        }
+    } catch (e) {
+        console.warn("Dùng dữ liệu tóm tắt cục bộ do không thể tải chi tiết:", e);
+    }
 
     document.getElementById("editProductId").value = prod.id;
     document.getElementById("prodName").value = prod.name || "";
@@ -966,10 +1305,7 @@ export function editProduct(productId) {
     document.getElementById("prodStockQ1").value = prod.stockByBranch?.branch_q1 ?? 5;
     document.getElementById("prodStockTD").value = prod.stockByBranch?.branch_thao_dien ?? 5;
 
-    const title = document.getElementById("productModalTitle");
     if (title) title.textContent = `Chỉnh Sửa Mẫu Hoa: ${prod.name}`;
-
-    openProductModal(true);
 }
 
 export async function handleProductSubmit(event) {
@@ -1218,6 +1554,17 @@ if (typeof window !== "undefined") {
     window.togglePromo = togglePromo;
     window.filterTranslations = filterTranslations;
     window.saveAllTranslations = saveAllTranslations;
+
+    // Categories
+    window.loadAdminCategories = loadAdminCategories;
+    window.openCategoryModal = openCategoryModal;
+    window.closeCategoryModal = closeCategoryModal;
+    window.editCategory = editCategory;
+    window.handleCategorySubmit = handleCategorySubmit;
+    window.toggleCategory = toggleCategory;
+    window.deleteCategory = deleteCategory;
+    window.restoreCategory = restoreCategory;
+    window.populateCategoryDropdowns = populateCategoryDropdowns;
 
     // Staff & Customers
     window.loadAdminUsers = loadAdminUsers;
