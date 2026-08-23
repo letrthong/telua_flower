@@ -85,12 +85,15 @@ Tiến độ: [████████████░░░░] 50.0% (4/8 Task
 
 ---
 
-### [x] TASK 07: Hàng Rào Giá An Toàn (Price Levels), CMS Mẫu Hoa & Quản Trị Khuyến Mãi
+### [x] TASK 07: Hàng Rào Giá An Toàn (Price Levels), CMS Mẫu Hoa, Phân Tách Nhân Sự & Khách Hàng CRM
 - [x] Viết `src/services/product_service.py` (Kiểm soát giá theo 4 Level `minPrice`-`maxPrice`).
 - [x] Viết `src/services/promotion_service.py` (Voucher ON/OFF Toggle).
 - [x] Viết `src/services/translation_service.py` (Biên dịch động 5 ngôn ngữ VI, EN, JA, KO, ZH).
+- [x] Cập nhật giao diện Admin Portal phân tách rõ ràng: **👔 Nhân Sự Nội Bộ** và **👑 Khách Hàng & CRM**.
+- [x] Thêm API endpoint `GET /api/admin/customers` tra cứu điểm thưởng & hạng VIP.
 - [x] Tạo giao diện `portal_admin.html` và `js/portal_admin.js`.
 - [x] Viết `src/unittest/test_price_governance.py` và `js/unittest/test-portal-governance.js`.
+
 
 ---
 

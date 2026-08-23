@@ -1135,15 +1135,18 @@
             </div>
 
             <!-- Tab Navigation Bar -->
-            <div class="flex border-b border-gray-200 bg-gray-50/70 px-6 space-x-6 flex-shrink-0 overflow-x-auto">
+            <div class="flex border-b border-gray-200 bg-gray-50/70 px-6 space-x-4 sm:space-x-6 flex-shrink-0 overflow-x-auto">
                 <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0">
-                    <i class="fa-solid fa-spa mr-1.5 text-base"></i> Quản Lý Mẫu Hoa (Catalogue)
+                    <i class="fa-solid fa-spa mr-1.5 text-base"></i> Mẫu Hoa & Bảng Giá
                 </button>
-                <button onclick="switchAdminTab('users')" id="tabBtnUsers" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
-                    <i class="fa-solid fa-users-gear mr-1.5 text-base"></i> Quản Lý Nhân Sự & Phân Quyền
+                <button onclick="switchAdminTab('staff')" id="tabBtnStaff" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-user-tie mr-1.5 text-base"></i> Nhân Sự Nội Bộ
+                </button>
+                <button onclick="switchAdminTab('customers')" id="tabBtnCustomers" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-crown mr-1.5 text-base text-amber-500"></i> Khách Hàng & CRM
                 </button>
                 <button onclick="switchAdminTab('branches')" id="tabBtnBranches" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
-                    <i class="fa-solid fa-store mr-1.5 text-base"></i> Chuỗi Cửa Hàng (Showrooms)
+                    <i class="fa-solid fa-store mr-1.5 text-base"></i> Chuỗi Showroom
                 </button>
                 <button onclick="switchAdminTab('promotions')" id="tabBtnPromotions" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-ticket-simple mr-1.5 text-base"></i> Khuyến Mãi & Voucher
@@ -1201,12 +1204,12 @@
                     </div>
                 </section>
 
-                <!-- ================= TAB: QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN ================= -->
-                <section id="tabContentUsers" class="space-y-4 hidden">
+                <!-- ================= TAB 2: QUẢN LÝ NHÂN SỰ NỘI BỘ ================= -->
+                <section id="tabContentStaff" class="space-y-4 hidden">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
                         <div>
-                            <h4 class="text-sm font-bold text-gray-800">Danh Sách Nhân Sự & Phân Quyền Vai Trò (RBAC)</h4>
-                            <p class="text-[11px] text-gray-500">Super Admin quản lý toàn diện; Quản lý chi nhánh chỉ thấy và thêm nhân sự tại showroom của mình</p>
+                            <h4 class="text-sm font-bold text-gray-800">Danh Sách Nhân Sự Nội Bộ & Phân Quyền Vai Trò (RBAC)</h4>
+                            <p class="text-[11px] text-gray-500">Super Admin quản lý toàn diện; Quản lý chi nhánh quản lý Florist & Tư vấn viên tại Showroom</p>
                         </div>
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <select id="filterUserBranch" onchange="loadAdminUsers()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
@@ -1221,21 +1224,65 @@
                         </div>
                     </div>
 
-                    <!-- Users Table -->
+                    <!-- Staff Table -->
                     <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
                                 <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
                                     <tr>
-                                        <th class="p-3">Họ và tên</th>
+                                        <th class="p-3">Nhân sự nội bộ</th>
                                         <th class="p-3">Số điện thoại / Email</th>
                                         <th class="p-3">Vai trò (Role)</th>
-                                        <th class="p-3">Chi nhánh làm việc</th>
+                                        <th class="p-3">Showroom làm việc</th>
                                         <th class="p-3">Trạng thái</th>
                                         <th class="p-3 text-center">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <!-- Render qua JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB 3: QUẢN LÝ KHÁCH HÀNG & CRM ================= -->
+                <section id="tabContentCustomers" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800">Quản Lý Khách Hàng Thân Thiết & Dữ Liệu CRM</h4>
+                            <p class="text-[11px] text-gray-500">Theo dõi điểm thưởng tích lũy, phân hạng thành viên VIP & tổng chi tiêu mua hoa</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <div class="relative flex-grow sm:flex-grow-0">
+                                <input type="text" id="searchCustomerInput" oninput="loadAdminCustomers()" placeholder="Tìm tên hoặc SĐT..." class="pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary w-full sm:w-48">
+                                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
+                            </div>
+                            <select id="filterCustomerTier" onchange="loadAdminCustomers()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="all">Tất cả hạng thẻ</option>
+                                <option value="vip">👑 VIP Kim Cương</option>
+                                <option value="gold">🥇 Vàng (Gold)</option>
+                                <option value="silver">🥈 Bạc (Silver)</option>
+                                <option value="standard">🥉 Tiêu Chuẩn</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Customers Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-amber-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Khách hàng</th>
+                                        <th class="p-3">Liên hệ (SĐT / Email)</th>
+                                        <th class="p-3">Hạng thẻ (Tier)</th>
+                                        <th class="p-3">Điểm tích lũy</th>
+                                        <th class="p-3">Tổng chi tiêu & Đơn</th>
+                                        <th class="p-3">Ngày tham gia</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customersTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
                                     <!-- Render qua JS -->
                                 </tbody>
                             </table>

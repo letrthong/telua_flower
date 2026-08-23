@@ -230,7 +230,7 @@ def register_customer(
     user_id = f"cust_{int(time.time())}"
     now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
-    new_user = {
+    new_customer = {
         "id": user_id,
         "phone": phone,
         "email": email,
@@ -238,29 +238,17 @@ def register_customer(
         "passwordHash": hash_password(password),
         "role": "customer",
         "branchId": None,
-        "isActive": True,
-        "createdAt": now_iso
-    }
-
-    users = get_users()
-    users.append(new_user)
-    save_users(users)
-
-    # Đồng bộ sang cơ sở dữ liệu khách hàng CRM
-    new_crm_customer = {
-        "id": user_id,
-        "phone": phone,
-        "fullName": full_name,
-        "email": email,
         "tier": "standard",
         "loyaltyPoints": 50,  # Tặng 50 điểm chào mừng
         "totalSpent": 0,
         "orderCount": 0,
         "savedAddresses": [],
+        "isActive": True,
         "createdAt": now_iso
     }
+
     customers = get_customers()
-    customers.append(new_crm_customer)
+    customers.append(new_customer)
     save_customers(customers)
 
     # Đăng nhập tự động ngay sau khi đăng ký
@@ -293,9 +281,9 @@ def register_customer(
 # QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN (STAFF & RBAC)
 # ==========================================
 
-def list_staff_users(current_user: Dict[str, Any], branch_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+def list_staff_users(current_user: Dict[str, Any], branch_filter: Optional[str] = None, include_customers: bool = False) -> List[Dict[str, Any]]:
     """
-    Lấy danh sách nhân sự & người dùng:
+    Lấy danh sách nhân sự nội bộ (loại bỏ tài khoản khách hàng role='customer'):
     - super_admin: xem toàn bộ hoặc lọc theo chi nhánh.
     - branch_manager: CHỈ xem nhân sự thuộc chi nhánh mình quản lý.
     """
@@ -305,6 +293,10 @@ def list_staff_users(current_user: Dict[str, Any], branch_filter: Optional[str] 
 
     sanitized_users = []
     for u in users:
+        # Nếu không yêu cầu kèm khách hàng -> chỉ lấy nhân sự nội bộ
+        if not include_customers and u.get("role") == "customer":
+            continue
+
         u_copy = dict(u)
         u_copy.pop("passwordHash", None)
         u_copy.pop("salt", None)
@@ -427,4 +419,56 @@ def delete_staff_user(current_user: Dict[str, Any], target_user_id: str) -> Tupl
             save_users(users)
             return True, None
     return False, "Không tìm thấy người dùng cần xóa"
+
+
+def list_crm_customers(search: Optional[str] = None, tier: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Lấy danh sách khách hàng CRM (phân tách hoàn toàn khỏi nhân sự nội bộ).
+    Tổng hợp dữ liệu từ customers_crm.json và tài khoản khách hàng role='customer' trong users.json.
+    """
+    crm_customers = get_customers()
+    users = get_users()
+    
+    # Map khách hàng từ CRM
+    cust_map = {c.get("phone"): dict(c) for c in crm_customers if c.get("phone")}
+
+    # Bổ sung các tài khoản khách hàng trong users.json nếu chưa có trong CRM
+    for u in users:
+        if u.get("role") == "customer" and u.get("phone"):
+            phone = u.get("phone")
+            if phone not in cust_map:
+                cust_map[phone] = {
+                    "id": u.get("id"),
+                    "phone": phone,
+                    "fullName": u.get("fullName", "Khách Hàng"),
+                    "email": u.get("email", ""),
+                    "tier": "standard",
+                    "loyaltyPoints": 50,
+                    "totalSpent": 0,
+                    "orderCount": 0,
+                    "isActive": u.get("isActive", True),
+                    "createdAt": u.get("createdAt", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+                }
+            else:
+                cust_map[phone]["isActive"] = u.get("isActive", True)
+                if not cust_map[phone].get("fullName") and u.get("fullName"):
+                    cust_map[phone]["fullName"] = u.get("fullName")
+
+    results = list(cust_map.values())
+
+    # Bộ lọc tìm kiếm
+    if search:
+        s_lower = search.strip().lower()
+        results = [
+            c for c in results
+            if s_lower in (c.get("fullName") or "").lower()
+            or s_lower in (c.get("phone") or "").lower()
+            or s_lower in (c.get("email") or "").lower()
+        ]
+
+    if tier and tier != "all":
+        results = [c for c in results if c.get("tier", "standard").lower() == tier.lower()]
+
+    return results
+
 

@@ -137,3 +137,18 @@ Hệ thống có thể lưu trữ dưới dạng JSON tĩnh hoặc Database quan
    - Nếu là **Thợ cắm hoa (`florist`)**: Màn hình chỉ hiển thị danh sách đơn cần cắm trong ngày kèm ảnh mẫu thiết kế, nút bấm chụp ảnh hoa thật để gửi duyệt.
    - Nếu là **Tư vấn viên (`sales_consultant`)**: Màn hình hiển thị danh sách đơn mới đổ về, thông tin người nhận, ghi chú thiệp hoa.
    - Nếu là **Quản lý (`branch_manager`)**: Màn hình Dashboard tổng quan: số đơn đang xử lý, tình trạng hoa tươi trong kho, danh sách nhân viên đang trong ca trực.
+
+---
+
+## 6. Phân Tách Bảng Nhân Sự Nội Bộ & Khách Hàng CRM Trên Giao Diện
+
+Nhằm đảm bảo an toàn dữ liệu, tính minh bạch và trải nghiệm người dùng chuyên nghiệp:
+
+1. **Tab "👔 Nhân Sự Nội Bộ (Staff)"**:
+   - Chỉ hiển thị các vai trò nội bộ: `super_admin`, `branch_manager`, `florist`, `sales_consultant`.
+   - Quản lý theo từng Showroom, hỗ trợ cấp lại mật khẩu mới (không xem mật khẩu cũ) và khóa/mở tài khoản.
+2. **Tab "👑 Khách Hàng & CRM (Customers)"**:
+   - Chỉ hiển thị khách hàng đăng ký (`role == 'customer'`).
+   - Quản lý theo Hạng thành viên (Standard, Silver, Gold, VIP), Điểm thưởng tích lũy, Lịch sử mua hàng và Tổng chi tiêu.
+   - Không bị lẫn lộn giữa tài khoản nội bộ và khách hàng bên ngoài.
+

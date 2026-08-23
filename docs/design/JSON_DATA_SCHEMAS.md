@@ -45,29 +45,55 @@ erDiagram
 
 ---
 
-### 👥 2. `config/users.json` - Tài Khoản Người Dùng & Nhân Sự
-Lưu trữ cho tất cả các Role (`customer`, `florist`, `sales_consultant`, `branch_manager`, `super_admin`):
+### 👔 2. `config/staff_users.json` - Tài Khoản Nhân Sự Nội Bộ Công Ty
+Lưu trữ thông tin nhân viên và cấp quản trị (`super_admin`, `branch_manager`, `florist`, `sales_consultant`):
 ```json
 [
+  {
+    "id": "staff_admin",
+    "phone": "0900000000",
+    "email": "admin@nohoathabinh.vn",
+    "fullName": "Tổng Quản Trị Hệ Thống",
+    "passwordHash": "pbkdf2:sha256:260000$...",
+    "role": "super_admin",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-21T00:00:00Z"
+  },
   {
     "id": "staff_001",
     "phone": "0909123456",
     "email": "mai.tran@nohoathabinh.vn",
     "fullName": "Trần Thị Mai",
-    "passwordHash": "$2b$12$K8Z1y7e...",
+    "passwordHash": "pbkdf2:sha256:260000$...",
     "role": "branch_manager",
     "branchId": "branch_q10",
     "isActive": true,
     "createdAt": "2026-08-21T00:00:00Z"
-  },
+  }
+]
+```
+
+---
+
+### 👑 2b. `config/customers.json` - Danh Sách Khách Hàng & Dữ Liệu CRM
+Lưu trữ tài khoản khách hàng đăng ký mua hoa, tích điểm và hạng thành viên:
+```json
+[
   {
-    "id": "staff_002",
-    "phone": "0909654321",
-    "email": "lan.le@nohoathabinh.vn",
-    "fullName": "Lê Ngọc Lan",
-    "passwordHash": "$2b$12$E4V2a9b...",
-    "role": "florist",
-    "branchId": "branch_q10",
+    "id": "cust_001",
+    "phone": "0987654321",
+    "email": "nva@gmail.com",
+    "fullName": "Nguyễn Văn A",
+    "passwordHash": "pbkdf2:sha256:260000$...",
+    "role": "customer",
+    "tier": "gold",
+    "loyaltyPoints": 350,
+    "totalSpent": 4500000,
+    "orderCount": 5,
+    "savedAddresses": [
+      "123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM"
+    ],
     "isActive": true,
     "createdAt": "2026-08-21T00:00:00Z"
   }

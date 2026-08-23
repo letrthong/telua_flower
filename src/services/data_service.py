@@ -254,32 +254,59 @@ def save_price_levels(price_levels: List[Dict[str, Any]]) -> bool:
     return success
 
 
-# 3. Người Dùng & Nhân Sự (Users & Staff)
-def get_users() -> List[Dict[str, Any]]:
+# 3. Nhân Sự & Người Dùng Nội Bộ (Staff & Users)
+def get_staff_users() -> List[Dict[str, Any]]:
+    staff_file = get_config_path("staff_users.json")
+    if os.path.exists(staff_file):
+        return read_json(staff_file, default=[])
     return read_json(get_config_path("users.json"), default=[])
 
 
+def save_staff_users(staff_users: List[Dict[str, Any]]) -> bool:
+    success = write_json(get_config_path("staff_users.json"), staff_users)
+    # Đồng bộ sang users.json để đảm bảo tương thích ngược
+    write_json(get_config_path("users.json"), staff_users)
+    return success
+
+
+def get_users() -> List[Dict[str, Any]]:
+    """Trả về danh sách nhân sự nội bộ (tương thích ngược)."""
+    return get_staff_users()
+
+
+def save_users(users: List[Dict[str, Any]]) -> bool:
+    return save_staff_users(users)
+
+
 def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
-    users = get_users()
-    for u in users:
+    # 1. Tìm trong nhân sự nội bộ
+    for u in get_staff_users():
         if u.get("id") == user_id:
             return u
+    # 2. Tìm trong khách hàng
+    for c in get_customers():
+        if c.get("id") == user_id:
+            return c
     return None
 
 
 def get_user_by_phone_or_email(identifier: str) -> Optional[Dict[str, Any]]:
-    users = get_users()
-    clean_id = identifier.strip().lower()
-    for u in users:
+    clean_id = (identifier or "").strip().lower()
+    # 1. Tìm trong nhân sự nội bộ
+    for u in get_staff_users():
         phone = (u.get("phone") or "").strip().lower()
         email = (u.get("email") or "").strip().lower()
         if phone == clean_id or email == clean_id:
             return u
+
+    # 2. Tìm trong khách hàng
+    for c in get_customers():
+        phone = (c.get("phone") or "").strip().lower()
+        email = (c.get("email") or "").strip().lower()
+        if phone == clean_id or email == clean_id:
+            return c
+
     return None
-
-
-def save_users(users: List[Dict[str, Any]]) -> bool:
-    return write_json(get_config_path("users.json"), users)
 
 
 # 4. Sản Phẩm Hoa & Bình Cắm (Products)
@@ -352,12 +379,15 @@ def add_wastage_report(report: Dict[str, Any]) -> bool:
 
 # 8. Khách Hàng CRM (Customers CRM)
 def get_customers() -> List[Dict[str, Any]]:
+    cust_file = get_config_path("customers.json")
+    if os.path.exists(cust_file):
+        return read_json(cust_file, default=[])
     return read_json(get_config_path("customers_crm.json"), default=[])
 
 
 def get_customer_by_phone(phone: str) -> Optional[Dict[str, Any]]:
     customers = get_customers()
-    clean_phone = phone.strip()
+    clean_phone = (phone or "").strip()
     for c in customers:
         if (c.get("phone") or "").strip() == clean_phone:
             return c
@@ -365,7 +395,10 @@ def get_customer_by_phone(phone: str) -> Optional[Dict[str, Any]]:
 
 
 def save_customers(customers: List[Dict[str, Any]]) -> bool:
-    return write_json(get_config_path("customers_crm.json"), customers)
+    success = write_json(get_config_path("customers.json"), customers)
+    # Đồng bộ sang customers_crm.json cho tương thích ngược
+    write_json(get_config_path("customers_crm.json"), customers)
+    return success
 
 
 # ==========================================

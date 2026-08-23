@@ -103,7 +103,10 @@ export function checkAdminAccess() {
 }
 
 export function switchAdminTab(tabName) {
-    const tabs = ["products", "users", "branches", "promotions", "translations"];
+    // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
+    if (tabName === "users") tabName = "staff";
+
+    const tabs = ["products", "staff", "customers", "branches", "promotions", "translations"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -118,22 +121,22 @@ export function switchAdminTab(tabName) {
         }
     });
 
-    if (tabName === "users") loadAdminUsers();
+    if (tabName === "staff") loadAdminUsers();
+    if (tabName === "customers") loadAdminCustomers();
     if (tabName === "branches") loadAdminBranches();
     if (tabName === "promotions") loadAdminPromotions();
     if (tabName === "translations") loadAdminTranslations();
 }
 
 // ==========================================
-// QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN (STAFF & USERS)
+// 1. QUẢN LÝ NHÂN SỰ NỘI BỘ (STAFF & RBAC)
 // ==========================================
 
 const ROLE_DISPLAY_MAP = {
     super_admin: { label: "👑 Tổng Quản Trị", badge: "bg-purple-100 text-purple-800" },
     branch_manager: { label: "🏬 Quản Lý Chi Nhánh", badge: "bg-blue-100 text-blue-800" },
     florist: { label: "🌸 Thợ Cắm Hoa", badge: "bg-pink-100 text-pink-800" },
-    sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" },
-    customer: { label: "✨ Khách Hàng", badge: "bg-gray-100 text-gray-800" }
+    sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" }
 };
 
 const BRANCH_NAME_MAP = {
@@ -149,7 +152,7 @@ export async function loadAdminUsers() {
     const tbody = document.getElementById("usersTableBody");
     if (!tbody) return;
 
-    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Đang tải danh sách nhân sự...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Đang tải danh sách nhân sự nội bộ...</td></tr>`;
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
@@ -159,7 +162,8 @@ export async function loadAdminUsers() {
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data)) {
-            allAdminUsers = json.data;
+            // Lọc chỉ lấy nhân viên nội bộ (loại bỏ khách hàng role='customer')
+            allAdminUsers = json.data.filter((u) => u.role !== "customer");
             renderUsersTable(allAdminUsers);
         } else {
             tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải nhân sự"}</td></tr>`;
@@ -174,7 +178,7 @@ function renderUsersTable(users) {
     if (!tbody) return;
 
     if (users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 font-medium">Chưa có nhân sự nào trong danh sách.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 font-medium">Chưa có nhân sự nội bộ nào trong danh sách.</td></tr>`;
         return;
     }
 
@@ -216,15 +220,114 @@ function renderUsersTable(users) {
                 <td class="p-3">${activeBadge}</td>
                 <td class="p-3 text-center">
                     <div class="flex items-center justify-center space-x-2">
-                        <button onclick="editUser('${u.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                        <button onclick="editUser('${u.id}')" title="Chỉnh sửa thông tin & Mật khẩu" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
                             <i class="fa-solid fa-pen-to-square"></i> Sửa
                         </button>
                         ${!isSelf ? `
-                            <button onclick="deleteUser('${u.id}', '${u.fullName}')" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                            <button onclick="deleteUser('${u.id}', '${u.fullName}')" title="Xóa nhân sự" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         ` : ''}
                     </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+// ==========================================
+// 2. QUẢN LÝ KHÁCH HÀNG & CRM (CUSTOMERS)
+// ==========================================
+
+let allAdminCustomers = [];
+
+const TIER_DISPLAY_MAP = {
+    vip: { label: "👑 VIP Kim Cương", badge: "bg-purple-100 text-purple-800 border border-purple-200" },
+    diamond: { label: "💎 Kim Cương", badge: "bg-cyan-100 text-cyan-800 border border-cyan-200" },
+    gold: { label: "🥇 Vàng (Gold)", badge: "bg-amber-100 text-amber-800 border border-amber-200" },
+    silver: { label: "🥈 Bạc (Silver)", badge: "bg-slate-100 text-slate-800 border border-slate-200" },
+    standard: { label: "🥉 Tiêu Chuẩn", badge: "bg-gray-100 text-gray-700 border border-gray-200" }
+};
+
+export async function loadAdminCustomers() {
+    const searchInput = document.getElementById("searchCustomerInput");
+    const tierSelect = document.getElementById("filterCustomerTier");
+    const search = searchInput ? searchInput.value.trim() : "";
+    const tier = tierSelect ? tierSelect.value : "all";
+    const tbody = document.getElementById("customersTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Đang tải danh sách khách hàng CRM...</td></tr>`;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        let url = "/api/admin/customers?";
+        if (search) url += `search=${encodeURIComponent(search)}&`;
+        if (tier && tier !== "all") url += `tier=${encodeURIComponent(tier)}&`;
+
+        const res = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data)) {
+            allAdminCustomers = json.data;
+            renderCustomersTable(allAdminCustomers);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải khách hàng"}</td></tr>`;
+        }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+    }
+}
+
+function renderCustomersTable(customers) {
+    const tbody = document.getElementById("customersTableBody");
+    if (!tbody) return;
+
+    if (customers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 font-medium">Không tìm thấy khách hàng nào.</td></tr>`;
+        return;
+    }
+
+    let html = "";
+    customers.forEach((c) => {
+        const tierKey = (c.tier || "standard").toLowerCase();
+        const tierInfo = TIER_DISPLAY_MAP[tierKey] || TIER_DISPLAY_MAP.standard;
+        const totalSpent = (c.totalSpent || 0).toLocaleString() + "₫";
+        const points = (c.loyaltyPoints || 0).toLocaleString();
+        const orderCount = c.orderCount || 0;
+        const regDate = c.createdAt ? c.createdAt.split("T")[0] : "—";
+
+        html += `
+            <tr class="hover:bg-amber-50/20 transition">
+                <td class="p-3">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center font-bold text-xs">
+                            ${(c.fullName || "K").charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <span class="font-bold text-gray-800 block">${c.fullName}</span>
+                            <span class="text-[10px] text-gray-400 font-mono">ID: ${c.id || "—"}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-3">
+                    <div class="font-bold text-primary text-xs"><i class="fa-solid fa-phone mr-1"></i> ${c.phone || "—"}</div>
+                    <div class="text-[11px] text-gray-500">${c.email || "—"}</div>
+                </td>
+                <td class="p-3">
+                    <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${tierInfo.badge}">${tierInfo.label}</span>
+                </td>
+                <td class="p-3">
+                    <div class="font-extrabold text-amber-600 text-xs"><i class="fa-solid fa-star text-amber-400 mr-1"></i> ${points} điểm</div>
+                </td>
+                <td class="p-3">
+                    <div class="font-bold text-gray-800 text-xs">${totalSpent}</div>
+                    <div class="text-[10px] text-gray-500">${orderCount} đơn hàng</div>
+                </td>
+                <td class="p-3 text-[11px] text-gray-500">
+                    ${regDate}
                 </td>
             </tr>
         `;
@@ -1116,8 +1219,10 @@ if (typeof window !== "undefined") {
     window.filterTranslations = filterTranslations;
     window.saveAllTranslations = saveAllTranslations;
 
-    // Staff & Users
+    // Staff & Customers
     window.loadAdminUsers = loadAdminUsers;
+    window.loadAdminStaff = loadAdminUsers;
+    window.loadAdminCustomers = loadAdminCustomers;
     window.openUserModal = openUserModal;
     window.closeUserModal = closeUserModal;
     window.editUser = editUser;

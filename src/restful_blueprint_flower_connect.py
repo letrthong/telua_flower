@@ -20,7 +20,8 @@ from services.auth_service import (
     verify_jwt_token,
     list_staff_users,
     create_or_update_staff_user,
-    delete_staff_user
+    delete_staff_user,
+    list_crm_customers
 )
 from services.data_service import (
     get_user_by_id,
@@ -497,6 +498,19 @@ def api_delete_staff_user(user_id):
     if not success:
         return jsonify({"success": False, "message": err}), 400
     return jsonify({"success": True, "message": "Xóa nhân sự thành công"}), 200
+
+
+@flower_connect_api.route("/admin/customers", methods=["GET"])
+@flower_legacy_api.route("/admin/customers", methods=["GET"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager", "sales_consultant"])
+def api_get_admin_customers():
+    """Lấy danh sách khách hàng & dữ liệu CRM (tích điểm, tổng chi tiêu, hạng VIP)."""
+    search = request.args.get("search")
+    tier = request.args.get("tier")
+    customers = list_crm_customers(search=search, tier=tier)
+    return jsonify({"success": True, "data": customers}), 200
+
 
 
 # ==========================================
