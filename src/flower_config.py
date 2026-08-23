@@ -1,0 +1,29 @@
+import os
+from pathlib import Path
+
+# Root directory of the workspace (tương thích cross-platform: Windows & Linux /app Docker)
+ROOT_DIR = Path(__file__).resolve().parent.parent
+
+# Source directory
+SRC_DIR = ROOT_DIR / 'src'
+
+# Config directory (tự động nhận diện thư mục config cục bộ hoặc container /app/config)
+if os.path.exists("/app/config"):
+    FLOWER_CONFIG_DIR = "/app/config"
+else:
+    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config')
+
+# Sub-directories
+FLOWER_ORDERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "orders")
+
+# File paths chuẩn hóa
+USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "users.json")
+BRANCHES_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "branches.json")
+PRODUCTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "products.json")
+PRICE_LEVELS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "price_levels.json")
+PROMOTIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "promotions.json")
+TRANSLATIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "translations.json")
+WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.json")
+
+# File cache version - dùng để đồng bộ cache giữa các workers / instances
+CACHE_VERSION_FILE = os.path.join(FLOWER_CONFIG_DIR, "cache_version.json")

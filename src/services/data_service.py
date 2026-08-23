@@ -4,14 +4,27 @@ import threading
 import functools
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
+import sys
 
-# Xác định đường dẫn gốc của dự án (tương thích cả Windows & Docker /app)
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
+SRC_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
 
-# Thư mục config
-CONFIG_DIR = os.path.join(PROJECT_ROOT, "config")
-ORDERS_DIR = os.path.join(CONFIG_DIR, "orders")
+from flower_config import (
+    FLOWER_CONFIG_DIR,
+    FLOWER_ORDERS_DIR,
+    USERS_FILE_PATH,
+    BRANCHES_FILE_PATH,
+    PRODUCTS_FILE_PATH,
+    PRICE_LEVELS_FILE_PATH,
+    PROMOTIONS_FILE_PATH,
+    TRANSLATIONS_FILE_PATH,
+    WASTAGE_REPORTS_FILE_PATH
+)
+
+CONFIG_DIR = FLOWER_CONFIG_DIR
+ORDERS_DIR = FLOWER_ORDERS_DIR
 
 # Thread lock để tránh xung đột race-condition khi ghi đồng thời
 _IO_LOCK = threading.Lock()
