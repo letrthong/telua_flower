@@ -7,7 +7,6 @@ import os
 import sys
 import logging
 from flask import Blueprint, jsonify, request
-from flask_cors import cross_origin
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if CURRENT_DIR not in sys.path:
@@ -75,7 +74,6 @@ flower_connect_api = Blueprint('flower_connect_api', __name__, url_prefix='/api/
 # ==========================================
 
 @flower_connect_api.route("/auth/login", methods=["POST"])
-@cross_origin()
 def api_login():
     """
     Cổng đăng nhập duy nhất cho cả 5 vai trò.
@@ -97,7 +95,6 @@ def api_login():
 
 
 @flower_connect_api.route("/auth/register", methods=["POST"])
-@cross_origin()
 def api_register():
     """
     Đăng ký tài khoản khách hàng mới.
@@ -121,7 +118,6 @@ def api_register():
 
 
 @flower_connect_api.route("/auth/me", methods=["GET"])
-@cross_origin()
 @require_auth
 def api_get_me():
     """
@@ -141,7 +137,6 @@ def api_get_me():
 
 
 @flower_connect_api.route("/auth/logout", methods=["POST"])
-@cross_origin()
 def api_logout():
     """
     Đăng xuất (Client chủ động xóa token khỏi localStorage).
@@ -157,7 +152,6 @@ def api_logout():
 # ==========================================
 
 @flower_connect_api.route("/delivery/slots", methods=["GET"])
-@cross_origin()
 def api_delivery_slots():
     """
     Lấy danh sách khung giờ giao hàng còn trống theo ngày đã chọn (trong vòng 30 ngày).
@@ -175,7 +169,6 @@ def api_delivery_slots():
 
 
 @flower_connect_api.route("/orders", methods=["POST"])
-@cross_origin()
 def api_create_order():
     """
     Tạo đơn hàng hoa tươi mới.
@@ -207,7 +200,6 @@ def api_create_order():
 
 
 @flower_connect_api.route("/orders/<order_id>", methods=["GET"])
-@cross_origin()
 def api_get_order(order_id):
     """
     Tra cứu chi tiết đơn hàng theo ID (Có kiểm tra bảo mật phân quyền RBAC).
@@ -251,7 +243,6 @@ def api_get_order(order_id):
 
 
 @flower_connect_api.route("/orders/my-orders", methods=["GET"])
-@cross_origin()
 @require_auth
 def api_my_orders():
     """
@@ -274,7 +265,6 @@ def api_my_orders():
 
 
 @flower_connect_api.route("/branch/<branch_id>/orders", methods=["GET"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
 def api_branch_orders(branch_id):
     """
@@ -294,7 +284,6 @@ def api_branch_orders(branch_id):
 
 
 @flower_connect_api.route("/admin/orders", methods=["GET"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
 def api_admin_orders():
     """
@@ -341,7 +330,6 @@ def api_admin_orders():
 # ==========================================
 
 @flower_connect_api.route("/categories", methods=["GET"])
-@cross_origin()
 def api_get_public_categories():
     """Lấy danh sách các danh mục hoa đang Bật hiển thị trên Frontend."""
     categories = get_categories(use_cache=True, active_only=True)
@@ -351,7 +339,6 @@ def api_get_public_categories():
 
 
 @flower_connect_api.route("/admin/categories", methods=["GET"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_get_admin_categories():
     """Lấy toàn bộ danh sách danh mục (cả đang hiện và đang ẩn) cho Admin."""
@@ -361,7 +348,6 @@ def api_get_admin_categories():
 
 
 @flower_connect_api.route("/admin/categories", methods=["POST"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_create_category():
     """Tạo mới danh mục hoa tươi."""
@@ -373,7 +359,6 @@ def api_create_category():
 
 
 @flower_connect_api.route("/admin/categories/<cat_id>", methods=["PUT"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_category(cat_id):
     """Cập nhật thông tin danh mục hoa tươi."""
@@ -385,7 +370,6 @@ def api_update_category(cat_id):
 
 
 @flower_connect_api.route("/admin/categories/<cat_id>/toggle", methods=["PATCH"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_toggle_category(cat_id):
     """Bật/Tắt hiển thị danh mục hoa tươi trên Frontend (isActive)."""
@@ -401,7 +385,6 @@ def api_toggle_category(cat_id):
 
 
 @flower_connect_api.route("/admin/categories/<cat_id>", methods=["DELETE"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_delete_category(cat_id):
     """Xóa mềm danh mục (đổi status='deleted', isActive=False, giữ nguyên record trong JSON)."""
@@ -412,7 +395,6 @@ def api_delete_category(cat_id):
 
 
 @flower_connect_api.route("/admin/categories/<cat_id>/restore", methods=["PATCH"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_restore_category(cat_id):
     """Khôi phục danh mục đã xóa mềm (status='active', isActive=True)."""
@@ -427,7 +409,6 @@ def api_restore_category(cat_id):
 
 
 @flower_connect_api.route("/admin/categories/<cat_id>/move", methods=["PATCH"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_move_category(cat_id):
     """Di chuyển thứ tự order danh mục lên (up) hoặc xuống (down) 1 bậc."""
@@ -450,7 +431,6 @@ def api_move_category(cat_id):
 # ==========================================
 
 @flower_connect_api.route("/price-levels", methods=["GET"])
-@cross_origin()
 def api_get_price_levels():
     """Lấy danh sách 4 phân tầng giá chuẩn kèm hạn mức min/max."""
     levels = get_price_levels()
@@ -458,7 +438,6 @@ def api_get_price_levels():
 
 
 @flower_connect_api.route("/products", methods=["GET"])
-@cross_origin()
 def api_get_products():
     """Lấy danh sách sản phẩm hoa tươi (hỗ trợ lọc theo category, search, active)."""
     category = request.args.get("category")
@@ -471,7 +450,6 @@ def api_get_products():
 
 
 @flower_connect_api.route("/products/<product_id>", methods=["GET"])
-@cross_origin()
 def api_get_product_detail(product_id):
     """Lấy chi tiết một sản phẩm hoa tươi theo ID."""
     prod = get_product_by_id(product_id)
@@ -481,7 +459,6 @@ def api_get_product_detail(product_id):
 
 
 @flower_connect_api.route("/admin/products", methods=["POST"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_create_product():
     """Thêm mẫu hoa mới vào Catalogue (có kiểm tra hàng rào giá an toàn)."""
@@ -493,7 +470,6 @@ def api_create_product():
 
 
 @flower_connect_api.route("/admin/products/<product_id>", methods=["PUT"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_product(product_id):
     """Cập nhật thông tin và giá bán mẫu hoa."""
@@ -505,7 +481,6 @@ def api_update_product(product_id):
 
 
 @flower_connect_api.route("/admin/products/<product_id>/toggle", methods=["PUT", "PATCH"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_toggle_product(product_id):
     """Ẩn / Hiện mẫu hoa trên website."""
@@ -516,7 +491,6 @@ def api_toggle_product(product_id):
 
 
 @flower_connect_api.route("/admin/products/<product_id>", methods=["DELETE"])
-@cross_origin()
 @require_role(["super_admin"])
 def api_delete_product(product_id):
     """Xóa mẫu hoa khỏi danh mục (Chỉ Super Admin)."""
@@ -531,7 +505,6 @@ def api_delete_product(product_id):
 # ==========================================
 
 @flower_connect_api.route("/promotions", methods=["GET"])
-@cross_origin()
 def api_get_promotions():
     """Lấy danh sách tất cả khuyến mãi & voucher."""
     promos = list_all_promotions()
@@ -539,7 +512,6 @@ def api_get_promotions():
 
 
 @flower_connect_api.route("/admin/promotions", methods=["POST"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_create_promotion():
     """Tạo mới voucher khuyến mãi."""
@@ -551,7 +523,6 @@ def api_create_promotion():
 
 
 @flower_connect_api.route("/admin/promotions/<promo_id>", methods=["PUT"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_promotion(promo_id):
     """Cập nhật thông tin voucher khuyến mãi."""
@@ -563,7 +534,6 @@ def api_update_promotion(promo_id):
 
 
 @flower_connect_api.route("/admin/promotions/<promo_id>/toggle", methods=["PUT", "PATCH"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_toggle_promotion(promo_id):
     """Gạt công tắc Bật/Tắt (ON/OFF) voucher khuyến mãi."""
@@ -574,7 +544,6 @@ def api_toggle_promotion(promo_id):
 
 
 @flower_connect_api.route("/admin/promotions/<promo_id>", methods=["DELETE"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_delete_promotion(promo_id):
     """Xóa mềm (Soft Delete) voucher (không xóa vật lý trong JSON, chỉ đánh dấu status='deleted')."""
@@ -585,7 +554,6 @@ def api_delete_promotion(promo_id):
 
 
 @flower_connect_api.route("/admin/promotions/<promo_id>/restore", methods=["PATCH"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_restore_promotion(promo_id):
     """Khôi phục voucher đã xóa mềm."""
@@ -601,7 +569,6 @@ def api_restore_promotion(promo_id):
 # ==========================================
 
 @flower_connect_api.route("/translations", methods=["GET"])
-@cross_origin()
 def api_get_translations():
     """Lấy từ điển đa ngôn ngữ 5 thứ tiếng."""
     data = get_all_translations()
@@ -609,7 +576,6 @@ def api_get_translations():
 
 
 @flower_connect_api.route("/admin/translations", methods=["PUT"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_translations():
     """Cập nhật ma trận biên dịch động 5 ngôn ngữ."""
@@ -625,7 +591,6 @@ def api_update_translations():
 # ==========================================
 
 @flower_connect_api.route("/admin/users", methods=["GET"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_get_staff_users():
     """Lấy danh sách nhân sự (Super Admin thấy tất cả, Quản lý chỉ thấy chi nhánh mình)."""
@@ -635,7 +600,6 @@ def api_get_staff_users():
 
 
 @flower_connect_api.route("/admin/users", methods=["POST"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_create_staff_user():
     """Thêm nhân sự mới (Quản lý chỉ được thêm thợ cắm hoa / tư vấn viên cho chi nhánh mình)."""
@@ -647,7 +611,6 @@ def api_create_staff_user():
 
 
 @flower_connect_api.route("/admin/users/<user_id>", methods=["PUT"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_staff_user(user_id):
     """Cập nhật thông tin nhân sự."""
@@ -659,7 +622,6 @@ def api_update_staff_user(user_id):
 
 
 @flower_connect_api.route("/admin/users/<user_id>", methods=["DELETE"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_delete_staff_user(user_id):
     """Xóa nhân sự."""
@@ -670,7 +632,6 @@ def api_delete_staff_user(user_id):
 
 
 @flower_connect_api.route("/admin/customers", methods=["GET"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager", "sales_consultant"])
 def api_get_admin_customers():
     """Lấy danh sách khách hàng & dữ liệu CRM (tích điểm, tổng chi tiêu, hạng VIP)."""
@@ -686,7 +647,6 @@ def api_get_admin_customers():
 # ==========================================
 
 @flower_connect_api.route("/branches", methods=["GET"])
-@cross_origin()
 def api_get_public_branches():
     """Lấy danh sách các chi nhánh đang mở cửa hoạt động (dành cho khách hàng)."""
     branches = [b for b in get_branches() if b.get("isActive", True)]
@@ -694,7 +654,6 @@ def api_get_public_branches():
 
 
 @flower_connect_api.route("/admin/branches", methods=["GET"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_get_admin_branches():
     """Lấy danh sách chi nhánh chuỗi cửa hàng."""
@@ -706,7 +665,6 @@ def api_get_admin_branches():
 
 
 @flower_connect_api.route("/admin/branches", methods=["POST"])
-@cross_origin()
 @require_role(["super_admin"])
 def api_create_branch():
     """Tạo chi nhánh mới trong chuỗi (Chỉ Super Admin)."""
@@ -718,7 +676,6 @@ def api_create_branch():
 
 
 @flower_connect_api.route("/admin/branches/<branch_id>", methods=["PUT"])
-@cross_origin()
 @require_role(["super_admin"])
 def api_update_branch(branch_id):
     """Cập nhật thông tin chi nhánh (Chỉ Super Admin)."""
@@ -730,7 +687,6 @@ def api_update_branch(branch_id):
 
 
 @flower_connect_api.route("/admin/branches/<branch_id>/toggle", methods=["PATCH", "PUT"])
-@cross_origin()
 @require_role(["super_admin"])
 def api_toggle_branch(branch_id):
     """Bật / Tắt trạng thái hoạt động của chi nhánh (Chỉ Super Admin)."""
@@ -746,7 +702,6 @@ def api_toggle_branch(branch_id):
 # ==========================================
 
 @flower_connect_api.route("/user/orders", methods=["GET"])
-@cross_origin()
 @require_auth
 def api_get_my_orders():
     """Lấy danh sách lịch sử đơn hàng của chính khách hàng đang đăng nhập."""
@@ -764,7 +719,6 @@ def api_get_my_orders():
 
 
 @flower_connect_api.route("/customers/<user_identifier>/orders", methods=["GET"])
-@cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_get_customer_orders(user_identifier):
     """Lấy lịch sử toàn bộ đơn hàng của một khách hàng cụ thể (Dành cho Admin/CRM)."""
