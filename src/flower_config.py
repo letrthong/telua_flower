@@ -7,9 +7,13 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 # Source directory
 SRC_DIR = ROOT_DIR / 'src'
 
-# Config directory (tự động nhận diện thư mục config cục bộ hoặc container /app/config)
-if os.path.exists("/app/config/"):
+# Config directory (tự động nhận diện thư mục config / config/anne)
+if os.path.exists("/app/config/anne"):
     FLOWER_CONFIG_DIR = "/app/config/anne"
+elif os.path.exists("/app/config"):
+    FLOWER_CONFIG_DIR = "/app/config"
+elif (ROOT_DIR / 'config' / 'anne').exists():
+    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config' / 'anne')
 else:
     FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config')
 

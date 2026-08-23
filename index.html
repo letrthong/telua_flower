@@ -543,15 +543,20 @@
     <!-- Section Tìm Cửa Hàng (Store Locator & Google Map) -->
     <section id="tim-cua-hang" class="py-12 md:py-16 bg-gradient-to-b from-white to-pink-50/60 border-t border-gray-100 scroll-mt-20">
         <div class="container mx-auto max-w-7xl px-4">
-            <div class="text-center mb-10">
+            <div class="text-center mb-8">
                 <span class="text-accent font-bold tracking-widest uppercase text-xs md:text-sm mb-1 block" data-i18n="store_badge">Ghé Thăm Trực Tiếp</span>
                 <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3" data-i18n="store_title">
-                    Tìm Cửa Hàng Nở Hoa Thả Bình
+                    Hệ Thống Chuỗi Cửa Hàng Nở Hoa Thả Bình
                     <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
                 </h2>
                 <p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto" data-i18n="store_desc">
-                    Kính mời quý khách ghé thăm không gian hoa tươi và trải nghiệm trực tiếp các mẫu bình nghệ thuật độc bản tại showroom.
+                    Kính mời quý khách ghé thăm không gian hoa tươi và trải nghiệm trực tiếp các mẫu bình nghệ thuật độc bản tại chuỗi showroom của chúng tôi.
                 </p>
+            </div>
+
+            <!-- Thanh chọn chi nhánh chuỗi cửa hàng (Dynamic Showroom Switcher) -->
+            <div id="storeBranchNav" class="flex flex-wrap justify-center gap-2 md:gap-3 mb-8">
+                <!-- Render qua JS: Nút chọn từng chi nhánh trong chuỗi -->
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -560,11 +565,11 @@
                     <div>
                         <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
                             <div>
-                                <span class="text-xs uppercase font-bold tracking-wider text-primary" data-i18n="store_type">Showroom Chính</span>
-                                <h3 class="font-serif text-xl md:text-2xl font-bold text-gray-900 mt-1" data-i18n="store_name">Nở Hoa Thả Bình - Q.10</h3>
+                                <span id="storeBadgeType" class="text-xs uppercase font-bold tracking-wider text-primary" data-i18n="store_type">Showroom Trực Thuộc</span>
+                                <h3 id="storeNameVal" class="font-serif text-xl md:text-2xl font-bold text-gray-900 mt-1">Nở Hoa Thả Bình - Q.10</h3>
                             </div>
-                            <span class="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-200">
-                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> <span data-i18n="store_status">Đang mở cửa</span>
+                            <span id="storeStatusBadge" class="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-200">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> <span id="storeStatusVal">Đang mở cửa</span>
                             </span>
                         </div>
 
@@ -575,7 +580,7 @@
                                 </div>
                                 <div>
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_address">Địa chỉ cửa hàng:</strong>
-                                    <span data-i18n="store_address_val">183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh</span>
+                                    <span id="storeAddressVal">183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh</span>
                                 </div>
                             </li>
                             <li class="flex items-start">
@@ -584,7 +589,7 @@
                                 </div>
                                 <div>
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_hours">Giờ mở cửa:</strong>
-                                    <span data-i18n="store_hours_val">07:00 - 21:00 (Thứ 2 - Chủ Nhật, kể cả ngày lễ)</span>
+                                    <span id="storeHoursVal">07:00 - 21:00 (Thứ 2 - Chủ Nhật, kể cả ngày lễ)</span>
                                 </div>
                             </li>
                             <li class="flex items-start">
@@ -593,7 +598,7 @@
                                 </div>
                                 <div>
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_hotline">Hotline đặt hoa nhanh:</strong>
-                                    <a href="tel:0976491322" class="text-primary font-bold hover:underline text-base">0976.491.322</a>
+                                    <a id="storeHotlineLink" href="tel:0976491322" class="text-primary font-bold hover:underline text-base">0976.491.322</a>
                                 </div>
                             </li>
                             <li class="flex items-start">
@@ -602,7 +607,7 @@
                                 </div>
                                 <div>
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_amenities">Tiện ích phục vụ:</strong>
-                                    <span class="text-gray-600 text-xs md:text-sm" data-i18n="store_amenities_val">Đậu xe ô tô / xe máy miễn phí • Thiết kế hoa theo yêu cầu tại chỗ • Tặng thiệp & banner cao cấp.</span>
+                                    <span id="storeAmenitiesVal" class="text-gray-600 text-xs md:text-sm">Đậu xe ô tô / xe máy miễn phí • Thiết kế hoa theo yêu cầu tại chỗ • Tặng thiệp & banner cao cấp.</span>
                                 </div>
                             </li>
                         </ul>
@@ -610,7 +615,7 @@
 
                     <!-- Nút thao tác nhanh -->
                     <div class="pt-6 mt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=183%2F37+%C4%90%C6%B0%E1%BB%9Dng+3+Th%C3%A1ng+2%2C+Ph%C6%B0%E1%BB%9Dng+11%2C+Qu%E1%BA%ADn+10%2C+TP.HCM"
+                        <a id="storeDirectionsLink" href="https://www.google.com/maps/dir/?api=1&destination=183%2F37+%C4%90%C6%B0%E1%BB%9Dng+3+Th%C3%A1ng+2%2C+Ph%C6%B0%E1%BB%9Dng+11%2C+Qu%E1%BA%ADn+10%2C+TP.HCM"
                             target="_blank" rel="noopener noreferrer"
                             class="flex-1 bg-primary hover:bg-primaryHover text-white font-bold py-3 px-4 rounded-xl text-center shadow-md hover:shadow-lg transition duration-200 flex items-center justify-center text-sm" data-i18n="store_btn_directions">
                             <i class="fa-solid fa-diamond-turn-right mr-2"></i> Chỉ Đường Đến Shop
@@ -628,7 +633,7 @@
                         <span class="font-semibold flex items-center">
                             <i class="fa-solid fa-map-location-dot text-primary mr-2"></i> <span data-i18n="store_map_title">Vị trí Showroom trên Google Maps</span>
                         </span>
-                        <a href="https://maps.google.com/?q=183%2F37+%C4%90%C6%B0%E1%BB%9Dng+3+Th%C3%A1ng+2%2C+Ph%C6%B0%E1%BB%9Dng+11%2C+Qu%E1%BA%ADn+10%2C+TP.HCM"
+                        <a id="storeLargerMapLink" href="https://maps.google.com/?q=183%2F37+%C4%90%C6%B0%E1%BB%9Dng+3+Th%C3%A1ng+2%2C+Ph%C6%B0%E1%BB%9Dng+11%2C+Qu%E1%BA%ADn+10%2C+TP.HCM"
                             target="_blank" rel="noopener noreferrer" class="text-primary hover:underline font-bold text-xs flex items-center" data-i18n="store_view_larger_map">
                             Xem bản đồ lớn <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
                         </a>
