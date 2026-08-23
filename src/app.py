@@ -16,7 +16,7 @@ if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
 from services.auth_service import authenticate_user, register_customer, verify_jwt_token
-from services.data_service import get_user_by_id, get_order_by_id, read_orders_by_month, get_price_levels
+from services.data_service import get_user_by_id, get_order_by_id, read_orders_by_month, get_price_levels, get_product_by_id
 from services.order_service import (
     get_available_delivery_slots,
     create_order,
@@ -217,11 +217,39 @@ def api_create_order():
 @cross_origin()
 def api_get_order(order_id):
     """
-    Tra cứu chi tiết đơn hàng theo ID.
+    Tra cứu chi tiết đơn hàng theo ID (Có kiểm tra bảo mật phân quyền RBAC).
     """
     order = get_order_by_id(order_id)
     if not order:
         return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    # Kiểm tra token nếu có gửi kèm (Bảo vệ dữ liệu khách hàng)
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        valid, payload, _ = verify_jwt_token(token)
+        if valid and payload:
+            role = payload.get("role")
+            user_id = payload.get("userId")
+            user_phone = payload.get("phone")
+            branch_id = payload.get("branchId")
+
+            # Khách hàng chỉ được xem đơn của chính mình
+            if role == "customer":
+                is_owner = (order.get("customerId") == user_id) or (order.get("sender", {}).get("phone") == user_phone)
+                if not is_owner:
+                    return jsonify({
+                        "success": False,
+                        "message": "Từ chối truy cập: Bạn không có quyền xem dữ liệu đơn hàng của khách hàng khác"
+                    }), 403
+
+            # Nhân viên chi nhánh chỉ xem đơn của chi nhánh mình
+            elif role in ["branch_manager", "florist", "sales_consultant"] and branch_id != "all":
+                if order.get("branchId") and order.get("branchId") != branch_id:
+                    return jsonify({
+                        "success": False,
+                        "message": "Từ chối truy cập: Đơn hàng này thuộc chi nhánh khác"
+                    }), 403
 
     return jsonify({
         "success": True,
@@ -296,6 +324,16 @@ def api_get_products():
 
     prods = list_products(category=category, search=search, is_active=is_active)
     return jsonify({"success": True, "data": prods}), 200
+
+
+@app.route("/api/products/<product_id>", methods=["GET"])
+@cross_origin()
+def api_get_product_detail(product_id):
+    """Lấy chi tiết một sản phẩm hoa tươi theo ID."""
+    prod = get_product_by_id(product_id)
+    if not prod:
+        return jsonify({"success": False, "message": "Không tìm thấy sản phẩm"}), 404
+    return jsonify({"success": True, "data": prod}), 200
 
 
 @app.route("/api/admin/products", methods=["POST"])
@@ -409,9 +447,11 @@ def api_update_translations():
 
 @app.route("/")
 @app.route("/index.html")
+@app.route("/portal")
+@app.route("/portal/<path:subpath>")
 @cross_origin()
-def index():
-    """Phục vụ file index.html cho trang chủ"""
+def index(subpath=None):
+    """Phục vụ file index.html cho trang chủ và các route SPA (/portal/admin...)"""
     index_path = get_index_file()
     if index_path:
         return send_file(index_path)
@@ -421,7 +461,7 @@ def index():
 @app.route("/<path:filename>")
 @cross_origin()
 def static_files(filename):
-    """Phục vụ các file tĩnh (js, css, json, hình ảnh...) và các trang html con"""
+    """Phục vụ các file tĩnh (js, css, json, hình ảnh...) và fallback SPA"""
     file_path = resolve_static_file(filename)
     if file_path:
         return send_file(file_path)
@@ -431,6 +471,10 @@ def static_files(filename):
         html_file = resolve_static_file(f"{filename}.html")
         if html_file:
             return send_file(html_file)
+        # Fallback SPA về index.html
+        index_path = get_index_file()
+        if index_path:
+            return send_file(index_path)
 
     abort(404, description=f"File not found: {filename}")
 

@@ -6,9 +6,9 @@
     "email": "nva@gmail.com",
     "birthday": "1995-10-20",
     "tier": "gold",
-    "loyaltyPoints": 618,
-    "totalSpent": 6180000,
-    "orderCount": 7,
+    "loyaltyPoints": 786,
+    "totalSpent": 7860000,
+    "orderCount": 9,
     "flowerPreferences": "Thích hoa hồng Ohara pastel và Tulip, không thích hoa màu vàng",
     "savedAddresses": [
       {
@@ -130,9 +130,9 @@
     "fullName": "Người Yêu Cũ",
     "email": "",
     "tier": "silver",
-    "loyaltyPoints": 90,
-    "totalSpent": 910000,
-    "orderCount": 2,
+    "loyaltyPoints": 180,
+    "totalSpent": 1820000,
+    "orderCount": 4,
     "flowerPreferences": "",
     "savedAddresses": [],
     "createdAt": "2026-08-22T15:20:29Z"
@@ -143,9 +143,9 @@
     "fullName": "Test Voucher",
     "email": "",
     "tier": "silver",
-    "loyaltyPoints": 142,
-    "totalSpent": 1428000,
-    "orderCount": 2,
+    "loyaltyPoints": 284,
+    "totalSpent": 2856000,
+    "orderCount": 4,
     "flowerPreferences": "",
     "savedAddresses": [],
     "createdAt": "2026-08-22T15:20:30Z"
@@ -156,9 +156,9 @@
     "fullName": "Khách Test API",
     "email": "",
     "tier": "silver",
-    "loyaltyPoints": 90,
-    "totalSpent": 910000,
-    "orderCount": 2,
+    "loyaltyPoints": 180,
+    "totalSpent": 1820000,
+    "orderCount": 4,
     "flowerPreferences": "",
     "savedAddresses": [],
     "createdAt": "2026-08-22T15:20:33Z"
@@ -174,5 +174,41 @@
     "orderCount": 0,
     "savedAddresses": [],
     "createdAt": "2026-08-22T15:25:44Z"
+  },
+  {
+    "id": "cust_1787473136",
+    "phone": "0910473136",
+    "fullName": "Khách Hàng Mới Test",
+    "email": "test_0910473136@gmail.com",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T08:18:56Z"
+  },
+  {
+    "id": "cust_1787473766",
+    "phone": "0910473766",
+    "fullName": "Khách Hàng Mới Test",
+    "email": "test_0910473766@gmail.com",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T08:29:26Z"
+  },
+  {
+    "id": "cust_1787473936",
+    "phone": "0910473935",
+    "fullName": "Khách Hàng Mới Test",
+    "email": "test_0910473935@gmail.com",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T08:32:16Z"
   }
 ]

@@ -191,6 +191,37 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         created_id = res_admin.get_json()["data"]["id"]
         delete_product(created_id)
 
+    def test_08_create_product_with_base64_image(self):
+        """Kiểm tra thêm mẫu hoa lưu ảnh định dạng chuỗi Base64 Data URI"""
+        mock_base64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA="
+        test_prod_id = f"test_b64_{int(time.time())}"
+        
+        prod_payload = {
+            "id": test_prod_id,
+            "name": "Bình Hoa Gốm Nghệ Thuật Base64",
+            "category": "binh_hoa",
+            "priceLevelId": "price_lvl_03",
+            "priceNumber": 1500000,
+            "image": mock_base64,
+            "flowerComposition": "Hoa Tulip & Cẩm Tú Cầu"
+        }
+
+        headers_admin = {"Authorization": f"Bearer {self.admin_token}"}
+        res = self.client.post("/api/admin/products", json=prod_payload, headers=headers_admin)
+        self.assertEqual(res.status_code, 201)
+        
+        created = res.get_json()["data"]
+        self.assertEqual(created["id"], test_prod_id)
+        self.assertTrue(created["image"].startswith("data:image/jpeg;base64,"))
+
+        # Kiểm tra tra cứu lại từ API
+        res_get = self.client.get(f"/api/products/{test_prod_id}")
+        self.assertEqual(res_get.status_code, 200)
+        self.assertEqual(res_get.get_json()["data"]["image"], mock_base64)
+
+        # Dọn dẹp
+        delete_product(test_prod_id)
+
 
 if __name__ == "__main__":
     unittest.main()

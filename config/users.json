@@ -152,5 +152,38 @@
     "branchId": null,
     "isActive": true,
     "createdAt": "2026-08-22T15:25:44Z"
+  },
+  {
+    "id": "cust_1787473136",
+    "phone": "0910473136",
+    "email": "test_0910473136@gmail.com",
+    "fullName": "Khách Hàng Mới Test",
+    "passwordHash": "pbkdf2:sha256:260000$ilTBdqbsK0GRtpcg$03846aa8343410862ae33262762cc22960971aa9d5d33a11692ef92d2fe8f647",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T08:18:56Z"
+  },
+  {
+    "id": "cust_1787473766",
+    "phone": "0910473766",
+    "email": "test_0910473766@gmail.com",
+    "fullName": "Khách Hàng Mới Test",
+    "passwordHash": "pbkdf2:sha256:260000$qCTgV9KI8gmO9hsA$935e0c8ea233fdd8d5fd3d71117b9dfd17ef2ffb297d99801a32ce033dc4f0f6",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T08:29:26Z"
+  },
+  {
+    "id": "cust_1787473936",
+    "phone": "0910473935",
+    "email": "test_0910473935@gmail.com",
+    "fullName": "Khách Hàng Mới Test",
+    "passwordHash": "pbkdf2:sha256:260000$7QuBdjujouEbRUKr$f86ebffb10a4407292dca9b5975d790309b08180ab0ef97018c515093f159478",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T08:32:16Z"
   }
 ]

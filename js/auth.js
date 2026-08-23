@@ -458,8 +458,31 @@ function updateAuthUI() {
     if (user && isLoggedIn()) {
         const displayName = user.fullName || user.phone || "Thành viên";
         const roleName = roleNameMap[user.role] || "Thành viên";
-        const portalUrl = ROLE_REDIRECT_MATRIX[user.role] || "/";
-        const isStaff = user.role !== "customer";
+        const isAdminOrManager = user.role === "super_admin" || user.role === "branch_manager";
+        const isFlorist = user.role === "florist";
+
+        let portalActionBtn = "";
+        if (isAdminOrManager) {
+            portalActionBtn = `
+                <button onclick="openAdminPortalModal()" class="w-full flex items-center px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-lg shadow-sm">
+                    <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
+                </button>
+            `;
+        } else if (isFlorist) {
+            portalActionBtn = `
+                <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal();" class="w-full flex items-center px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-sm">
+                    <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
+                </button>
+            `;
+        } else {
+            // Customer (Khách hàng thân thiết)
+            portalActionBtn = `
+                <div class="px-4 py-2 text-xs text-gray-700 flex justify-between items-center border-b border-gray-50">
+                    <span>Điểm tích lũy:</span>
+                    <span class="font-bold text-accent">50 điểm ⭐</span>
+                </div>
+            `;
+        }
 
         const userHtml = `
             <div class="relative">
@@ -482,16 +505,7 @@ function updateAuthUI() {
                         <p class="text-[11px] text-gray-600 truncate mt-0.5">${user.phone || user.email || ""}</p>
                     </div>
                     
-                    ${isStaff ? `
-                        <button onclick="openAdminPortalModal()" class="w-full flex items-center px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-lg shadow-sm">
-                            <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
-                        </button>
-                    ` : `
-                        <div class="px-4 py-2 text-xs text-gray-700 flex justify-between items-center border-b border-gray-50">
-                            <span>Điểm tích lũy:</span>
-                            <span class="font-bold text-accent">50 điểm ⭐</span>
-                        </div>
-                    `}
+                    ${portalActionBtn}
 
                     <button onclick="logout()" class="w-full text-left flex items-center px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
@@ -579,6 +593,12 @@ if (typeof window !== "undefined") {
     window.togglePasswordVisibility = togglePasswordVisibility;
     window.toggleUserDropdown = toggleUserDropdown;
     window.logout = logout;
+    window.getCurrentUser = getCurrentUser;
+    window.getAuthToken = getAuthToken;
+    window.isLoggedIn = isLoggedIn;
+    window.saveAuthToken = saveAuthToken;
+    window.clearAuth = clearAuth;
+    window.updateAuthUI = updateAuthUI;
 }
 
 export {

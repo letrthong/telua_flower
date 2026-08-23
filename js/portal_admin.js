@@ -1,3 +1,5 @@
+import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
+
 /**
  * Phân hệ Quản Trị Hệ Thống (TASK 07 - Admin Portal, Product CMS & Price Governance)
  */
@@ -13,10 +15,33 @@ let allAdminProducts = [];
 let allAdminPromotions = [];
 let allAdminTranslations = {};
 
+document.addEventListener("DOMContentLoaded", () => {
+    const path = (window.location.pathname || "").toLowerCase();
+    const hash = (window.location.hash || "").toLowerCase();
+    if (path.includes("/portal/admin") || path.includes("/portal/manager") || hash === "#admin") {
+        const user = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+        if (user && (user.role === "super_admin" || user.role === "branch_manager")) {
+            setTimeout(() => openAdminPortalModal(), 100);
+        } else {
+            if (typeof openAuthModal === "function") {
+                setTimeout(() => openAuthModal("login"), 100);
+            }
+        }
+    }
+});
+
 export function openAdminPortalModal() {
-    const user = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+
+    const user = (typeof getCurrentUser === "function") 
+        ? getCurrentUser() 
+        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+
     if (!user || (user.role !== "super_admin" && user.role !== "branch_manager")) {
-        alert("Chức năng Quản Trị chỉ dành cho Super Admin hoặc Quản Lý Chi Nhánh!");
+        alert("Vui lòng đăng nhập bằng tài khoản Super Admin hoặc Quản Lý Chi Nhánh để truy cập Cổng Quản Trị!");
+        if (typeof openAuthModal === "function") openAuthModal("login");
+        else if (typeof window !== "undefined" && typeof window.openAuthModal === "function") window.openAuthModal("login");
         return;
     }
 
@@ -25,7 +50,7 @@ export function openAdminPortalModal() {
 
     const nameEl = document.getElementById("adminUserName");
     const roleEl = document.getElementById("adminUserRole");
-    if (nameEl) nameEl.textContent = user.fullName || "Quản trị viên";
+    if (nameEl) nameEl.textContent = user.fullName || user.phone || "Quản trị viên";
     if (roleEl) roleEl.textContent = user.role;
 
     modal.style.display = "flex";
@@ -192,17 +217,121 @@ export function validateLivePrice() {
     }
 }
 
+/**
+ * Tự động nén và chuyển đổi tệp ảnh sang chuỗi Base64 (Data URI)
+ */
+export function compressAndConvertToBase64(file, maxWidth = 800, maxHeight = 800, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith("image/")) {
+            return reject(new Error("Tệp được chọn không phải là hình ảnh"));
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                // Tính toán tỷ lệ co giãn ảnh
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Xuất ra Base64 Data URI
+                const base64DataUri = canvas.toDataURL("image/jpeg", quality);
+                resolve(base64DataUri);
+            };
+            img.onerror = () => reject(new Error("Lỗi tải hình ảnh để chuyển đổi Base64"));
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error("Lỗi đọc tệp từ thiết bị"));
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
+ * Xử lý khi người dùng chọn tải ảnh từ máy tính/điện thoại
+ */
+export async function handleImageFileUpload(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    const previewImg = document.getElementById("prodImagePreview");
+    const inputStr = document.getElementById("prodImage");
+    const statusLabel = document.getElementById("imageStatusLabel");
+    const sizeInfo = document.getElementById("imageSizeInfo");
+
+    if (statusLabel) {
+        statusLabel.textContent = "⏳ Đang nén & chuyển Base64...";
+        statusLabel.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md inline-block";
+    }
+
+    try {
+        const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+        
+        if (inputStr) inputStr.value = base64String;
+        if (previewImg) previewImg.src = base64String;
+
+        // Tính kích thước Base64 theo KB
+        const sizeInKB = ((base64String.length * 3) / 4 / 1024).toFixed(1);
+
+        if (statusLabel) {
+            statusLabel.textContent = "🟢 Base64 Đã Sẵn Sàng";
+            statusLabel.className = "text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block";
+        }
+        if (sizeInfo) {
+            sizeInfo.textContent = `Dung lượng nén: ~${sizeInKB} KB (${file.name})`;
+        }
+    } catch (err) {
+        alert("Lỗi xử lý ảnh: " + err.message);
+        if (statusLabel) {
+            statusLabel.textContent = "❌ Lỗi chuyển đổi";
+            statusLabel.className = "text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md inline-block";
+        }
+    }
+}
+
 export function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");
     const title = document.getElementById("productModalTitle");
     const form = document.getElementById("productForm");
     const errBox = document.getElementById("productModalError");
+    const previewImg = document.getElementById("prodImagePreview");
+    const statusLabel = document.getElementById("imageStatusLabel");
+    const sizeInfo = document.getElementById("imageSizeInfo");
+    const fileInput = document.getElementById("prodImageFileInput");
+
     if (!modal) return;
 
     if (errBox) errBox.classList.add("hidden");
+    if (fileInput) fileInput.value = "";
+
     if (!isEdit && form) {
         form.reset();
         document.getElementById("editProductId").value = "";
+        const defaultImg = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+        document.getElementById("prodImage").value = defaultImg;
+        if (previewImg) previewImg.src = defaultImg;
+        if (statusLabel) {
+            statusLabel.textContent = "Ảnh mặc định";
+            statusLabel.className = "text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block";
+        }
+        if (sizeInfo) sizeInfo.textContent = "Upload file để chuyển sang Base64";
         if (title) title.textContent = "Thêm Mẫu Hoa Mới Vào Catalogue";
     }
 
@@ -228,7 +357,23 @@ export function editProduct(productId) {
     document.getElementById("prodCategory").value = prod.category || "bo_hoa";
     document.getElementById("prodPriceLevel").value = prod.priceLevelId || "price_lvl_01";
     document.getElementById("prodPriceNumber").value = prod.priceNumber || 420000;
-    document.getElementById("prodImage").value = prod.image || "";
+    
+    const prodImg = prod.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+    document.getElementById("prodImage").value = prodImg;
+
+    const previewImg = document.getElementById("prodImagePreview");
+    const statusLabel = document.getElementById("imageStatusLabel");
+    const sizeInfo = document.getElementById("imageSizeInfo");
+    if (previewImg) previewImg.src = prodImg;
+    if (statusLabel) {
+        const isBase64 = prodImg.startsWith("data:image");
+        statusLabel.textContent = isBase64 ? "🟢 Ảnh Base64" : "🌐 Link Ảnh Web";
+        statusLabel.className = `text-[10px] font-bold ${isBase64 ? 'text-purple-600 bg-purple-50' : 'text-blue-600 bg-blue-50'} px-2 py-0.5 rounded-md inline-block`;
+    }
+    if (sizeInfo) {
+        sizeInfo.textContent = prodImg.startsWith("data:image") ? `Base64 (${(prodImg.length / 1024).toFixed(1)} KB)` : "Đường dẫn URL trực tiếp";
+    }
+
     document.getElementById("prodFlowerComposition").value = prod.flowerComposition || "";
     document.getElementById("prodStockQ10").value = prod.stockByBranch?.branch_q10 ?? 10;
     document.getElementById("prodStockQ1").value = prod.stockByBranch?.branch_q1 ?? 5;
@@ -478,6 +623,8 @@ if (typeof window !== "undefined") {
     window.closeProductModal = closeProductModal;
     window.editProduct = editProduct;
     window.handleProductSubmit = handleProductSubmit;
+    window.handleImageFileUpload = handleImageFileUpload;
+    window.compressAndConvertToBase64 = compressAndConvertToBase64;
     window.toggleProduct = toggleProduct;
     window.onPriceLevelChange = onPriceLevelChange;
     window.validateLivePrice = validateLivePrice;

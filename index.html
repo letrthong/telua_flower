@@ -171,7 +171,7 @@
             </button>
 
             <!-- Logo -->
-            <div class="flex-shrink-0 text-center md:text-left cursor-pointer group flex items-center">
+            <a href="/" class="flex-shrink-0 text-center md:text-left cursor-pointer group flex items-center no-underline text-inherit hover:opacity-95 transition">
                 <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no.jpg" 
                      alt="Logo Nở Hoa Thả Bình" class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full object-cover mr-2 md:mr-2.5 shadow-sm border border-pink-100 group-hover:scale-105 transition duration-300">
                 <div>
@@ -182,7 +182,7 @@
                     </h1>
                     <p class="text-xs text-gray-500 tracking-widest uppercase mt-0.5 hidden md:block" data-i18n="brand_slogan">Trao gửi yêu thương</p>
                 </div>
-            </div>
+            </a>
 
             <!-- Thanh tìm kiếm (Desktop) -->
             <div class="hidden md:flex flex-1 max-w-xl mx-8 relative">
@@ -1298,9 +1298,33 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Link Ảnh Sản Phẩm *</label>
-                    <input type="url" id="prodImage" placeholder="https://images.unsplash.com/photo-..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                <!-- ẢNH SẢN PHẨM (HỖ TRỢ UPLOAD TỪ MÁY HOẶC NHẬP URL) -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-gray-700">Hình Ảnh Sản Phẩm (Upload từ máy hoặc Nhập Link) *</label>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                        <!-- Dropzone Upload File & Convert to Base64 -->
+                        <div onclick="document.getElementById('prodImageFileInput').click()" class="border-2 border-dashed border-pink-200 hover:border-primary bg-pink-50/30 hover:bg-pink-50/60 rounded-xl p-3 text-center cursor-pointer transition flex flex-col items-center justify-center min-h-[100px]">
+                            <i class="fa-solid fa-cloud-arrow-up text-primary text-xl mb-1"></i>
+                            <span class="text-xs font-bold text-gray-700">Chọn ảnh tải lên</span>
+                            <span class="text-[10px] text-gray-400">Tự động nén & chuyển sang Base64</span>
+                            <input type="file" id="prodImageFileInput" accept="image/*" onchange="handleImageFileUpload(event)" class="hidden">
+                        </div>
+
+                        <!-- Khung xem trước ảnh (Preview) -->
+                        <div id="imagePreviewContainer" class="relative bg-gray-50 border border-gray-200 rounded-xl p-2 flex items-center gap-3 min-h-[100px]">
+                            <img id="prodImagePreview" src="https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500" alt="Preview" class="w-16 h-16 object-cover rounded-lg border border-gray-200 shadow-2xs">
+                            <div class="flex-1 min-w-0 text-left">
+                                <span id="imageStatusLabel" class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block">Ảnh mặc định</span>
+                                <p id="imageSizeInfo" class="text-[10px] text-gray-400 mt-1 truncate">Sẵn sàng lưu</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ô chứa chuỗi Base64 hoặc URL -->
+                    <div class="relative">
+                        <input type="text" id="prodImage" placeholder="Chuỗi Data Base64 hoặc Link URL ảnh (https://...)" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] font-mono focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
                 </div>
 
                 <div>
