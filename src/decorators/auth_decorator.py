@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any, Dict, List, Optional, Union
 from flask import request, jsonify
-from services.auth_service import verify_jwt_token
+from ..services.anne_auth_service import verify_jwt_token
 
 
 def require_role(allowed_roles: Union[str, List[str]]):

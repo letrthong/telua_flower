@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from services.data_service import (
+from .data_service import (
     get_promotions,
     save_promotions,
     get_promotion_by_code,

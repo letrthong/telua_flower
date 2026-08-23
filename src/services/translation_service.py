@@ -2,7 +2,7 @@ import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
-from services.data_service import (
+from .data_service import (
     get_translations,
     save_translations
 )

@@ -6,12 +6,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 import sys
 
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-SRC_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
-
-from flower_config import (
+from ..flower_config import (
     FLOWER_CONFIG_DIR,
     FLOWER_ORDERS_DIR,
     USERS_DIR,
@@ -49,6 +44,29 @@ def read_json(filepath: str, default: Any = None) -> Any:
             return json.load(f)
     except (json.JSONDecodeError, IOError, UnicodeDecodeError):
         return default if default is not None else []
+
+
+def _normalize_list_of_dicts(data: Any) -> List[Dict[str, Any]]:
+    """
+    Đảm bảo dữ liệu đọc từ JSON luôn là List[Dict[str, Any]],
+    phòng tránh hoàn toàn lỗi AttributeError ('str' object has no attribute 'get')
+    khi file JSON có cấu trúc dict {key: user} hoặc sai schema.
+    """
+    if isinstance(data, list):
+        return [dict(item) for item in data if isinstance(item, dict)]
+    elif isinstance(data, dict):
+        for key in ["users", "staff_users", "customers", "data", "branches", "products", "categories", "promotions"]:
+            if key in data and isinstance(data[key], list):
+                return [dict(item) for item in data[key] if isinstance(item, dict)]
+        res = []
+        for k, v in data.items():
+            if isinstance(v, dict):
+                item = dict(v)
+                if "id" not in item:
+                    item["id"] = k
+                res.append(item)
+        return res
+    return []
 
 
 def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
@@ -141,13 +159,13 @@ def paginate(
 # 1. Chi Nhánh (Branches) - Hỗ trợ cache LRU
 @functools.lru_cache(maxsize=32)
 def _get_cached_branches() -> List[Dict[str, Any]]:
-    return read_json(get_config_path("branches.json"), default=[])
+    return _normalize_list_of_dicts(read_json(get_config_path("branches.json"), default=[]))
 
 
 def get_branches(use_cache: bool = True) -> List[Dict[str, Any]]:
     if use_cache:
         return _get_cached_branches()
-    return read_json(get_config_path("branches.json"), default=[])
+    return _normalize_list_of_dicts(read_json(get_config_path("branches.json"), default=[]))
 
 
 def get_branch_by_id(branch_id: str) -> Optional[Dict[str, Any]]:
@@ -242,19 +260,19 @@ def toggle_branch_active(branch_id: str) -> Tuple[bool, Optional[Dict[str, Any]]
 # 2. Phân Tầng Mức Giá (Price Levels) - Hỗ trợ cache LRU
 @functools.lru_cache(maxsize=32)
 def _get_cached_price_levels() -> List[Dict[str, Any]]:
-    return read_json(get_config_path("price_levels.json"), default=[])
+    return _normalize_list_of_dicts(read_json(get_config_path("price_levels.json"), default=[]))
 
 
 def get_price_levels(use_cache: bool = True) -> List[Dict[str, Any]]:
     if use_cache:
         return _get_cached_price_levels()
-    return read_json(get_config_path("price_levels.json"), default=[])
+    return _normalize_list_of_dicts(read_json(get_config_path("price_levels.json"), default=[]))
 
 
 def get_price_level_by_id(price_lvl_id: str) -> Optional[Dict[str, Any]]:
     levels = get_price_levels()
     for lvl in levels:
-        if lvl.get("id") == price_lvl_id or lvl.get("code") == price_lvl_id:
+        if isinstance(lvl, dict) and (lvl.get("id") == price_lvl_id or lvl.get("code") == price_lvl_id):
             return lvl
     return None
 
@@ -268,16 +286,16 @@ def save_price_levels(price_levels: List[Dict[str, Any]]) -> bool:
 # 2b. Danh Mục Hoa Tươi (Categories) - Hỗ trợ cache LRU, Timestamps & Xóa Mềm (Soft Delete)
 @functools.lru_cache(maxsize=32)
 def _get_cached_categories() -> List[Dict[str, Any]]:
-    return read_json(get_config_path("categories.json"), default=[])
+    return _normalize_list_of_dicts(read_json(get_config_path("categories.json"), default=[]))
 
 
 def get_categories(use_cache: bool = True, active_only: bool = False, include_deleted: bool = True) -> List[Dict[str, Any]]:
-    cats = _get_cached_categories() if use_cache else read_json(get_config_path("categories.json"), default=[])
+    cats = _get_cached_categories() if use_cache else _normalize_list_of_dicts(read_json(get_config_path("categories.json"), default=[]))
     if active_only:
-        return [c for c in cats if c.get("isActive") is not False and c.get("status") != "deleted" and not c.get("isDeleted")]
+        return [c for c in cats if isinstance(c, dict) and c.get("isActive") is not False and c.get("status") != "deleted" and not c.get("isDeleted")]
     if not include_deleted:
-        return [c for c in cats if c.get("status") != "deleted" and not c.get("isDeleted")]
-    return cats
+        return [c for c in cats if isinstance(c, dict) and c.get("status") != "deleted" and not c.get("isDeleted")]
+    return [c for c in cats if isinstance(c, dict)]
 
 
 def get_category_by_id(category_id: str) -> Optional[Dict[str, Any]]:
@@ -478,18 +496,56 @@ def restore_category(cat_id: str) -> Tuple[bool, Optional[Dict[str, Any]], Optio
 
 
 
+DEFAULT_STAFF_USERS = [
+    {
+        "id": "user_super_admin",
+        "username": "admin",
+        "fullName": "Super Administrator",
+        "phone": "0901234567",
+        "email": "admin@telua.vn",
+        "role": "super_admin",
+        "branchId": None,
+        "isActive": True,
+        "passwordHash": "",
+        "createdAt": "2026-01-01T00:00:00Z"
+    },
+    {
+        "id": "user_manager_q1",
+        "username": "manager_q1",
+        "fullName": "Quản Lý Chi Nhánh Q1",
+        "phone": "0909999001",
+        "email": "manager.q1@telua.vn",
+        "role": "branch_manager",
+        "branchId": "branch_01",
+        "isActive": True,
+        "passwordHash": "",
+        "createdAt": "2026-01-01T00:00:00Z"
+    }
+]
+
+
 # 3. Nhân Sự & Người Dùng Nội Bộ (Staff & Users)
 def get_staff_users() -> List[Dict[str, Any]]:
     staff_file = get_config_path("staff_users.json")
     if os.path.exists(staff_file):
-        return read_json(staff_file, default=[])
-    return read_json(get_config_path("users.json"), default=[])
+        data = read_json(staff_file, default=[])
+        used_path = staff_file
+    else:
+        # Nếu chưa có file staff_users.json, tự động khởi tạo dữ liệu mẫu
+        data = DEFAULT_STAFF_USERS
+        used_path = staff_file
+        save_staff_users(DEFAULT_STAFF_USERS)
+        print(f"🌱 [DATA_SERVICE] Auto-seeded default staff users into: {staff_file}", flush=True)
+
+    normalized = _normalize_list_of_dicts(data)
+    print(f"🔍 [DATA_SERVICE] get_staff_users() | Path: {used_path} | Found {len(normalized)} users", flush=True)
+    return normalized
 
 
 def save_staff_users(staff_users: List[Dict[str, Any]]) -> bool:
-    success = write_json(get_config_path("staff_users.json"), staff_users)
-    # Đồng bộ sang users.json để đảm bảo tương thích ngược
-    write_json(get_config_path("users.json"), staff_users)
+    target_path = get_config_path("staff_users.json")
+    success = write_json(target_path, staff_users)
+    print(f"💾 [DATA_SERVICE] save_staff_users() -> Saved {len(staff_users)} users to: {target_path}", flush=True)
     return success
 
 
@@ -503,33 +559,52 @@ def save_users(users: List[Dict[str, Any]]) -> bool:
 
 
 def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
+    if not user_id:
+        return None
+    target_id = str(user_id).strip()
     # 1. Tìm trong nhân sự nội bộ
     for u in get_staff_users():
-        if u.get("id") == user_id:
+        if isinstance(u, dict) and str(u.get("id") or "").strip() == target_id:
             return u
     # 2. Tìm trong khách hàng
     for c in get_customers():
-        if c.get("id") == user_id:
+        if isinstance(c, dict) and str(c.get("id") or "").strip() == target_id:
             return c
     return None
 
 
 def get_user_by_phone_or_email(identifier: str) -> Optional[Dict[str, Any]]:
-    clean_id = (identifier or "").strip().lower()
+    if not identifier:
+        return None
+    clean_id = str(identifier).strip().lower()
     # 1. Tìm trong nhân sự nội bộ
-    for u in get_staff_users():
-        phone = (u.get("phone") or "").strip().lower()
-        email = (u.get("email") or "").strip().lower()
-        if phone == clean_id or email == clean_id:
+    staff = get_staff_users()
+    for u in staff:
+        if not isinstance(u, dict):
+            continue
+        phone = str(u.get("phone") or "").strip().lower()
+        email = str(u.get("email") or "").strip().lower()
+        username = str(u.get("username") or "").strip().lower()
+        uid = str(u.get("id") or "").strip().lower()
+        if clean_id in (phone, email, username, uid):
+            print(f"✅ [DATA_SERVICE] Match found in staff for '{identifier}': id={u.get('id')}, role={u.get('role')}", flush=True)
             return u
 
     # 2. Tìm trong khách hàng
-    for c in get_customers():
-        phone = (c.get("phone") or "").strip().lower()
-        email = (c.get("email") or "").strip().lower()
-        if phone == clean_id or email == clean_id:
+    customers = get_customers()
+    for c in customers:
+        if not isinstance(c, dict):
+            continue
+        phone = str(c.get("phone") or "").strip().lower()
+        email = str(c.get("email") or "").strip().lower()
+        username = str(c.get("username") or "").strip().lower()
+        cid = str(c.get("id") or "").strip().lower()
+        if clean_id in (phone, email, username, cid):
+            print(f"✅ [DATA_SERVICE] Match found in customers for '{identifier}': id={c.get('id')}", flush=True)
             return c
 
+    avail_staff = [s.get("phone") or s.get("username") or s.get("id") for s in staff if isinstance(s, dict)]
+    print(f"❌ [DATA_SERVICE] No user found for '{identifier}'. Available staff identifiers: {avail_staff}", flush=True)
     return None
 
 
@@ -543,7 +618,7 @@ def get_product_detail_path(product_id: str) -> str:
 
 def get_products() -> List[Dict[str, Any]]:
     """Lấy danh mục tóm tắt siêu nhẹ cho toàn bộ sản phẩm (phục vụ Grid & List)."""
-    return read_json(get_config_path("products.json"), default=[])
+    return _normalize_list_of_dicts(read_json(get_config_path("products.json"), default=[]))
 
 
 def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
@@ -552,16 +627,18 @@ def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
     - Ưu tiên đọc file chi tiết riêng config/anne/products/{product_id}.json
     - Nếu chưa có file chi tiết riêng -> đọc từ products.json
     """
+    if not product_id:
+        return None
     detail_file = get_product_detail_path(product_id)
     if os.path.exists(detail_file):
         detail = read_json(detail_file, default=None)
-        if detail:
+        if isinstance(detail, dict):
             return detail
 
     # Fallback tìm trong products.json
     products = get_products()
     for p in products:
-        if p.get("id") == product_id:
+        if isinstance(p, dict) and p.get("id") == product_id:
             return p
     return None
 
@@ -581,7 +658,7 @@ def save_products(products: List[Dict[str, Any]]) -> bool:
 # 5. Khuyến Mãi & Voucher (Promotions & Archival History)
 def get_promotions_history() -> List[Dict[str, Any]]:
     """Lấy danh sách các voucher đã xóa từ config/anne/promotions_history.json."""
-    return read_json(get_config_path("promotions_history.json"), default=[])
+    return _normalize_list_of_dicts(read_json(get_config_path("promotions_history.json"), default=[]))
 
 
 def save_promotions_history(history_promos: List[Dict[str, Any]]) -> bool:
@@ -595,22 +672,24 @@ def get_promotions(include_deleted: bool = True, active_only: bool = False) -> L
     - Mặc định active_only: Chỉ lấy voucher đang bật và chưa xóa trong promotions.json.
     - include_deleted: Gộp cả danh sách trong promotions.json và promotions_history.json cho Admin.
     """
-    promos = read_json(get_config_path("promotions.json"), default=[])
+    promos = _normalize_list_of_dicts(read_json(get_config_path("promotions.json"), default=[]))
     if active_only:
-        return [p for p in promos if p.get("isActive") is not False and p.get("status") != "deleted" and not p.get("isDeleted")]
+        return [p for p in promos if isinstance(p, dict) and p.get("isActive") is not False and p.get("status") != "deleted" and not p.get("isDeleted")]
     
     if include_deleted:
         history = get_promotions_history()
-        return promos + history
+        return promos + [h for h in history if isinstance(h, dict)]
 
     return promos
 
 
 def get_promotion_by_code(code: str, active_only: bool = False) -> Optional[Dict[str, Any]]:
+    if not code:
+        return None
     promotions = get_promotions(include_deleted=not active_only, active_only=active_only)
-    clean_code = code.strip().upper()
+    clean_code = str(code).strip().upper()
     for p in promotions:
-        if (p.get("code") or "").strip().upper() == clean_code:
+        if isinstance(p, dict) and (str(p.get("code") or "").strip().upper() == clean_code):
             return p
     return None
 
@@ -815,16 +894,26 @@ def add_wastage_report(report: Dict[str, Any]) -> bool:
 def get_customers() -> List[Dict[str, Any]]:
     cust_file = get_config_path("customers.json")
     if os.path.exists(cust_file):
-        return read_json(cust_file, default=[])
-    return read_json(get_config_path("customers_crm.json"), default=[])
+        used_path = cust_file
+        data = read_json(cust_file, default=[])
+    else:
+        used_path = get_config_path("customers_crm.json")
+        data = read_json(used_path, default=[])
+    normalized = _normalize_list_of_dicts(data)
+    print(f"🔍 [DATA_SERVICE] get_customers() | Path: {used_path} | Found {len(normalized)} customers", flush=True)
+    return normalized
 
 
 def get_customer_by_phone(phone: str) -> Optional[Dict[str, Any]]:
+    if not phone:
+        return None
     customers = get_customers()
-    clean_phone = (phone or "").strip()
+    clean_phone = str(phone).strip().lower()
     for c in customers:
-        if (c.get("phone") or "").strip() == clean_phone:
-            return c
+        if isinstance(c, dict):
+            c_phone = str(c.get("phone") or "").strip().lower()
+            if c_phone == clean_phone:
+                return c
     return None
 
 
@@ -861,7 +950,7 @@ def get_orders_file_path(year_month: Optional[str] = None) -> str:
 def read_orders_by_month(year_month: Optional[str] = None) -> List[Dict[str, Any]]:
     """Đọc toàn bộ đơn hàng trong 1 tháng xác định."""
     filepath = get_orders_file_path(year_month)
-    return read_json(filepath, default=[])
+    return _normalize_list_of_dicts(read_json(filepath, default=[]))
 
 
 def write_orders_by_month(orders: List[Dict[str, Any]], year_month: Optional[str] = None) -> bool:
@@ -1013,7 +1102,7 @@ def get_user_orders_file_path(user_identifier: str) -> str:
 def get_user_orders(user_identifier: str) -> List[Dict[str, Any]]:
     """Đọc toàn bộ danh sách đơn hàng đã mua của khách hàng."""
     filepath = get_user_orders_file_path(user_identifier)
-    return read_json(filepath, default=[])
+    return _normalize_list_of_dicts(read_json(filepath, default=[]))
 
 
 def save_user_orders(user_identifier: str, orders: List[Dict[str, Any]]) -> bool:
@@ -1096,9 +1185,8 @@ def get_all_orders_across_all_months() -> List[Dict[str, Any]]:
         files = sorted(os.listdir(ORDERS_DIR), reverse=True)
         for f in files:
             if f.startswith("orders_") and f.endswith(".json"):
-                month_orders = read_json(os.path.join(ORDERS_DIR, f), default=[])
-                if isinstance(month_orders, list):
-                    all_orders.extend(month_orders)
+                month_orders = _normalize_list_of_dicts(read_json(os.path.join(ORDERS_DIR, f), default=[]))
+                all_orders.extend(month_orders)
     return all_orders
 
 

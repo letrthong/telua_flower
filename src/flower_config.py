@@ -11,17 +11,34 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 # Source directory
 SRC_DIR = ROOT_DIR / 'src'
 
-# Config directory (tự động nhận diện thư mục config / config/anne)
-if (ROOT_DIR / 'config' / 'anne').exists():
-    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config' / 'anne')
-elif os.path.exists("/app/config/anne"):
-    FLOWER_CONFIG_DIR = "/app/config/anne"
-elif (ROOT_DIR / 'config').exists():
-    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config')
-elif os.path.exists("/app/config"):
-    FLOWER_CONFIG_DIR = "/app/config"
-else:
-    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config')
+# Config directory (tự động nhận diện và cô lập riêng thư mục config/anne)
+def _detect_config_dir() -> str:
+    env_dir = os.environ.get("FLOWER_CONFIG_DIR")
+    if env_dir:
+        os.makedirs(env_dir, exist_ok=True)
+        return env_dir
+    
+    # 1. Kiểm tra /app/config/anne trong Docker
+    if os.path.exists("/app/config"):
+        target = "/app/config/anne"
+        os.makedirs(target, exist_ok=True)
+        return target
+    
+    # 2. Tìm thư mục config/anne từ root project
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        candidate = parent / "config"
+        if candidate.exists():
+            target = candidate / "anne"
+            target.mkdir(parents=True, exist_ok=True)
+            return str(target)
+            
+    # 3. Fallback thư mục config ngay tại Controller/anne/config
+    fallback = Path(__file__).resolve().parent / "config"
+    fallback.mkdir(parents=True, exist_ok=True)
+    return str(fallback)
+
+FLOWER_CONFIG_DIR = _detect_config_dir()
 
 # Sub-directories
 FLOWER_ORDERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "orders")
@@ -43,8 +60,13 @@ WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.jso
 # File cache version - dùng để đồng bộ cache giữa các workers / instances
 CACHE_VERSION_FILE = os.path.join(FLOWER_CONFIG_DIR, "cache_version.json")
 
-# Log thông tin debug cấu hình
-logger.info(f"🌸 [FLOWER CONFIG] ROOT_DIR: {ROOT_DIR}")
-logger.info(f"🌸 [FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR} (Tồn tại: {os.path.exists(FLOWER_CONFIG_DIR)})")
-logger.info(f"🌸 [FLOWER CONFIG] PRODUCTS_FILE_PATH: {PRODUCTS_FILE_PATH} (Tồn tại: {os.path.exists(PRODUCTS_FILE_PATH)})")
+# Log thông tin debug cấu hình ra stdout (hiện ngay trong Docker console)
+print(f"🌸 [FLOWER CONFIG] ROOT_DIR: {ROOT_DIR}", flush=True)
+print(f"🌸 [FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR} (exists: {os.path.exists(FLOWER_CONFIG_DIR)})", flush=True)
+print(f"🌸 [FLOWER CONFIG] STAFF_USERS_FILE_PATH: {STAFF_USERS_FILE_PATH} (exists: {os.path.exists(STAFF_USERS_FILE_PATH)})", flush=True)
+print(f"🌸 [FLOWER CONFIG] CUSTOMERS_FILE_PATH: {CUSTOMERS_FILE_PATH} (exists: {os.path.exists(CUSTOMERS_FILE_PATH)})", flush=True)
+print(f"🌸 [FLOWER CONFIG] PRODUCTS_FILE_PATH: {PRODUCTS_FILE_PATH} (exists: {os.path.exists(PRODUCTS_FILE_PATH)})", flush=True)
+print(f"🌸 [FLOWER CONFIG] BRANCHES_FILE_PATH: {BRANCHES_FILE_PATH} (exists: {os.path.exists(BRANCHES_FILE_PATH)})", flush=True)
+
+logger.info(f"🌸 [FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR}")
 

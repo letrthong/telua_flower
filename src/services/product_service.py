@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from services.data_service import (
+from .data_service import (
     get_products,
     save_products,
     get_product_by_id,
