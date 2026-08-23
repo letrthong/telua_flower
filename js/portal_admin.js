@@ -209,9 +209,19 @@ function renderCategoriesTable(categories) {
                     <span class="text-xs text-gray-500 line-clamp-1 max-w-[180px]">${cat.description || "—"}</span>
                 </td>
                 <td class="p-3">
-                    <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-700 font-extrabold text-xs flex items-center justify-center">
-                        ${cat.order || 1}
-                    </span>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-6 h-6 rounded-full bg-pink-50 text-primary font-extrabold text-xs flex items-center justify-center border border-pink-200 shadow-2xs">
+                            ${cat.order || 1}
+                        </span>
+                        <div class="flex flex-col space-y-0.5">
+                            <button onclick="moveCategory('${cat.id}', 'up')" title="Đẩy danh mục lên trước" class="w-4 h-3.5 bg-gray-100 hover:bg-primary hover:text-white text-gray-600 rounded text-[9px] flex items-center justify-center transition">
+                                <i class="fa-solid fa-chevron-up"></i>
+                            </button>
+                            <button onclick="moveCategory('${cat.id}', 'down')" title="Đẩy danh mục xuống sau" class="w-4 h-3.5 bg-gray-100 hover:bg-primary hover:text-white text-gray-600 rounded text-[9px] flex items-center justify-center transition">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
                 </td>
                 <td class="p-3">${statusBadge}</td>
                 <td class="p-3 text-[11px] text-gray-500 font-mono leading-tight">
@@ -419,6 +429,29 @@ export async function restoreCategory(catId, catName) {
         alert("Lỗi kết nối: " + e.message);
     }
 }
+
+export async function moveCategory(catId, direction) {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/categories/${catId}/move`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ direction })
+        });
+        const json = await res.json();
+        if (json.success) {
+            loadAdminCategories();
+        } else {
+            alert(json.message || "Không thể di chuyển thứ tự");
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+    }
+}
+
 
 
 export function populateCategoryDropdowns(categories) {
@@ -1390,58 +1423,294 @@ export async function toggleProduct(productId) {
 }
 
 // ==========================================
-// QUẢN LÝ KHUYẾN MÃI (PROMOTIONS)
+// QUẢN LÝ KHUYẾN MÃI & VOUCHER (PROMOTIONS - Timestamps & Soft Delete)
 // ==========================================
 
 export async function loadAdminPromotions() {
-    const grid = document.getElementById("promotionsGrid");
-    if (!grid) return;
+    const tbody = document.getElementById("promotionsTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu voucher...</td></tr>`;
 
     try {
         const res = await fetch("/api/promotions");
         const json = await res.json();
         if (json.success && json.data) {
             allAdminPromotions = json.data;
-            let html = "";
-            allAdminPromotions.forEach((p) => {
-                const isChecked = p.isActive !== false ? "checked" : "";
-                html += `
-                    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="bg-pink-100 text-primary font-extrabold text-xs px-2.5 py-1 rounded-lg">${p.code}</span>
-                                <h4 class="font-bold text-gray-800 text-sm mt-2">${p.title}</h4>
-                            </div>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" onchange="togglePromo('${p.id}')" ${isChecked} class="sr-only peer">
-                                <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
-                            </label>
-                        </div>
-                        <div class="text-xs text-gray-500 space-y-1 pt-2 border-t border-gray-100">
-                            <div>Giảm: <b class="text-primary font-bold">${p.discountType === 'percentage' ? p.discountValue + '%' : p.discountValue.toLocaleString() + '₫'}</b></div>
-                            <div>Đơn tối thiểu: <b>${p.minOrderAmount?.toLocaleString()}₫</b></div>
-                            <div>Giới hạn: <b>${p.usedCount || 0}/${p.usageLimit || 500} lượt</b></div>
-                        </div>
-                    </div>
-                `;
-            });
-            grid.innerHTML = html;
+            renderPromotionsTable(allAdminPromotions);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500 font-bold">Không thể tải danh sách khuyến mãi</td></tr>`;
         }
     } catch (e) {
-        grid.innerHTML = `<p class="text-red-500 text-xs">Lỗi tải khuyến mãi: ${e.message}</p>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+    }
+}
+
+export function renderPromotionsTable(promotions) {
+    const tbody = document.getElementById("promotionsTableBody");
+    if (!tbody) return;
+
+    if (!Array.isArray(promotions) || promotions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-400">Chưa có voucher khuyến mãi nào. Bấm "Thêm Voucher Mới" để tạo!</td></tr>`;
+        return;
+    }
+
+    let html = "";
+    promotions.forEach((p) => {
+        const isDeleted = p.status === "deleted" || p.isDeleted === true;
+        const isActive = !isDeleted && p.isActive !== false;
+
+        let statusBadge = "";
+        if (isDeleted) {
+            statusBadge = `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-200">🔴 Đã Xóa Mềm</span>`;
+        } else if (isActive) {
+            statusBadge = `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-green-200">🟢 Đang Áp Dụng</span>`;
+        } else {
+            statusBadge = `<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-full border border-gray-200">⚪ Tạm Dừng</span>`;
+        }
+
+        const discountStr = p.discountType === "percentage" 
+            ? `<span class="font-extrabold text-primary text-sm">${p.discountValue}%</span>`
+            : `<span class="font-extrabold text-primary text-sm">${(p.discountValue || 0).toLocaleString()}₫</span>`;
+
+        const minOrder = (p.minOrderAmount || 0).toLocaleString() + "₫";
+        const maxDiscount = (p.maxDiscountAmount || 0).toLocaleString() + "₫";
+
+        const start = p.startDate ? p.startDate.split("T")[0] : "—";
+        const end = p.endDate ? p.endDate.split("T")[0] : "—";
+
+        const createdDate = p.createdAt ? p.createdAt.replace("T", " ").replace("Z", "") : "—";
+        const updatedDate = p.updatedAt ? p.updatedAt.replace("T", " ").replace("Z", "") : createdDate;
+        const deletedDate = p.deletedAt ? p.deletedAt.replace("T", " ").replace("Z", "") : null;
+
+        const rowBg = isDeleted ? "bg-red-50/20 opacity-75" : "hover:bg-pink-50/20";
+
+        html += `
+            <tr class="${rowBg} transition border-b border-gray-100">
+                <td class="p-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-pink-100 text-primary font-mono font-extrabold text-xs px-2.5 py-1 rounded-lg border border-pink-200 ${isDeleted ? 'line-through text-gray-400' : ''}">${p.code}</span>
+                    </div>
+                    <div class="font-bold text-gray-800 text-xs mt-1 ${isDeleted ? 'line-through text-gray-400' : ''}">${p.title}</div>
+                    ${p.topBarMessage ? `<div class="text-[10px] text-amber-600 truncate max-w-[200px]" title="${p.topBarMessage}">📢 ${p.topBarMessage}</div>` : ''}
+                </td>
+                <td class="p-3">${discountStr}</td>
+                <td class="p-3 text-[11px] text-gray-600">
+                    <div>Đơn tối thiểu: <b>${minOrder}</b></div>
+                    <div>Giảm tối đa: <b>${maxDiscount}</b></div>
+                </td>
+                <td class="p-3 text-[11px]">
+                    <span class="font-bold text-gray-800">${p.usedCount || 0}</span> / <span class="text-gray-500">${p.usageLimit || 500}</span>
+                </td>
+                <td class="p-3 text-[11px] text-gray-500 font-mono">
+                    <div>${start}</div>
+                    <div>➔ ${end}</div>
+                </td>
+                <td class="p-3">${statusBadge}</td>
+                <td class="p-3 text-[10px] text-gray-500 font-mono leading-tight">
+                    <div><span class="text-gray-400">Tạo:</span> ${createdDate}</div>
+                    <div><span class="text-gray-400">Sửa:</span> ${updatedDate}</div>
+                    ${deletedDate ? `<div class="text-red-500 font-bold"><span>Xóa:</span> ${deletedDate}</div>` : ''}
+                </td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center space-x-1.5">
+                        ${!isDeleted ? `
+                            <button onclick="editPromo('${p.id}')" title="Chỉnh sửa voucher" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="togglePromo('${p.id}')" title="${isActive ? 'Tạm dừng voucher' : 'Kích hoạt voucher'}" class="px-2.5 py-1 ${isActive ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-green-50 hover:bg-green-100 text-green-700'} rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid ${isActive ? 'fa-pause' : 'fa-play'} mr-1"></i> ${isActive ? 'Dừng' : 'Bật'}
+                            </button>
+                            <button onclick="deletePromo('${p.id}', '${p.code}')" title="Xóa mềm voucher (vẫn lưu trong json)" class="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        ` : `
+                            <button onclick="restorePromo('${p.id}', '${p.code}')" title="Khôi phục voucher đã xóa mềm" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition shadow-xs flex items-center">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> Khôi Phục
+                            </button>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+export function openPromoModal(isEdit = false) {
+    const modal = document.getElementById("promoModal");
+    const title = document.getElementById("promoModalTitle");
+    const err = document.getElementById("promoModalError");
+    if (!modal) return;
+
+    if (err) {
+        err.textContent = "";
+        err.classList.add("hidden");
+    }
+
+    if (!isEdit) {
+        title.textContent = "Thêm Voucher Khuyến Mãi Mới";
+        document.getElementById("editPromoId").value = "";
+        document.getElementById("promoCode").value = "";
+        document.getElementById("promoCode").disabled = false;
+        document.getElementById("promoTitle").value = "";
+        document.getElementById("promoDiscountType").value = "percentage";
+        document.getElementById("promoDiscountValue").value = "15";
+        document.getElementById("promoMinOrder").value = "300000";
+        document.getElementById("promoMaxDiscount").value = "150000";
+        document.getElementById("promoStartDate").value = "2026-01-01";
+        document.getElementById("promoEndDate").value = "2026-12-31";
+        document.getElementById("promoUsageLimit").value = "500";
+        document.getElementById("promoTopBarMessage").value = "";
+        document.getElementById("promoIsActive").checked = true;
+    } else {
+        title.textContent = "Chỉnh Sửa Voucher Khuyến Mãi";
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+export function closePromoModal() {
+    const modal = document.getElementById("promoModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function editPromo(promoId) {
+    const promo = (allAdminPromotions || []).find((p) => p.id === promoId);
+    if (!promo) return alert("Không tìm thấy dữ liệu voucher");
+
+    openPromoModal(true);
+
+    document.getElementById("editPromoId").value = promo.id;
+    document.getElementById("promoCode").value = promo.code || "";
+    document.getElementById("promoCode").disabled = true; // Không cho sửa code chính
+    document.getElementById("promoTitle").value = promo.title || "";
+    document.getElementById("promoDiscountType").value = promo.discountType || "percentage";
+    document.getElementById("promoDiscountValue").value = promo.discountValue || 10;
+    document.getElementById("promoMinOrder").value = promo.minOrderAmount || 0;
+    document.getElementById("promoMaxDiscount").value = promo.maxDiscountAmount || 100000;
+    document.getElementById("promoStartDate").value = promo.startDate ? promo.startDate.split("T")[0] : "2026-01-01";
+    document.getElementById("promoEndDate").value = promo.endDate ? promo.endDate.split("T")[0] : "2026-12-31";
+    document.getElementById("promoUsageLimit").value = promo.usageLimit || 500;
+    document.getElementById("promoTopBarMessage").value = promo.topBarMessage || "";
+    document.getElementById("promoIsActive").checked = promo.isActive !== false;
+}
+
+export async function handlePromoSubmit(event) {
+    event.preventDefault();
+    const btn = document.getElementById("btnSavePromo");
+    const err = document.getElementById("promoModalError");
+    const editId = document.getElementById("editPromoId").value.trim();
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    const payload = {
+        code: document.getElementById("promoCode").value.trim().toUpperCase(),
+        title: document.getElementById("promoTitle").value.trim(),
+        discountType: document.getElementById("promoDiscountType").value,
+        discountValue: parseInt(document.getElementById("promoDiscountValue").value, 10) || 10,
+        minOrderAmount: parseInt(document.getElementById("promoMinOrder").value, 10) || 0,
+        maxDiscountAmount: parseInt(document.getElementById("promoMaxDiscount").value, 10) || 100000,
+        startDate: (document.getElementById("promoStartDate").value || "2026-01-01") + "T00:00:00Z",
+        endDate: (document.getElementById("promoEndDate").value || "2026-12-31") + "T23:59:59Z",
+        usageLimit: parseInt(document.getElementById("promoUsageLimit").value, 10) || 500,
+        topBarMessage: document.getElementById("promoTopBarMessage").value.trim(),
+        isActive: document.getElementById("promoIsActive").checked
+    };
+
+    if (btn) btn.disabled = true;
+    try {
+        const url = editId ? `/api/admin/promotions/${editId}` : `/api/admin/promotions`;
+        const method = editId ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            closePromoModal();
+            loadAdminPromotions();
+            alert(editId ? "🎉 Đã cập nhật voucher thành công!" : "🎉 Đã tạo voucher mới thành công!");
+        } else {
+            if (err) {
+                err.textContent = json.message || "Lỗi lưu voucher";
+                err.classList.remove("hidden");
+            }
+        }
+    } catch (e) {
+        if (err) {
+            err.textContent = "Lỗi kết nối: " + e.message;
+            err.classList.remove("hidden");
+        }
+    } finally {
+        if (btn) btn.disabled = false;
     }
 }
 
 export async function togglePromo(promoId) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        await fetch(`/api/admin/promotions/${promoId}/toggle`, {
-            method: "PUT",
+        const res = await fetch(`/api/admin/promotions/${promoId}/toggle`, {
+            method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` }
         });
-        loadAdminPromotions();
+        const json = await res.json();
+        if (json.success) {
+            loadAdminPromotions();
+        } else {
+            alert(json.message || "Lỗi cập nhật trạng thái");
+        }
     } catch (e) {
-        alert("Lỗi: " + e.message);
+        alert("Lỗi kết nối: " + e.message);
+    }
+}
+
+export async function deletePromo(promoId, promoCode) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa voucher "${promoCode}" (ID: ${promoId})?\n(Dữ liệu sẽ được chuyển sang status='deleted' và lưu ngày xóa deletedAt trong JSON)`)) return;
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/promotions/${promoId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            loadAdminPromotions();
+            alert("Đã chuyển voucher sang trạng thái Đã Xóa (Soft Deleted) thành công!");
+        } else {
+            alert(json.message || "Không thể xóa voucher");
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+    }
+}
+
+export async function restorePromo(promoId, promoCode) {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/promotions/${promoId}/restore`, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            loadAdminPromotions();
+            alert(`🎉 Đã khôi phục voucher "${promoCode || promoId}" thành công!`);
+        } else {
+            alert(json.message || "Lỗi khôi phục voucher");
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
     }
 }
 
@@ -1551,9 +1820,18 @@ if (typeof window !== "undefined") {
     window.toggleProduct = toggleProduct;
     window.onPriceLevelChange = onPriceLevelChange;
     window.validateLivePrice = validateLivePrice;
-    window.togglePromo = togglePromo;
     window.filterTranslations = filterTranslations;
     window.saveAllTranslations = saveAllTranslations;
+
+    // Promotions & Vouchers
+    window.loadAdminPromotions = loadAdminPromotions;
+    window.openPromoModal = openPromoModal;
+    window.closePromoModal = closePromoModal;
+    window.editPromo = editPromo;
+    window.handlePromoSubmit = handlePromoSubmit;
+    window.togglePromo = togglePromo;
+    window.deletePromo = deletePromo;
+    window.restorePromo = restorePromo;
 
     // Categories
     window.loadAdminCategories = loadAdminCategories;
@@ -1564,6 +1842,7 @@ if (typeof window !== "undefined") {
     window.toggleCategory = toggleCategory;
     window.deleteCategory = deleteCategory;
     window.restoreCategory = restoreCategory;
+    window.moveCategory = moveCategory;
     window.populateCategoryDropdowns = populateCategoryDropdowns;
 
     // Staff & Customers

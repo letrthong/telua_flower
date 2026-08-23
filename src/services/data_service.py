@@ -14,6 +14,7 @@ if SRC_DIR not in sys.path:
 from flower_config import (
     FLOWER_CONFIG_DIR,
     FLOWER_ORDERS_DIR,
+    USERS_DIR,
     USERS_FILE_PATH,
     BRANCHES_FILE_PATH,
     PRODUCTS_FILE_PATH,
@@ -52,8 +53,7 @@ def read_json(filepath: str, default: Any = None) -> Any:
 
 def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
     """
-    Ghi dữ liệu ra file JSON nguyên tử (Atomic Write).
-    Ghi trước vào file tạm (.tmp) rồi đổi tên (os.replace) để chống hỏng file nếu có sự cố.
+    Ghi dữ liệu ra file JSON nguyên tử (Atomic Write với Windows retry/fallback).
     """
     dir_name = os.path.dirname(filepath)
     if dir_name and not os.path.exists(dir_name):
@@ -66,7 +66,17 @@ def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
                 json.dump(data, f, ensure_ascii=False, indent=indent)
                 f.flush()
                 os.fsync(f.fileno())
-            os.replace(temp_path, filepath)
+            try:
+                os.replace(temp_path, filepath)
+            except Exception:
+                # Fallback ghi trực tiếp trên Windows nếu os.replace bị lock
+                with open(filepath, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=indent)
+                if os.path.exists(temp_path):
+                    try:
+                        os.remove(temp_path)
+                    except Exception:
+                        pass
             return True
         except Exception as e:
             if os.path.exists(temp_path):
@@ -75,6 +85,7 @@ def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
                 except OSError:
                     pass
             raise IOError(f"Lỗi khi ghi dữ liệu ra file {filepath}: {str(e)}")
+
 
 
 def paginate(
@@ -567,13 +578,36 @@ def save_products(products: List[Dict[str, Any]]) -> bool:
 
 
 
-# 5. Khuyến Mãi & Voucher (Promotions)
-def get_promotions() -> List[Dict[str, Any]]:
-    return read_json(get_config_path("promotions.json"), default=[])
+# 5. Khuyến Mãi & Voucher (Promotions & Archival History)
+def get_promotions_history() -> List[Dict[str, Any]]:
+    """Lấy danh sách các voucher đã xóa từ config/anne/promotions_history.json."""
+    return read_json(get_config_path("promotions_history.json"), default=[])
 
 
-def get_promotion_by_code(code: str) -> Optional[Dict[str, Any]]:
-    promotions = get_promotions()
+def save_promotions_history(history_promos: List[Dict[str, Any]]) -> bool:
+    """Lưu lịch sử voucher đã xóa vào config/anne/promotions_history.json."""
+    return write_json(get_config_path("promotions_history.json"), history_promos)
+
+
+def get_promotions(include_deleted: bool = True, active_only: bool = False) -> List[Dict[str, Any]]:
+    """
+    Lấy danh sách khuyến mãi:
+    - Mặc định active_only: Chỉ lấy voucher đang bật và chưa xóa trong promotions.json.
+    - include_deleted: Gộp cả danh sách trong promotions.json và promotions_history.json cho Admin.
+    """
+    promos = read_json(get_config_path("promotions.json"), default=[])
+    if active_only:
+        return [p for p in promos if p.get("isActive") is not False and p.get("status") != "deleted" and not p.get("isDeleted")]
+    
+    if include_deleted:
+        history = get_promotions_history()
+        return promos + history
+
+    return promos
+
+
+def get_promotion_by_code(code: str, active_only: bool = False) -> Optional[Dict[str, Any]]:
+    promotions = get_promotions(include_deleted=not active_only, active_only=active_only)
     clean_code = code.strip().upper()
     for p in promotions:
         if (p.get("code") or "").strip().upper() == clean_code:
@@ -581,8 +615,167 @@ def get_promotion_by_code(code: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def get_promotion_by_id(promo_id: str) -> Optional[Dict[str, Any]]:
+    for p in get_promotions(include_deleted=True):
+        if p.get("id") == promo_id:
+            return p
+    return None
+
+
 def save_promotions(promotions: List[Dict[str, Any]]) -> bool:
     return write_json(get_config_path("promotions.json"), promotions)
+
+
+def create_or_update_promotion(
+    promo_data: Dict[str, Any],
+    promo_id: Optional[str] = None
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    code = (promo_data.get("code") or "").strip().upper()
+    title = (promo_data.get("title") or "").strip()
+    if not code:
+        return False, None, "Vui lòng nhập mã khuyến mãi (Code)"
+    if not title:
+        return False, None, "Vui lòng nhập tiêu đề khuyến mãi"
+
+    promotions = read_json(get_config_path("promotions.json"), default=[])
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    is_active = bool(promo_data.get("isActive", True))
+    status = promo_data.get("status") or ("active" if is_active else "inactive")
+
+    if promo_id:
+        for i, p in enumerate(promotions):
+            if p.get("id") == promo_id or p.get("code") == promo_id.upper():
+                promotions[i]["code"] = code
+                promotions[i]["title"] = title
+                promotions[i]["discountType"] = promo_data.get("discountType", "percentage")
+                promotions[i]["discountValue"] = int(promo_data.get("discountValue") or 10)
+                promotions[i]["maxDiscountAmount"] = int(promo_data.get("maxDiscountAmount") or 100000)
+                promotions[i]["minOrderAmount"] = int(promo_data.get("minOrderAmount") or 0)
+                promotions[i]["startDate"] = promo_data.get("startDate") or p.get("startDate", "2026-01-01T00:00:00Z")
+                promotions[i]["endDate"] = promo_data.get("endDate") or p.get("endDate", "2026-12-31T23:59:59Z")
+                promotions[i]["usageLimit"] = int(promo_data.get("usageLimit") or 500)
+                promotions[i]["topBarMessage"] = promo_data.get("topBarMessage", "")
+                promotions[i]["heroBannerUrl"] = promo_data.get("heroBannerUrl", "")
+                promotions[i]["isActive"] = is_active
+                promotions[i]["status"] = status
+                promotions[i]["isDeleted"] = False
+                promotions[i]["deletedAt"] = None
+                promotions[i]["updatedAt"] = now_iso
+                save_promotions(promotions)
+                return True, promotions[i], None
+        return False, None, f"Không tìm thấy voucher '{promo_id}'"
+    else:
+        # Check duplicate code in both active and history
+        all_existing = get_promotions(include_deleted=True)
+        if any(p.get("code", "").upper() == code for p in all_existing):
+            return False, None, f"Mã khuyến mãi '{code}' đã tồn tại"
+
+        new_id = promo_data.get("id") or f"promo_{code.lower()}_{int(time.time()) % 100000}"
+        new_promo = {
+            "id": new_id,
+            "title": title,
+            "code": code,
+            "discountType": promo_data.get("discountType", "percentage"),
+            "discountValue": int(promo_data.get("discountValue") or 10),
+            "maxDiscountAmount": int(promo_data.get("maxDiscountAmount") or 100000),
+            "minOrderAmount": int(promo_data.get("minOrderAmount") or 0),
+            "startDate": promo_data.get("startDate") or "2026-01-01T00:00:00Z",
+            "endDate": promo_data.get("endDate") or "2026-12-31T23:59:59Z",
+            "usageLimit": int(promo_data.get("usageLimit") or 500),
+            "usedCount": 0,
+            "topBarMessage": promo_data.get("topBarMessage", ""),
+            "heroBannerUrl": promo_data.get("heroBannerUrl", ""),
+            "status": status,
+            "isActive": is_active,
+            "isDeleted": False,
+            "createdAt": now_iso,
+            "updatedAt": now_iso
+        }
+        promotions.insert(0, new_promo)
+        save_promotions(promotions)
+        return True, new_promo, None
+
+
+def toggle_promotion_active(promo_id_or_code: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    promotions = read_json(get_config_path("promotions.json"), default=[])
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    clean_target = promo_id_or_code.strip().upper()
+    for i, p in enumerate(promotions):
+        if p.get("id") == promo_id_or_code or (p.get("code") or "").upper() == clean_target:
+            new_active = not p.get("isActive", True)
+            promotions[i]["isActive"] = new_active
+            promotions[i]["status"] = "active" if new_active else "inactive"
+            promotions[i]["updatedAt"] = now_iso
+            save_promotions(promotions)
+            return True, promotions[i], None
+    return False, None, f"Không tìm thấy voucher '{promo_id_or_code}' trong danh sách hoạt động"
+
+
+def delete_promotion(promo_id_or_code: str) -> Tuple[bool, Optional[str]]:
+    """
+    Xóa mềm (Soft Delete) Voucher và chuyển sang promotions_history.json:
+    - Xóa khỏi promotions.json
+    - Thêm vào promotions_history.json với status='deleted', isDeleted=True, deletedAt=now_iso
+    """
+    promotions = read_json(get_config_path("promotions.json"), default=[])
+    history = get_promotions_history()
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    clean_target = promo_id_or_code.strip().upper()
+
+    target_idx = -1
+    for i, p in enumerate(promotions):
+        if p.get("id") == promo_id_or_code or (p.get("code") or "").upper() == clean_target:
+            target_idx = i
+            break
+
+    if target_idx == -1:
+        return False, f"Không tìm thấy voucher '{promo_id_or_code}' cần xóa"
+
+    deleted_item = promotions.pop(target_idx)
+    deleted_item["status"] = "deleted"
+    deleted_item["isDeleted"] = True
+    deleted_item["isActive"] = False
+    deleted_item["deletedAt"] = now_iso
+    deleted_item["updatedAt"] = now_iso
+
+    history.insert(0, deleted_item)
+    save_promotions(promotions)
+    save_promotions_history(history)
+    return True, None
+
+
+def restore_promotion(promo_id_or_code: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Khôi phục voucher từ promotions_history.json về lại promotions.json:
+    - Xóa khỏi promotions_history.json
+    - Thêm vào promotions.json với status='active', isDeleted=False, isActive=True, deletedAt=None
+    """
+    history = get_promotions_history()
+    promotions = read_json(get_config_path("promotions.json"), default=[])
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    clean_target = promo_id_or_code.strip().upper()
+
+    target_idx = -1
+    for i, p in enumerate(history):
+        if p.get("id") == promo_id_or_code or (p.get("code") or "").upper() == clean_target:
+            target_idx = i
+            break
+
+    if target_idx == -1:
+        return False, None, f"Không tìm thấy voucher '{promo_id_or_code}' trong lịch sử đã xóa"
+
+    restored_item = history.pop(target_idx)
+    restored_item["status"] = "active"
+    restored_item["isDeleted"] = False
+    restored_item["isActive"] = True
+    restored_item["deletedAt"] = None
+    restored_item["updatedAt"] = now_iso
+
+    promotions.insert(0, restored_item)
+    save_promotions(promotions)
+    save_promotions_history(history)
+    return True, restored_item, None
+
 
 
 # 6. Biên Dịch Đa Ngôn Ngữ (Translations i18n) - Hỗ trợ cache LRU
@@ -784,4 +977,139 @@ def delete_order(order_id: str, year_month: Optional[str] = None) -> bool:
     orders = read_orders_by_month(ym)
     new_orders = [o for o in orders if o.get("id") != order_id and o.get("orderCode") != order_id]
     return write_orders_by_month(new_orders, ym)
+
+
+# ==========================================
+# QUẢN LÝ ĐƠN HÀNG THEO THƯ MỤC KHÁCH HÀNG (USER ORDERS REPOSITORY)
+# Cấu trúc: config/anne/users/{user_id}/orders.json
+# ==========================================
+
+def clean_user_identifier(identifier: str) -> str:
+    """Chuẩn hóa mã định danh người dùng / số điện thoại / email thành tên thư mục an toàn."""
+    if not identifier:
+        return "guest"
+    cleaned = identifier.strip().lower()
+    # Loại bỏ các ký tự không hợp lệ trong đường dẫn file
+    for ch in ['/', '\\', ':', '*', '?', '"', '<', '>', '|', ' ']:
+        cleaned = cleaned.replace(ch, '_')
+    return cleaned
+
+
+def get_user_folder_path(user_identifier: str) -> str:
+    """Trả về đường dẫn thư mục cá nhân của khách hàng: config/anne/users/{user_id}/"""
+    clean_id = clean_user_identifier(user_identifier)
+    user_dir = os.path.join(USERS_DIR, clean_id)
+    if not os.path.exists(user_dir):
+        os.makedirs(user_dir, exist_ok=True)
+    return user_dir
+
+
+def get_user_orders_file_path(user_identifier: str) -> str:
+    """Trả về đường dẫn file orders.json trong thư mục riêng của khách: config/anne/users/{user_id}/orders.json"""
+    user_dir = get_user_folder_path(user_identifier)
+    return os.path.join(user_dir, "orders.json")
+
+
+def get_user_orders(user_identifier: str) -> List[Dict[str, Any]]:
+    """Đọc toàn bộ danh sách đơn hàng đã mua của khách hàng."""
+    filepath = get_user_orders_file_path(user_identifier)
+    return read_json(filepath, default=[])
+
+
+def save_user_orders(user_identifier: str, orders: List[Dict[str, Any]]) -> bool:
+    """Ghi danh sách đơn hàng vào thư mục cá nhân của khách."""
+    filepath = get_user_orders_file_path(user_identifier)
+    return write_json(filepath, orders)
+
+
+def extract_user_identifier_from_order(order: Dict[str, Any]) -> str:
+    """Xác định mã định danh duy nhất của khách hàng từ thông tin đơn hàng."""
+    sender = order.get("sender") or {}
+    phone = (sender.get("phone") or "").strip()
+    if phone:
+        return phone
+
+    email = (sender.get("email") or "").strip()
+    if email:
+        return email
+
+    customer_id = (order.get("customerId") or order.get("userId") or "").strip()
+    if customer_id:
+        return customer_id
+
+    # Fallback từ lịch sử tạo
+    history = order.get("history") or []
+    if history and isinstance(history, list):
+        for h in history:
+            updated_by = h.get("updatedBy")
+            if updated_by and updated_by != "system":
+                return updated_by
+
+    return "guest"
+
+
+def sync_order_to_user_folder(order: Dict[str, Any]) -> bool:
+    """
+    Đồng bộ đơn hàng vào thư mục riêng của khách hàng (config/anne/users/{user_id}/orders.json):
+    - Nếu đơn đã tồn tại -> cập nhật trạng thái mới nhất.
+    - Nếu đơn mới -> chèn lên đầu danh sách.
+    - Đồng thời lưu thông tin profile tóm tắt nếu có.
+    """
+    user_id = extract_user_identifier_from_order(order)
+    if not user_id or user_id == "guest":
+        return False
+
+    user_orders = get_user_orders(user_id)
+    order_id = order.get("id") or order.get("orderCode")
+
+    # Kiểm tra xem đơn đã có trong sổ đơn cá nhân chưa
+    existing_idx = next((i for i, o in enumerate(user_orders) if (o.get("id") == order_id or o.get("orderCode") == order_id)), -1)
+    if existing_idx != -1:
+        user_orders[existing_idx] = order
+    else:
+        user_orders.insert(0, order)
+
+    save_user_orders(user_id, user_orders)
+
+    # Lưu/cập nhật thông tin profile của khách vào config/anne/users/{user_id}/profile.json
+    sender = order.get("sender") or {}
+    if sender.get("name") or sender.get("phone"):
+        profile_path = os.path.join(get_user_folder_path(user_id), "profile.json")
+        current_profile = read_json(profile_path, default={})
+        current_profile.update({
+            "id": user_id,
+            "name": sender.get("name") or current_profile.get("name", "Khách Hàng"),
+            "phone": sender.get("phone") or current_profile.get("phone", user_id),
+            "email": sender.get("email") or current_profile.get("email", ""),
+            "lastOrderAt": order.get("createdAt") or datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "totalOrders": len(user_orders)
+        })
+        write_json(profile_path, current_profile)
+
+    return True
+
+
+def get_all_orders_across_all_months() -> List[Dict[str, Any]]:
+    """Đọc toàn bộ đơn hàng trên toàn hệ thống (quét qua mọi file orders_YYYY_MM.json)."""
+    all_orders = []
+    if os.path.exists(ORDERS_DIR):
+        files = sorted(os.listdir(ORDERS_DIR), reverse=True)
+        for f in files:
+            if f.startswith("orders_") and f.endswith(".json"):
+                month_orders = read_json(os.path.join(ORDERS_DIR, f), default=[])
+                if isinstance(month_orders, list):
+                    all_orders.extend(month_orders)
+    return all_orders
+
+
+def migrate_existing_orders_to_users() -> int:
+    """Quét toàn bộ đơn hàng hiện có và tự động phân loại vào thư mục từng khách hàng."""
+    all_orders = get_all_orders_across_all_months()
+    synced_count = 0
+    for ord_item in all_orders:
+        if sync_order_to_user_folder(ord_item):
+            synced_count += 1
+    return synced_count
+
+
 

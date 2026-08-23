@@ -102,6 +102,55 @@ Lưu trữ tài khoản khách hàng đăng ký mua hoa, tích điểm và hạn
 
 ---
 
+### 👤 2b. `config/users/{user_identifier}/` - Thư Mục Lưu Trữ Đơn Hàng Cá Nhân Của Từng Khách Hàng (User Order Repository)
+Mỗi khách hàng sở hữu một thư mục riêng biệt được tự động đồng bộ thời gian thực:
+- `config/users/{phone}/orders.json`: Lưu toàn bộ danh sách đơn hàng đã mua của khách này (nạp cực nhanh khi khách đăng nhập kiểm tra đơn hàng).
+- `config/users/{phone}/profile.json`: Hồ sơ tóm tắt, tổng số đơn và lần mua gần nhất.
+
+#### File `config/users/0987654321/profile.json`:
+```json
+{
+  "id": "0987654321",
+  "name": "Nguyễn Văn A",
+  "phone": "0987654321",
+  "email": "nva@gmail.com",
+  "lastOrderAt": "2026-08-22T07:15:00Z",
+  "totalOrders": 31
+}
+```
+
+#### File `config/users/0987654321/orders.json`:
+```json
+[
+  {
+    "id": "ord_20260825_001",
+    "orderCode": "NHTB_20260825_001",
+    "createdAt": "2026-08-22T07:15:00Z",
+    "assignedBranchId": "branch_q10",
+    "status": "completed",
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "price": 420000
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 0,
+      "totalAmount": 420000
+    },
+    "payment": {
+      "method": "vietqr",
+      "status": "paid"
+    }
+  }
+]
+```
+
+---
+
 ### 🗂️ 3. `config/categories.json` - Danh Mục Mẫu Hoa Động, Timestamps & Xóa Mềm (Soft Delete)
 Lưu trữ danh sách các danh mục hoa tươi, ngày tạo (`createdAt`), ngày sửa (`updatedAt`), icon, thứ tự sắp xếp và trạng thái (`status: "active" | "inactive" | "deleted"`):
 ```json
@@ -320,24 +369,51 @@ File chi tiết riêng biệt được nạp qua API `GET /api/products/<id>` kh
 
 ---
 
-### 🏷️ 6. `config/promotions.json` - Chiến Dịch Khuyến Mãi & Voucher
+### 🏷️ 6. `config/promotions.json` - Danh Sách Voucher Hoạt Động & Tạm Dừng
+Chỉ lưu các voucher đang được áp dụng hoặc tạm dừng giúp hệ thống nạp nhanh khi checkout:
 ```json
 [
   {
     "id": "promo_2010",
-    "title": "Mừng Tháng Phụ Nữ 20/10",
+    "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
     "code": "PHUNU15",
     "discountType": "percentage",
     "discountValue": 15,
     "maxDiscountAmount": 150000,
     "minOrderAmount": 400000,
-    "startDate": "2026-10-15T00:00:00Z",
-    "endDate": "2026-10-21T23:59:59Z",
+    "startDate": "2026-10-01T00:00:00Z",
+    "endDate": "2026-10-31T23:59:59Z",
     "usageLimit": 200,
     "usedCount": 45,
     "topBarMessage": "🔥 ƯU ĐÃI 20/10: Nhập mã PHUNU15 giảm 15% + Tặng thiệp hoa thiết kế!",
     "heroBannerUrl": "https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=1200",
-    "isActive": true
+    "status": "active",
+    "isActive": true,
+    "isDeleted": false,
+    "createdAt": "2026-08-20T00:00:00Z",
+    "updatedAt": "2026-08-23T20:25:00Z"
+  }
+]
+```
+
+---
+
+### 🗄️ 6b. `config/promotions_history.json` - Lịch Sử Lưu Trữ Các Voucher Đã Xóa (Archival History)
+Lưu trữ toàn bộ voucher đã xóa mềm có kèm dấu thời gian `deletedAt`, hỗ trợ phục hồi bất cứ lúc nào:
+```json
+[
+  {
+    "id": "promo_old_voucher",
+    "title": "Voucher Mùa Hè Cũ",
+    "code": "SUMMER2025",
+    "discountType": "percentage",
+    "discountValue": 10,
+    "status": "deleted",
+    "isActive": false,
+    "isDeleted": true,
+    "deletedAt": "2026-08-23T20:25:00Z",
+    "createdAt": "2025-06-01T00:00:00Z",
+    "updatedAt": "2026-08-23T20:25:00Z"
   }
 ]
 ```

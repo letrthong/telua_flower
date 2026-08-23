@@ -12,18 +12,21 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = ROOT_DIR / 'src'
 
 # Config directory (tự động nhận diện thư mục config / config/anne)
-if os.path.exists("/app/config/anne"):
+if (ROOT_DIR / 'config' / 'anne').exists():
+    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config' / 'anne')
+elif os.path.exists("/app/config/anne"):
     FLOWER_CONFIG_DIR = "/app/config/anne"
+elif (ROOT_DIR / 'config').exists():
+    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config')
 elif os.path.exists("/app/config"):
     FLOWER_CONFIG_DIR = "/app/config"
-elif (ROOT_DIR / 'config' / 'anne').exists():
-    FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config' / 'anne')
 else:
     FLOWER_CONFIG_DIR = str(ROOT_DIR / 'config')
 
 # Sub-directories
 FLOWER_ORDERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "orders")
 PRODUCTS_DIR = os.path.join(FLOWER_CONFIG_DIR, "products")
+USERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "users")
 
 # File paths chuẩn hóa
 USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "staff_users.json") if os.path.exists(os.path.join(FLOWER_CONFIG_DIR, "staff_users.json")) else os.path.join(FLOWER_CONFIG_DIR, "users.json")

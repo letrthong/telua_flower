@@ -20,7 +20,9 @@ from services.data_service import (
     save_order,
     get_order_by_id,
     read_orders_by_month,
-    update_order_status
+    update_order_status,
+    sync_order_to_user_folder,
+    get_user_orders
 )
 
 STANDARD_TIME_SLOTS = [
@@ -323,7 +325,10 @@ def create_order(
     if not save_success:
         return False, None, "Lỗi lưu đơn hàng vào hệ thống lưu trữ"
 
-    # 9. Tích lũy điểm CRM cho khách hàng (1 điểm mỗi 10,000 VND)
+    # 9. Tự động đồng bộ vào thư mục cá nhân của khách hàng (config/anne/users/{user_id}/orders.json)
+    sync_order_to_user_folder(new_order)
+
+    # 10. Tích lũy điểm CRM cho khách hàng (1 điểm mỗi 10,000 VND)
     earned_points = final_total // 10000
     _update_customer_crm_after_order(sender_phone, sender_name, sender.get("email", ""), earned_points, final_total)
 
@@ -372,3 +377,175 @@ def _update_customer_crm_after_order(
         customers.append(new_cust)
 
     save_customers(customers)
+
+
+def query_admin_orders(
+    current_user: Dict[str, Any],
+    timeframe: str = "this_month",
+    branch_id: Optional[str] = None,
+    status: Optional[str] = None,
+    payment_status: Optional[str] = None,
+    search: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    month_key: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Quản lý & Thống kê đơn hàng chuyên sâu cho Admin / Quản lý chi nhánh theo Tuần, Tháng, Quý:
+    - timeframe: 'today' (hôm nay), 'this_week' (tuần này), 'this_month' (tháng này), 'last_month' (tháng trước), 'all' (toàn thời gian), 'custom' (tùy chọn)
+    - Tự động phân quyền: Quản lý chi nhánh chỉ xem đơn của chi nhánh mình, Super Admin xem toàn chuỗi.
+    - Trả về danh sách đơn hàng đã lọc và bộ chỉ số thống kê doanh thu (Doanh thu tuần, tháng, biểu đồ theo ngày).
+    """
+    now = datetime.now()
+    role = current_user.get("role", "staff")
+    user_branch = current_user.get("branchId")
+
+    # 1. Xác định tập đơn hàng cơ sở cần nạp
+    orders_pool: List[Dict[str, Any]] = []
+    if month_key:
+        orders_pool = read_orders_by_month(month_key)
+    elif timeframe in ["this_month", "today", "this_week"]:
+        current_ym = now.strftime("%Y_%m")
+        orders_pool = read_orders_by_month(current_ym)
+    elif timeframe == "last_month":
+        first_day_current = now.replace(day=1)
+        last_day_prev = first_day_current - timedelta(days=1)
+        prev_ym = last_day_prev.strftime("%Y_%m")
+        orders_pool = read_orders_by_month(prev_ym)
+    else:
+        # 'all' hoặc 'custom' qua nhiều tháng -> đọc từ toàn bộ các file tháng
+        from services.data_service import get_all_orders_across_all_months
+        orders_pool = get_all_orders_across_all_months()
+
+    # 2. Xác định khoảng thời gian lọc (Filter Date Range)
+    filter_start = None
+    filter_end = None
+
+    if timeframe == "today":
+        today_str = now.strftime("%Y-%m-%d")
+        filter_start = today_str + "T00:00:00"
+        filter_end = today_str + "T23:59:59"
+    elif timeframe == "this_week":
+        # Thứ 2 đầu tuần đến Chủ Nhật cuối tuần
+        monday = now - timedelta(days=now.weekday())
+        sunday = monday + timedelta(days=6)
+        filter_start = monday.strftime("%Y-%m-%d") + "T00:00:00"
+        filter_end = sunday.strftime("%Y-%m-%d") + "T23:59:59"
+    elif timeframe == "this_month":
+        month_prefix = now.strftime("%Y-%m")
+        filter_start = f"{month_prefix}-01T00:00:00"
+        filter_end = f"{month_prefix}-31T23:59:59"
+    elif timeframe == "custom":
+        if start_date:
+            filter_start = start_date + "T00:00:00" if "T" not in start_date else start_date
+        if end_date:
+            filter_end = end_date + "T23:59:59" if "T" not in end_date else end_date
+
+    # 3. Phân quyền chi nhánh
+    target_branch = branch_id
+    if role == "branch_manager" and user_branch:
+        target_branch = user_branch
+
+    # 4. Thực hiện lọc đơn hàng
+    filtered_orders: List[Dict[str, Any]] = []
+    clean_search = (search or "").strip().lower()
+
+    for o in orders_pool:
+        # Lọc theo chi nhánh
+        o_branch = o.get("assignedBranchId") or o.get("branchId")
+        if target_branch and target_branch != "all" and o_branch != target_branch:
+            continue
+
+        # Lọc theo trạng thái đơn
+        if status and status != "all" and o.get("status") != status:
+            continue
+
+        # Lọc theo thanh toán
+        o_payment = o.get("payment", {})
+        o_pay_status = o_payment.get("status", "unpaid")
+        if payment_status and payment_status != "all" and o_pay_status != payment_status:
+            continue
+
+        # Lọc theo thời gian tạo
+        created_at = o.get("createdAt") or ""
+        if filter_start and created_at < filter_start:
+            continue
+        if filter_end and created_at > filter_end:
+            continue
+
+        # Tìm kiếm theo mã đơn, SĐT hoặc Tên khách
+        if clean_search:
+            sender = o.get("sender") or {}
+            sender_name = (sender.get("name") or "").lower()
+            sender_phone = (sender.get("phone") or "").lower()
+            recipient = o.get("recipient") or {}
+            recipient_name = (recipient.get("name") or "").lower()
+            recipient_phone = (recipient.get("phone") or "").lower()
+            order_code = (o.get("orderCode") or o.get("id") or "").lower()
+
+            if (clean_search not in order_code and 
+                clean_search not in sender_name and 
+                clean_search not in sender_phone and 
+                clean_search not in recipient_name and 
+                clean_search not in recipient_phone):
+                continue
+
+        filtered_orders.append(o)
+
+    # Sắp xếp mới nhất lên đầu
+    filtered_orders.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
+
+    # 5. Tính toán bộ số liệu thống kê kinh doanh (Dashboard Metrics)
+    total_revenue = 0
+    total_orders = len(filtered_orders)
+    completed_count = 0
+    pending_count = 0
+    arranging_count = 0
+    shipping_count = 0
+    cancelled_count = 0
+
+    revenue_by_branch = {}
+    revenue_by_day = {}
+
+    for o in filtered_orders:
+        f_amount = o.get("financials", {}).get("totalAmount") or o.get("totalAmount") or 0
+        st = o.get("status", "pending")
+
+        if st != "cancelled":
+            total_revenue += f_amount
+
+        if st == "completed":
+            completed_count += 1
+        elif st == "pending":
+            pending_count += 1
+        elif st == "arranging":
+            arranging_count += 1
+        elif st == "shipping":
+            shipping_count += 1
+        elif st == "cancelled":
+            cancelled_count += 1
+
+        # Theo chi nhánh
+        b_id = o.get("assignedBranchId") or o.get("branchId") or "unknown"
+        revenue_by_branch[b_id] = revenue_by_branch.get(b_id, 0) + f_amount
+
+        # Theo ngày (để vẽ biểu đồ doanh thu theo tuần/tháng)
+        day_key = (o.get("createdAt") or "")[:10]
+        if day_key:
+            revenue_by_day[day_key] = revenue_by_day.get(day_key, 0) + f_amount
+
+    return {
+        "timeframe": timeframe,
+        "totalOrders": total_orders,
+        "totalRevenue": total_revenue,
+        "metrics": {
+            "completed": completed_count,
+            "pending": pending_count,
+            "arranging": arranging_count,
+            "shipping": shipping_count,
+            "cancelled": cancelled_count
+        },
+        "revenueByBranch": revenue_by_branch,
+        "revenueByDay": dict(sorted(revenue_by_day.items())),
+        "orders": filtered_orders
+    }

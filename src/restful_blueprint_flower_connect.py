@@ -36,12 +36,15 @@ from services.data_service import (
     create_or_update_category,
     toggle_category_active,
     delete_category,
-    restore_category
+    restore_category,
+    move_category_order,
+    get_user_orders
 )
 from services.order_service import (
     get_available_delivery_slots,
     create_order,
-    assign_nearest_branch
+    assign_nearest_branch,
+    query_admin_orders
 )
 from services.product_service import (
     list_products,
@@ -52,7 +55,9 @@ from services.product_service import (
 from services.promotion_service import (
     list_all_promotions,
     toggle_promotion,
-    create_or_update_promotion
+    create_or_update_promotion,
+    delete_promotion,
+    restore_promotion
 )
 from services.translation_service import (
     get_all_translations,
@@ -300,6 +305,50 @@ def api_branch_orders(branch_id):
     }), 200
 
 
+@flower_connect_api.route("/admin/orders", methods=["GET"])
+@flower_legacy_api.route("/admin/orders", methods=["GET"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_admin_orders():
+    """
+    Quản lý & Thống kê đơn hàng bán theo Hôm nay, Tuần này, Tháng này hoặc khoảng thời gian tùy chọn:
+    Query params:
+    - timeframe: 'today', 'this_week', 'this_month', 'last_month', 'all', 'custom'
+    - branchId: 'all', 'branch_q10', 'branch_q1', 'branch_thao_dien'
+    - status: 'all', 'pending', 'arranging', 'shipping', 'completed', 'cancelled'
+    - paymentStatus: 'all', 'paid', 'unpaid'
+    - search: từ khóa tìm kiếm (mã đơn, SĐT, tên khách)
+    - startDate / endDate: YYYY-MM-DD (khi timeframe='custom')
+    - month: YYYY_MM (ví dụ: '2026_08')
+    """
+    timeframe = request.args.get("timeframe", "this_month")
+    branch_id = request.args.get("branchId")
+    status = request.args.get("status")
+    payment_status = request.args.get("paymentStatus")
+    search = request.args.get("search")
+    start_date = request.args.get("startDate")
+    end_date = request.args.get("endDate")
+    month_key = request.args.get("month")
+
+    result = query_admin_orders(
+        current_user=request.current_user,
+        timeframe=timeframe,
+        branch_id=branch_id,
+        status=status,
+        payment_status=payment_status,
+        search=search,
+        start_date=start_date,
+        end_date=end_date,
+        month_key=month_key
+    )
+
+    return jsonify({
+        "success": True,
+        "data": result
+    }), 200
+
+
+
 # ==========================================
 # CÁC API DANH MỤC HOA TƯƠI (CATEGORIES MANAGEMENT)
 # ==========================================
@@ -395,6 +444,25 @@ def api_restore_category(cat_id):
         "message": "Khôi phục danh mục thành công",
         "data": restored_cat
     }), 200
+
+
+@flower_connect_api.route("/admin/categories/<cat_id>/move", methods=["PATCH"])
+@flower_legacy_api.route("/admin/categories/<cat_id>/move", methods=["PATCH"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_move_category(cat_id):
+    """Di chuyển thứ tự order danh mục lên (up) hoặc xuống (down) 1 bậc."""
+    payload = request.get_json(silent=True) or {}
+    direction = payload.get("direction", "up")
+    success, updated_cats, err_msg = move_category_order(cat_id, direction)
+    if not success:
+        return jsonify({"success": False, "message": err_msg}), 400
+    return jsonify({
+        "success": True,
+        "message": f"Đã di chuyển thứ tự danh mục thành công",
+        "data": updated_cats
+    }), 200
+
 
 
 
@@ -512,6 +580,19 @@ def api_create_promotion():
     return jsonify({"success": True, "message": "Tạo voucher thành công", "data": new_promo}), 201
 
 
+@flower_connect_api.route("/admin/promotions/<promo_id>", methods=["PUT"])
+@flower_legacy_api.route("/admin/promotions/<promo_id>", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_update_promotion(promo_id):
+    """Cập nhật thông tin voucher khuyến mãi."""
+    payload = request.get_json(silent=True) or {}
+    success, updated_promo, err = create_or_update_promotion(payload, promo_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Cập nhật voucher thành công", "data": updated_promo}), 200
+
+
 @flower_connect_api.route("/admin/promotions/<promo_id>/toggle", methods=["PUT", "PATCH"])
 @flower_legacy_api.route("/admin/promotions/<promo_id>/toggle", methods=["PUT", "PATCH"])
 @cross_origin()
@@ -522,6 +603,31 @@ def api_toggle_promotion(promo_id):
     if not success:
         return jsonify({"success": False, "message": err}), 400
     return jsonify({"success": True, "message": "Đã cập nhật trạng thái voucher", "data": updated_promo}), 200
+
+
+@flower_connect_api.route("/admin/promotions/<promo_id>", methods=["DELETE"])
+@flower_legacy_api.route("/admin/promotions/<promo_id>", methods=["DELETE"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_delete_promotion(promo_id):
+    """Xóa mềm (Soft Delete) voucher (không xóa vật lý trong JSON, chỉ đánh dấu status='deleted')."""
+    success, err = delete_promotion(promo_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Đã chuyển voucher sang trạng thái Đã Xóa (Soft Deleted)"}), 200
+
+
+@flower_connect_api.route("/admin/promotions/<promo_id>/restore", methods=["PATCH"])
+@flower_legacy_api.route("/admin/promotions/<promo_id>/restore", methods=["PATCH"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_restore_promotion(promo_id):
+    """Khôi phục voucher đã xóa mềm."""
+    success, restored_promo, err = restore_promotion(promo_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Khôi phục voucher thành công", "data": restored_promo}), 200
+
 
 
 # ==========================================
@@ -678,3 +784,42 @@ def api_toggle_branch(branch_id):
     if not success:
         return jsonify({"success": False, "message": err}), 400
     return jsonify({"success": True, "message": "Đã cập nhật trạng thái chi nhánh", "data": branch_data}), 200
+
+
+# ==========================================
+# CÁC API TRUY VẤN ĐƠN HÀNG THEO KHÁCH HÀNG (MY ORDERS)
+# Đọc trực tiếp từ config/anne/users/{user_id}/orders.json
+# ==========================================
+
+@flower_connect_api.route("/user/orders", methods=["GET"])
+@flower_legacy_api.route("/user/orders", methods=["GET"])
+@cross_origin()
+@require_auth
+def api_get_my_orders():
+    """Lấy danh sách lịch sử đơn hàng của chính khách hàng đang đăng nhập."""
+    current_user = request.current_user
+    identifier = current_user.get("phone") or current_user.get("id") or current_user.get("email")
+    if not identifier:
+        return jsonify({"success": False, "message": "Không xác định được danh tính người dùng"}), 400
+
+    orders = get_user_orders(identifier)
+    return jsonify({
+        "success": True,
+        "data": orders,
+        "total": len(orders)
+    }), 200
+
+
+@flower_connect_api.route("/customers/<user_identifier>/orders", methods=["GET"])
+@flower_legacy_api.route("/customers/<user_identifier>/orders", methods=["GET"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_get_customer_orders(user_identifier):
+    """Lấy lịch sử toàn bộ đơn hàng của một khách hàng cụ thể (Dành cho Admin/CRM)."""
+    orders = get_user_orders(user_identifier)
+    return jsonify({
+        "success": True,
+        "data": orders,
+        "total": len(orders)
+    }), 200
+
