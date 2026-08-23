@@ -287,3 +287,144 @@ def register_customer(
             "branchId": None
         }
     }, None
+
+
+# ==========================================
+# QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN (STAFF & RBAC)
+# ==========================================
+
+def list_staff_users(current_user: Dict[str, Any], branch_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Lấy danh sách nhân sự & người dùng:
+    - super_admin: xem toàn bộ hoặc lọc theo chi nhánh.
+    - branch_manager: CHỈ xem nhân sự thuộc chi nhánh mình quản lý.
+    """
+    users = get_users()
+    user_role = current_user.get("role")
+    user_branch = current_user.get("branchId")
+
+    sanitized_users = []
+    for u in users:
+        u_copy = dict(u)
+        u_copy.pop("passwordHash", None)
+        u_copy.pop("salt", None)
+
+        if user_role == "super_admin":
+            if branch_filter and branch_filter != "all":
+                if u.get("branchId") == branch_filter:
+                    sanitized_users.append(u_copy)
+            else:
+                sanitized_users.append(u_copy)
+        elif user_role == "branch_manager":
+            # Quản lý chi nhánh chỉ thấy người thuộc chi nhánh mình
+            if u.get("branchId") == user_branch:
+                sanitized_users.append(u_copy)
+
+    return sanitized_users
+
+
+def create_or_update_staff_user(
+    current_user: Dict[str, Any],
+    user_data: Dict[str, Any],
+    target_user_id: Optional[str] = None
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Thêm mới hoặc cập nhật nhân sự:
+    - super_admin: toàn quyền gán mọi role và mọi branch.
+    - branch_manager: chỉ thêm/sửa florist hoặc sales_consultant trong chi nhánh của mình.
+    """
+    creator_role = current_user.get("role")
+    creator_branch = current_user.get("branchId")
+
+    phone = (user_data.get("phone") or "").strip()
+    full_name = (user_data.get("fullName") or "").strip()
+    email = (user_data.get("email") or "").strip()
+    target_role = user_data.get("role", "florist")
+    target_branch = user_data.get("branchId", creator_branch)
+    password = user_data.get("password")
+
+    if not phone or not full_name:
+        return False, None, "Vui lòng điền đầy đủ họ tên và số điện thoại nhân sự"
+
+    # Kiểm tra phân quyền tạo
+    if creator_role == "branch_manager":
+        if target_role not in ["florist", "sales_consultant"]:
+            return False, None, "Quản lý chi nhánh chỉ có quyền quản lý Thợ cắm hoa (florist) và Tư vấn viên (sales_consultant)"
+        target_branch = creator_branch  # Ép buộc thuộc chi nhánh của quản lý
+
+    users = get_users()
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    if target_user_id:
+        for i, u in enumerate(users):
+            if u.get("id") == target_user_id:
+                if creator_role == "branch_manager" and u.get("branchId") != creator_branch:
+                    return False, None, "Từ chối truy cập: Nhân sự này thuộc chi nhánh khác"
+
+                users[i]["fullName"] = full_name
+                users[i]["phone"] = phone
+                if email: users[i]["email"] = email
+                if creator_role == "super_admin":
+                    users[i]["role"] = target_role
+                    users[i]["branchId"] = target_branch
+                else:
+                    users[i]["role"] = target_role
+                    users[i]["branchId"] = creator_branch
+
+                if password and len(password) >= 6:
+                    users[i]["passwordHash"] = hash_password(password)
+
+                if "isActive" in user_data:
+                    users[i]["isActive"] = bool(user_data["isActive"])
+
+                save_users(users)
+                ret_user = dict(users[i])
+                ret_user.pop("passwordHash", None)
+                return True, ret_user, None
+        return False, None, "Không tìm thấy nhân sự cần sửa"
+    else:
+        if not password or len(password) < 6:
+            return False, None, "Vui lòng nhập mật khẩu khởi tạo từ 6 ký tự trở lên"
+
+        if get_user_by_phone_or_email(phone):
+            return False, None, "Số điện thoại này đã tồn tại trong hệ thống"
+
+        new_id = f"staff_{int(time.time()) % 100000:05d}"
+        new_staff = {
+            "id": new_id,
+            "phone": phone,
+            "email": email,
+            "fullName": full_name,
+            "passwordHash": hash_password(password),
+            "role": target_role,
+            "branchId": target_branch,
+            "isActive": True,
+            "createdAt": now_iso
+        }
+        users.append(new_staff)
+        save_users(users)
+
+        ret_user = dict(new_staff)
+        ret_user.pop("passwordHash", None)
+        return True, ret_user, None
+
+
+def delete_staff_user(current_user: Dict[str, Any], target_user_id: str) -> Tuple[bool, Optional[str]]:
+    creator_role = current_user.get("role")
+    creator_branch = current_user.get("branchId")
+
+    if target_user_id == current_user.get("userId") or target_user_id == current_user.get("id"):
+        return False, "Không thể tự xóa tài khoản đang đăng nhập của chính mình"
+
+    users = get_users()
+    for i, u in enumerate(users):
+        if u.get("id") == target_user_id:
+            if creator_role == "branch_manager":
+                if u.get("branchId") != creator_branch or u.get("role") in ["super_admin", "branch_manager"]:
+                    return False, "Bạn không có quyền xóa nhân sự này"
+
+            deleted_user = users.pop(i)
+            save_users(users)
+            return True, None
+    return False, "Không tìm thấy người dùng cần xóa"
+

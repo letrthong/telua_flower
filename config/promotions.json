@@ -1,5 +1,37 @@
 [
   {
+    "id": "promo_thaodien551_1787474551",
+    "title": "Mừng Khai Trương Chi Nhánh Thảo Điền",
+    "code": "THAODIEN551",
+    "discountType": "percentage",
+    "discountValue": 20,
+    "maxDiscountAmount": 200000,
+    "minOrderAmount": 500000,
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2026-12-31T23:59:59Z",
+    "usageLimit": 500,
+    "usedCount": 0,
+    "topBarMessage": "",
+    "heroBannerUrl": "",
+    "isActive": false
+  },
+  {
+    "id": "promo_thaodien119_1787474120",
+    "title": "Mừng Khai Trương Chi Nhánh Thảo Điền",
+    "code": "THAODIEN119",
+    "discountType": "percentage",
+    "discountValue": 20,
+    "maxDiscountAmount": 200000,
+    "minOrderAmount": 500000,
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2026-12-31T23:59:59Z",
+    "usageLimit": 500,
+    "usedCount": 0,
+    "topBarMessage": "",
+    "heroBannerUrl": "",
+    "isActive": false
+  },
+  {
     "id": "promo_thaodien770_1787473770",
     "title": "Mừng Khai Trương Chi Nhánh Thảo Điền",
     "code": "THAODIEN770",

@@ -15,8 +15,24 @@ TELUA_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
-from services.auth_service import authenticate_user, register_customer, verify_jwt_token
-from services.data_service import get_user_by_id, get_order_by_id, read_orders_by_month, get_price_levels, get_product_by_id
+from services.auth_service import (
+    authenticate_user,
+    register_customer,
+    verify_jwt_token,
+    list_staff_users,
+    create_or_update_staff_user,
+    delete_staff_user
+)
+from services.data_service import (
+    get_user_by_id,
+    get_order_by_id,
+    read_orders_by_month,
+    get_price_levels,
+    get_product_by_id,
+    get_branches,
+    create_or_update_branch,
+    toggle_branch_active
+)
 from services.order_service import (
     get_available_delivery_slots,
     create_order,
@@ -439,6 +455,107 @@ def api_update_translations():
     if not success:
         return jsonify({"success": False, "message": err}), 400
     return jsonify({"success": True, "message": "Cập nhật từ điển đa ngôn ngữ thành công", "data": data}), 200
+
+
+# ==========================================
+# CÁC API QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN (STAFF & USERS)
+# ==========================================
+
+@app.route("/api/admin/users", methods=["GET"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_get_staff_users():
+    """Lấy danh sách nhân sự (Super Admin thấy tất cả, Quản lý chỉ thấy chi nhánh mình)."""
+    branch_filter = request.args.get("branchId")
+    users = list_staff_users(request.current_user, branch_filter=branch_filter)
+    return jsonify({"success": True, "data": users}), 200
+
+
+@app.route("/api/admin/users", methods=["POST"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_create_staff_user():
+    """Thêm nhân sự mới (Quản lý chỉ được thêm thợ cắm hoa / tư vấn viên cho chi nhánh mình)."""
+    payload = request.get_json(silent=True) or {}
+    success, user_data, err = create_or_update_staff_user(request.current_user, payload)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Thêm nhân sự thành công", "data": user_data}), 201
+
+
+@app.route("/api/admin/users/<user_id>", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_update_staff_user(user_id):
+    """Cập nhật thông tin nhân sự."""
+    payload = request.get_json(silent=True) or {}
+    success, user_data, err = create_or_update_staff_user(request.current_user, payload, target_user_id=user_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Cập nhật nhân sự thành công", "data": user_data}), 200
+
+
+@app.route("/api/admin/users/<user_id>", methods=["DELETE"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_delete_staff_user(user_id):
+    """Xóa nhân sự."""
+    success, err = delete_staff_user(request.current_user, user_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Xóa nhân sự thành công"}), 200
+
+
+# ==========================================
+# CÁC API QUẢN LÝ CHUỖI CỬA HÀNG (BRANCHES MANAGEMENT)
+# ==========================================
+
+@app.route("/api/admin/branches", methods=["GET"])
+@cross_origin()
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_branches():
+    """Lấy danh sách chi nhánh chuỗi cửa hàng."""
+    current_user = request.current_user
+    branches = get_branches(use_cache=False)
+    if current_user.get("role") == "branch_manager":
+        branches = [b for b in branches if b.get("id") == current_user.get("branchId")]
+    return jsonify({"success": True, "data": branches}), 200
+
+
+@app.route("/api/admin/branches", methods=["POST"])
+@cross_origin()
+@require_role(["super_admin"])
+def api_create_branch():
+    """Tạo chi nhánh mới trong chuỗi (Chỉ Super Admin)."""
+    payload = request.get_json(silent=True) or {}
+    success, new_branch, err = create_or_update_branch(payload)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Thêm chi nhánh thành công", "data": new_branch}), 201
+
+
+@app.route("/api/admin/branches/<branch_id>", methods=["PUT"])
+@cross_origin()
+@require_role(["super_admin"])
+def api_update_branch(branch_id):
+    """Cập nhật thông tin chi nhánh (Chỉ Super Admin)."""
+    payload = request.get_json(silent=True) or {}
+    success, updated_branch, err = create_or_update_branch(payload, branch_id=branch_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Cập nhật chi nhánh thành công", "data": updated_branch}), 200
+
+
+@app.route("/api/admin/branches/<branch_id>/toggle", methods=["PATCH", "PUT"])
+@cross_origin()
+@require_role(["super_admin"])
+def api_toggle_branch(branch_id):
+    """Bật / Tắt trạng thái hoạt động của chi nhánh (Chỉ Super Admin)."""
+    success, branch_data, err = toggle_branch_active(branch_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Đã cập nhật trạng thái chi nhánh", "data": branch_data}), 200
+
 
 
 # ==========================================

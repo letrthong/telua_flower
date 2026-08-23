@@ -185,5 +185,16 @@
     "branchId": null,
     "isActive": true,
     "createdAt": "2026-08-23T08:32:16Z"
+  },
+  {
+    "id": "cust_1787474534",
+    "phone": "0910474534",
+    "email": "test_0910474534@gmail.com",
+    "fullName": "Khách Hàng Mới Test",
+    "passwordHash": "pbkdf2:sha256:260000$NCSg6b7zfSCoRVmN$dba3402eebdfab9d86e6d9c9e121b49ba015828b0d2ac7cbafb8d1614209b090",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T08:42:14Z"
   }
 ]

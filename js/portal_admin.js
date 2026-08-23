@@ -14,6 +14,8 @@ const PRICE_LEVEL_CONFIG = {
 let allAdminProducts = [];
 let allAdminPromotions = [];
 let allAdminTranslations = {};
+let allAdminUsers = [];
+let allAdminBranches = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     const path = (window.location.pathname || "").toLowerCase();
@@ -53,6 +55,29 @@ export function openAdminPortalModal() {
     if (nameEl) nameEl.textContent = user.fullName || user.phone || "Quản trị viên";
     if (roleEl) roleEl.textContent = user.role;
 
+    // Phân quyền hiển thị Tab Chuỗi Cửa Hàng
+    const branchTabBtn = document.getElementById("tabBtnBranches");
+    const optSuperAdmin = document.getElementById("optRoleSuperAdmin");
+    const optBranchManager = document.getElementById("optRoleBranchManager");
+    const filterBranchSelect = document.getElementById("filterUserBranch");
+
+    if (user.role === "branch_manager") {
+        // Quản lý chi nhánh không thấy tab chuỗi cửa hàng
+        if (branchTabBtn) branchTabBtn.classList.add("hidden");
+        if (optSuperAdmin) optSuperAdmin.classList.add("hidden");
+        if (optBranchManager) optBranchManager.classList.add("hidden");
+        if (filterBranchSelect) {
+            filterBranchSelect.value = user.branchId;
+            filterBranchSelect.disabled = true;
+        }
+    } else {
+        // Super Admin thấy toàn bộ
+        if (branchTabBtn) branchTabBtn.classList.remove("hidden");
+        if (optSuperAdmin) optSuperAdmin.classList.remove("hidden");
+        if (optBranchManager) optBranchManager.classList.remove("hidden");
+        if (filterBranchSelect) filterBranchSelect.disabled = false;
+    }
+
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
@@ -78,23 +103,482 @@ export function checkAdminAccess() {
 }
 
 export function switchAdminTab(tabName) {
-    const tabs = ["products", "promotions", "translations"];
+    const tabs = ["products", "users", "branches", "promotions", "translations"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
         if (btn && content) {
             if (t === tabName) {
-                btn.className = "py-3 font-bold text-sm border-b-2 border-primary text-primary transition flex items-center";
+                btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
                 content.classList.remove("hidden");
             } else {
-                btn.className = "py-3 font-bold text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center";
+                btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
                 content.classList.add("hidden");
             }
         }
     });
 
+    if (tabName === "users") loadAdminUsers();
+    if (tabName === "branches") loadAdminBranches();
     if (tabName === "promotions") loadAdminPromotions();
     if (tabName === "translations") loadAdminTranslations();
+}
+
+// ==========================================
+// QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN (STAFF & USERS)
+// ==========================================
+
+const ROLE_DISPLAY_MAP = {
+    super_admin: { label: "👑 Tổng Quản Trị", badge: "bg-purple-100 text-purple-800" },
+    branch_manager: { label: "🏬 Quản Lý Chi Nhánh", badge: "bg-blue-100 text-blue-800" },
+    florist: { label: "🌸 Thợ Cắm Hoa", badge: "bg-pink-100 text-pink-800" },
+    sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" },
+    customer: { label: "✨ Khách Hàng", badge: "bg-gray-100 text-gray-800" }
+};
+
+const BRANCH_NAME_MAP = {
+    branch_q10: "Showroom Q10",
+    branch_q1: "Showroom Bến Nghé Q1",
+    branch_thao_dien: "Showroom Thảo Điền",
+    all: "Toàn bộ hệ thống (HQ)"
+};
+
+export async function loadAdminUsers() {
+    const filterSelect = document.getElementById("filterUserBranch");
+    const branch = filterSelect ? filterSelect.value : "all";
+    const tbody = document.getElementById("usersTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Đang tải danh sách nhân sự...</td></tr>`;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        let url = "/api/admin/users";
+        if (branch && branch !== "all") url += `?branchId=${branch}`;
+        const res = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data)) {
+            allAdminUsers = json.data;
+            renderUsersTable(allAdminUsers);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải nhân sự"}</td></tr>`;
+        }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+    }
+}
+
+function renderUsersTable(users) {
+    const tbody = document.getElementById("usersTableBody");
+    if (!tbody) return;
+
+    if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 font-medium">Chưa có nhân sự nào trong danh sách.</td></tr>`;
+        return;
+    }
+
+    const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : {};
+
+    let html = "";
+    users.forEach((u) => {
+        const roleInfo = ROLE_DISPLAY_MAP[u.role] || { label: u.role, badge: "bg-gray-100 text-gray-800" };
+        const branchName = BRANCH_NAME_MAP[u.branchId] || (u.branchId ? u.branchId : "—");
+        const activeBadge = u.isActive !== false
+            ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Đang Hoạt Động</span>`
+            : `<span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">⚪ Đã Tạm Khóa</span>`;
+
+        const isSelf = u.id === currentUser.userId || u.id === currentUser.id;
+
+        html += `
+            <tr class="hover:bg-gray-50/80 transition">
+                <td class="p-3">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="w-8 h-8 rounded-full bg-pink-100 text-primary border border-pink-200 flex items-center justify-center font-bold text-xs">
+                            ${(u.fullName || "U").charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <span class="font-bold text-gray-800 block">${u.fullName}</span>
+                            <span class="text-[10px] text-gray-400 font-mono">${u.id}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-3">
+                    <div class="font-medium text-gray-800">${u.phone || "—"}</div>
+                    <div class="text-[11px] text-gray-500">${u.email || "—"}</div>
+                </td>
+                <td class="p-3">
+                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg ${roleInfo.badge}">${roleInfo.label}</span>
+                </td>
+                <td class="p-3 font-semibold text-gray-700">
+                    <i class="fa-solid fa-location-dot text-primary mr-1 text-xs"></i> ${branchName}
+                </td>
+                <td class="p-3">${activeBadge}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        <button onclick="editUser('${u.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                            <i class="fa-solid fa-pen-to-square"></i> Sửa
+                        </button>
+                        ${!isSelf ? `
+                            <button onclick="deleteUser('${u.id}', '${u.fullName}')" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+export function openUserModal(isEdit = false) {
+    const modal = document.getElementById("userModal");
+    const title = document.getElementById("userModalTitle");
+    const form = document.getElementById("userForm");
+    const errBox = document.getElementById("userModalError");
+    const pwdHint = document.getElementById("staffPwdHint");
+    const user = typeof getCurrentUser === "function" ? getCurrentUser() : {};
+
+    if (!modal) return;
+    if (errBox) errBox.classList.add("hidden");
+
+    if (!isEdit && form) {
+        form.reset();
+        document.getElementById("editUserId").value = "";
+        if (title) title.textContent = "Thêm Nhân Sự Mới Vào Hệ Thống";
+        if (pwdHint) pwdHint.textContent = "(ít nhất 6 ký tự)";
+        document.getElementById("staffPassword").required = true;
+
+        if (user.role === "branch_manager") {
+            document.getElementById("staffBranch").value = user.branchId;
+            document.getElementById("staffBranch").disabled = true;
+        } else {
+            document.getElementById("staffBranch").disabled = false;
+        }
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+export function closeUserModal() {
+    const modal = document.getElementById("userModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function editUser(userId) {
+    const u = allAdminUsers.find((user) => user.id === userId);
+    if (!u) return;
+
+    document.getElementById("editUserId").value = u.id;
+    document.getElementById("staffFullName").value = u.fullName || "";
+    document.getElementById("staffPhone").value = u.phone || "";
+    document.getElementById("staffEmail").value = u.email || "";
+    document.getElementById("staffRole").value = u.role || "florist";
+    document.getElementById("staffBranch").value = u.branchId || "branch_q10";
+    document.getElementById("staffPassword").value = "";
+    document.getElementById("staffPassword").required = false;
+    document.getElementById("staffIsActive").checked = u.isActive !== false;
+
+    const pwdHint = document.getElementById("staffPwdHint");
+    if (pwdHint) pwdHint.textContent = "(để trống nếu giữ nguyên mật khẩu cũ)";
+
+    const title = document.getElementById("userModalTitle");
+    if (title) title.textContent = `Chỉnh Sửa Nhân Sự: ${u.fullName}`;
+
+    openUserModal(true);
+}
+
+export async function handleUserSubmit(event) {
+    if (event) event.preventDefault();
+
+    const editId = document.getElementById("editUserId").value;
+    const fullName = document.getElementById("staffFullName").value.trim();
+    const phone = document.getElementById("staffPhone").value.trim();
+    const email = document.getElementById("staffEmail").value.trim();
+    const role = document.getElementById("staffRole").value;
+    const branchSelect = document.getElementById("staffBranch");
+    const branchId = branchSelect.value;
+    const password = document.getElementById("staffPassword").value;
+    const isActive = document.getElementById("staffIsActive").checked;
+
+    const payload = { fullName, phone, email, role, branchId, isActive };
+    if (password) payload.password = password;
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const isEdit = !!editId;
+    const url = isEdit ? `/api/admin/users/${editId}` : "/api/admin/users";
+    const method = isEdit ? "PUT" : "POST";
+
+    const errBox = document.getElementById("userModalError");
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            closeUserModal();
+            loadAdminUsers();
+            alert(isEdit ? "Cập nhật nhân sự thành công!" : "🎉 Thêm nhân sự mới thành công!");
+        } else {
+            if (errBox) {
+                errBox.textContent = json.message || "Lỗi lưu thông tin nhân sự";
+                errBox.classList.remove("hidden");
+            } else {
+                alert(json.message || "Lỗi lưu thông tin nhân sự");
+            }
+        }
+    } catch (e) {
+        if (errBox) {
+            errBox.textContent = "Lỗi kết nối: " + e.message;
+            errBox.classList.remove("hidden");
+        }
+    }
+}
+
+export async function deleteUser(userId, fullName) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa nhân sự "${fullName}" không?`)) return;
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/users/${userId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            loadAdminUsers();
+            alert("Đã xóa nhân sự thành công!");
+        } else {
+            alert("Lỗi: " + (json.message || "Không thể xóa nhân sự"));
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+    }
+}
+
+// ==========================================
+// QUẢN LÝ CHUỖI CỬA HÀNG (BRANCHES MANAGEMENT)
+// ==========================================
+
+export async function loadAdminBranches() {
+    const tbody = document.getElementById("branchesTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Đang tải danh sách chuỗi cửa hàng...</td></tr>`;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        const res = await fetch("/api/admin/branches", { headers: { "Authorization": `Bearer ${token}` } });
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data)) {
+            allAdminBranches = json.data;
+            renderBranchesTable(allAdminBranches);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải chi nhánh"}</td></tr>`;
+        }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+    }
+}
+
+function renderBranchesTable(branches) {
+    const tbody = document.getElementById("branchesTableBody");
+    if (!tbody) return;
+
+    if (branches.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Chưa có chi nhánh nào.</td></tr>`;
+        return;
+    }
+
+    const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : {};
+    const isSuperAdmin = currentUser.role === "super_admin";
+
+    let html = "";
+    branches.forEach((b) => {
+        const activeBadge = b.isActive !== false
+            ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Hoạt Động</span>`
+            : `<span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">⚪ Tạm Đóng Cửa</span>`;
+
+        html += `
+            <tr class="hover:bg-gray-50/80 transition">
+                <td class="p-3">
+                    <span class="font-bold text-xs bg-pink-50 text-primary border border-pink-200 px-2 py-1 rounded-md">${b.code || b.id}</span>
+                </td>
+                <td class="p-3">
+                    <span class="font-bold text-gray-800 text-sm block">${b.name}</span>
+                    <span class="text-[11px] text-gray-500">${b.openHours || "07:30 - 21:00"}</span>
+                </td>
+                <td class="p-3">
+                    <div class="font-medium text-gray-700 text-xs">${b.address}</div>
+                    <div class="text-[11px] text-primary font-bold"><i class="fa-solid fa-phone mr-1"></i> ${b.phone || "—"}</div>
+                </td>
+                <td class="p-3 font-mono text-[11px] text-gray-600">
+                    ${b.lat}, ${b.lng}
+                </td>
+                <td class="p-3 font-bold text-accent text-xs">
+                    ${b.deliveryRadiusKm || 10} km
+                </td>
+                <td class="p-3">${activeBadge}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        ${isSuperAdmin ? `
+                            <button onclick="editBranch('${b.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-pen-to-square"></i> Sửa
+                            </button>
+                            <button onclick="toggleBranch('${b.id}')" class="px-2.5 py-1 ${b.isActive !== false ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'} rounded-lg text-xs font-bold transition">
+                                ${b.isActive !== false ? '⚪ Đóng' : '🟢 Mở'}
+                            </button>
+                        ` : `
+                            <span class="text-xs text-gray-400 font-semibold">Chỉ xem</span>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+export function openBranchModal(isEdit = false) {
+    const modal = document.getElementById("branchModal");
+    const title = document.getElementById("branchModalTitle");
+    const form = document.getElementById("branchForm");
+    const errBox = document.getElementById("branchModalError");
+
+    if (!modal) return;
+    if (errBox) errBox.classList.add("hidden");
+
+    if (!isEdit && form) {
+        form.reset();
+        document.getElementById("editBranchId").value = "";
+        document.getElementById("branchRadius").value = 10;
+        document.getElementById("branchOpenHours").value = "07:30 - 21:00";
+        document.getElementById("branchLat").value = 10.7769;
+        document.getElementById("branchLng").value = 106.7009;
+        if (title) title.textContent = "Mở Thêm Chi Nhánh Showroom Mới";
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+export function closeBranchModal() {
+    const modal = document.getElementById("branchModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function editBranch(branchId) {
+    const b = allAdminBranches.find((branch) => branch.id === branchId);
+    if (!b) return;
+
+    document.getElementById("editBranchId").value = b.id;
+    document.getElementById("branchName").value = b.name || "";
+    document.getElementById("branchCode").value = b.code || "";
+    document.getElementById("branchAddress").value = b.address || "";
+    document.getElementById("branchPhone").value = b.phone || "";
+    document.getElementById("branchOpenHours").value = b.openHours || "07:30 - 21:00";
+    document.getElementById("branchLat").value = b.lat || 10.7769;
+    document.getElementById("branchLng").value = b.lng || 106.7009;
+    document.getElementById("branchRadius").value = b.deliveryRadiusKm || 10;
+    document.getElementById("branchAmenities").value = b.amenities || "";
+    document.getElementById("branchIsActive").checked = b.isActive !== false;
+
+    const title = document.getElementById("branchModalTitle");
+    if (title) title.textContent = `Chỉnh Sửa Chi Nhánh: ${b.name}`;
+
+    openBranchModal(true);
+}
+
+export async function handleBranchSubmit(event) {
+    if (event) event.preventDefault();
+
+    const editId = document.getElementById("editBranchId").value;
+    const name = document.getElementById("branchName").value.trim();
+    const code = document.getElementById("branchCode").value.trim().toUpperCase();
+    const address = document.getElementById("branchAddress").value.trim();
+    const phone = document.getElementById("branchPhone").value.trim();
+    const openHours = document.getElementById("branchOpenHours").value.trim();
+    const lat = parseFloat(document.getElementById("branchLat").value);
+    const lng = parseFloat(document.getElementById("branchLng").value);
+    const deliveryRadiusKm = parseInt(document.getElementById("branchRadius").value, 10) || 10;
+    const amenities = document.getElementById("branchAmenities").value.trim();
+    const isActive = document.getElementById("branchIsActive").checked;
+
+    const payload = { name, code, address, phone, openHours, lat, lng, deliveryRadiusKm, amenities, isActive };
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const isEdit = !!editId;
+    const url = isEdit ? `/api/admin/branches/${editId}` : "/api/admin/branches";
+    const method = isEdit ? "PUT" : "POST";
+    const errBox = document.getElementById("branchModalError");
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            closeBranchModal();
+            loadAdminBranches();
+            alert(isEdit ? "Cập nhật chi nhánh thành công!" : "🎉 Mở chi nhánh mới thành công!");
+        } else {
+            if (errBox) {
+                errBox.textContent = json.message || "Lỗi lưu thông tin chi nhánh";
+                errBox.classList.remove("hidden");
+            } else {
+                alert(json.message || "Lỗi lưu thông tin chi nhánh");
+            }
+        }
+    } catch (e) {
+        if (errBox) {
+            errBox.textContent = "Lỗi kết nối: " + e.message;
+            errBox.classList.remove("hidden");
+        }
+    }
+}
+
+export async function toggleBranch(branchId) {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`/api/admin/branches/${branchId}/toggle`, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            loadAdminBranches();
+        } else {
+            alert("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"));
+        }
+    } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+    }
 }
 
 // ==========================================
@@ -631,4 +1115,20 @@ if (typeof window !== "undefined") {
     window.togglePromo = togglePromo;
     window.filterTranslations = filterTranslations;
     window.saveAllTranslations = saveAllTranslations;
+
+    // Staff & Users
+    window.loadAdminUsers = loadAdminUsers;
+    window.openUserModal = openUserModal;
+    window.closeUserModal = closeUserModal;
+    window.editUser = editUser;
+    window.handleUserSubmit = handleUserSubmit;
+    window.deleteUser = deleteUser;
+
+    // Branches
+    window.loadAdminBranches = loadAdminBranches;
+    window.openBranchModal = openBranchModal;
+    window.closeBranchModal = closeBranchModal;
+    window.editBranch = editBranch;
+    window.handleBranchSubmit = handleBranchSubmit;
+    window.toggleBranch = toggleBranch;
 }

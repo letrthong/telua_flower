@@ -1130,15 +1130,21 @@
             </div>
 
             <!-- Tab Navigation Bar -->
-            <div class="flex border-b border-gray-200 bg-gray-50/70 px-6 space-x-6 flex-shrink-0">
-                <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center">
+            <div class="flex border-b border-gray-200 bg-gray-50/70 px-6 space-x-6 flex-shrink-0 overflow-x-auto">
+                <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-spa mr-1.5 text-base"></i> Quản Lý Mẫu Hoa (Catalogue)
                 </button>
-                <button onclick="switchAdminTab('promotions')" id="tabBtnPromotions" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center">
+                <button onclick="switchAdminTab('users')" id="tabBtnUsers" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-users-gear mr-1.5 text-base"></i> Quản Lý Nhân Sự & Phân Quyền
+                </button>
+                <button onclick="switchAdminTab('branches')" id="tabBtnBranches" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-store mr-1.5 text-base"></i> Chuỗi Cửa Hàng (Showrooms)
+                </button>
+                <button onclick="switchAdminTab('promotions')" id="tabBtnPromotions" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-ticket-simple mr-1.5 text-base"></i> Khuyến Mãi & Voucher
                 </button>
-                <button onclick="switchAdminTab('translations')" id="tabBtnTranslations" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center">
-                    <i class="fa-solid fa-language mr-1.5 text-base"></i> Biên Dịch Đa Ngôn Ngữ (5 Thứ Tiếng)
+                <button onclick="switchAdminTab('translations')" id="tabBtnTranslations" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-language mr-1.5 text-base"></i> Biên Dịch Đa Ngôn Ngữ
                 </button>
             </div>
 
@@ -1183,6 +1189,85 @@
                                     </tr>
                                 </thead>
                                 <tbody id="productsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <!-- Render qua JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB: QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN ================= -->
+                <section id="tabContentUsers" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800">Danh Sách Nhân Sự & Phân Quyền Vai Trò (RBAC)</h4>
+                            <p class="text-[11px] text-gray-500">Super Admin quản lý toàn diện; Quản lý chi nhánh chỉ thấy và thêm nhân sự tại showroom của mình</p>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <select id="filterUserBranch" onchange="loadAdminUsers()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="all">Tất cả chi nhánh</option>
+                                <option value="branch_q10">Showroom Q10</option>
+                                <option value="branch_q1">Showroom Bến Nghé Q1</option>
+                                <option value="branch_thao_dien">Showroom Thảo Điền</option>
+                            </select>
+                            <button onclick="openUserModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
+                                <i class="fa-solid fa-user-plus mr-1"></i> Thêm Nhân Sự Mới
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Họ và tên</th>
+                                        <th class="p-3">Số điện thoại / Email</th>
+                                        <th class="p-3">Vai trò (Role)</th>
+                                        <th class="p-3">Chi nhánh làm việc</th>
+                                        <th class="p-3">Trạng thái</th>
+                                        <th class="p-3 text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <!-- Render qua JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB: CHUỖI CỬA HÀNG (SHOWROOMS) ================= -->
+                <section id="tabContentBranches" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800">Quản Lý Chuỗi Cửa Hàng & Mạng Lưới Showroom</h4>
+                            <p class="text-[11px] text-gray-500">Mở rộng chi nhánh mới, cập nhật tọa độ GPS định tuyến Haversine và bán kính giao hoa</p>
+                        </div>
+                        <div id="branchActionContainer" class="flex items-center gap-2">
+                            <button onclick="openBranchModal()" id="btnAddBranch" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
+                                <i class="fa-solid fa-store mr-1"></i> Mở Thêm Chi Nhánh Mới
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Branches Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Mã CN</th>
+                                        <th class="p-3">Tên Showroom</th>
+                                        <th class="p-3">Địa chỉ & Hotline</th>
+                                        <th class="p-3">Tọa độ GPS</th>
+                                        <th class="p-3">Bán kính giao</th>
+                                        <th class="p-3">Trạng thái</th>
+                                        <th class="p-3 text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="branchesTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
                                     <!-- Render qua JS -->
                                 </tbody>
                             </table>
@@ -1350,6 +1435,149 @@
                 <div class="flex justify-end gap-3 pt-3 border-t border-gray-100">
                     <button type="button" onclick="closeProductModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
                     <button type="submit" id="btnSaveProduct" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Mẫu Hoa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL THÊM / SỬA NHÂN VIÊN & PHÂN QUYỀN ================= -->
+    <div id="userModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[220] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-pink-100 max-h-[92vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-pink-50/50 border-b border-gray-100 flex justify-between items-center">
+                <h3 id="userModalTitle" class="font-bold text-base text-gray-800">Thêm Nhân Sự Mới</h3>
+                <button onclick="closeUserModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="userForm" onsubmit="handleUserSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="editUserId">
+                <div id="userModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Họ và Tên Nhân Sự *</label>
+                    <input type="text" id="staffFullName" placeholder="VD: Lê Thị Cẩm Tú" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Số Điện Thoại (Tài khoản) *</label>
+                        <input type="tel" id="staffPhone" placeholder="0908123456" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Email</label>
+                        <input type="email" id="staffEmail" placeholder="nhanvien@nohoathabinh.vn" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Mật Khẩu <span id="staffPwdHint" class="text-gray-400 font-normal">(để trống nếu không đổi)</span></label>
+                    <input type="password" id="staffPassword" placeholder="••••••••" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Vai Trò (Role) *</label>
+                        <select id="staffRole" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary" required>
+                            <option value="florist">🌸 Thợ Cắm Hoa (florist)</option>
+                            <option value="sales_consultant">💼 Tư Vấn Viên (sales)</option>
+                            <option value="branch_manager" id="optRoleBranchManager">🏬 Quản Lý Chi Nhánh (manager)</option>
+                            <option value="super_admin" id="optRoleSuperAdmin">👑 Tổng Quản Trị (super_admin)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Chi Nhánh Gán *</label>
+                        <select id="staffBranch" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary" required>
+                            <option value="branch_q10">Showroom Q10</option>
+                            <option value="branch_q1">Showroom Bến Nghé Q1</option>
+                            <option value="branch_thao_dien">Showroom Thảo Điền</option>
+                            <option value="all" id="optBranchAll">Toàn bộ hệ thống (all)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 pt-2">
+                    <input type="checkbox" id="staffIsActive" checked class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                    <label for="staffIsActive" class="text-xs font-bold text-gray-700 cursor-pointer">Kích hoạt tài khoản cho phép đăng nhập</label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                    <button type="button" onclick="closeUserModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                    <button type="submit" id="btnSaveUser" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Nhân Sự</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL THÊM / SỬA CHI NHÁNH SHOWROOM ================= -->
+    <div id="branchModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[220] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-pink-100 max-h-[92vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-pink-50/50 border-b border-gray-100 flex justify-between items-center">
+                <h3 id="branchModalTitle" class="font-bold text-base text-gray-800">Mở Thêm Chi Nhánh Mới</h3>
+                <button onclick="closeBranchModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="branchForm" onsubmit="handleBranchSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="editBranchId">
+                <div id="branchModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Showroom *</label>
+                        <input type="text" id="branchName" placeholder="VD: Nở Hoa Thả Bình - Showroom Tân Bình" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mã Chi Nhánh *</label>
+                        <input type="text" id="branchCode" placeholder="CN_TB" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold uppercase focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Địa Chỉ Chi Tiết *</label>
+                    <input type="text" id="branchAddress" placeholder="Số nhà, đường, phường, quận..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Số Điện Thoại Hotline *</label>
+                        <input type="tel" id="branchPhone" placeholder="0976.491.325" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Giờ Mở Cửa</label>
+                        <input type="text" id="branchOpenHours" value="07:30 - 21:00" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Vĩ Độ (Lat)</label>
+                        <input type="number" step="any" id="branchLat" placeholder="10.7900" value="10.7900" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Kinh Độ (Lng)</label>
+                        <input type="number" step="any" id="branchLng" placeholder="106.6600" value="106.6600" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Bán Kính (km)</label>
+                        <input type="number" id="branchRadius" value="10" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Tiện Ích & Dịch Vụ</label>
+                    <input type="text" id="branchAmenities" value="Đậu xe ô tô/xe máy, phòng lạnh hoa nhập khẩu" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                </div>
+
+                <div class="flex items-center space-x-2 pt-2">
+                    <input type="checkbox" id="branchIsActive" checked class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                    <label for="branchIsActive" class="text-xs font-bold text-gray-700 cursor-pointer">Chi nhánh đang hoạt động đón khách & giao hoa</label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                    <button type="button" onclick="closeBranchModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                    <button type="submit" id="btnSaveBranch" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Chi Nhánh</button>
                 </div>
             </form>
         </div>

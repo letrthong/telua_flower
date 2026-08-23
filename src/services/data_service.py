@@ -140,6 +140,81 @@ def save_branches(branches: List[Dict[str, Any]]) -> bool:
     return success
 
 
+def create_or_update_branch(
+    branch_data: Dict[str, Any],
+    branch_id: Optional[str] = None
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Tạo mới hoặc cập nhật chi nhánh chuỗi cửa hàng (Dành riêng cho Super Admin).
+    """
+    name = (branch_data.get("name") or "").strip()
+    address = (branch_data.get("address") or "").strip()
+    phone = (branch_data.get("phone") or "").strip()
+    code = (branch_data.get("code") or "").strip().upper()
+
+    if not name or not address:
+        return False, None, "Vui lòng nhập tên chi nhánh và địa chỉ"
+
+    branches = get_branches(use_cache=False)
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if branch_id:
+        for i, b in enumerate(branches):
+            if b.get("id") == branch_id:
+                branches[i]["name"] = name
+                branches[i]["address"] = address
+                branches[i]["phone"] = phone or b.get("phone")
+                if code: branches[i]["code"] = code
+                if "lat" in branch_data: branches[i]["lat"] = float(branch_data["lat"])
+                if "lng" in branch_data: branches[i]["lng"] = float(branch_data["lng"])
+                if "openHours" in branch_data: branches[i]["openHours"] = branch_data["openHours"]
+                if "deliveryRadiusKm" in branch_data: branches[i]["deliveryRadiusKm"] = int(branch_data["deliveryRadiusKm"])
+                if "managerId" in branch_data: branches[i]["managerId"] = branch_data["managerId"]
+                if "amenities" in branch_data: branches[i]["amenities"] = branch_data["amenities"]
+                if "isActive" in branch_data: branches[i]["isActive"] = bool(branch_data["isActive"])
+                branches[i]["updatedAt"] = now_iso
+                save_branches(branches)
+                return True, branches[i], None
+        return False, None, "Không tìm thấy chi nhánh cần sửa"
+    else:
+        new_id = branch_data.get("id") or f"branch_{int(time.time())}"
+        if not code:
+            code = f"CN_Q{len(branches) + 1}"
+
+        if any(b.get("id") == new_id or b.get("code") == code for b in branches):
+            return False, None, "Mã chi nhánh hoặc ID chi nhánh đã tồn tại"
+
+        new_branch = {
+            "id": new_id,
+            "code": code,
+            "name": name,
+            "address": address,
+            "lat": float(branch_data.get("lat", 10.7769)),
+            "lng": float(branch_data.get("lng", 106.7009)),
+            "phone": phone or "0976.491.322",
+            "openHours": branch_data.get("openHours", "07:30 - 21:00"),
+            "deliveryRadiusKm": int(branch_data.get("deliveryRadiusKm", 10)),
+            "managerId": branch_data.get("managerId", None),
+            "amenities": branch_data.get("amenities", "Phòng lạnh bảo quản hoa, giao hỏa tốc 2H"),
+            "isActive": branch_data.get("isActive", True),
+            "createdAt": now_iso
+        }
+        branches.append(new_branch)
+        save_branches(branches)
+        return True, new_branch, None
+
+
+def toggle_branch_active(branch_id: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    branches = get_branches(use_cache=False)
+    for i, b in enumerate(branches):
+        if b.get("id") == branch_id:
+            branches[i]["isActive"] = not branches[i].get("isActive", True)
+            save_branches(branches)
+            return True, branches[i], None
+    return False, None, "Không tìm thấy chi nhánh"
+
+
+
 # 2. Phân Tầng Mức Giá (Price Levels) - Hỗ trợ cache LRU
 @functools.lru_cache(maxsize=32)
 def _get_cached_price_levels() -> List[Dict[str, Any]]:
@@ -407,5 +482,19 @@ def update_order_status(
             orders[i] = order
             write_orders_by_month(orders, ym)
             return order
-
     return order
+
+
+def delete_order(order_id: str, year_month: Optional[str] = None) -> bool:
+    """
+    Xóa đơn hàng theo ID (dùng cho dọn dẹp dữ liệu kiểm thử hoặc hủy đơn).
+    """
+    order = get_order_by_id(order_id, year_month=year_month)
+    if not order:
+        return False
+
+    ym = year_month or extract_year_month_from_order(order)
+    orders = read_orders_by_month(ym)
+    new_orders = [o for o in orders if o.get("id") != order_id and o.get("orderCode") != order_id]
+    return write_orders_by_month(new_orders, ym)
+
