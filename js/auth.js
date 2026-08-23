@@ -519,10 +519,37 @@ function updateAuthUI() {
         if (userContainer) userContainer.innerHTML = userHtml;
         if (mobileUserContainer) {
             mobileUserContainer.innerHTML = `
-                <button onclick="openAuthModal()" class="w-full text-left flex items-center justify-between text-sm font-bold text-primary">
-                    <span>${displayName} (${roleName})</span>
-                    <i class="fa-solid fa-user-check"></i>
-                </button>
+                <div class="bg-gradient-to-br from-pink-50/80 to-rose-50/60 p-3.5 rounded-xl border border-pink-100 space-y-3 shadow-2xs">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-xs flex-shrink-0">
+                            ${displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-bold text-gray-900 truncate">${displayName}</div>
+                            <div class="text-[11px] font-semibold text-primary">${roleName}</div>
+                            <div class="text-[10px] text-gray-500 truncate">${user.phone || user.email || ""}</div>
+                        </div>
+                    </div>
+
+                    ${isAdminOrManager ? `
+                        <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-lg shadow-xs">
+                            <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
+                        </button>
+                    ` : isFlorist ? `
+                        <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-xs">
+                            <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
+                        </button>
+                    ` : `
+                        <div class="flex items-center justify-between px-3 py-1.5 bg-white/80 rounded-lg border border-pink-100 text-xs">
+                            <span class="text-gray-600 font-medium">Điểm tích lũy:</span>
+                            <span class="font-bold text-accent">50 ⭐</span>
+                        </div>
+                    `}
+
+                    <button onclick="logout()" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 bg-white border border-red-100 rounded-lg transition shadow-2xs">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
+                    </button>
+                </div>
             `;
         }
     } else {
@@ -535,9 +562,17 @@ function updateAuthUI() {
         if (userContainer) userContainer.innerHTML = guestHtml;
         if (mobileUserContainer) {
             mobileUserContainer.innerHTML = `
-                <button onclick="openAuthModal('login')" class="w-full text-left flex items-center justify-between text-sm font-bold text-gray-700 hover:text-primary">
-                    <span data-i18n="account">Đăng nhập / Đăng ký</span>
-                    <i class="fa-solid fa-arrow-right-to-bracket text-primary"></i>
+                <button onclick="openAuthModal('login'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 border border-pink-200 text-sm font-bold text-primary shadow-xs transition group">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-white text-primary flex items-center justify-center shadow-xs border border-pink-200 group-hover:scale-105 transition">
+                            <i class="fa-regular fa-user text-sm"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="text-xs font-bold text-gray-800" data-i18n="account">Đăng nhập / Đăng ký</div>
+                            <div class="text-[10px] font-medium text-gray-500">Tích điểm & Ưu đãi thành viên</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-xs text-primary group-hover:translate-x-1 transition transform"></i>
                 </button>
             `;
         }
