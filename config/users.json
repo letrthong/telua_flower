@@ -1263,5 +1263,170 @@
     "branchId": null,
     "isActive": true,
     "createdAt": "2026-08-23T09:54:49Z"
+  },
+  {
+    "id": "cust_1787479103",
+    "phone": "0910479103",
+    "email": "test_0910479103@gmail.com",
+    "fullName": "Khách Hàng Mới Test",
+    "passwordHash": "pbkdf2:sha256:260000$1Uku4R3VJ7pVRepP$2f1fa8877d0c174a4061661441190e8ee8bfb74a44aabc4865ced455464d5d30",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:23Z"
+  },
+  {
+    "id": "cust_1787479108",
+    "phone": "09119108",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$ZWnB5p0ekGKMYaj4$b260994fc38b170aff6bba956e3195466ca9d85a89519fe19ef7a9c551365e0b",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:28Z"
+  },
+  {
+    "id": "cust_1787479108",
+    "phone": "09229108",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$A2xHfk2hNNRflkUd$afe2ee0d7ad7bb8ec16c9892a3651aacb501d4ae33a120cd45b0a04b66852219",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:28Z"
+  },
+  {
+    "id": "cust_1787479110",
+    "phone": "09119110",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$1j2a7GGqneAHzxqe$b78ba9b0065734eda94f069646aa3893489f3f255f41db9fe1fbb76b221118bf",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:30Z"
+  },
+  {
+    "id": "cust_1787479111",
+    "phone": "09229111",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$zJrHAp5r3ewakqlB$3fa7e4097038d2fc2bbddfaf37db9f4559d9bcc88be3d2680067e7e7fd81b775",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:31Z"
+  },
+  {
+    "id": "cust_1787479114",
+    "phone": "09119114",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$ttfQvg45cZzWAxZX$d55fb90fadd8eef96edbe8a4f8c138a10028570feb2d9e22560ae906d4e43bb8",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:34Z"
+  },
+  {
+    "id": "cust_1787479116",
+    "phone": "09229116",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$4TttUGi8McF3K0nI$22622c00c704d7dea8fd69e429c39577b714348a704c6d3622b163ce4ca3ab2a",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:36Z"
+  },
+  {
+    "id": "cust_1787479120",
+    "phone": "09119120",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$fDKAAv6A4z64cGEM$3182c51d70e94176c76c1b900bbd8d706830d317476622ba98dba6902b69268c",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:40Z"
+  },
+  {
+    "id": "cust_1787479127",
+    "phone": "09229127",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$MNR78VK1oDHoRNC8$97596e021aec8be032ad1542e14efde0f68e559bc8fab9b7ef6ffe824329b5f7",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:58:47Z"
+  },
+  {
+    "id": "cust_1787479157",
+    "phone": "09119157",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$2WSy6r4if08cJXOV$2ddb38c741b740c1cbb960dbdb914679bc7497e5d00f48448c8edfb589d009e3",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:59:17Z"
+  },
+  {
+    "id": "cust_1787479181",
+    "phone": "09229181",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$OtfOkFWKhUiMzyfu$58857cac9346d325947472b949234ed5de7f41992f3eb756b8870af3e3b428e8",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T09:59:41Z"
+  },
+  {
+    "id": "cust_1787479234",
+    "phone": "09119234",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$oq8IzfXP4TDuTuCc$51b5fc641126ae065260cf60c55480e34120945976abfa14c535eeb71d1395c2",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:00:34Z"
+  },
+  {
+    "id": "cust_1787479247",
+    "phone": "09229247",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$iqtT4KPZKraLM2SZ$b795cff83a5935b572919c72353d89d860fc0bd49b7bfa236c68fd2663a43e37",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:00:47Z"
+  },
+  {
+    "id": "cust_1787479368",
+    "phone": "09119367",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$dLCTprJSOUMzjnkS$d4e0a7eca59a8700eca3c0b40b4e7d75ca550d7bd84e7f4ac376227b421c6c41",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:02:48Z"
+  },
+  {
+    "id": "cust_1787479469",
+    "phone": "09229469",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$DXxT2q2TeQGQ5GZA$5dfe8194921b3497bc2ba05bb3fb16242f10a4f7f46a0e8a5bfcd62eb6e72545",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:04:29Z"
   }
 ]

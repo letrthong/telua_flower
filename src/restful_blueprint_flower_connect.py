@@ -1,7 +1,7 @@
 """
 RESTful Blueprint Module cho Telua Flower Connect API
-Tương thích kiến trúc Blueprint mô-đun hóa tương tự như Lu Quan (restful_blueprint_hotel_connect.py).
-Dễ dàng tích hợp, bảo trì và mở rộng độc lập.
+Hỗ trợ url_prefix='/api/flower/v1' chuẩn hóa tương tự Lu Quan (/api/hotelconnect/v1).
+Đồng thời hỗ trợ legacy prefix '/api' đảm bảo 100% tương thích ngược.
 """
 
 import os
@@ -55,15 +55,19 @@ from services.translation_service import (
 )
 from decorators.auth_decorator import require_auth, require_role, can_access_branch
 
-# Khởi tạo Blueprint RESTful API cho Telua Flower
-flower_connect_api = Blueprint('flower_connect_api', __name__)
+# Khởi tạo Blueprint RESTful API Version 1 (Chuẩn hóa như Lu Quan /api/hotelconnect/v1)
+flower_connect_api = Blueprint('flower_connect_api', __name__, url_prefix='/api/flower/v1')
+
+# Blueprint Legacy Fallback (Đảm bảo tương thích ngược 100% cho các client gọi /api/...)
+flower_legacy_api = Blueprint('flower_legacy_api', __name__, url_prefix='/api')
 
 
 # ==========================================
 # CÁC API ENDPOINTS XÁC THỰC (AUTHENTICATION)
 # ==========================================
 
-@flower_connect_api.route("/api/auth/login", methods=["POST"])
+@flower_connect_api.route("/auth/login", methods=["POST"])
+@flower_legacy_api.route("/auth/login", methods=["POST"])
 @cross_origin()
 def api_login():
     """
@@ -85,7 +89,8 @@ def api_login():
     }), 200
 
 
-@flower_connect_api.route("/api/auth/register", methods=["POST"])
+@flower_connect_api.route("/auth/register", methods=["POST"])
+@flower_legacy_api.route("/auth/register", methods=["POST"])
 @cross_origin()
 def api_register():
     """
@@ -109,7 +114,8 @@ def api_register():
     }), 201
 
 
-@flower_connect_api.route("/api/auth/me", methods=["GET"])
+@flower_connect_api.route("/auth/me", methods=["GET"])
+@flower_legacy_api.route("/auth/me", methods=["GET"])
 @cross_origin()
 @require_auth
 def api_get_me():
@@ -129,7 +135,8 @@ def api_get_me():
     }), 200
 
 
-@flower_connect_api.route("/api/auth/logout", methods=["POST"])
+@flower_connect_api.route("/auth/logout", methods=["POST"])
+@flower_legacy_api.route("/auth/logout", methods=["POST"])
 @cross_origin()
 def api_logout():
     """
@@ -145,7 +152,8 @@ def api_logout():
 # CÁC API ENDPOINTS ĐẶT HÀNG & GIAO HOA (TASK 03)
 # ==========================================
 
-@flower_connect_api.route("/api/delivery/slots", methods=["GET"])
+@flower_connect_api.route("/delivery/slots", methods=["GET"])
+@flower_legacy_api.route("/delivery/slots", methods=["GET"])
 @cross_origin()
 def api_delivery_slots():
     """
@@ -163,7 +171,8 @@ def api_delivery_slots():
     }), 200
 
 
-@flower_connect_api.route("/api/orders", methods=["POST"])
+@flower_connect_api.route("/orders", methods=["POST"])
+@flower_legacy_api.route("/orders", methods=["POST"])
 @cross_origin()
 def api_create_order():
     """
@@ -195,7 +204,8 @@ def api_create_order():
     }), 201
 
 
-@flower_connect_api.route("/api/orders/<order_id>", methods=["GET"])
+@flower_connect_api.route("/orders/<order_id>", methods=["GET"])
+@flower_legacy_api.route("/orders/<order_id>", methods=["GET"])
 @cross_origin()
 def api_get_order(order_id):
     """
@@ -239,7 +249,8 @@ def api_get_order(order_id):
     }), 200
 
 
-@flower_connect_api.route("/api/orders/my-orders", methods=["GET"])
+@flower_connect_api.route("/orders/my-orders", methods=["GET"])
+@flower_legacy_api.route("/orders/my-orders", methods=["GET"])
 @cross_origin()
 @require_auth
 def api_my_orders():
@@ -262,7 +273,8 @@ def api_my_orders():
     }), 200
 
 
-@flower_connect_api.route("/api/branch/<branch_id>/orders", methods=["GET"])
+@flower_connect_api.route("/branch/<branch_id>/orders", methods=["GET"])
+@flower_legacy_api.route("/branch/<branch_id>/orders", methods=["GET"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
 def api_branch_orders(branch_id):
@@ -286,7 +298,8 @@ def api_branch_orders(branch_id):
 # CÁC API ENDPOINTS QUẢN TRỊ SẢN PHẨM & GIÁ (TASK 07)
 # ==========================================
 
-@flower_connect_api.route("/api/price-levels", methods=["GET"])
+@flower_connect_api.route("/price-levels", methods=["GET"])
+@flower_legacy_api.route("/price-levels", methods=["GET"])
 @cross_origin()
 def api_get_price_levels():
     """Lấy danh sách 4 phân tầng giá chuẩn kèm hạn mức min/max."""
@@ -294,7 +307,8 @@ def api_get_price_levels():
     return jsonify({"success": True, "data": levels}), 200
 
 
-@flower_connect_api.route("/api/products", methods=["GET"])
+@flower_connect_api.route("/products", methods=["GET"])
+@flower_legacy_api.route("/products", methods=["GET"])
 @cross_origin()
 def api_get_products():
     """Lấy danh sách sản phẩm hoa tươi (hỗ trợ lọc theo category, search, active)."""
@@ -307,7 +321,8 @@ def api_get_products():
     return jsonify({"success": True, "data": prods}), 200
 
 
-@flower_connect_api.route("/api/products/<product_id>", methods=["GET"])
+@flower_connect_api.route("/products/<product_id>", methods=["GET"])
+@flower_legacy_api.route("/products/<product_id>", methods=["GET"])
 @cross_origin()
 def api_get_product_detail(product_id):
     """Lấy chi tiết một sản phẩm hoa tươi theo ID."""
@@ -317,7 +332,8 @@ def api_get_product_detail(product_id):
     return jsonify({"success": True, "data": prod}), 200
 
 
-@flower_connect_api.route("/api/admin/products", methods=["POST"])
+@flower_connect_api.route("/admin/products", methods=["POST"])
+@flower_legacy_api.route("/admin/products", methods=["POST"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_create_product():
@@ -329,7 +345,8 @@ def api_create_product():
     return jsonify({"success": True, "message": "Thêm mẫu hoa thành công", "data": new_prod}), 201
 
 
-@flower_connect_api.route("/api/admin/products/<product_id>", methods=["PUT"])
+@flower_connect_api.route("/admin/products/<product_id>", methods=["PUT"])
+@flower_legacy_api.route("/admin/products/<product_id>", methods=["PUT"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_product(product_id):
@@ -341,7 +358,8 @@ def api_update_product(product_id):
     return jsonify({"success": True, "message": "Cập nhật sản phẩm thành công", "data": updated_prod}), 200
 
 
-@flower_connect_api.route("/api/admin/products/<product_id>/toggle", methods=["PUT", "PATCH"])
+@flower_connect_api.route("/admin/products/<product_id>/toggle", methods=["PUT", "PATCH"])
+@flower_legacy_api.route("/admin/products/<product_id>/toggle", methods=["PUT", "PATCH"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_toggle_product(product_id):
@@ -352,7 +370,8 @@ def api_toggle_product(product_id):
     return jsonify({"success": True, "message": "Đã đổi trạng thái sản phẩm", "data": updated_prod}), 200
 
 
-@flower_connect_api.route("/api/admin/products/<product_id>", methods=["DELETE"])
+@flower_connect_api.route("/admin/products/<product_id>", methods=["DELETE"])
+@flower_legacy_api.route("/admin/products/<product_id>", methods=["DELETE"])
 @cross_origin()
 @require_role(["super_admin"])
 def api_delete_product(product_id):
@@ -367,7 +386,8 @@ def api_delete_product(product_id):
 # CÁC API ENDPOINTS KHUYẾN MÃI & VOUCHER (TASK 07)
 # ==========================================
 
-@flower_connect_api.route("/api/promotions", methods=["GET"])
+@flower_connect_api.route("/promotions", methods=["GET"])
+@flower_legacy_api.route("/promotions", methods=["GET"])
 @cross_origin()
 def api_get_promotions():
     """Lấy danh sách tất cả khuyến mãi & voucher."""
@@ -375,7 +395,8 @@ def api_get_promotions():
     return jsonify({"success": True, "data": promos}), 200
 
 
-@flower_connect_api.route("/api/admin/promotions", methods=["POST"])
+@flower_connect_api.route("/admin/promotions", methods=["POST"])
+@flower_legacy_api.route("/admin/promotions", methods=["POST"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_create_promotion():
@@ -387,7 +408,8 @@ def api_create_promotion():
     return jsonify({"success": True, "message": "Tạo voucher thành công", "data": new_promo}), 201
 
 
-@flower_connect_api.route("/api/admin/promotions/<promo_id>/toggle", methods=["PUT", "PATCH"])
+@flower_connect_api.route("/admin/promotions/<promo_id>/toggle", methods=["PUT", "PATCH"])
+@flower_legacy_api.route("/admin/promotions/<promo_id>/toggle", methods=["PUT", "PATCH"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_toggle_promotion(promo_id):
@@ -402,7 +424,8 @@ def api_toggle_promotion(promo_id):
 # CÁC API ENDPOINTS BIÊN DỊCH ĐA NGÔN NGỮ (TASK 07)
 # ==========================================
 
-@flower_connect_api.route("/api/translations", methods=["GET"])
+@flower_connect_api.route("/translations", methods=["GET"])
+@flower_legacy_api.route("/translations", methods=["GET"])
 @cross_origin()
 def api_get_translations():
     """Lấy từ điển đa ngôn ngữ 5 thứ tiếng."""
@@ -410,7 +433,8 @@ def api_get_translations():
     return jsonify({"success": True, "data": data}), 200
 
 
-@flower_connect_api.route("/api/admin/translations", methods=["PUT"])
+@flower_connect_api.route("/admin/translations", methods=["PUT"])
+@flower_legacy_api.route("/admin/translations", methods=["PUT"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_translations():
@@ -426,7 +450,8 @@ def api_update_translations():
 # CÁC API QUẢN LÝ NHÂN SỰ & PHÂN QUYỀN (STAFF & USERS)
 # ==========================================
 
-@flower_connect_api.route("/api/admin/users", methods=["GET"])
+@flower_connect_api.route("/admin/users", methods=["GET"])
+@flower_legacy_api.route("/admin/users", methods=["GET"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_get_staff_users():
@@ -436,7 +461,8 @@ def api_get_staff_users():
     return jsonify({"success": True, "data": users}), 200
 
 
-@flower_connect_api.route("/api/admin/users", methods=["POST"])
+@flower_connect_api.route("/admin/users", methods=["POST"])
+@flower_legacy_api.route("/admin/users", methods=["POST"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_create_staff_user():
@@ -448,7 +474,8 @@ def api_create_staff_user():
     return jsonify({"success": True, "message": "Thêm nhân sự thành công", "data": user_data}), 201
 
 
-@flower_connect_api.route("/api/admin/users/<user_id>", methods=["PUT"])
+@flower_connect_api.route("/admin/users/<user_id>", methods=["PUT"])
+@flower_legacy_api.route("/admin/users/<user_id>", methods=["PUT"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_update_staff_user(user_id):
@@ -460,7 +487,8 @@ def api_update_staff_user(user_id):
     return jsonify({"success": True, "message": "Cập nhật nhân sự thành công", "data": user_data}), 200
 
 
-@flower_connect_api.route("/api/admin/users/<user_id>", methods=["DELETE"])
+@flower_connect_api.route("/admin/users/<user_id>", methods=["DELETE"])
+@flower_legacy_api.route("/admin/users/<user_id>", methods=["DELETE"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_delete_staff_user(user_id):
@@ -475,7 +503,17 @@ def api_delete_staff_user(user_id):
 # CÁC API QUẢN LÝ CHUỖI CỬA HÀNG (BRANCHES MANAGEMENT)
 # ==========================================
 
-@flower_connect_api.route("/api/admin/branches", methods=["GET"])
+@flower_connect_api.route("/branches", methods=["GET"])
+@flower_legacy_api.route("/branches", methods=["GET"])
+@cross_origin()
+def api_get_public_branches():
+    """Lấy danh sách các chi nhánh đang mở cửa hoạt động (dành cho khách hàng)."""
+    branches = [b for b in get_branches() if b.get("isActive", True)]
+    return jsonify({"success": True, "data": branches}), 200
+
+
+@flower_connect_api.route("/admin/branches", methods=["GET"])
+@flower_legacy_api.route("/admin/branches", methods=["GET"])
 @cross_origin()
 @require_role(["super_admin", "branch_manager"])
 def api_get_admin_branches():
@@ -487,7 +525,8 @@ def api_get_admin_branches():
     return jsonify({"success": True, "data": branches}), 200
 
 
-@flower_connect_api.route("/api/admin/branches", methods=["POST"])
+@flower_connect_api.route("/admin/branches", methods=["POST"])
+@flower_legacy_api.route("/admin/branches", methods=["POST"])
 @cross_origin()
 @require_role(["super_admin"])
 def api_create_branch():
@@ -499,7 +538,8 @@ def api_create_branch():
     return jsonify({"success": True, "message": "Thêm chi nhánh thành công", "data": new_branch}), 201
 
 
-@flower_connect_api.route("/api/admin/branches/<branch_id>", methods=["PUT"])
+@flower_connect_api.route("/admin/branches/<branch_id>", methods=["PUT"])
+@flower_legacy_api.route("/admin/branches/<branch_id>", methods=["PUT"])
 @cross_origin()
 @require_role(["super_admin"])
 def api_update_branch(branch_id):
@@ -511,7 +551,8 @@ def api_update_branch(branch_id):
     return jsonify({"success": True, "message": "Cập nhật chi nhánh thành công", "data": updated_branch}), 200
 
 
-@flower_connect_api.route("/api/admin/branches/<branch_id>/toggle", methods=["PATCH", "PUT"])
+@flower_connect_api.route("/admin/branches/<branch_id>/toggle", methods=["PATCH", "PUT"])
+@flower_legacy_api.route("/admin/branches/<branch_id>/toggle", methods=["PATCH", "PUT"])
 @cross_origin()
 @require_role(["super_admin"])
 def api_toggle_branch(branch_id):

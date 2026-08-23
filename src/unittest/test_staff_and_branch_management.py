@@ -162,6 +162,24 @@ class TestStaffAndBranchManagement(unittest.TestCase):
         res_cust = self.client.post("/api/admin/branches", json=branch_payload, headers=headers_cust)
         self.assertEqual(res_cust.status_code, 403)
 
+    def test_06_versioned_flower_v1_api_support(self):
+        """Kiểm tra hỗ trợ đầy đủ tiền tố chuẩn hóa /api/flower/v1 (tương tự /api/hotelconnect/v1)"""
+        # 1. Tra cứu danh mục hoa qua /api/flower/v1/products
+        res_v1 = self.client.get("/api/flower/v1/products")
+        self.assertEqual(res_v1.status_code, 200)
+        self.assertTrue(res_v1.get_json()["success"])
+        self.assertTrue(len(res_v1.get_json()["data"]) > 0)
+
+        # 2. Tra cứu qua legacy /api/products
+        res_legacy = self.client.get("/api/products")
+        self.assertEqual(res_legacy.status_code, 200)
+        self.assertEqual(len(res_v1.get_json()["data"]), len(res_legacy.get_json()["data"]))
+
+        # 3. Tra cứu khung giờ giao hoa qua /api/flower/v1/delivery/slots
+        res_slots_v1 = self.client.get("/api/flower/v1/delivery/slots?date=2026-08-30")
+        self.assertEqual(res_slots_v1.status_code, 200)
+        self.assertTrue(res_slots_v1.get_json()["success"])
+
 
 if __name__ == "__main__":
     unittest.main()

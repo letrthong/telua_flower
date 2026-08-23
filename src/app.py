@@ -16,9 +16,10 @@ if CURRENT_DIR not in sys.path:
 # Khởi tạo Flask Application
 app = Flask(__name__, template_folder=TELUA_ROOT)
 
-# --- Register RESTful Blueprint (Kiến trúc tương tự Lu Quan) ---
-from restful_blueprint_flower_connect import flower_connect_api
-app.register_blueprint(flower_connect_api)
+# --- Register RESTful Blueprint (Kiến trúc tương tự Lu Quan /api/hotelconnect/v1) ---
+from restful_blueprint_flower_connect import flower_connect_api, flower_legacy_api
+app.register_blueprint(flower_connect_api)  # /api/flower/v1/*
+app.register_blueprint(flower_legacy_api)   # /api/* (legacy fallback)
 
 
 def get_index_file():
