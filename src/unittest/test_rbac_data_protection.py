@@ -66,7 +66,7 @@ class TestRBACDataProtection(unittest.TestCase):
         res_post = self.client.post("/api/admin/products", json=payload, headers=headers_cust)
         self.assertEqual(res_post.status_code, 403)
         self.assertFalse(res_post.get_json()["success"])
-        self.assertIn("Từ chối truy cập", res_post.get_json()["message"])
+        self.assertIn("không có quyền", res_post.get_json()["message"])
 
         # 2. Thử sửa hoa -> 403 Forbidden
         res_put = self.client.put("/api/admin/products/bo_hoa_01", json=payload, headers=headers_cust)
@@ -143,9 +143,9 @@ class TestRBACDataProtection(unittest.TestCase):
             "cardMessage": "Bí mật tình yêu",
             "isAnonymous": True
         }
-        success_b, created_order_b, _ = create_order(order_b_data, user_id=self.cust_b["id"])
+        success_b, created_order_b, _ = create_order(order_b_data, authenticated_user=self.cust_b)
         self.assertTrue(success_b)
-        order_b_id = created_order_b["orderId"]
+        order_b_id = created_order_b.get("id") or created_order_b.get("orderId")
 
         # 2. Khách hàng A gửi token của mình để tra cứu đơn hàng của Khách B -> Bị chặn 403 Forbidden
         headers_cust_a = {"Authorization": f"Bearer {self.cust_a_token}"}
