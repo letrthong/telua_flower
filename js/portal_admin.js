@@ -643,7 +643,7 @@ function renderProductsTable(products) {
                 </td>
                 <td class="p-4 font-bold text-primary text-sm">${p.salePrice || (p.priceNumber?.toLocaleString() + '₫')}</td>
                 <td class="p-4 text-[11px] font-semibold text-gray-600">
-                    Q10: <b class="text-gray-900">${stockQ10}</b> • Q1: <b class="text-gray-900">${stockQ10}</b> • TD: <b class="text-gray-900">${stockTD}</b>
+                    Q10: <b class="text-gray-900">${stockQ10}</b> • Q1: <b class="text-gray-900">${stockQ1}</b> • TD: <b class="text-gray-900">${stockTD}</b>
                 </td>
                 <td class="p-4">${activeBadge}</td>
                 <td class="p-4 text-center">

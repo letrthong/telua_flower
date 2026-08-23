@@ -47,7 +47,7 @@ export function renderProducts(products, containerId) {
             <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100">
                 ${badgeHtml}
                 <div class="relative h-48 md:h-64 overflow-hidden cursor-pointer">
-                    <img src="${prodImg}" alt="${product.name}" loading="lazy" decoding="async" class="product-img w-full h-full object-cover">
+                    <img src="${prodImg}" alt="${product.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" class="product-img w-full h-full object-cover">
                     
                     <!-- Nút Thêm vào giỏ hàng (Hiển thị khi hover) -->
                     <div class="absolute inset-0 bg-black/30 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">

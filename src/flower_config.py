@@ -1,5 +1,9 @@
 import os
+import logging
 from pathlib import Path
+
+# Cấu hình logger
+logger = logging.getLogger("flower_config")
 
 # Root directory of the workspace (tương thích cross-platform: Windows & Linux /app Docker)
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -31,3 +35,9 @@ WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.jso
 
 # File cache version - dùng để đồng bộ cache giữa các workers / instances
 CACHE_VERSION_FILE = os.path.join(FLOWER_CONFIG_DIR, "cache_version.json")
+
+# Log thông tin debug cấu hình
+logger.info(f"🌸 [FLOWER CONFIG] ROOT_DIR: {ROOT_DIR}")
+logger.info(f"🌸 [FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR} (Tồn tại: {os.path.exists(FLOWER_CONFIG_DIR)})")
+logger.info(f"🌸 [FLOWER CONFIG] PRODUCTS_FILE_PATH: {PRODUCTS_FILE_PATH} (Tồn tại: {os.path.exists(PRODUCTS_FILE_PATH)})")
+

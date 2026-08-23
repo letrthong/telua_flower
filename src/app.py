@@ -25,17 +25,18 @@ app.register_blueprint(flower_legacy_api)   # /api/* (legacy fallback)
 def get_index_file():
     """
     Tìm file index.html theo thứ tự ưu tiên:
-    1. index.html (file html cập nhật trực tiếp tại thư mục dự án)
-    2. dist/index.html (file frontend đã build qua Vite)
-    3. config/index.html (file html dự phòng)
-    4. Docker paths (/app/index.html, /app/dist/index.html)
+    1. dist/index.html (file single-file HTML đã bundle toàn bộ JS/CSS inline bởi Vite)
+    2. /app/dist/index.html
+    3. config/index.html (file bundle dự phòng)
+    4. index.html (file html gốc phục vụ khi đang dev unbundled)
+    5. /app/index.html
     """
     candidates = [
-        os.path.join(TELUA_ROOT, "index.html"),
         os.path.join(TELUA_ROOT, "dist", "index.html"),
-        os.path.join(TELUA_ROOT, "config", "index.html"),
-        "/app/index.html",
         "/app/dist/index.html",
+        os.path.join(TELUA_ROOT, "config", "index.html"),
+        os.path.join(TELUA_ROOT, "index.html"),
+        "/app/index.html",
     ]
     for path in candidates:
         if os.path.exists(path):
