@@ -1,4 +1,5 @@
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
+import { API_BASE } from './utils.js';
 
 /**
  * Phân hệ Quản Trị Hệ Thống (TASK 07 - Admin Portal, Product CMS & Price Governance)
@@ -143,7 +144,7 @@ export async function loadAdminCategories() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
-        const res = await fetch("/api/admin/categories", {
+        const res = await fetch(`${API_BASE}/admin/categories`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const json = await res.json();
@@ -337,7 +338,7 @@ export async function handleCategorySubmit(event) {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     const isEdit = !!editId;
-    const url = isEdit ? `/api/admin/categories/${editId}` : "/api/admin/categories";
+    const url = isEdit ? `${API_BASE}/admin/categories/${editId}` : `${API_BASE}/admin/categories`;
     const method = isEdit ? "PUT" : "POST";
     const errBox = document.getElementById("categoryModalError");
 
@@ -375,7 +376,7 @@ export async function handleCategorySubmit(event) {
 export async function toggleCategory(catId) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/categories/${catId}/toggle`, {
+        const res = await fetch(`${API_BASE}/admin/categories/${catId}/toggle`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -395,7 +396,7 @@ export async function deleteCategory(catId, catName) {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/categories/${catId}`, {
+        const res = await fetch(`${API_BASE}/admin/categories/${catId}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -414,7 +415,7 @@ export async function deleteCategory(catId, catName) {
 export async function restoreCategory(catId, catName) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/categories/${catId}/restore`, {
+        const res = await fetch(`${API_BASE}/admin/categories/${catId}/restore`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -433,7 +434,7 @@ export async function restoreCategory(catId, catName) {
 export async function moveCategory(catId, direction) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/categories/${catId}/move`, {
+        const res = await fetch(`${API_BASE}/admin/categories/${catId}/move`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -511,7 +512,7 @@ export async function loadAdminUsers() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
-        let url = "/api/admin/users";
+        let url = `${API_BASE}/admin/users`;
         if (branch && branch !== "all") url += `?branchId=${branch}`;
         const res = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
         const json = await res.json();
@@ -618,7 +619,7 @@ export async function loadAdminCustomers() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
-        let url = "/api/admin/customers?";
+        let url = `${API_BASE}/admin/customers?`;
         if (search) url += `search=${encodeURIComponent(search)}&`;
         if (tier && tier !== "all") url += `tier=${encodeURIComponent(tier)}&`;
 
@@ -770,7 +771,7 @@ export async function handleUserSubmit(event) {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     const isEdit = !!editId;
-    const url = isEdit ? `/api/admin/users/${editId}` : "/api/admin/users";
+    const url = isEdit ? `${API_BASE}/admin/users/${editId}` : `${API_BASE}/admin/users`;
     const method = isEdit ? "PUT" : "POST";
 
     const errBox = document.getElementById("userModalError");
@@ -811,7 +812,7 @@ export async function deleteUser(userId, fullName) {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/users/${userId}`, {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -840,7 +841,7 @@ export async function loadAdminBranches() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
-        const res = await fetch("/api/admin/branches", { headers: { "Authorization": `Bearer ${token}` } });
+        const res = await fetch(`${API_BASE}/admin/branches`, { headers: { "Authorization": `Bearer ${token}` } });
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data)) {
@@ -985,7 +986,7 @@ export async function handleBranchSubmit(event) {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     const isEdit = !!editId;
-    const url = isEdit ? `/api/admin/branches/${editId}` : "/api/admin/branches";
+    const url = isEdit ? `${API_BASE}/admin/branches/${editId}` : `${API_BASE}/admin/branches`;
     const method = isEdit ? "PUT" : "POST";
     const errBox = document.getElementById("branchModalError");
 
@@ -1023,7 +1024,7 @@ export async function handleBranchSubmit(event) {
 export async function toggleBranch(branchId) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/branches/${branchId}/toggle`, {
+        const res = await fetch(`${API_BASE}/admin/branches/${branchId}/toggle`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -1052,7 +1053,7 @@ export async function loadAdminProducts() {
     tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-400">Đang tải danh mục hoa tươi...</td></tr>`;
 
     try {
-        let url = "/api/products";
+        let url = `${API_BASE}/products`;
         if (category) url += `?category=${category}`;
         const res = await fetch(url);
         const json = await res.json();
@@ -1300,7 +1301,7 @@ export async function editProduct(productId) {
 
     // Tải chi tiết đầy đủ từ API /api/products/<productId> (Lazy load)
     try {
-        const res = await fetch(`/api/products/${productId}`);
+        const res = await fetch(`${API_BASE}/products/${productId}`);
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
@@ -1377,7 +1378,7 @@ export async function handleProductSubmit(event) {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     const method = editId ? "PUT" : "POST";
-    const url = editId ? `/api/admin/products/${editId}` : "/api/admin/products";
+    const url = editId ? `${API_BASE}/admin/products/${editId}` : `${API_BASE}/admin/products`;
 
     const errBox = document.getElementById("productModalError");
 
@@ -1412,7 +1413,7 @@ export async function handleProductSubmit(event) {
 export async function toggleProduct(productId) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/products/${productId}/toggle`, {
+        const res = await fetch(`${API_BASE}/admin/products/${productId}/toggle`, {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -1433,7 +1434,7 @@ export async function loadAdminPromotions() {
     tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu voucher...</td></tr>`;
 
     try {
-        const res = await fetch("/api/promotions");
+        const res = await fetch(`${API_BASE}/promotions`);
         const json = await res.json();
         if (json.success && json.data) {
             allAdminPromotions = json.data;
@@ -1623,7 +1624,7 @@ export async function handlePromoSubmit(event) {
 
     if (btn) btn.disabled = true;
     try {
-        const url = editId ? `/api/admin/promotions/${editId}` : `/api/admin/promotions`;
+        const url = editId ? `${API_BASE}/admin/promotions/${editId}` : `${API_BASE}/admin/promotions`;
         const method = editId ? "PUT" : "POST";
 
         const res = await fetch(url, {
@@ -1659,7 +1660,7 @@ export async function handlePromoSubmit(event) {
 export async function togglePromo(promoId) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/promotions/${promoId}/toggle`, {
+        const res = await fetch(`${API_BASE}/admin/promotions/${promoId}/toggle`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -1679,7 +1680,7 @@ export async function deletePromo(promoId, promoCode) {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/promotions/${promoId}`, {
+        const res = await fetch(`${API_BASE}/admin/promotions/${promoId}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -1698,7 +1699,7 @@ export async function deletePromo(promoId, promoCode) {
 export async function restorePromo(promoId, promoCode) {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch(`/api/admin/promotions/${promoId}/restore`, {
+        const res = await fetch(`${API_BASE}/admin/promotions/${promoId}/restore`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -1723,7 +1724,7 @@ export async function loadAdminTranslations() {
     if (!tbody) return;
 
     try {
-        const res = await fetch("/api/translations");
+        const res = await fetch(`${API_BASE}/translations`);
         const json = await res.json();
         if (json.success && json.data) {
             allAdminTranslations = json.data.translations || {};
@@ -1785,7 +1786,7 @@ export async function saveAllTranslations() {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
-        const res = await fetch("/api/admin/translations", {
+        const res = await fetch(`${API_BASE}/admin/translations`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

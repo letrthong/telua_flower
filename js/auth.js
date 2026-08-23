@@ -1,3 +1,5 @@
+import { API_BASE } from './utils.js';
+
 /**
  * Hệ thống Quản lý Xác thực & Phân quyền Client (Authentication & Route Guard)
  * Hỗ trợ lưu trữ JWT Token, tự động điều hướng theo Role và chặn truy cập trái phép.
@@ -109,7 +111,7 @@ function decodeJWTPayload(token) {
  */
 async function login(identifier, password) {
     try {
-        const response = await fetch("/api/auth/login", {
+        const response = await fetch(`${API_BASE}/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -145,7 +147,7 @@ async function login(identifier, password) {
  */
 async function register(phone, fullName, password, email = "") {
     try {
-        const response = await fetch("/api/auth/register", {
+        const response = await fetch(`${API_BASE}/auth/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -181,7 +183,7 @@ async function register(phone, fullName, password, email = "") {
  */
 async function logout() {
     try {
-        await fetch("/api/auth/logout", { method: "POST" });
+        await fetch(`${API_BASE}/auth/logout`, { method: "POST" });
     } catch (e) {
         // bỏ qua lỗi network khi logout
     }

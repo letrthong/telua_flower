@@ -1,3 +1,4 @@
+import { API_BASE } from './utils.js';
 import { products_bo_hoa, products_ke_hoa, products_binh_hoa } from './products.js';
 import { translations } from './translations.js';
 import { setLanguage } from './i18n.js';
@@ -86,7 +87,7 @@ export async function openProductQuickDetail(productId) {
 
     // 1. Thử gọi API /api/products/<productId>
     try {
-        const res = await fetch(`/api/products/${productId}`);
+        const res = await fetch(`${API_BASE}/products/${productId}`);
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
@@ -190,9 +191,9 @@ export async function renderAllProducts() {
     if (Array.isArray(keHoa) && keHoa.length > 0) renderProducts(keHoa, 'ke-hoa-grid');
     if (Array.isArray(binhHoa) && binhHoa.length > 0) renderProducts(binhHoa, 'binh-hoa-grid');
 
-    // 2. Nạp thêm danh mục động từ Backend API (/api/products)
+    // 2. Nạp thêm danh mục động từ Backend API
     try {
-        const res = await fetch('/api/products?active=true');
+        const res = await fetch(`${API_BASE}/products?active=true`);
         if (res.ok) {
             const json = await res.json();
             if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -253,7 +254,7 @@ export async function renderStorefrontCategories() {
     if (!container) return;
 
     try {
-        const res = await fetch('/api/categories');
+        const res = await fetch(`${API_BASE}/categories`);
         if (res.ok) {
             const json = await res.json();
             if (json.success && Array.isArray(json.data) && json.data.length > 0) {

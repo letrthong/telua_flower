@@ -1,5 +1,8 @@
 // Các tiện ích (Utils): Lazy Loading hình ảnh, Thông báo Toast, Bản đồ showroom, Sao chép clipboard
 
+// Base URL chuẩn hóa cho RESTful API Telua Flower Connect v1 (tương tự Lu Quan /api/hotelconnect/v1)
+export const API_BASE = "/api/flower/v1";
+
 // Tối ưu hóa Lazy Loading cho hình ảnh toàn trang
 function initLazyLoadingImages() {
     const lazyImages = document.querySelectorAll('img[loading="lazy"]');
@@ -21,7 +24,7 @@ function initLazyLoadingImages() {
 }
 
 // Hiển thị thông báo Toast
-function showToast(message) {
+export function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) return;
     if (message && toast.querySelector('span')) {
@@ -42,7 +45,7 @@ export async function loadAndRenderStorefrontBranches() {
     if (!navContainer) return;
 
     try {
-        const res = await fetch("/api/flower/v1/branches");
+        const res = await fetch(`${API_BASE}/branches`);
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -201,6 +204,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Global binding
 if (typeof window !== "undefined") {
+    window.API_BASE = API_BASE;
+    window.showToast = showToast;
     window.openStoreMap = openStoreMap;
     window.copyStoreAddress = copyStoreAddress;
     window.selectShowroomBranch = selectShowroomBranch;

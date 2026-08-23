@@ -1,3 +1,5 @@
+import { API_BASE } from './utils.js';
+
 /**
  * Phân hệ Quản Lý Giỏ Hàng & Đặt Hàng Thông Minh (TASK 03 - Checkout & Ordering Experience)
  * Hỗ trợ hẹn giờ 30 ngày, khung giờ giao 2H, viết thiệp, in ruy-băng, gửi ẩn danh & tính phí ship.
@@ -285,7 +287,7 @@ export async function onDeliveryDateChange() {
     slotSelect.innerHTML = `<option value="">Đang tải khung giờ...</option>`;
 
     try {
-        const res = await fetch(`/api/delivery/slots?date=${selectedDate}`);
+        const res = await fetch(`${API_BASE}/delivery/slots?date=${selectedDate}`);
         const json = await res.json();
         if (json.success && json.data && json.data.slots) {
             slotSelect.innerHTML = "";
@@ -508,7 +510,7 @@ export async function handleCheckoutSubmit(event) {
             if (token) authHeaders["Authorization"] = `Bearer ${token}`;
         }
 
-        const res = await fetch("/api/orders", {
+        const res = await fetch(`${API_BASE}/orders`, {
             method: "POST",
             headers: authHeaders,
             body: JSON.stringify(payload)
