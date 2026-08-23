@@ -26,15 +26,20 @@ class TestStaffAndBranchManagement(unittest.TestCase):
         self.client = app.test_client()
 
         # 1. Đăng nhập Super Admin
-        _, _, self.admin_token, self.admin_user = authenticate_user("admin@nohoathabinh.vn", "123456")
+        _, auth_admin, _ = authenticate_user("admin@nohoathabinh.vn", "123456")
+        self.admin_token = auth_admin["token"]
+        self.admin_user = auth_admin["user"]
 
         # 2. Đăng nhập Quản lý Chi Nhánh Q10 (branch_q10)
-        _, _, self.mgr_q10_token, self.mgr_q10 = authenticate_user("0909123456", "123456")
+        _, auth_mgr, _ = authenticate_user("0909123456", "123456")
+        self.mgr_q10_token = auth_mgr["token"]
+        self.mgr_q10 = auth_mgr["user"]
 
         # 3. Đăng ký / Đăng nhập Customer
         cust_phone = f"0933{int(time.time()) % 10000:04d}"
         register_customer(cust_phone, "123456", "Khách Hàng Thử Nghiệm")
-        _, _, self.cust_token, _ = authenticate_user(cust_phone, "123456")
+        _, auth_cust, _ = authenticate_user(cust_phone, "123456")
+        self.cust_token = auth_cust["token"]
 
     def test_01_super_admin_views_all_staff_and_manager_isolated(self):
         """Kiểm tra Super Admin thấy toàn bộ nhân sự, Quản lý Q10 chỉ thấy nhân sự Q10"""
