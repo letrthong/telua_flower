@@ -1530,5 +1530,89 @@
     "orderCount": 0,
     "savedAddresses": [],
     "createdAt": "2026-08-23T10:04:29Z"
+  },
+  {
+    "id": "cust_1787479810",
+    "phone": "09119810",
+    "fullName": "123456",
+    "email": "",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T10:10:10Z"
+  },
+  {
+    "id": "cust_1787479818",
+    "phone": "09229818",
+    "fullName": "123456",
+    "email": "",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T10:10:18Z"
+  },
+  {
+    "id": "cust_1787479830",
+    "phone": "09339830",
+    "fullName": "123456",
+    "email": "",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T10:10:30Z"
+  },
+  {
+    "id": "cust_1787479832",
+    "phone": "09339832",
+    "fullName": "123456",
+    "email": "",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T10:10:32Z"
+  },
+  {
+    "id": "cust_1787479835",
+    "phone": "09339835",
+    "fullName": "123456",
+    "email": "",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T10:10:35Z"
+  },
+  {
+    "id": "cust_1787479837",
+    "phone": "09339837",
+    "fullName": "123456",
+    "email": "",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T10:10:37Z"
+  },
+  {
+    "id": "cust_1787479840",
+    "phone": "09339840",
+    "fullName": "123456",
+    "email": "",
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "createdAt": "2026-08-23T10:10:40Z"
   }
 ]

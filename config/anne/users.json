@@ -1428,5 +1428,82 @@
     "branchId": null,
     "isActive": true,
     "createdAt": "2026-08-23T10:04:29Z"
+  },
+  {
+    "id": "cust_1787479810",
+    "phone": "09119810",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$Fq8oN4cPah1ijmEJ$4e5e027f219afb63da59355320e2bda5b47f322f1952aaf423cbea54c2d838ed",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:10:10Z"
+  },
+  {
+    "id": "cust_1787479818",
+    "phone": "09229818",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$wJZ0FLxkIQxSPD12$08f197de79cdaacd200336bb5911f215b0016fb669db4607ff4c9c4b4122c077",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:10:18Z"
+  },
+  {
+    "id": "cust_1787479830",
+    "phone": "09339830",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$pBPqU5WtEH2gurUP$34370dea8f1dc162f3b4ac5ce5ed1c985f39a88ca8433903a7e3c117770a5c72",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:10:30Z"
+  },
+  {
+    "id": "cust_1787479832",
+    "phone": "09339832",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$FRiMl4jDqzHdT6Xv$ec853cf4728e33deb7993246cd39f46187d025d23f7799074c86bf1d94b773f4",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:10:32Z"
+  },
+  {
+    "id": "cust_1787479835",
+    "phone": "09339835",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$ZJi2VFGsC9yPUdQb$fbd19e14b0ebb4707ee5f1c181ab1cbe8861b2fd8bff9a159f065549aef93a2a",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:10:35Z"
+  },
+  {
+    "id": "cust_1787479837",
+    "phone": "09339837",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$gKbMBYdnbH93RISD$bcc7ae31d377b382ae301215ddc1491277e43181679c986d717ecd83c4906d75",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:10:37Z"
+  },
+  {
+    "id": "cust_1787479840",
+    "phone": "09339840",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:260000$xeuMkRJkXxdZjife$be612213b90a13186e23aa76f4cfc04071662475f6e5d2c9918771679ceab0ed",
+    "role": "customer",
+    "branchId": null,
+    "isActive": true,
+    "createdAt": "2026-08-23T10:10:40Z"
   }
 ]
