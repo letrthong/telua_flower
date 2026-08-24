@@ -2,7 +2,9 @@ import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
-from .data_service import (
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from data_service import (
     get_translations,
     save_translations
 )

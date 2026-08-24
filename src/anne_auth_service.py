@@ -7,7 +7,10 @@ import base64
 from typing import Any, Dict, List, Optional, Tuple, Union
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from .data_service import (
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from  data_service import (
     get_users,
     save_users,
     get_user_by_id,

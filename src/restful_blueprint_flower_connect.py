@@ -8,7 +8,9 @@ import sys
 import logging
 from flask import Blueprint, jsonify, request
 
-from .services.anne_auth_service import (
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from  anne_auth_service import (
     authenticate_user,
     register_customer,
     verify_jwt_token,
@@ -17,7 +19,7 @@ from .services.anne_auth_service import (
     delete_staff_user,
     list_crm_customers
 )
-from .services.data_service import (
+from   data_service import (
     get_user_by_id,
     get_order_by_id,
     read_orders_by_month,
@@ -34,36 +36,34 @@ from .services.data_service import (
     move_category_order,
     get_user_orders
 )
-from .services.order_service import (
+from order_service import (
     get_available_delivery_slots,
     create_order,
     assign_nearest_branch,
     query_admin_orders
 )
-from .services.product_service import (
+from product_service import (
     list_products,
     create_or_update_product,
     toggle_product_active,
     delete_product
 )
-from .services.promotion_service import (
+from promotion_service import (
     list_all_promotions,
     toggle_promotion,
     create_or_update_promotion,
     delete_promotion,
     restore_promotion
 )
-from .services.translation_service import (
+from  translation_service import (
     get_all_translations,
     batch_update_translations,
     update_translation_key
 )
-from .decorators.auth_decorator import require_auth, require_role, can_access_branch
+from auth_decorator import require_auth, require_role, can_access_branch
 
 # Khởi tạo Blueprint RESTful API Version 1 (Chuẩn hóa như Lu Quan /api/hotelconnect/v1)
 flower_connect_api = Blueprint('flower_connect_api', __name__, url_prefix='/api/flower/v1')
-
-
 
 # ==========================================
 # CÁC API ENDPOINTS XÁC THỰC (AUTHENTICATION)

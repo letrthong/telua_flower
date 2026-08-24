@@ -6,7 +6,9 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 import sys
 
-from ..flower_config import (
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from flower_config import (
     FLOWER_CONFIG_DIR,
     FLOWER_ORDERS_DIR,
     USERS_DIR,

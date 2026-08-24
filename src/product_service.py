@@ -4,7 +4,9 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from .data_service import (
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from data_service import (
     get_products,
     save_products,
     get_product_by_id,

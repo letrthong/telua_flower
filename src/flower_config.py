@@ -61,12 +61,12 @@ WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.jso
 CACHE_VERSION_FILE = os.path.join(FLOWER_CONFIG_DIR, "cache_version.json")
 
 # Log thông tin debug cấu hình ra stdout (hiện ngay trong Docker console)
-print(f"🌸 [FLOWER CONFIG] ROOT_DIR: {ROOT_DIR}", flush=True)
-print(f"🌸 [FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR} (exists: {os.path.exists(FLOWER_CONFIG_DIR)})", flush=True)
-print(f"🌸 [FLOWER CONFIG] STAFF_USERS_FILE_PATH: {STAFF_USERS_FILE_PATH} (exists: {os.path.exists(STAFF_USERS_FILE_PATH)})", flush=True)
-print(f"🌸 [FLOWER CONFIG] CUSTOMERS_FILE_PATH: {CUSTOMERS_FILE_PATH} (exists: {os.path.exists(CUSTOMERS_FILE_PATH)})", flush=True)
-print(f"🌸 [FLOWER CONFIG] PRODUCTS_FILE_PATH: {PRODUCTS_FILE_PATH} (exists: {os.path.exists(PRODUCTS_FILE_PATH)})", flush=True)
-print(f"🌸 [FLOWER CONFIG] BRANCHES_FILE_PATH: {BRANCHES_FILE_PATH} (exists: {os.path.exists(BRANCHES_FILE_PATH)})", flush=True)
+print(f"[FLOWER CONFIG] ROOT_DIR: {ROOT_DIR}", flush=True)
+print(f"[FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR} (exists: {os.path.exists(FLOWER_CONFIG_DIR)})", flush=True)
+print(f"[FLOWER CONFIG] STAFF_USERS_FILE_PATH: {STAFF_USERS_FILE_PATH} (exists: {os.path.exists(STAFF_USERS_FILE_PATH)})", flush=True)
+print(f"[FLOWER CONFIG] CUSTOMERS_FILE_PATH: {CUSTOMERS_FILE_PATH} (exists: {os.path.exists(CUSTOMERS_FILE_PATH)})", flush=True)
+print(f"[FLOWER CONFIG] PRODUCTS_FILE_PATH: {PRODUCTS_FILE_PATH} (exists: {os.path.exists(PRODUCTS_FILE_PATH)})", flush=True)
+print(f"[FLOWER CONFIG] BRANCHES_FILE_PATH: {BRANCHES_FILE_PATH} (exists: {os.path.exists(BRANCHES_FILE_PATH)})", flush=True)
 
-logger.info(f"🌸 [FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR}")
+logger.info(f"[FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR}")
 

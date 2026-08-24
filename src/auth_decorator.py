@@ -1,7 +1,12 @@
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from functools import wraps
 from typing import Any, Dict, List, Optional, Union
 from flask import request, jsonify
-from ..services.anne_auth_service import verify_jwt_token
+from anne_auth_service import verify_jwt_token
 
 
 def require_role(allowed_roles: Union[str, List[str]]):

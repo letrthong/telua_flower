@@ -7,7 +7,9 @@ import string
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from .data_service import (
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from data_service import (
     get_branches,
     get_branch_by_id,
     get_products,
@@ -414,7 +416,7 @@ def query_admin_orders(
         orders_pool = read_orders_by_month(prev_ym)
     else:
         # 'all' hoặc 'custom' qua nhiều tháng -> đọc từ toàn bộ các file tháng
-        from .data_service import get_all_orders_across_all_months
+        from data_service import get_all_orders_across_all_months
         orders_pool = get_all_orders_across_all_months()
 
     # 2. Xác định khoảng thời gian lọc (Filter Date Range)
