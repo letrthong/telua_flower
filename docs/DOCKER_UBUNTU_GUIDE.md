@@ -69,10 +69,12 @@ The [cli_docker.sh](file:///d:/code/telua_flower/cli_docker.sh) script provides 
 
 | Command | Description |
 | :--- | :--- |
-| `./cli_docker.sh start` | Stops existing containers, builds the Docker image (with cache), starts services in background, and streams logs |
+| `./cli_docker.sh start` | Checks 30-day cleanup cycle, stops existing containers, builds image, starts services, and streams logs |
 | `./cli_docker.sh start --no-cache` | Rebuilds the Docker image completely from scratch without cache, then starts the service |
 | `./cli_docker.sh stop` | Gracefully stops and removes the running containers |
 | `./cli_docker.sh restart` | Restarts existing containers quickly without rebuilding |
+| `./cli_docker.sh clean` | Deep cleans containers, images, volumes, and build cache if 30 days have elapsed since last run |
+| `./cli_docker.sh clean --force` | Forces immediate Docker deep clean and resets the 30-day cleanup timestamp |
 | `./cli_docker.sh access` | Opens an interactive bash terminal inside the `telua_python_flower` container |
 | `./cli_docker.sh run_unittest` | Executes the backend Python test suite inside the container |
 | `./cli_docker.sh js_unittest` | Executes frontend JavaScript tests inside the container |

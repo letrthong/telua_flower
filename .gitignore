@@ -147,3 +147,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Docker cleanup timestamp tracking
+.docker_last_clean
+
