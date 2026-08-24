@@ -329,8 +329,8 @@ def api_admin_orders():
 def api_get_public_categories():
     """Lấy danh sách các danh mục hoa đang Bật hiển thị trên Frontend."""
     categories = get_categories(use_cache=True, active_only=True)
-    # Sắp xếp theo order
-    categories.sort(key=lambda x: x.get("order", 99))
+    # Sắp xếp theo order (ép kiểu int an toàn)
+    categories.sort(key=lambda x: int(x.get("order") or 99))
     return jsonify({"success": True, "data": categories}), 200
 
 
@@ -339,7 +339,7 @@ def api_get_public_categories():
 def api_get_admin_categories():
     """Lấy toàn bộ danh sách danh mục (cả đang hiện và đang ẩn) cho Admin."""
     categories = get_categories(use_cache=False, active_only=False)
-    categories.sort(key=lambda x: x.get("order", 99))
+    categories.sort(key=lambda x: int(x.get("order") or 99))
     return jsonify({"success": True, "data": categories}), 200
 
 
@@ -404,7 +404,7 @@ def api_restore_category(cat_id):
     }), 200
 
 
-@flower_connect_api.route("/admin/categories/<cat_id>/move", methods=["PATCH"])
+@flower_connect_api.route("/admin/categories/<cat_id>/move", methods=["PATCH", "POST"])
 @require_role(["super_admin", "branch_manager"])
 def api_move_category(cat_id):
     """Di chuyển thứ tự order danh mục lên (up) hoặc xuống (down) 1 bậc."""

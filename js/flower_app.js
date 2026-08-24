@@ -201,9 +201,18 @@ export async function renderAllProducts() {
                 const apiKeHoa = json.data.filter(p => p.category === 'ke_hoa');
                 const apiBinhHoa = json.data.filter(p => p.category === 'binh_hoa' || p.category === 'gio_hoa' || p.category === 'lan_ho_diep');
 
-                if (apiBoHoa.length > 0) renderProducts(apiBoHoa, 'bo-hoa-grid');
-                if (apiKeHoa.length > 0) renderProducts(apiKeHoa, 'ke-hoa-grid');
-                if (apiBinhHoa.length > 0) renderProducts(apiBinhHoa, 'binh-hoa-grid');
+                if (apiBoHoa.length > 0) {
+                    if (typeof window !== 'undefined') window.products_bo_hoa = apiBoHoa;
+                    renderProducts(apiBoHoa, 'bo-hoa-grid');
+                }
+                if (apiKeHoa.length > 0) {
+                    if (typeof window !== 'undefined') window.products_ke_hoa = apiKeHoa;
+                    renderProducts(apiKeHoa, 'ke-hoa-grid');
+                }
+                if (apiBinhHoa.length > 0) {
+                    if (typeof window !== 'undefined') window.products_binh_hoa = apiBinhHoa;
+                    renderProducts(apiBinhHoa, 'binh-hoa-grid');
+                }
             }
         }
     } catch (e) {

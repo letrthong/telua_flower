@@ -83,6 +83,7 @@ export function openAdminPortalModal() {
     modal.classList.remove("hidden");
 
     loadAdminProducts();
+    loadAdminBranches();
     onPriceLevelChange();
 }
 
@@ -442,9 +443,21 @@ export async function moveCategory(catId, direction) {
             },
             body: JSON.stringify({ direction })
         });
-        const json = await res.json();
+        
+        const contentType = res.headers.get("content-type") || "";
+        let json;
+        if (contentType.includes("application/json")) {
+            json = await res.json();
+        } else {
+            const rawText = await res.text();
+            throw new Error(`Máy chủ không phản hồi định dạng JSON (${res.status} ${res.statusText}). Vui lòng đảm bảo backend Flask đang chạy trên cổng 5000.`);
+        }
+
         if (json.success) {
             loadAdminCategories();
+            if (typeof renderStorefrontCategories === "function") {
+                renderStorefrontCategories();
+            }
         } else {
             alert(json.message || "Không thể di chuyển thứ tự");
         }
@@ -495,21 +508,72 @@ const ROLE_DISPLAY_MAP = {
     sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" }
 };
 
-const BRANCH_NAME_MAP = {
+export const BRANCH_NAME_MAP = {
     branch_q10: "Showroom Q10",
     branch_q1: "Showroom Bến Nghé Q1",
     branch_thao_dien: "Showroom Thảo Điền",
     all: "Toàn bộ hệ thống (HQ)"
 };
 
+export function populateBranchDropdowns(branches) {
+    if (!Array.isArray(branches)) return;
+
+    // 1. Cập nhật dynamic map tên chi nhánh cho bảng nhân sự
+    branches.forEach((b) => {
+        if (b.id) {
+            BRANCH_NAME_MAP[b.id] = b.name || b.code || b.id;
+        }
+    });
+
+    // 2. Dropdown lọc chi nhánh ở Tab Nhân Sự (filterUserBranch)
+    const filterSelect = document.getElementById("filterUserBranch");
+    if (filterSelect) {
+        const currentVal = filterSelect.value || "all";
+        let opts = `<option value="all">Tất cả chi nhánh</option>`;
+        branches.filter((b) => b.isActive !== false).forEach((b) => {
+            opts += `<option value="${b.id}">${b.name}</option>`;
+        });
+        filterSelect.innerHTML = opts;
+        if (currentVal) filterSelect.value = currentVal;
+    }
+
+    // 3. Dropdown chọn chi nhánh trong Modal Thêm/Sửa Nhân Sự (staffBranch)
+    const staffBranchSelect = document.getElementById("staffBranch");
+    if (staffBranchSelect) {
+        const currentVal = staffBranchSelect.value;
+        let opts = "";
+        branches.filter((b) => b.isActive !== false).forEach((b) => {
+            opts += `<option value="${b.id}">${b.name} (${b.code || b.id})</option>`;
+        });
+        opts += `<option value="all" id="optBranchAll">Toàn bộ hệ thống (HQ - Toàn quyền)</option>`;
+        staffBranchSelect.innerHTML = opts;
+        if (currentVal) staffBranchSelect.value = currentVal;
+    }
+}
+
 export async function loadAdminUsers() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    // Đảm bảo dữ liệu chi nhánh đã được tải từ backend và đồng bộ vào dropdowns
+    if (!allAdminBranches || allAdminBranches.length === 0) {
+        try {
+            const bRes = await fetch(`${API_BASE}/admin/branches`, { headers: { "Authorization": `Bearer ${token}` } });
+            const bJson = await bRes.json();
+            if (bJson.success && Array.isArray(bJson.data)) {
+                allAdminBranches = bJson.data;
+                populateBranchDropdowns(allAdminBranches);
+            }
+        } catch (err) {
+            console.warn("Không thể tải danh sách chi nhánh:", err);
+        }
+    }
+
     const filterSelect = document.getElementById("filterUserBranch");
     const branch = filterSelect ? filterSelect.value : "all";
     const tbody = document.getElementById("usersTableBody");
     if (!tbody) return;
 
     tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">Đang tải danh sách nhân sự nội bộ...</td></tr>`;
-    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
         let url = `${API_BASE}/admin/users`;
@@ -703,6 +767,11 @@ export function openUserModal(isEdit = false) {
     if (!modal) return;
     if (errBox) errBox.classList.add("hidden");
 
+    // Luôn đảm bảo dropdown chọn chi nhánh được cập nhật các chi nhánh mới nhất
+    if (allAdminBranches && allAdminBranches.length > 0) {
+        populateBranchDropdowns(allAdminBranches);
+    }
+
     if (!isEdit && form) {
         form.reset();
         document.getElementById("editUserId").value = "";
@@ -835,9 +904,9 @@ export async function deleteUser(userId, fullName) {
 
 export async function loadAdminBranches() {
     const tbody = document.getElementById("branchesTableBody");
-    if (!tbody) return;
-
-    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Đang tải danh sách chuỗi cửa hàng...</td></tr>`;
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Đang tải danh sách chuỗi cửa hàng...</td></tr>`;
+    }
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
@@ -846,12 +915,16 @@ export async function loadAdminBranches() {
 
         if (json.success && Array.isArray(json.data)) {
             allAdminBranches = json.data;
-            renderBranchesTable(allAdminBranches);
+            if (tbody) renderBranchesTable(allAdminBranches);
+            populateBranchDropdowns(allAdminBranches);
+            if (allAdminUsers && allAdminUsers.length > 0) {
+                renderUsersTable(allAdminUsers);
+            }
         } else {
-            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải chi nhánh"}</td></tr>`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải chi nhánh"}</td></tr>`;
         }
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
     }
 }
 
@@ -1396,6 +1469,9 @@ export async function handleProductSubmit(event) {
         if (res.ok && json.success) {
             closeProductModal();
             loadAdminProducts();
+            if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
+                window.renderAllProducts();
+            }
         } else {
             if (errBox) {
                 errBox.textContent = json.message || "Lỗi lưu sản phẩm";
@@ -1417,7 +1493,12 @@ export async function toggleProduct(productId) {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
         });
-        if (res.ok) loadAdminProducts();
+        if (res.ok) {
+            loadAdminProducts();
+            if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
+                window.renderAllProducts();
+            }
+        }
     } catch (e) {
         alert("Lỗi đổi trạng thái: " + e.message);
     }
@@ -1863,4 +1944,5 @@ if (typeof window !== "undefined") {
     window.editBranch = editBranch;
     window.handleBranchSubmit = handleBranchSubmit;
     window.toggleBranch = toggleBranch;
+    window.populateBranchDropdowns = populateBranchDropdowns;
 }

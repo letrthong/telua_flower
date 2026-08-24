@@ -8,9 +8,10 @@ show_usage() {
     echo "Usage: $0 [action] [options]"
     echo ""
     echo "Actions:"
-    echo "  start         Build images and start containers"
-    echo "  stop          Stop and remove running containers"
+    echo "  start         Build images, clean dangling artifacts, and start containers"
+    echo "  stop          Stop containers and clean unused volumes/images"
     echo "  restart       Stop and start containers without rebuilding"
+    echo "  clean         Manually clean dangling images, volumes, and build cache"
     echo "  access        Access the web service container's shell (bash)"
     echo "  run_unittest  Run backend Python unit tests inside the container"
     echo "  js_unittest   Run frontend JS unit tests inside the container"
@@ -20,10 +21,11 @@ show_usage() {
     echo "  --no-cache    Build images without using cache (applies to 'start')"
     echo ""
     echo "Examples:"
-    echo "  $0 start                  Build (with cache) and start containers"
-    echo "  $0 start --no-cache       Build (without cache) and start containers"
+    echo "  $0 start                  Build (with cache), auto-cleanup & start containers"
+    echo "  $0 start --no-cache       Build (without cache), auto-cleanup & start containers"
     echo "  $0 --no-cache             Shortcut to build (without cache) and start"
-    echo "  $0 stop                   Stop running containers"
+    echo "  $0 stop                   Stop running containers & auto-cleanup"
+    echo "  $0 clean                  Manually clean dangling images, volumes & builder cache"
     echo "  $0 access                 Access container bash terminal"
     echo "  $0 run_unittest           Run backend Python tests inside container"
     echo "  $0 js_unittest            Run frontend JS tests inside container"
@@ -47,6 +49,13 @@ check_container_running() {
     fi
 }
 
+# Function to auto-clean dangling images and unused volumes
+auto_cleanup() {
+    echo "--> Auto-cleaning dangling images & unused volumes..."
+    docker image prune -f > /dev/null 2>&1 || true
+    docker volume prune -f > /dev/null 2>&1 || true
+}
+
 # Determine the action and options
 ACTION=""
 BUILD_CACHE="true"
@@ -57,7 +66,7 @@ for arg in "$@"; do
         --no-cache)
             BUILD_CACHE="false"
             ;;
-        start|stop|restart|access|run_unittest|js_unittest|help|--help|-h)
+        start|stop|restart|clean|access|run_unittest|js_unittest|help|--help|-h)
             ACTION="$arg"
             ;;
     esac
@@ -83,6 +92,10 @@ case "$ACTION" in
             echo "--> Building images (using cache)..."
             docker compose build
         fi
+
+        # Tự động dọn dẹp dangling images & volumes cũ ngay sau khi build
+        auto_cleanup
+
         echo "--> Starting containers..."
         docker compose up -d
         
@@ -97,13 +110,22 @@ case "$ACTION" in
         ;;
     stop)
         echo "--> Stopping containers..."
-        docker compose down
+        docker compose down -v
+        auto_cleanup
+        echo "--> Containers stopped and unused artifacts cleaned."
         ;;
     restart)
         echo "--> Stopping existing containers..."
         docker compose down
         echo "--> Starting containers..."
         docker compose up
+        ;;
+    clean)
+        echo "--> Cleaning dangling images, unused volumes, and build cache..."
+        docker image prune -f
+        docker volume prune -f
+        docker builder prune -f
+        echo "--> Docker cleanup completed successfully!"
         ;;
     access)
         check_container_running

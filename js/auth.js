@@ -351,16 +351,11 @@ async function handleLoginSubmit(event) {
         closeAuthModal();
         updateAuthUI();
 
-        // Nếu là vai trò nhân viên/quản lý -> chuyển hướng ngay tới cổng tương ứng
-        if (result.user && result.user.role !== "customer" && result.redirectUrl !== "/") {
-            window.location.href = result.redirectUrl;
+        // Không tự động chuyển hướng / bật CMS, giữ admin ở trang chủ và chỉ hiển thị khi click
+        if (typeof showToast === "function") {
+            showToast(`Chào mừng ${result.user.fullName || "bạn"} (${result.user.role}) đã đăng nhập thành công!`);
         } else {
-            // Thông báo đăng nhập thành công
-            if (typeof showToast === "function") {
-                showToast(`Chào mừng ${result.user.fullName || "bạn"} đã quay trở lại!`);
-            } else {
-                alert(`Đăng nhập thành công! Chào ${result.user.fullName || ""}`);
-            }
+            alert(`Đăng nhập thành công! Chào ${result.user.fullName || ""}`);
         }
     } else {
         if (errorBox) {

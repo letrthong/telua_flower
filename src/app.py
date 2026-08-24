@@ -1,7 +1,7 @@
 import os
 import sys
 import logging
-from flask import Flask, send_file, abort
+from flask import Flask, send_file, abort, jsonify
 from flask_cors import cross_origin
 
 # Cấu hình logging
@@ -77,6 +77,10 @@ def index(subpath=None):
 @cross_origin()
 def static_files(filename):
     """Phục vụ các file tĩnh (js, css, json, hình ảnh...) và fallback SPA"""
+    # Nếu là đường dẫn API không khớp route nào, trả về JSON 404 thay vì fallback index.html
+    if filename.startswith("api/") or filename.startswith("api"):
+        return jsonify({"success": False, "message": f"API endpoint không tồn tại: /{filename}"}), 404
+
     file_path = resolve_static_file(filename)
     if file_path:
         return send_file(file_path)

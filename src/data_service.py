@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import threading
 import functools
 from datetime import datetime
@@ -393,25 +394,36 @@ def create_or_update_category(
     status = cat_data.get("status") or ("active" if is_active else "inactive")
 
     if cat_id:
+        target_idx = next((i for i, c in enumerate(categories) if c.get("id") == cat_id), -1)
+        if target_idx == -1:
+            return False, None, "Không tìm thấy danh mục cần sửa"
+
+        target_cat = categories[target_idx]
+        target_cat["name"] = name
+        target_cat["icon"] = icon
+        if image:
+            target_cat["image"] = image
+        target_cat["description"] = description
+        target_cat["isActive"] = is_active
+        target_cat["status"] = status
+        if status == "deleted":
+            target_cat["isDeleted"] = True
+            target_cat["deletedAt"] = target_cat.get("deletedAt") or now_iso
+        else:
+            target_cat["isDeleted"] = False
+            target_cat["deletedAt"] = None
+        target_cat["updatedAt"] = now_iso
+
+        # Chèn vào vị trí order mới và đánh số lại chuẩn xác
+        categories.pop(target_idx)
+        insert_idx = max(0, min(order - 1, len(categories)))
+        categories.insert(insert_idx, target_cat)
+
         for i, c in enumerate(categories):
-            if c.get("id") == cat_id:
-                categories[i]["name"] = name
-                categories[i]["order"] = order
-                categories[i]["icon"] = icon
-                if image: categories[i]["image"] = image
-                categories[i]["description"] = description
-                categories[i]["isActive"] = is_active
-                categories[i]["status"] = status
-                if status == "deleted":
-                    categories[i]["isDeleted"] = True
-                    categories[i]["deletedAt"] = categories[i].get("deletedAt") or now_iso
-                else:
-                    categories[i]["isDeleted"] = False
-                    categories[i]["deletedAt"] = None
-                categories[i]["updatedAt"] = now_iso
-                save_categories(categories)
-                return True, categories[i], None
-        return False, None, "Không tìm thấy danh mục cần sửa"
+            c["order"] = i + 1
+
+        save_categories(categories)
+        return True, target_cat, None
     else:
         new_id = (cat_data.get("id") or "").strip().lower()
         if not new_id:
@@ -434,8 +446,10 @@ def create_or_update_category(
             "createdAt": now_iso,
             "updatedAt": now_iso
         }
-        categories.append(new_cat)
-        categories.sort(key=lambda x: x.get("order", 99))
+        insert_idx = max(0, min(order - 1, len(categories)))
+        categories.insert(insert_idx, new_cat)
+        for i, c in enumerate(categories):
+            c["order"] = i + 1
         save_categories(categories)
         return True, new_cat, None
 
