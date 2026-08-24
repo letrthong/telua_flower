@@ -188,6 +188,18 @@ export const default_categories = [
         isActive: true,
         isDeleted: false,
         description: "Chậu hoa lan hồ điệp thuần khiết, quà tặng cao cấp"
+    },
+    {
+        id: "hoa_cuoi",
+        name: "Hoa Cưới Cầm Tay",
+        slug: "hoa-cuoi",
+        image: "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        icon: "fa-solid fa-heart",
+        order: 6,
+        status: "active",
+        isActive: true,
+        isDeleted: false,
+        description: "Bó hoa cưới cô dâu lộng lẫy và hoa cài áo chú rể ngày trọng đại"
     }
 ];
 

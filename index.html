@@ -258,6 +258,9 @@
                             <li><a href="#products"
                                     class="block px-4 py-2 hover:bg-pink-50 hover:text-primary border-b border-gray-50" data-i18n="sub_graduation">Hoa
                                     Tốt Nghiệp</a></li>
+                            <li><a href="#products"
+                                    class="block px-4 py-2 hover:bg-pink-50 hover:text-primary border-b border-gray-50" data-i18n="cat_wedding">Hoa
+                                    Cưới Cầm Tay</a></li>
                             <li><a href="#products" class="block px-4 py-2 hover:bg-pink-50 hover:text-primary" data-i18n="sub_sympathy">Hoa Chia
                                     Buồn</a></li>
                         </ul>
@@ -265,7 +268,12 @@
                     
                     <!-- Dynamic categories rendered from categories.json -->
                     <li class="flex items-center space-x-7" id="dynamicNavItems">
-                        <!-- Render động qua JS -->
+                        <a href="#products" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Giỏ & Lẵng Hoa</a>
+                        <a href="#products" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Bó Hoa Tươi</a>
+                        <a href="#products" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Kệ Hoa Khai Trương</a>
+                        <a href="#binh-hoa" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Bình Cắm Hoa</a>
+                        <a href="#products" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Lan Hồ Điệp</a>
+                        <a href="#products" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Hoa Cưới Cầm Tay</a>
                     </li>
 
                     <li>
@@ -298,7 +306,12 @@
                         
                         <!-- Dynamic Categories in Mobile Menu from categories.json -->
                         <div id="mobileDynamicNavItems" class="space-y-4 pt-1 pb-1 border-t border-b border-gray-100">
-                            <!-- Render động qua JS -->
+                            <li><a href="#products" onclick="closeMenu()" class="block">Giỏ & Lẵng Hoa</a></li>
+                            <li><a href="#products" onclick="closeMenu()" class="block">Bó Hoa Tươi</a></li>
+                            <li><a href="#products" onclick="closeMenu()" class="block">Kệ Hoa Khai Trương</a></li>
+                            <li><a href="#binh-hoa" onclick="closeMenu()" class="block">Bình Cắm Hoa</a></li>
+                            <li><a href="#products" onclick="closeMenu()" class="block">Lan Hồ Điệp</a></li>
+                            <li><a href="#products" onclick="closeMenu()" class="block">Hoa Cưới Cầm Tay</a></li>
                         </div>
 
                         <li><a href="#products" onclick="closeMenu()" class="block" data-i18n="nav_promotions">Khuyến Mãi</a></li>
@@ -1197,6 +1210,7 @@
                                 <option value="binh_hoa">Bình Hoa Nghệ Thuật</option>
                                 <option value="gio_hoa">Giỏ Hoa Vintage</option>
                                 <option value="lan_ho_diep">Lan Hồ Điệp</option>
+                                <option value="hoa_cuoi">Hoa Cưới Cầm Tay</option>
                             </select>
                             <button onclick="openProductModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
                                 <i class="fa-solid fa-plus mr-1"></i> Thêm Mẫu Hoa Mới
@@ -1488,6 +1502,7 @@
                             <option value="binh_hoa">Bình Hoa Gốm Nghệ Thuật (binh_hoa)</option>
                             <option value="gio_hoa">Giỏ Hoa Vintage (gio_hoa)</option>
                             <option value="lan_ho_diep">Lan Hồ Điệp (lan_ho_diep)</option>
+                            <option value="hoa_cuoi">Hoa Cưới Cầm Tay (hoa_cuoi)</option>
                         </select>
                     </div>
                 </div>
