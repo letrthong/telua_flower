@@ -286,14 +286,113 @@ def save_price_levels(price_levels: List[Dict[str, Any]]) -> bool:
     return success
 
 
+DEFAULT_CATEGORIES = [
+    {
+        "id": "gio_hoa",
+        "name": "Giỏ & Lẵng Hoa",
+        "slug": "gio-hoa",
+        "image": "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        "icon": "fa-solid fa-basket-shopping",
+        "order": 1,
+        "status": "active",
+        "isActive": True,
+        "isDeleted": False,
+        "description": "Giỏ hoa và lẵng hoa để bàn sang trọng, tinh tế",
+        "createdAt": "2026-08-20T08:00:00Z",
+        "updatedAt": "2026-08-24T12:00:00Z"
+    },
+    {
+        "id": "bo_hoa",
+        "name": "Bó Hoa Tươi",
+        "slug": "bo-hoa",
+        "image": "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        "icon": "fa-solid fa-spa",
+        "order": 2,
+        "status": "active",
+        "isActive": True,
+        "isDeleted": False,
+        "description": "Các mẫu bó hoa tươi thiết kế cao cấp cho sinh nhật, tình yêu, tốt nghiệp",
+        "createdAt": "2026-08-20T08:00:00Z",
+        "updatedAt": "2026-08-24T12:00:00Z"
+    },
+    {
+        "id": "ke_hoa",
+        "name": "Kệ Hoa Khai Trương",
+        "slug": "ke-hoa",
+        "image": "https://images.unsplash.com/photo-1507290439931-a861b5a38200?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        "icon": "fa-solid fa-crown",
+        "order": 3,
+        "status": "active",
+        "isActive": True,
+        "isDeleted": False,
+        "description": "Kệ hoa chúc mừng khai trương, kỷ niệm, sự kiện hồng phát",
+        "createdAt": "2026-08-20T08:00:00Z",
+        "updatedAt": "2026-08-24T12:00:00Z"
+    },
+    {
+        "id": "binh_hoa",
+        "name": "Bình Cắm Hoa",
+        "slug": "binh-cam-hoa",
+        "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_ho_phach.png",
+        "icon": "fa-solid fa-wine-glass",
+        "order": 4,
+        "status": "active",
+        "isActive": True,
+        "isDeleted": False,
+        "description": "Mẫu bình cắm hoa nghệ thuật phong cách 'Thả Bình' tinh tế cho không gian sống",
+        "createdAt": "2026-08-20T08:00:00Z",
+        "updatedAt": "2026-08-24T12:00:00Z"
+    },
+    {
+        "id": "lan_ho_diep",
+        "name": "Lan Hồ Điệp",
+        "slug": "lan-ho-diep",
+        "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/moth_orchid.jpg",
+        "icon": "fa-solid fa-seedling",
+        "order": 5,
+        "status": "active",
+        "isActive": True,
+        "isDeleted": False,
+        "description": "Chậu hoa lan hồ điệp thuần khiết, quà tặng cao cấp",
+        "createdAt": "2026-08-20T08:00:00Z",
+        "updatedAt": "2026-08-24T12:00:00Z"
+    },
+    {
+        "id": "hoa_cuoi",
+        "name": "Hoa Cưới Cầm Tay",
+        "slug": "hoa-cuoi",
+        "image": "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        "icon": "fa-solid fa-heart",
+        "order": 6,
+        "status": "active",
+        "isActive": True,
+        "isDeleted": False,
+        "description": "Bó hoa cưới cô dâu lộng lẫy và hoa cài áo chú rể ngày trọng đại",
+        "createdAt": "2026-08-20T08:00:00Z",
+        "updatedAt": "2026-08-24T12:00:00Z"
+    }
+]
+
 # 2b. Danh Mục Hoa Tươi (Categories) - Hỗ trợ cache LRU, Timestamps & Xóa Mềm (Soft Delete)
 @functools.lru_cache(maxsize=32)
 def _get_cached_categories() -> List[Dict[str, Any]]:
-    return _normalize_list_of_dicts(read_json(get_config_path("categories.json"), default=[]))
+    cat_file = get_config_path("categories.json")
+    cats = _normalize_list_of_dicts(read_json(cat_file, default=[]))
+    if not cats:
+        cats = DEFAULT_CATEGORIES
+        write_json(cat_file, DEFAULT_CATEGORIES)
+    return cats
 
 
 def get_categories(use_cache: bool = True, active_only: bool = False, include_deleted: bool = True) -> List[Dict[str, Any]]:
-    cats = _get_cached_categories() if use_cache else _normalize_list_of_dicts(read_json(get_config_path("categories.json"), default=[]))
+    if use_cache:
+        cats = _get_cached_categories()
+    else:
+        cat_file = get_config_path("categories.json")
+        cats = _normalize_list_of_dicts(read_json(cat_file, default=[]))
+        if not cats:
+            cats = DEFAULT_CATEGORIES
+            write_json(cat_file, DEFAULT_CATEGORIES)
     if active_only:
         return [c for c in cats if isinstance(c, dict) and c.get("isActive") is not False and c.get("status") != "deleted" and not c.get("isDeleted")]
     if not include_deleted:

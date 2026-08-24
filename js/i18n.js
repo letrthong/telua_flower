@@ -63,7 +63,10 @@ export function setLanguage(lang) {
         const langMenuMobile = document.getElementById('langDropdownMenuMobile');
         if (langMenuMobile) langMenuMobile.classList.add('hidden');
 
-        // 9. Render lại sản phẩm
+        // 9. Render lại danh mục & sản phẩm
+        if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
+            window.renderStorefrontCategories();
+        }
         if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
             window.renderAllProducts();
         } else if (typeof renderProducts === 'function') {

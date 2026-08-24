@@ -1,31 +1,31 @@
 [
   {
-    "id": "bo_hoa",
-    "name": "Bó Hoa Tươi",
-    "slug": "bo-hoa",
-    "image": "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-    "icon": "fa-solid fa-spa",
-    "order": 1,
-    "status": "active",
-    "isActive": true,
-    "isDeleted": false,
-    "description": "Các mẫu bó hoa tươi thiết kế cao cấp cho sinh nhật, tình yêu, tốt nghiệp",
-    "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-08-23T20:00:00Z"
-  },
-  {
     "id": "gio_hoa",
     "name": "Giỏ & Lẵng Hoa",
     "slug": "gio-hoa",
     "image": "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
     "icon": "fa-solid fa-basket-shopping",
-    "order": 2,
+    "order": 1,
     "status": "active",
     "isActive": true,
     "isDeleted": false,
     "description": "Giỏ hoa và lẵng hoa để bàn sang trọng, tinh tế",
-    "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-08-23T20:00:00Z"
+    "createdAt": "2026-08-20T08:00:00Z",
+    "updatedAt": "2026-08-24T12:00:00Z"
+  },
+  {
+    "id": "bo_hoa",
+    "name": "Bó Hoa Tươi",
+    "slug": "bo-hoa",
+    "image": "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+    "icon": "fa-solid fa-spa",
+    "order": 2,
+    "status": "active",
+    "isActive": true,
+    "isDeleted": false,
+    "description": "Các mẫu bó hoa tươi thiết kế cao cấp cho sinh nhật, tình yêu, tốt nghiệp",
+    "createdAt": "2026-08-20T08:00:00Z",
+    "updatedAt": "2026-08-24T12:00:00Z"
   },
   {
     "id": "ke_hoa",
@@ -38,8 +38,8 @@
     "isActive": true,
     "isDeleted": false,
     "description": "Kệ hoa chúc mừng khai trương, kỷ niệm, sự kiện hồng phát",
-    "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-08-23T20:00:00Z"
+    "createdAt": "2026-08-20T08:00:00Z",
+    "updatedAt": "2026-08-24T12:00:00Z"
   },
   {
     "id": "binh_hoa",
@@ -52,8 +52,8 @@
     "isActive": true,
     "isDeleted": false,
     "description": "Mẫu bình cắm hoa nghệ thuật phong cách 'Thả Bình' tinh tế cho không gian sống",
-    "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-08-23T20:22:00Z"
+    "createdAt": "2026-08-20T08:00:00Z",
+    "updatedAt": "2026-08-24T12:00:00Z"
   },
   {
     "id": "lan_ho_diep",
@@ -66,21 +66,21 @@
     "isActive": true,
     "isDeleted": false,
     "description": "Chậu hoa lan hồ điệp thuần khiết, quà tặng cao cấp",
-    "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-08-23T20:00:00Z"
+    "createdAt": "2026-08-20T08:00:00Z",
+    "updatedAt": "2026-08-24T12:00:00Z"
   },
   {
     "id": "hoa_cuoi",
-    "name": "Hoa Cưới & Cầm Tay",
+    "name": "Hoa Cưới Cầm Tay",
     "slug": "hoa-cuoi",
-    "image": "https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+    "image": "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
     "icon": "fa-solid fa-heart",
     "order": 6,
-    "status": "inactive",
-    "isActive": false,
+    "status": "active",
+    "isActive": true,
     "isDeleted": false,
-    "description": "Hoa cưới cầm tay cô dâu, hoa cài áo và trang trí lễ cưới",
-    "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-08-23T20:00:00Z"
+    "description": "Bó hoa cưới cô dâu lộng lẫy và hoa cài áo chú rể ngày trọng đại",
+    "createdAt": "2026-08-20T08:00:00Z",
+    "updatedAt": "2026-08-24T12:00:00Z"
   }
 ]

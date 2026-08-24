@@ -26,16 +26,16 @@ def get_index_file():
     Tìm file index.html theo thứ tự ưu tiên:
     1. dist/index.html (file single-file HTML đã bundle toàn bộ JS/CSS inline bởi Vite)
     2. /app/dist/index.html
-    3. config/index.html (file bundle dự phòng)
-    4. index.html (file html gốc phục vụ khi đang dev unbundled)
-    5. /app/index.html
+    3. index.html (file html gốc đang phát triển)
+    4. /app/index.html
+    5. config/index.html (file bundle dự phòng)
     """
     candidates = [
         os.path.join(TELUA_ROOT, "dist", "index.html"),
         "/app/dist/index.html",
-        os.path.join(TELUA_ROOT, "config", "index.html"),
         os.path.join(TELUA_ROOT, "index.html"),
         "/app/index.html",
+        os.path.join(TELUA_ROOT, "config", "index.html"),
     ]
     for path in candidates:
         if os.path.exists(path):

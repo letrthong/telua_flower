@@ -241,7 +241,7 @@
 
         <nav class="hidden md:block bg-gray-50 border-t border-b border-gray-100">
             <div class="container mx-auto max-w-7xl">
-                <ul class="flex justify-center space-x-7 text-sm font-bold text-gray-700 uppercase tracking-wide py-3">
+                <ul class="flex justify-center items-center space-x-7 text-sm font-bold text-gray-700 uppercase tracking-wide py-3">
                     <li><a href="#" class="text-primary hover:text-primary transition" data-i18n="nav_home">Trang Chủ</a></li>
                     <li class="relative group">
                         <a href="#" class="hover:text-primary transition flex items-center"><span data-i18n="nav_themes">Chủ Đề Hoa</span> <i
@@ -249,25 +249,25 @@
                         <!-- Dropdown -->
                         <ul
                             class="absolute top-full left-0 mt-2 bg-white shadow-xl rounded-lg w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-300 z-50">
-                            <li><a href="#"
+                            <li><a href="#products"
                                     class="block px-4 py-2 hover:bg-pink-50 hover:text-primary border-b border-gray-50" data-i18n="sub_birthday">Hoa
                                     Sinh Nhật</a></li>
-                            <li><a href="#"
+                            <li><a href="#products"
                                     class="block px-4 py-2 hover:bg-pink-50 hover:text-primary border-b border-gray-50" data-i18n="sub_opening">Hoa
                                     Khai Trương</a></li>
-                            <li><a href="#"
+                            <li><a href="#products"
                                     class="block px-4 py-2 hover:bg-pink-50 hover:text-primary border-b border-gray-50" data-i18n="sub_graduation">Hoa
                                     Tốt Nghiệp</a></li>
-                            <li><a href="#" class="block px-4 py-2 hover:bg-pink-50 hover:text-primary" data-i18n="sub_sympathy">Hoa Chia
+                            <li><a href="#products" class="block px-4 py-2 hover:bg-pink-50 hover:text-primary" data-i18n="sub_sympathy">Hoa Chia
                                     Buồn</a></li>
                         </ul>
                     </li>
-                    <li><a href="#products" class="hover:text-primary transition" data-i18n="nav_bouquets">Bó Hoa Tươi</a></li>
-                    <li><a href="#" class="hover:text-primary transition" data-i18n="nav_baskets">Lẵng Hoa</a></li>
-                    <li><a href="#products" class="hover:text-primary transition" data-i18n="nav_stands">Kệ Hoa</a></li>
-                    <li><a href="#" class="hover:text-primary transition" data-i18n="nav_tulips">Hoa Tulip</a></li>
-                    <li><a href="#binh-hoa" class="hover:text-primary transition" data-i18n="nav_vases">Bình Cắm Hoa</a></li>
-                    <li><a href="#" class="hover:text-primary transition" data-i18n="nav_imported">Hoa Nhập Khẩu</a></li>
+                    
+                    <!-- Dynamic categories rendered from categories.json -->
+                    <li class="flex items-center space-x-7" id="dynamicNavItems">
+                        <!-- Render động qua JS -->
+                    </li>
+
                     <li>
                         <a href="#tim-cua-hang" onclick="openStoreMap(event)" class="text-primary hover:text-primaryHover transition flex items-center bg-pink-50 hover:bg-pink-100 px-3 py-1 rounded-full -my-1 border border-pink-200 normal-case font-bold">
                             <i class="fa-solid fa-location-dot mr-1.5 text-primary"></i><span data-i18n="nav_store_locator">Tìm Cửa Hàng</span>
@@ -293,13 +293,15 @@
                                 <i class="fa-solid fa-location-dot mr-2 text-primary"></i><span data-i18n="nav_store_locator_map">Tìm Cửa Hàng (Map)</span>
                             </a>
                         </li>
-                        <li><a href="#" class="block" data-i18n="sub_birthday">Hoa Sinh Nhật</a></li>
-                        <li><a href="#" class="block" data-i18n="sub_opening">Hoa Khai Trương</a></li>
-                        <li><a href="#products" onclick="closeMenu()" class="block" data-i18n="nav_bouquets">Bó Hoa Tươi</a></li>
-                        <li><a href="#" class="block" data-i18n="nav_baskets">Lẵng Hoa</a></li>
-                        <li><a href="#products" onclick="closeMenu()" class="block" data-i18n="nav_stands">Kệ Hoa Tươi</a></li>
-                        <li><a href="#binh-hoa" onclick="closeMenu()" class="block" data-i18n="nav_vases">Bình Cắm Hoa</a></li>
-                        <li><a href="#" class="block" data-i18n="nav_promotions">Khuyến Mãi</a></li>
+                        <li><a href="#products" onclick="closeMenu()" class="block" data-i18n="sub_birthday">Hoa Sinh Nhật</a></li>
+                        <li><a href="#products" onclick="closeMenu()" class="block" data-i18n="sub_opening">Hoa Khai Trương</a></li>
+                        
+                        <!-- Dynamic Categories in Mobile Menu from categories.json -->
+                        <div id="mobileDynamicNavItems" class="space-y-4 pt-1 pb-1 border-t border-b border-gray-100">
+                            <!-- Render động qua JS -->
+                        </div>
+
+                        <li><a href="#products" onclick="closeMenu()" class="block" data-i18n="nav_promotions">Khuyến Mãi</a></li>
                     </ul>
                 </div>
 
@@ -1646,7 +1648,7 @@
     </div>
 
     <!-- ================= MODAL XEM CHI TIẾT SẢN PHẨM (ON-DEMAND LAZY LOAD) ================= -->
-    <div id="productQuickDetailModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4" style="display: none;">
+    <div id="productQuickDetailModal" onclick="if(event.target === this) closeProductQuickDetail()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4" style="display: none;">
         <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 max-h-[92vh] flex flex-col animate-fadeIn">
             <div class="px-6 py-4 bg-pink-50/50 border-b border-gray-100 flex justify-between items-center">
                 <div class="flex items-center space-x-2">
