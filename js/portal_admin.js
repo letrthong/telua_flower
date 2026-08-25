@@ -151,7 +151,10 @@ export async function loadAdminCategories() {
     const tbody = document.getElementById("categoriesTableBody");
     if (!tbody) return;
 
-    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400 font-medium">Đang tải danh mục hoa từ hệ thống...</td></tr>`;
+    // Chỉ hiển thị placeholder đang tải nếu bảng chưa có dữ liệu nào trước đó
+    if (!allAdminCategories || allAdminCategories.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh mục hoa từ hệ thống...</td></tr>`;
+    }
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     try {
@@ -164,11 +167,13 @@ export async function loadAdminCategories() {
             allAdminCategories = json.data;
             renderCategoriesTable(allAdminCategories);
             populateCategoryDropdowns(allAdminCategories);
-        } else {
-            tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải danh mục"}</td></tr>`;
+        } else if (!allAdminCategories || allAdminCategories.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải danh mục"}</td></tr>`;
         }
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        if (!allAdminCategories || allAdminCategories.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        }
     }
 }
 
@@ -967,8 +972,8 @@ export async function deleteUser(userId, fullName) {
 
 export async function loadAdminBranches() {
     const tbody = document.getElementById("branchesTableBody");
-    if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">Đang tải danh sách chuỗi cửa hàng...</td></tr>`;
+    if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh sách chuỗi cửa hàng...</td></tr>`;
     }
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
@@ -983,11 +988,13 @@ export async function loadAdminBranches() {
             if (allAdminUsers && allAdminUsers.length > 0) {
                 renderUsersTable(allAdminUsers);
             }
-        } else {
-            if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải chi nhánh"}</td></tr>`;
+        } else if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải chi nhánh"}</td></tr>`;
         }
     } catch (e) {
-        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        }
     }
 }
 
@@ -1188,7 +1195,9 @@ export async function loadAdminProducts() {
     const tbody = document.getElementById("productsTableBody");
     if (!tbody) return;
 
-    tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-400">Đang tải danh mục hoa tươi...</td></tr>`;
+    if (!allAdminProducts || allAdminProducts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh mục hoa tươi...</td></tr>`;
+    }
 
     try {
         let url = `${API_BASE}/products`;
@@ -1201,7 +1210,9 @@ export async function loadAdminProducts() {
             renderProductsTable(allAdminProducts);
         }
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
+        if (!allAdminProducts || allAdminProducts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
+        }
     }
 }
 
@@ -1610,7 +1621,9 @@ export async function loadAdminPromotions() {
     const tbody = document.getElementById("promotionsTableBody");
     if (!tbody) return;
 
-    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu voucher...</td></tr>`;
+    if (!allAdminPromotions || allAdminPromotions.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu voucher...</td></tr>`;
+    }
 
     try {
         const res = await fetch(`${API_BASE}/promotions`);
@@ -1618,11 +1631,13 @@ export async function loadAdminPromotions() {
         if (json.success && json.data) {
             allAdminPromotions = json.data;
             renderPromotionsTable(allAdminPromotions);
-        } else {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500 font-bold">Không thể tải danh sách khuyến mãi</td></tr>`;
+        } else if (!allAdminPromotions || allAdminPromotions.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500 font-bold">${json.message || "Không thể tải danh sách khuyến mãi"}</td></tr>`;
         }
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        if (!allAdminPromotions || allAdminPromotions.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        }
     }
 }
 
