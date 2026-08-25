@@ -24,17 +24,17 @@ app.register_blueprint(flower_connect_api)  # /api/flower/v1/*
 def get_index_file():
     """
     Tìm file index.html theo thứ tự ưu tiên:
-    1. dist/index.html (file single-file HTML đã bundle toàn bộ JS/CSS inline bởi Vite)
-    2. /app/dist/index.html
-    3. index.html (file html gốc đang phát triển)
-    4. /app/index.html
+    1. index.html (file HTML nguồn đang phát triển trực tiếp cùng các file modular js/)
+    2. /app/index.html
+    3. dist/index.html (file bundle)
+    4. /app/dist/index.html
     5. config/index.html (file bundle dự phòng)
     """
     candidates = [
-        os.path.join(TELUA_ROOT, "dist", "index.html"),
-        "/app/dist/index.html",
         os.path.join(TELUA_ROOT, "index.html"),
         "/app/index.html",
+        os.path.join(TELUA_ROOT, "dist", "index.html"),
+        "/app/dist/index.html",
         os.path.join(TELUA_ROOT, "config", "index.html"),
     ]
     for path in candidates:

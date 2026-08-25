@@ -22,6 +22,7 @@ const PRICE_LEVEL_CONFIG = {
     price_lvl_04: { name: "LV_04: Độc Bản VIP (Exclusive)", min: 2600000, max: 15000000 }
 };
 
+let allAdminCategories = [];
 let allAdminProducts = [];
 let allAdminPromotions = [];
 let allAdminTranslations = {};
@@ -145,9 +146,6 @@ export function switchAdminTab(tabName) {
 // ==========================================
 // 0. QUẢN LÝ DANH MỤC HOA ĐỘNG (CATEGORIES CMS)
 // ==========================================
-
-let allAdminCategories = [];
-let allAdminProducts = [];
 
 export async function loadAdminCategories() {
     const tbody = document.getElementById("categoriesTableBody");
