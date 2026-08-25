@@ -137,6 +137,7 @@ export function switchAdminTab(tabName) {
 // ==========================================
 
 let allAdminCategories = [];
+let allAdminProducts = [];
 
 export async function loadAdminCategories() {
     const tbody = document.getElementById("categoriesTableBody");
@@ -1212,7 +1213,7 @@ function renderProductsTable(products) {
                         <button onclick="editProduct('${p.id}')" title="Chỉnh sửa mẫu hoa" class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition">
                             <i class="fa-solid fa-pen-to-square text-xs"></i>
                         </button>
-                        <button onclick="toggleProduct('${p.id}')" title="${p.isActive !== false ? 'Ẩn mẫu hoa' : 'Hiện mẫu hoa'}" class="w-7 h-7 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-600 flex items-center justify-center transition">
+                        <button onclick="toggleProduct('${p.id}', '${(p.name || '').replace(/'/g, "\\'")}', ${p.isActive !== false})" title="${p.isActive !== false ? 'Ẩn mẫu hoa' : 'Hiện mẫu hoa'}" class="w-7 h-7 rounded-lg ${p.isActive !== false ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-600' : 'bg-green-50 hover:bg-green-100 text-green-600'} flex items-center justify-center transition">
                             <i class="fa-solid ${p.isActive !== false ? 'fa-eye-slash' : 'fa-eye'} text-xs"></i>
                         </button>
                     </div>
@@ -1525,7 +1526,18 @@ export async function handleProductSubmit(event) {
     }
 }
 
-export async function toggleProduct(productId) {
+export async function toggleProduct(productId, productName, currentActive) {
+    const targetProd = (allAdminProducts || []).find(p => p.id === productId);
+    const displayName = productName || (targetProd ? targetProd.name : productId);
+    const isCurrentlyActive = currentActive !== undefined ? currentActive : (targetProd ? targetProd.isActive !== false : true);
+    const actionText = isCurrentlyActive ? "ẨN ĐI" : "BẬT HIỂN THỊ";
+    const detailText = isCurrentlyActive 
+        ? `Khi ẩn, mẫu hoa "${displayName}" sẽ tạm thời không hiển thị trên website khách hàng.`
+        : `Khi bật, mẫu hoa "${displayName}" sẽ được mở bán và hiển thị công khai trên website.`;
+
+    const isConfirmed = confirm(`XÁC NHẬN ${actionText} MẪU HOA:\n\nBạn có chắc chắn muốn ${actionText.toLowerCase()} mẫu hoa "${displayName}" không?\n\n(${detailText})`);
+    if (!isConfirmed) return;
+
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/products/${productId}/toggle`, {
@@ -1538,12 +1550,12 @@ export async function toggleProduct(productId) {
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
                 window.renderAllProducts();
             }
-            alert("🎉 Đã thay đổi trạng thái hiển thị mẫu hoa thành công!");
+            alert(`🎉 Đã ${actionText.toLowerCase()} mẫu hoa "${displayName}" thành công!`);
         } else {
             alert("❌ Lỗi đổi trạng thái: " + (json.message || "Không thể đổi trạng thái"));
         }
     } catch (e) {
-        alert("❌ Lỗi kết nối: " + e.message);
+        alert("❌ Lỗi kết nối máy chủ: " + e.message);
     }
 }
 

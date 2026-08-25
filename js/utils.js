@@ -23,17 +23,71 @@ function initLazyLoadingImages() {
     });
 }
 
-// Hiển thị thông báo Toast
-export function showToast(message) {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-    if (message && toast.querySelector('span')) {
-        toast.querySelector('span').textContent = message;
+// Hiển thị thông báo Toast ở góc trái dưới màn hình (Tự động đóng sau 3 giây)
+export function showToast(message, type = 'success', duration = 3000) {
+    if (typeof document === 'undefined' || !message) return;
+
+    // Tìm hoặc tạo container toast ở góc trái dưới màn hình
+    let container = document.getElementById('toastContainerBottomLeft');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainerBottomLeft';
+        container.className = 'fixed bottom-6 left-6 z-[99999] flex flex-col space-y-3 max-w-sm pointer-events-none';
+        document.body.appendChild(container);
     }
-    toast.classList.remove('translate-y-20', 'opacity-0');
+
+    const toast = document.createElement('div');
+    toast.className = 'pointer-events-auto transform -translate-x-full opacity-0 transition-all duration-300 ease-out flex items-center justify-between p-4 rounded-xl shadow-2xl border text-sm font-medium backdrop-blur-md';
+
+    let iconHtml = '<i class="fa-solid fa-circle-check text-emerald-500 text-lg mr-3 flex-shrink-0"></i>';
+    let colorClasses = 'bg-white/95 text-gray-800 border-emerald-200 shadow-emerald-500/10';
+
+    if (type === 'error') {
+        iconHtml = '<i class="fa-solid fa-circle-xmark text-red-500 text-lg mr-3 flex-shrink-0"></i>';
+        colorClasses = 'bg-white/95 text-gray-800 border-red-200 shadow-red-500/10';
+    } else if (type === 'warning') {
+        iconHtml = '<i class="fa-solid fa-triangle-exclamation text-amber-500 text-lg mr-3 flex-shrink-0"></i>';
+        colorClasses = 'bg-white/95 text-gray-800 border-amber-200 shadow-amber-500/10';
+    } else if (type === 'info') {
+        iconHtml = '<i class="fa-solid fa-circle-info text-blue-500 text-lg mr-3 flex-shrink-0"></i>';
+        colorClasses = 'bg-white/95 text-gray-800 border-blue-200 shadow-blue-500/10';
+    }
+
+    toast.className += ` ${colorClasses}`;
+    toast.innerHTML = `
+        <div class="flex items-center mr-3">
+            ${iconHtml}
+            <span class="leading-snug">${message}</span>
+        </div>
+        <button type="button" class="text-gray-400 hover:text-gray-600 transition ml-2 p-1 text-base leading-none focus:outline-none">&times;</button>
+    `;
+
+    const closeBtn = toast.querySelector('button');
+    let isRemoved = false;
+    const removeToast = () => {
+        if (isRemoved) return;
+        isRemoved = true;
+        toast.classList.remove('translate-x-0', 'opacity-100');
+        toast.classList.add('-translate-x-full', 'opacity-0');
+        setTimeout(() => {
+            if (toast.parentElement) toast.parentElement.removeChild(toast);
+        }, 300);
+    };
+
+    if (closeBtn) closeBtn.onclick = removeToast;
+
+    container.appendChild(toast);
+
+    // Kích hoạt animation trượt vào góc trái dưới mượt mà
+    requestAnimationFrame(() => {
+        toast.classList.remove('-translate-x-full', 'opacity-0');
+        toast.classList.add('translate-x-0', 'opacity-100');
+    });
+
+    // Tự động đóng sau `duration` (mặc định 3 giây)
     setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-    }, 3000);
+        removeToast();
+    }, duration);
 }
 
 let storefrontBranches = [];
