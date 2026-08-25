@@ -1,5 +1,5 @@
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
-import { API_BASE, showToast } from './utils.js';
+import { API_BASE, showToast, showConfirmDialog } from './utils.js';
 
 function notifyUser(message, type = 'success') {
     if (typeof showToast === 'function') {
@@ -396,12 +396,20 @@ export async function toggleCategory(catId, catName, currentActive) {
     const targetCat = allAdminCategories.find(c => c.id === catId);
     const displayName = catName || (targetCat ? targetCat.name : catId);
     const isCurrentlyActive = currentActive !== undefined ? currentActive : (targetCat ? targetCat.isActive !== false : true);
-    const actionText = isCurrentlyActive ? "ẨN ĐI" : "BẬT HIỂN THỊ";
+    const actionText = isCurrentlyActive ? "Ẩn đi" : "Bật hiển thị";
     const detailText = isCurrentlyActive 
         ? `Khi ẩn, danh mục "${displayName}" và các sản phẩm thuộc danh mục này sẽ tạm thời không hiển thị trên website khách hàng.`
-        : `Khi bật, danh mục "${displayName}" và các sản phẩm sẽ hiển thị công khai trên website.`;
+        : `Khi bật, danh mục "${displayName}" và các mẫu hoa liên quan sẽ được mở bán và hiển thị công khai trên website.`;
 
-    const isConfirmed = confirm(`XÁC NHẬN ${actionText} DANH MỤC:\n\nBạn có chắc chắn muốn ${actionText.toLowerCase()} danh mục "${displayName}" không?\n\n(${detailText})`);
+    const isConfirmed = await (typeof showConfirmDialog === 'function' ? showConfirmDialog : window.showConfirmDialog)({
+        title: isCurrentlyActive ? "Xác nhận Ẩn Danh Mục" : "Xác nhận Mở Danh Mục",
+        message: `Bạn có chắc chắn muốn ${actionText.toLowerCase()} danh mục "${displayName}" không?`,
+        detail: detailText,
+        confirmText: isCurrentlyActive ? "Ẩn danh mục" : "Bật hiển thị",
+        cancelText: "Hủy bỏ",
+        type: isCurrentlyActive ? "warning" : "success",
+        icon: isCurrentlyActive ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"
+    });
     if (!isConfirmed) return;
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -425,7 +433,16 @@ export async function toggleCategory(catId, catName, currentActive) {
 }
 
 export async function deleteCategory(catId, catName) {
-    if (!confirm(`Bạn có chắc chắn muốn xóa danh mục "${catName}" (ID: ${catId})?\n(Dữ liệu sẽ được đánh dấu 'deleted' và giữ nguyên trong JSON)`)) return;
+    const isConfirmed = await (typeof showConfirmDialog === 'function' ? showConfirmDialog : window.showConfirmDialog)({
+        title: "Xác nhận Xóa Danh Mục",
+        message: `Bạn có chắc chắn muốn xóa danh mục "${catName}" (ID: ${catId}) không?`,
+        detail: "Dữ liệu sẽ được đánh dấu 'Đã xóa mềm' (Soft Deleted) và vẫn được lưu trữ an toàn để có thể khôi phục lại khi cần.",
+        confirmText: "Xóa danh mục",
+        cancelText: "Hủy bỏ",
+        type: "danger",
+        icon: "fa-solid fa-trash"
+    });
+    if (!isConfirmed) return;
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
@@ -916,7 +933,16 @@ export async function handleUserSubmit(event) {
 }
 
 export async function deleteUser(userId, fullName) {
-    if (!confirm(`Bạn có chắc chắn muốn xóa nhân sự "${fullName}" không?`)) return;
+    const isConfirmed = await (typeof showConfirmDialog === 'function' ? showConfirmDialog : window.showConfirmDialog)({
+        title: "Xác nhận Xóa Nhân Sự",
+        message: `Bạn có chắc chắn muốn xóa tài khoản nhân sự "${fullName}" khỏi hệ thống không?`,
+        detail: "Tài khoản này sẽ bị vô hiệu hóa quyền truy cập vào Cổng Quản Trị.",
+        confirmText: "Xóa tài khoản",
+        cancelText: "Hủy bỏ",
+        type: "danger",
+        icon: "fa-solid fa-user-xmark"
+    });
+    if (!isConfirmed) return;
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
@@ -928,12 +954,12 @@ export async function deleteUser(userId, fullName) {
         const json = await res.json();
         if (res.ok && json.success) {
             loadAdminUsers();
-            alert("Đã xóa nhân sự thành công!");
+            notifyUser("Đã xóa tài khoản nhân sự thành công!", 'success');
         } else {
-            alert("Lỗi: " + (json.message || "Không thể xóa nhân sự"));
+            notifyUser("Lỗi: " + (json.message || "Không thể xóa nhân sự"), 'error');
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
     }
 }
 
@@ -1541,12 +1567,20 @@ export async function toggleProduct(productId, productName, currentActive) {
     const targetProd = (allAdminProducts || []).find(p => p.id === productId);
     const displayName = productName || (targetProd ? targetProd.name : productId);
     const isCurrentlyActive = currentActive !== undefined ? currentActive : (targetProd ? targetProd.isActive !== false : true);
-    const actionText = isCurrentlyActive ? "ẨN ĐI" : "BẬT HIỂN THỊ";
+    const actionText = isCurrentlyActive ? "Ẩn đi" : "Bật hiển thị";
     const detailText = isCurrentlyActive 
         ? `Khi ẩn, mẫu hoa "${displayName}" sẽ tạm thời không hiển thị trên website khách hàng.`
         : `Khi bật, mẫu hoa "${displayName}" sẽ được mở bán và hiển thị công khai trên website.`;
 
-    const isConfirmed = confirm(`XÁC NHẬN ${actionText} MẪU HOA:\n\nBạn có chắc chắn muốn ${actionText.toLowerCase()} mẫu hoa "${displayName}" không?\n\n(${detailText})`);
+    const isConfirmed = await (typeof showConfirmDialog === 'function' ? showConfirmDialog : window.showConfirmDialog)({
+        title: isCurrentlyActive ? "Xác nhận Ẩn Mẫu Hoa" : "Xác nhận Mở Bán Mẫu Hoa",
+        message: `Bạn có chắc chắn muốn ${actionText.toLowerCase()} mẫu hoa "${displayName}" không?`,
+        detail: detailText,
+        confirmText: isCurrentlyActive ? "Ẩn mẫu hoa" : "Bật mở bán",
+        cancelText: "Hủy bỏ",
+        type: isCurrentlyActive ? "warning" : "success",
+        icon: isCurrentlyActive ? "fa-solid fa-eye-slash" : "fa-solid fa-eye"
+    });
     if (!isConfirmed) return;
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -1827,7 +1861,16 @@ export async function togglePromo(promoId) {
 }
 
 export async function deletePromo(promoId, promoCode) {
-    if (!confirm(`Bạn có chắc chắn muốn xóa voucher "${promoCode}" (ID: ${promoId})?\n(Dữ liệu sẽ được chuyển sang status='deleted' và lưu ngày xóa deletedAt trong JSON)`)) return;
+    const isConfirmed = await (typeof showConfirmDialog === 'function' ? showConfirmDialog : window.showConfirmDialog)({
+        title: "Xác nhận Xóa Voucher",
+        message: `Bạn có chắc chắn muốn xóa voucher khuyến mãi "${promoCode}" không?`,
+        detail: "Dữ liệu voucher sẽ được chuyển sang trạng thái 'Đã xóa mềm' (Soft Deleted) và lưu trong hệ thống.",
+        confirmText: "Xóa voucher",
+        cancelText: "Hủy bỏ",
+        type: "danger",
+        icon: "fa-solid fa-trash"
+    });
+    if (!isConfirmed) return;
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
@@ -1857,12 +1900,12 @@ export async function restorePromo(promoId, promoCode) {
         const json = await res.json();
         if (json.success) {
             loadAdminPromotions();
-            alert(`🎉 Đã khôi phục voucher "${promoCode || promoId}" thành công!`);
+            notifyUser(`Đã khôi phục voucher "${promoCode || promoId}" thành công!`, 'success');
         } else {
-            alert(json.message || "Lỗi khôi phục voucher");
+            notifyUser(json.message || "Lỗi khôi phục voucher", 'error');
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
     }
 }
 
