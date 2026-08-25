@@ -90,6 +90,135 @@ export function showToast(message, type = 'success', duration = 3000) {
     }, duration);
 }
 
+/**
+ * Hộp thoại Xác nhận tùy biến cao cấp (Custom Confirmation Dialog)
+ * Trả về Promise<boolean>: resolve(true) nếu bấm Xác Nhận, resolve(false) nếu bấm Hủy Bỏ
+ */
+export function showConfirmDialog({
+    title = "Xác nhận hành động",
+    message = "Bạn có chắc chắn muốn thực hiện thao tác này?",
+    detail = "",
+    confirmText = "Xác nhận",
+    cancelText = "Hủy bỏ",
+    type = "warning", // "warning", "danger", "success", "info"
+    icon = ""
+} = {}) {
+    return new Promise((resolve) => {
+        if (typeof document === "undefined") return resolve(false);
+
+        // Xóa modal cũ nếu còn
+        const oldModal = document.getElementById("customConfirmModalContainer");
+        if (oldModal && oldModal.parentElement) oldModal.parentElement.removeChild(oldModal);
+
+        let iconClass = icon;
+        let iconBg = "bg-amber-50 text-amber-600 border border-amber-200";
+        let confirmBtnBg = "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/30";
+
+        if (type === "danger") {
+            if (!iconClass) iconClass = "fa-solid fa-trash-can";
+            iconBg = "bg-red-50 text-red-600 border border-red-200";
+            confirmBtnBg = "bg-red-600 hover:bg-red-700 text-white shadow-red-600/30";
+        } else if (type === "success") {
+            if (!iconClass) iconClass = "fa-solid fa-eye";
+            iconBg = "bg-emerald-50 text-emerald-600 border border-emerald-200";
+            confirmBtnBg = "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30";
+        } else if (type === "info") {
+            if (!iconClass) iconClass = "fa-solid fa-circle-info";
+            iconBg = "bg-blue-50 text-blue-600 border border-blue-200";
+            confirmBtnBg = "bg-primary hover:bg-primaryHover text-white shadow-primary/30";
+        } else {
+            // Default warning (Ẩn danh mục, ẩn mẫu hoa)
+            if (!iconClass) iconClass = "fa-solid fa-eye-slash";
+            iconBg = "bg-amber-50 text-amber-600 border border-amber-200";
+            confirmBtnBg = "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/30";
+        }
+
+        const container = document.createElement("div");
+        container.id = "customConfirmModalContainer";
+        container.className = "fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs opacity-0 transition-opacity duration-200";
+
+        container.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-md w-full p-6 sm:p-7 transform scale-95 opacity-0 transition-all duration-200 ease-out flex flex-col">
+                <div class="flex items-start space-x-4 mb-4">
+                    <div class="w-12 h-12 rounded-2xl ${iconBg} flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-tight">${title}</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-1.5 leading-relaxed font-medium">${message}</p>
+                    </div>
+                </div>
+
+                ${detail ? `
+                    <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-200/70 mb-5 text-xs text-gray-600 leading-relaxed">
+                        <i class="fa-solid fa-circle-info mr-1 text-gray-400"></i> ${detail}
+                    </div>
+                ` : '<div class="mb-3"></div>'}
+
+                <div class="flex items-center justify-end space-x-3 pt-2 border-t border-gray-100">
+                    <button type="button" id="customConfirmCancelBtn" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-bold text-xs sm:text-sm transition duration-150 focus:outline-none cursor-pointer">
+                        ${cancelText}
+                    </button>
+                    <button type="button" id="customConfirmOkBtn" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl ${confirmBtnBg} font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition duration-150 transform active:scale-95 focus:outline-none cursor-pointer">
+                        ${confirmText}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        const card = container.querySelector("div");
+        const cancelBtn = container.querySelector("#customConfirmCancelBtn");
+        const okBtn = container.querySelector("#customConfirmOkBtn");
+
+        let isClosed = false;
+        const closeDialog = (result) => {
+            if (isClosed) return;
+            isClosed = true;
+            container.classList.remove("opacity-100");
+            container.classList.add("opacity-0");
+            if (card) {
+                card.classList.remove("scale-100", "opacity-100");
+                card.classList.add("scale-95", "opacity-0");
+            }
+            setTimeout(() => {
+                if (container.parentElement) container.parentElement.removeChild(container);
+                resolve(result);
+            }, 200);
+        };
+
+        cancelBtn.onclick = () => closeDialog(false);
+        okBtn.onclick = () => closeDialog(true);
+
+        container.onclick = (e) => {
+            if (e.target === container) closeDialog(false);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(false);
+            } else if (e.key === "Enter") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(true);
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown, { once: true });
+
+        // Animation hiển thị
+        requestAnimationFrame(() => {
+            container.classList.remove("opacity-0");
+            container.classList.add("opacity-100");
+            if (card) {
+                card.classList.remove("scale-95", "opacity-0");
+                card.classList.add("scale-100", "opacity-100");
+            }
+            okBtn.focus();
+        });
+    });
+}
+
 let storefrontBranches = [];
 let currentSelectedBranch = null;
 
@@ -260,6 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 if (typeof window !== "undefined") {
     window.API_BASE = API_BASE;
     window.showToast = showToast;
+    window.showConfirmDialog = showConfirmDialog;
     window.openStoreMap = openStoreMap;
     window.copyStoreAddress = copyStoreAddress;
     window.selectShowroomBranch = selectShowroomBranch;
