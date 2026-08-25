@@ -1,14 +1,25 @@
 import { API_BASE } from './utils.js';
-import { products_bo_hoa, products_ke_hoa, products_binh_hoa, default_categories } from './products.js';
+import { 
+    products_gio_hoa,
+    products_bo_hoa, 
+    products_ke_hoa, 
+    products_binh_hoa, 
+    products_lan_ho_diep,
+    products_hoa_cuoi, 
+    default_categories 
+} from './products.js';
 import { translations } from './translations.js';
 import { setLanguage } from './i18n.js';
 import { addToCart } from './checkout.js';
 
 // Gắn dữ liệu và hàm vào window cho toàn bộ trang
 if (typeof window !== 'undefined') {
+    window.products_gio_hoa = products_gio_hoa;
     window.products_bo_hoa = products_bo_hoa;
     window.products_ke_hoa = products_ke_hoa;
     window.products_binh_hoa = products_binh_hoa;
+    window.products_lan_ho_diep = products_lan_ho_diep;
+    window.products_hoa_cuoi = products_hoa_cuoi;
     window.default_categories = default_categories;
     window.translations = translations;
     window.setLanguage = setLanguage;
@@ -210,40 +221,63 @@ export function closeProductQuickDetail() {
 }
 
 /**
- * Render toàn bộ danh mục sản phẩm từ Local JS hoặc API Backend
+ * Cuộn mượt mà tới section danh mục tương ứng
+ * @param {string} categoryId - Mã danh mục (VD: 'gio_hoa', 'bo_hoa', 'ke_hoa', 'binh_hoa', 'lan_ho_diep', 'hoa_cuoi')
+ */
+export function scrollToCategory(categoryId) {
+    if (!categoryId) return;
+    const targetId = categoryId.startsWith('cat-') ? categoryId : `cat-${categoryId}`;
+    const sec = document.getElementById(targetId) || document.getElementById(categoryId);
+    if (sec) {
+        sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.scrollToCategory = scrollToCategory;
+    window.filterStorefrontCategory = scrollToCategory;
+}
+
+/**
+ * Render toàn bộ danh mục sản phẩm từ Local JS hoặc API Backend vào từng Section riêng biệt
  */
 export async function renderAllProducts() {
     // 1. Render ngay lập tức từ bộ dữ liệu mock cục bộ
+    const gioHoa = (typeof window !== 'undefined' && window.products_gio_hoa) ? window.products_gio_hoa : products_gio_hoa;
     const boHoa = (typeof window !== 'undefined' && window.products_bo_hoa) ? window.products_bo_hoa : products_bo_hoa;
     const keHoa = (typeof window !== 'undefined' && window.products_ke_hoa) ? window.products_ke_hoa : products_ke_hoa;
     const binhHoa = (typeof window !== 'undefined' && window.products_binh_hoa) ? window.products_binh_hoa : products_binh_hoa;
+    const lanHoDiep = (typeof window !== 'undefined' && window.products_lan_ho_diep) ? window.products_lan_ho_diep : products_lan_ho_diep;
+    const hoaCuoi = (typeof window !== 'undefined' && window.products_hoa_cuoi) ? window.products_hoa_cuoi : products_hoa_cuoi;
 
+    if (Array.isArray(gioHoa) && gioHoa.length > 0) renderProducts(gioHoa, 'gio-hoa-grid');
     if (Array.isArray(boHoa) && boHoa.length > 0) renderProducts(boHoa, 'bo-hoa-grid');
     if (Array.isArray(keHoa) && keHoa.length > 0) renderProducts(keHoa, 'ke-hoa-grid');
     if (Array.isArray(binhHoa) && binhHoa.length > 0) renderProducts(binhHoa, 'binh-hoa-grid');
+    if (Array.isArray(lanHoDiep) && lanHoDiep.length > 0) renderProducts(lanHoDiep, 'lan-ho-diep-grid');
+    if (Array.isArray(hoaCuoi) && hoaCuoi.length > 0) renderProducts(hoaCuoi, 'hoa-cuoi-grid');
 
-    // 2. Nạp thêm danh mục động từ Backend API
+    // 2. Nạp thêm danh mục động từ Backend API /api/flower/v1/products
     try {
         const res = await fetch(`${API_BASE}/products?active=true`);
         if (res.ok) {
             const json = await res.json();
             if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+                allStorefrontProducts = json.data;
+
+                const apiGioHoa = json.data.filter(p => p.category === 'gio_hoa');
                 const apiBoHoa = json.data.filter(p => p.category === 'bo_hoa');
                 const apiKeHoa = json.data.filter(p => p.category === 'ke_hoa');
-                const apiBinhHoa = json.data.filter(p => p.category === 'binh_hoa' || p.category === 'gio_hoa' || p.category === 'lan_ho_diep');
+                const apiBinhHoa = json.data.filter(p => p.category === 'binh_hoa');
+                const apiLanHoDiep = json.data.filter(p => p.category === 'lan_ho_diep');
+                const apiHoaCuoi = json.data.filter(p => p.category === 'hoa_cuoi');
 
-                if (apiBoHoa.length > 0) {
-                    if (typeof window !== 'undefined') window.products_bo_hoa = apiBoHoa;
-                    renderProducts(apiBoHoa, 'bo-hoa-grid');
-                }
-                if (apiKeHoa.length > 0) {
-                    if (typeof window !== 'undefined') window.products_ke_hoa = apiKeHoa;
-                    renderProducts(apiKeHoa, 'ke-hoa-grid');
-                }
-                if (apiBinhHoa.length > 0) {
-                    if (typeof window !== 'undefined') window.products_binh_hoa = apiBinhHoa;
-                    renderProducts(apiBinhHoa, 'binh-hoa-grid');
-                }
+                if (apiGioHoa.length > 0) renderProducts(apiGioHoa, 'gio-hoa-grid');
+                if (apiBoHoa.length > 0) renderProducts(apiBoHoa, 'bo-hoa-grid');
+                if (apiKeHoa.length > 0) renderProducts(apiKeHoa, 'ke-hoa-grid');
+                if (apiBinhHoa.length > 0) renderProducts(apiBinhHoa, 'binh-hoa-grid');
+                if (apiLanHoDiep.length > 0) renderProducts(apiLanHoDiep, 'lan-ho-diep-grid');
+                if (apiHoaCuoi.length > 0) renderProducts(apiHoaCuoi, 'hoa-cuoi-grid');
             }
         }
     } catch (e) {
@@ -260,11 +294,11 @@ export function initMobileMenu() {
     const mobileMenu = document.getElementById('mobileMenu');
     const mobileMenuContent = document.getElementById('mobileMenuContent');
 
-    if (mobileMenuBtn) {
+    if (mobileMenuBtn && mobileMenu && mobileMenuContent) {
         mobileMenuBtn.addEventListener('click', () => {
-            if (mobileMenu) mobileMenu.classList.remove('hidden');
+            mobileMenu.classList.remove('hidden');
             setTimeout(() => {
-                if (mobileMenuContent) mobileMenuContent.classList.remove('-translate-x-full');
+                mobileMenuContent.classList.remove('-translate-x-full');
             }, 10);
         });
     }
@@ -300,7 +334,7 @@ export async function renderStorefrontCategories() {
     function applyCategories(cats) {
         if (!Array.isArray(cats) || cats.length === 0) return;
         const activeCats = cats.filter(c => c && c.isActive !== false && c.status !== 'deleted' && !c.isDeleted);
-        activeCats.sort((a, b) => (a.order || 99) - (b.order || 99));
+        activeCats.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
 
         // 1. Quick Category Circles trên Storefront
         if (container) {
@@ -308,9 +342,8 @@ export async function renderStorefrontCategories() {
             activeCats.forEach((cat) => {
                 const fallbackImg = "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?w=200";
                 const img = cat.image || fallbackImg;
-                const targetSec = cat.id === 'binh_hoa' ? 'binh-hoa' : 'products';
                 html += `
-                    <div onclick="document.getElementById('${targetSec}')?.scrollIntoView({behavior: 'smooth'})" class="flex flex-col items-center group cursor-pointer w-24 md:w-32 transition transform hover:-translate-y-1">
+                    <div onclick="scrollToCategory('${cat.id}')" class="flex flex-col items-center group cursor-pointer w-24 md:w-32 transition transform hover:-translate-y-1">
                         <div class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-pink-100 group-hover:border-primary transition p-1 shadow-sm bg-white">
                             <img src="${img}" alt="${cat.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" class="product-img w-full h-full object-cover rounded-full">
                         </div>
@@ -321,13 +354,12 @@ export async function renderStorefrontCategories() {
             container.innerHTML = html;
         }
 
-        // 2. Desktop Header Navigation (Các Tab Danh Mục)
+        // 2. Desktop Header Navigation (Các Tab Danh Mục trên Header)
         if (desktopDynamicNav) {
             let navHtml = '';
             activeCats.forEach((cat) => {
-                const targetSec = cat.id === 'binh_hoa' ? '#binh-hoa' : '#products';
                 navHtml += `
-                    <a href="${targetSec}" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">${cat.name}</a>
+                    <a href="#cat-${cat.id}" onclick="scrollToCategory('${cat.id}'); return false;" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">${cat.name}</a>
                 `;
             });
             desktopDynamicNav.innerHTML = navHtml;
@@ -337,13 +369,22 @@ export async function renderStorefrontCategories() {
         if (mobileDynamicNav) {
             let mobHtml = '';
             activeCats.forEach((cat) => {
-                const targetSec = cat.id === 'binh_hoa' ? '#binh-hoa' : '#products';
                 mobHtml += `
-                    <li><a href="${targetSec}" onclick="closeMenu()" class="block">${cat.name}</a></li>
+                    <li><a href="#cat-${cat.id}" onclick="scrollToCategory('${cat.id}'); if(typeof closeMenu==='function')closeMenu(); return false;" class="block">${cat.name}</a></li>
                 `;
             });
             mobileDynamicNav.innerHTML = mobHtml;
         }
+
+        // 4. Tự động Ẩn/Hiện toàn bộ Section của danh mục theo trạng thái Bật/Ẩn của Admin
+        const allPossibleCatIds = ['gio_hoa', 'bo_hoa', 'ke_hoa', 'binh_hoa', 'lan_ho_diep', 'hoa_cuoi'];
+        allPossibleCatIds.forEach(id => {
+            const sec = document.getElementById(`cat-${id}`);
+            const isActive = activeCats.some(c => c && c.id === id);
+            if (sec) {
+                sec.style.display = isActive ? '' : 'none';
+            }
+        });
     }
 
     // Nạp danh mục mặc định từ categories.json

@@ -1,0 +1,27 @@
+{
+  "id": "hoa_cuoi_02",
+  "name": "Bó Hoa Cưới Ohara & Baby Hồng Dịu Dàng",
+  "category": "hoa_cuoi",
+  "priceLevelId": "price_lvl_02",
+  "priceNumber": 1250000,
+  "salePrice": "1,250,000₫",
+  "originalPrice": "1,400,000₫",
+  "badge": "Mới",
+  "image": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+  "gallery": [
+    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  ],
+  "description": "Bó hoa cưới cầm tay phối hoa hồng Ohara tone hồng pastel dịu dàng ngọt ngào, tặng kèm hoa cài áo chú rể đồng điệu.",
+  "flowerComposition": "Hồng Ohara Pink (12 cành), Hoa Baby hồng phun màu tự nhiên, Lá chanh Ý, Tặng kèm 1 hoa cài áo chú rể",
+  "dimension": "Cao 40cm x Rộng 35cm",
+  "careTips": "Bảo quản phòng mát 20-22 độ C trước giờ làm lễ, xịt nước sương nhẹ lên cánh hoa.",
+  "stockByBranch": {
+    "branch_q10": 6,
+    "branch_q1": 4,
+    "branch_thao_dien": 2
+  },
+  "dailyQuota": 10,
+  "isActive": true,
+  "updatedAt": "2026-08-24T17:40:00Z"
+}

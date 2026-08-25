@@ -82,6 +82,7 @@ export function openAdminPortalModal() {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
+    loadAdminCategories();
     loadAdminProducts();
     loadAdminBranches();
     onPriceLevelChange();
@@ -171,8 +172,11 @@ function renderCategoriesTable(categories) {
         return;
     }
 
+    // Luôn sắp xếp theo số thứ tự hiển thị (order) từ bé đến lớn (1, 2, 3...)
+    const sortedCategories = [...categories].sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+
     let html = "";
-    categories.forEach((cat) => {
+    sortedCategories.forEach((cat) => {
         const isDeleted = cat.status === "deleted" || cat.isDeleted === true;
         const isActive = cat.isActive !== false && !isDeleted;
 
@@ -236,7 +240,7 @@ function renderCategoriesTable(categories) {
                             <button onclick="editCategory('${cat.id}')" title="Chỉnh sửa danh mục" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button onclick="toggleCategory('${cat.id}')" title="${isActive ? 'Ẩn khỏi web' : 'Hiện trên web'}" class="px-2.5 py-1 ${isActive ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-green-50 hover:bg-green-100 text-green-700'} rounded-lg text-xs font-bold transition">
+                            <button onclick="toggleCategory('${cat.id}', '${cat.name.replace(/'/g, "\\'")}', ${isActive})" title="${isActive ? 'Ẩn khỏi web' : 'Hiện trên web'}" class="px-2.5 py-1 ${isActive ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-green-50 hover:bg-green-100 text-green-700'} rounded-lg text-xs font-bold transition">
                                 <i class="fa-solid ${isActive ? 'fa-eye-slash' : 'fa-eye'} mr-1"></i> ${isActive ? 'Ẩn' : 'Hiện'}
                             </button>
                             <button onclick="deleteCategory('${cat.id}', '${cat.name}')" title="Xóa mềm danh mục (vẫn lưu trong json)" class="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
@@ -357,24 +361,38 @@ export async function handleCategorySubmit(event) {
         if (res.ok && json.success) {
             closeCategoryModal();
             loadAdminCategories();
-            alert(isEdit ? "Cập nhật danh mục thành công!" : "🎉 Tạo danh mục mới thành công!");
+            if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
+            if (typeof renderAllProducts === "function") renderAllProducts();
+            alert(isEdit ? `🎉 Đã cập nhật danh mục "${name}" thành công!` : `🎉 Đã tạo danh mục mới "${name}" thành công!`);
         } else {
+            const msg = json.message || "Lỗi lưu danh mục";
             if (errBox) {
-                errBox.textContent = json.message || "Lỗi lưu danh mục";
+                errBox.textContent = "❌ " + msg;
                 errBox.classList.remove("hidden");
-            } else {
-                alert(json.message || "Lỗi lưu danh mục");
             }
+            alert(`❌ Không thể lưu danh mục: ${msg}`);
         }
     } catch (e) {
         if (errBox) {
-            errBox.textContent = "Lỗi kết nối: " + e.message;
+            errBox.textContent = "❌ Lỗi kết nối: " + e.message;
             errBox.classList.remove("hidden");
         }
+        alert("❌ Lỗi kết nối máy chủ: " + e.message);
     }
 }
 
-export async function toggleCategory(catId) {
+export async function toggleCategory(catId, catName, currentActive) {
+    const targetCat = allAdminCategories.find(c => c.id === catId);
+    const displayName = catName || (targetCat ? targetCat.name : catId);
+    const isCurrentlyActive = currentActive !== undefined ? currentActive : (targetCat ? targetCat.isActive !== false : true);
+    const actionText = isCurrentlyActive ? "ẨN ĐI" : "BẬT HIỂN THỊ";
+    const detailText = isCurrentlyActive 
+        ? `Khi ẩn, danh mục "${displayName}" và các sản phẩm thuộc danh mục này sẽ tạm thời không hiển thị trên website khách hàng.`
+        : `Khi bật, danh mục "${displayName}" và các sản phẩm sẽ hiển thị công khai trên website.`;
+
+    const isConfirmed = confirm(`XÁC NHẬN ${actionText} DANH MỤC:\n\nBạn có chắc chắn muốn ${actionText.toLowerCase()} danh mục "${displayName}" không?\n\n(${detailText})`);
+    if (!isConfirmed) return;
+
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/categories/${catId}/toggle`, {
@@ -384,11 +402,14 @@ export async function toggleCategory(catId) {
         const json = await res.json();
         if (json.success) {
             loadAdminCategories();
+            if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
+            if (typeof renderAllProducts === "function") renderAllProducts();
+            alert(`🎉 Đã ${actionText.toLowerCase()} danh mục "${displayName}" thành công!`);
         } else {
-            alert(json.message || "Lỗi cập nhật trạng thái");
+            alert(`❌ Lỗi cập nhật trạng thái: ${json.message || "Không xác định"}`);
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        alert("❌ Lỗi kết nối máy chủ: " + e.message);
     }
 }
 
@@ -458,11 +479,15 @@ export async function moveCategory(catId, direction) {
             if (typeof renderStorefrontCategories === "function") {
                 renderStorefrontCategories();
             }
+            if (typeof renderAllProducts === "function") {
+                renderAllProducts();
+            }
+            alert("🎉 Đã thay đổi thứ tự danh mục thành công!");
         } else {
-            alert(json.message || "Không thể di chuyển thứ tự");
+            alert(`❌ Không thể di chuyển thứ tự: ${json.message || "Lỗi không xác định"}`);
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        alert("❌ Lỗi kết nối máy chủ: " + e.message);
     }
 }
 
@@ -471,12 +496,15 @@ export async function moveCategory(catId, direction) {
 export function populateCategoryDropdowns(categories) {
     if (!Array.isArray(categories)) return;
 
+    // Luôn sắp xếp theo số thứ tự hiển thị (order) từ bé đến lớn
+    const sortedCategories = [...categories].sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+
     // 1. Dropdown lọc danh mục ở trang Admin Sản Phẩm
     const filterSelect = document.getElementById("filterProductCategory");
     if (filterSelect) {
         const currentVal = filterSelect.value;
         let opts = `<option value="">Tất cả danh mục</option>`;
-        categories.forEach((c) => {
+        sortedCategories.forEach((c) => {
             opts += `<option value="${c.id}">${c.name} (${c.id})</option>`;
         });
         filterSelect.innerHTML = opts;
@@ -488,7 +516,7 @@ export function populateCategoryDropdowns(categories) {
     if (prodCatSelect) {
         const currentVal = prodCatSelect.value;
         let opts = "";
-        categories.forEach((c) => {
+        sortedCategories.forEach((c) => {
             opts += `<option value="${c.id}">${c.name}</option>`;
         });
         prodCatSelect.innerHTML = opts;
@@ -1105,11 +1133,12 @@ export async function toggleBranch(branchId) {
         const json = await res.json();
         if (res.ok && json.success) {
             loadAdminBranches();
+            alert("🎉 Đã cập nhật trạng thái chi nhánh thành công!");
         } else {
-            alert("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"));
+            alert("❌ Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"));
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        alert("❌ Lỗi kết nối máy chủ: " + e.message);
     }
 }
 
@@ -1351,6 +1380,12 @@ export function openProductModal(isEdit = false) {
         if (title) title.textContent = "Thêm Mẫu Hoa Mới Vào Catalogue";
     }
 
+    if (allAdminCategories && allAdminCategories.length > 0) {
+        populateCategoryDropdowns(allAdminCategories);
+    } else if (typeof window !== "undefined" && window.default_categories) {
+        populateCategoryDropdowns(window.default_categories);
+    }
+
     modal.style.display = "flex";
     modal.classList.remove("hidden");
     onPriceLevelChange();
@@ -1472,17 +1507,21 @@ export async function handleProductSubmit(event) {
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
                 window.renderAllProducts();
             }
+            alert(editId ? `🎉 Đã cập nhật mẫu hoa "${name}" thành công!` : `🎉 Đã thêm mẫu hoa mới "${name}" thành công!`);
         } else {
+            const msg = json.message || "Lỗi lưu sản phẩm";
             if (errBox) {
-                errBox.textContent = json.message || "Lỗi lưu sản phẩm";
+                errBox.textContent = "❌ " + msg;
                 errBox.classList.remove("hidden");
             }
+            alert(`❌ Không thể lưu sản phẩm: ${msg}`);
         }
     } catch (e) {
         if (errBox) {
-            errBox.textContent = "Lỗi kết nối máy chủ: " + e.message;
+            errBox.textContent = "❌ Lỗi kết nối máy chủ: " + e.message;
             errBox.classList.remove("hidden");
         }
+        alert("❌ Lỗi kết nối máy chủ: " + e.message);
     }
 }
 
@@ -1493,14 +1532,18 @@ export async function toggleProduct(productId) {
             method: "PUT",
             headers: { "Authorization": `Bearer ${token}` }
         });
-        if (res.ok) {
+        const json = await res.json();
+        if (res.ok && json.success) {
             loadAdminProducts();
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
                 window.renderAllProducts();
             }
+            alert("🎉 Đã thay đổi trạng thái hiển thị mẫu hoa thành công!");
+        } else {
+            alert("❌ Lỗi đổi trạng thái: " + (json.message || "Không thể đổi trạng thái"));
         }
     } catch (e) {
-        alert("Lỗi đổi trạng thái: " + e.message);
+        alert("❌ Lỗi kết nối: " + e.message);
     }
 }
 
@@ -1748,11 +1791,12 @@ export async function togglePromo(promoId) {
         const json = await res.json();
         if (json.success) {
             loadAdminPromotions();
+            alert("🎉 Đã cập nhật trạng thái voucher khuyến mãi thành công!");
         } else {
-            alert(json.message || "Lỗi cập nhật trạng thái");
+            alert("❌ Lỗi: " + (json.message || "Lỗi cập nhật trạng thái voucher"));
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        alert("❌ Lỗi kết nối máy chủ: " + e.message);
     }
 }
 

@@ -14,10 +14,25 @@ from data_service import (
     get_product_detail_path,
     get_price_levels,
     get_price_level_by_id,
-    get_branches
+    get_branches,
+    get_categories
 )
 
-VALID_CATEGORIES = ["bo_hoa", "ke_hoa", "binh_hoa", "gio_hoa", "lan_ho_diep", "hoa_cuoi"]
+DEFAULT_VALID_CATEGORIES = ["bo_hoa", "ke_hoa", "binh_hoa", "gio_hoa", "lan_ho_diep", "hoa_cuoi"]
+
+
+def get_valid_category_ids() -> List[str]:
+    """
+    Lấy danh sách mã danh mục hợp lệ động từ categories.json.
+    """
+    try:
+        cats = get_categories(use_cache=False, include_deleted=False)
+        cat_ids = [c.get("id") for c in cats if isinstance(c, dict) and c.get("id")]
+        if cat_ids:
+            return cat_ids
+    except Exception:
+        pass
+    return DEFAULT_VALID_CATEGORIES
 
 
 def validate_product_price_governance(price_level_id: str, price_number: int) -> Tuple[bool, Optional[str]]:
@@ -60,8 +75,11 @@ def list_products(
     """
     products = get_products()
 
-    if is_active is not None:
-        products = [p for p in products if p.get("isActive", True) == is_active]
+    if is_active is True:
+        active_cats = {c.get("id") for c in get_categories(use_cache=True, active_only=True)}
+        products = [p for p in products if p.get("isActive", True) and p.get("category") in active_cats]
+    elif is_active is False:
+        products = [p for p in products if not p.get("isActive", True)]
 
     if category:
         products = [p for p in products if p.get("category") == category]
@@ -102,8 +120,9 @@ def create_or_update_product(
     if not name:
         return False, None, "Vui lòng nhập tên sản phẩm hoa tươi"
 
-    if category not in VALID_CATEGORIES:
-        return False, None, f"Danh mục '{category}' không hợp lệ. Hỗ trợ: {', '.join(VALID_CATEGORIES)}"
+    valid_categories = get_valid_category_ids()
+    if category not in valid_categories:
+        return False, None, f"Danh mục '{category}' không hợp lệ. Danh mục hiện có: {', '.join(valid_categories)}"
 
     # 1. Kiểm tra hàng rào giá an toàn
     is_price_valid, price_err = validate_product_price_governance(price_level_id, price_number)

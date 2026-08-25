@@ -128,6 +128,55 @@ export const products_binh_hoa = [
     }
 ];
 
+export const products_gio_hoa = [
+    {
+        id: "gio_hoa_01",
+        name: "Giỏ Hoa Nắng Sớm",
+        category: "gio_hoa",
+        originalPrice: "920,000₫",
+        salePrice: "880,000₫",
+        priceNumber: 880000,
+        image: "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+        badge: "-4%"
+    }
+];
+
+export const products_lan_ho_diep = [
+    {
+        id: "lan_01",
+        name: "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        category: "lan_ho_diep",
+        originalPrice: "3,500,000₫",
+        salePrice: "3,500,000₫",
+        priceNumber: 3500000,
+        image: "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/moth_orchid.jpg",
+        badge: "Độc Bản VIP"
+    }
+];
+
+export const products_hoa_cuoi = [
+    {
+        id: "hoa_cuoi_01",
+        name: "Bó Hoa Cưới Cầm Tay Tulip Trắng Tinh Khôi",
+        category: "hoa_cuoi",
+        originalPrice: "1,800,000₫",
+        salePrice: "1,650,000₫",
+        priceNumber: 1650000,
+        image: "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+        badge: "Hot"
+    },
+    {
+        id: "hoa_cuoi_02",
+        name: "Bó Hoa Cưới Ohara & Baby Hồng Dịu Dàng",
+        category: "hoa_cuoi",
+        originalPrice: "1,400,000₫",
+        salePrice: "1,250,000₫",
+        priceNumber: 1250000,
+        image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+        badge: "Mới"
+    }
+];
+
 export const default_categories = [
     {
         id: "gio_hoa",
@@ -205,8 +254,11 @@ export const default_categories = [
 
 // Browser global support
 if (typeof window !== 'undefined') {
+    window.products_gio_hoa = products_gio_hoa;
     window.products_bo_hoa = products_bo_hoa;
     window.products_ke_hoa = products_ke_hoa;
     window.products_binh_hoa = products_binh_hoa;
+    window.products_lan_ho_diep = products_lan_ho_diep;
+    window.products_hoa_cuoi = products_hoa_cuoi;
     window.default_categories = default_categories;
 }

@@ -381,6 +381,10 @@ def _get_cached_categories() -> List[Dict[str, Any]]:
     if not cats:
         cats = DEFAULT_CATEGORIES
         write_json(cat_file, DEFAULT_CATEGORIES)
+    try:
+        cats = sorted(cats, key=lambda x: int(x.get("order", 99)) if isinstance(x, dict) and str(x.get("order", "")).isdigit() else 99)
+    except Exception:
+        pass
     return cats
 
 
@@ -393,8 +397,19 @@ def get_categories(use_cache: bool = True, active_only: bool = False, include_de
         if not cats:
             cats = DEFAULT_CATEGORIES
             write_json(cat_file, DEFAULT_CATEGORIES)
+        try:
+            cats = sorted(cats, key=lambda x: int(x.get("order", 99)) if isinstance(x, dict) and str(x.get("order", "")).isdigit() else 99)
+        except Exception:
+            pass
+
     if active_only:
-        return [c for c in cats if isinstance(c, dict) and c.get("isActive") is not False and c.get("status") != "deleted" and not c.get("isDeleted")]
+        return [
+            c for c in cats 
+            if isinstance(c, dict) 
+            and c.get("isActive") not in (False, "false", 0, "0") 
+            and c.get("status") not in ("inactive", "deleted") 
+            and not c.get("isDeleted")
+        ]
     if not include_deleted:
         return [c for c in cats if isinstance(c, dict) and c.get("status") != "deleted" and not c.get("isDeleted")]
     return [c for c in cats if isinstance(c, dict)]

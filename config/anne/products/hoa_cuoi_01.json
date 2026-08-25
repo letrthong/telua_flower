@@ -1,0 +1,27 @@
+{
+  "id": "hoa_cuoi_01",
+  "name": "Bó Hoa Cưới Cầm Tay Tulip Trắng Tinh Khôi",
+  "category": "hoa_cuoi",
+  "priceLevelId": "price_lvl_03",
+  "priceNumber": 1650000,
+  "salePrice": "1,650,000₫",
+  "originalPrice": "1,800,000₫",
+  "badge": "Hot",
+  "image": "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+  "gallery": [
+    "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  ],
+  "description": "Bó hoa cưới tulip trắng Hà Lan nhập khẩu phối nơ lụa voan sang trọng, mang lại vẻ đẹp thuần khiết cho cô dâu ngày cưới.",
+  "flowerComposition": "Hoa Tulip Trắng Hà Lan (15 cành), Hoa Baby trắng nhập khẩu, Lá bạc Silver Dollar, Nơ ruy băng lụa cao cấp",
+  "dimension": "Cao 45cm x Rộng 35cm",
+  "careTips": "Cắm cuống hoa trong nước lạnh có đá viên trước giờ làm lễ 2 tiếng, tránh ánh nắng trực tiếp.",
+  "stockByBranch": {
+    "branch_q10": 5,
+    "branch_q1": 3,
+    "branch_thao_dien": 2
+  },
+  "dailyQuota": 10,
+  "isActive": true,
+  "updatedAt": "2026-08-24T17:40:00Z"
+}
