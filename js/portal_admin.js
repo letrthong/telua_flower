@@ -182,7 +182,19 @@ function renderCategoriesTable(categories) {
     if (!tbody) return;
 
     if (categories.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Chưa có danh mục nào được tạo.</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">Chưa có danh mục nào</p>
+                        <p class="text-xs text-gray-400 mt-1">Bấm nút "Thêm Danh Mục Mới" ở góc trên để tạo danh mục hoa tươi.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
 
@@ -765,7 +777,19 @@ function renderCustomersTable(customers) {
     if (!tbody) return;
 
     if (customers.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400 font-medium">Không tìm thấy khách hàng nào.</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">Không tìm thấy khách hàng nào</p>
+                        <p class="text-xs text-gray-400 mt-1">Dữ liệu khách hàng thân thiết CRM sẽ tự động hiển thị tại đây.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
 
@@ -1003,7 +1027,19 @@ function renderBranchesTable(branches) {
     if (!tbody) return;
 
     if (branches.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Chưa có chi nhánh nào.</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">Chưa có chi nhánh showroom nào</p>
+                        <p class="text-xs text-gray-400 mt-1">Bấm nút "Mở Thêm Chi Nhánh Mới" để mở rộng mạng lưới showroom.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
 
@@ -1221,7 +1257,19 @@ function renderProductsTable(products) {
     if (!tbody) return;
 
     if (products.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Không tìm thấy sản phẩm nào trong danh mục này.</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+                            <i class="fa-solid fa-spa"></i>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">Không có mẫu hoa nào trong danh mục này</p>
+                        <p class="text-xs text-gray-400 mt-1">Bấm nút "Thêm Mẫu Hoa Mới" ở góc trên để bổ sung vào Catalogue.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
 
@@ -1646,7 +1694,19 @@ export function renderPromotionsTable(promotions) {
     if (!tbody) return;
 
     if (!Array.isArray(promotions) || promotions.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-400">Chưa có voucher khuyến mãi nào. Bấm "Thêm Voucher Mới" để tạo!</td></tr>`;
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <div class="w-16 h-16 rounded-full bg-purple-50 text-purple-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+                            <i class="fa-solid fa-ticket-simple"></i>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">Chưa có voucher khuyến mãi nào</p>
+                        <p class="text-xs text-gray-400 mt-1">Bấm nút "Thêm Voucher Mới" để phát hành mã giảm giá cho khách hàng.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
 
