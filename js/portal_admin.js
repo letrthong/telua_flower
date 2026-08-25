@@ -1116,20 +1116,21 @@ export async function handleBranchSubmit(event) {
         if (res.ok && json.success) {
             closeBranchModal();
             loadAdminBranches();
-            alert(isEdit ? "Cập nhật chi nhánh thành công!" : "🎉 Mở chi nhánh mới thành công!");
+            notifyUser(isEdit ? `Cập nhật chi nhánh "${name}" thành công!` : `Mở chi nhánh mới "${name}" thành công!`, 'success');
         } else {
+            const msg = json.message || "Lỗi lưu thông tin chi nhánh";
             if (errBox) {
-                errBox.textContent = json.message || "Lỗi lưu thông tin chi nhánh";
+                errBox.textContent = "❌ " + msg;
                 errBox.classList.remove("hidden");
-            } else {
-                alert(json.message || "Lỗi lưu thông tin chi nhánh");
             }
+            notifyUser(`Lỗi lưu chi nhánh: ${msg}`, 'error');
         }
     } catch (e) {
         if (errBox) {
-            errBox.textContent = "Lỗi kết nối: " + e.message;
+            errBox.textContent = "❌ Lỗi kết nối: " + e.message;
             errBox.classList.remove("hidden");
         }
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -1144,12 +1145,12 @@ export async function toggleBranch(branchId) {
         const json = await res.json();
         if (res.ok && json.success) {
             loadAdminBranches();
-            alert("🎉 Đã cập nhật trạng thái chi nhánh thành công!");
+            notifyUser("Đã cập nhật trạng thái chi nhánh thành công!", 'success');
         } else {
-            alert("❌ Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"));
+            notifyUser("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"), 'error');
         }
     } catch (e) {
-        alert("❌ Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -1786,18 +1787,21 @@ export async function handlePromoSubmit(event) {
         if (json.success) {
             closePromoModal();
             loadAdminPromotions();
-            alert(editId ? "🎉 Đã cập nhật voucher thành công!" : "🎉 Đã tạo voucher mới thành công!");
+            notifyUser(editId ? "Đã cập nhật voucher thành công!" : "Đã tạo voucher mới thành công!", 'success');
         } else {
+            const msg = json.message || "Lỗi lưu voucher";
             if (err) {
-                err.textContent = json.message || "Lỗi lưu voucher";
+                err.textContent = "❌ " + msg;
                 err.classList.remove("hidden");
             }
+            notifyUser(`Lỗi lưu voucher: ${msg}`, 'error');
         }
     } catch (e) {
         if (err) {
-            err.textContent = "Lỗi kết nối: " + e.message;
+            err.textContent = "❌ Lỗi kết nối: " + e.message;
             err.classList.remove("hidden");
         }
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     } finally {
         if (btn) btn.disabled = false;
     }
@@ -1813,12 +1817,12 @@ export async function togglePromo(promoId) {
         const json = await res.json();
         if (json.success) {
             loadAdminPromotions();
-            alert("🎉 Đã cập nhật trạng thái voucher khuyến mãi thành công!");
+            notifyUser("Đã cập nhật trạng thái voucher khuyến mãi thành công!", 'success');
         } else {
-            alert("❌ Lỗi: " + (json.message || "Lỗi cập nhật trạng thái voucher"));
+            notifyUser("Lỗi: " + (json.message || "Lỗi cập nhật trạng thái voucher"), 'error');
         }
     } catch (e) {
-        alert("❌ Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -1834,12 +1838,12 @@ export async function deletePromo(promoId, promoCode) {
         const json = await res.json();
         if (json.success) {
             loadAdminPromotions();
-            alert("Đã chuyển voucher sang trạng thái Đã Xóa (Soft Deleted) thành công!");
+            notifyUser("Đã chuyển voucher sang trạng thái Đã Xóa thành công!", 'success');
         } else {
-            alert(json.message || "Không thể xóa voucher");
+            notifyUser("Không thể xóa voucher: " + (json.message || ""), 'error');
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
