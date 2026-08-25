@@ -2015,4 +2015,5 @@ if (typeof window !== "undefined") {
     window.handleBranchSubmit = handleBranchSubmit;
     window.toggleBranch = toggleBranch;
     window.populateBranchDropdowns = populateBranchDropdowns;
+    window.notifyUser = notifyUser;
 }
