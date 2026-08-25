@@ -1,11 +1,11 @@
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
 import { API_BASE, showToast, showConfirmDialog } from './utils.js';
 
-function notifyUser(message, type = 'success') {
+function notifyUser(message, type = 'success', duration = 5000) {
     if (typeof showToast === 'function') {
-        showToast(message, type, 3000);
+        showToast(message, type, duration);
     } else if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
-        window.showToast(message, type, 3000);
+        window.showToast(message, type, duration);
     } else {
         alert(message);
     }

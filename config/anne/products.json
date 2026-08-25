@@ -34,8 +34,8 @@
       "branch_thao_dien": 4
     },
     "dailyQuota": 20,
-    "isActive": true,
-    "updatedAt": "2026-08-24T15:14:08Z"
+    "isActive": false,
+    "updatedAt": "2026-08-25T14:15:27Z"
   },
   {
     "id": "bo_hoa_02",

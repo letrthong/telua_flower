@@ -23,8 +23,8 @@ function initLazyLoadingImages() {
     });
 }
 
-// Hiển thị thông báo Toast ở góc trái dưới màn hình (Tự động đóng sau 3 giây)
-export function showToast(message, type = 'success', duration = 3000) {
+// Hiển thị thông báo Toast ở góc trái dưới màn hình (Tự động đóng sau 5 giây)
+export function showToast(message, type = 'success', duration = 5000) {
     if (typeof document === 'undefined' || !message) return;
 
     // Tìm hoặc tạo container toast ở góc trái dưới màn hình
@@ -84,7 +84,7 @@ export function showToast(message, type = 'success', duration = 3000) {
         toast.classList.add('translate-x-0', 'opacity-100');
     });
 
-    // Tự động đóng sau `duration` (mặc định 3 giây)
+    // Tự động đóng sau `duration` (mặc định 5 giây)
     setTimeout(() => {
         removeToast();
     }, duration);
