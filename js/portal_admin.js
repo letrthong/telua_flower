@@ -1,5 +1,15 @@
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
-import { API_BASE } from './utils.js';
+import { API_BASE, showToast } from './utils.js';
+
+function notifyUser(message, type = 'success') {
+    if (typeof showToast === 'function') {
+        showToast(message, type, 3000);
+    } else if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast(message, type, 3000);
+    } else {
+        alert(message);
+    }
+}
 
 /**
  * Phân hệ Quản Trị Hệ Thống (TASK 07 - Admin Portal, Product CMS & Price Governance)
@@ -364,21 +374,21 @@ export async function handleCategorySubmit(event) {
             loadAdminCategories();
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
-            alert(isEdit ? `🎉 Đã cập nhật danh mục "${name}" thành công!` : `🎉 Đã tạo danh mục mới "${name}" thành công!`);
+            notifyUser(isEdit ? `Đã cập nhật danh mục "${name}" thành công!` : `Đã tạo danh mục mới "${name}" thành công!`, 'success');
         } else {
             const msg = json.message || "Lỗi lưu danh mục";
             if (errBox) {
                 errBox.textContent = "❌ " + msg;
                 errBox.classList.remove("hidden");
             }
-            alert(`❌ Không thể lưu danh mục: ${msg}`);
+            notifyUser(`Không thể lưu danh mục: ${msg}`, 'error');
         }
     } catch (e) {
         if (errBox) {
             errBox.textContent = "❌ Lỗi kết nối: " + e.message;
             errBox.classList.remove("hidden");
         }
-        alert("❌ Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -405,12 +415,12 @@ export async function toggleCategory(catId, catName, currentActive) {
             loadAdminCategories();
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
-            alert(`🎉 Đã ${actionText.toLowerCase()} danh mục "${displayName}" thành công!`);
+            notifyUser(`Đã ${actionText.toLowerCase()} danh mục "${displayName}" thành công!`, 'success');
         } else {
-            alert(`❌ Lỗi cập nhật trạng thái: ${json.message || "Không xác định"}`);
+            notifyUser(`Lỗi cập nhật trạng thái: ${json.message || "Không xác định"}`, 'error');
         }
     } catch (e) {
-        alert("❌ Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -426,12 +436,12 @@ export async function deleteCategory(catId, catName) {
         const json = await res.json();
         if (json.success) {
             loadAdminCategories();
-            alert("Đã chuyển danh mục sang trạng thái Đã Xóa (Soft Deleted) thành công!");
+            notifyUser("Đã chuyển danh mục sang trạng thái Đã Xóa thành công!", 'success');
         } else {
-            alert(json.message || "Không thể xóa danh mục");
+            notifyUser("Không thể xóa danh mục: " + (json.message || ""), 'error');
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
     }
 }
 
@@ -445,12 +455,12 @@ export async function restoreCategory(catId, catName) {
         const json = await res.json();
         if (json.success) {
             loadAdminCategories();
-            alert(`🎉 Đã khôi phục danh mục "${catName || catId}" thành công!`);
+            notifyUser(`Đã khôi phục danh mục "${catName || catId}" thành công!`, 'success');
         } else {
-            alert(json.message || "Lỗi khôi phục danh mục");
+            notifyUser("Lỗi khôi phục danh mục: " + (json.message || ""), 'error');
         }
     } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
     }
 }
 
@@ -483,12 +493,12 @@ export async function moveCategory(catId, direction) {
             if (typeof renderAllProducts === "function") {
                 renderAllProducts();
             }
-            alert("🎉 Đã thay đổi thứ tự danh mục thành công!");
+            notifyUser("Đã thay đổi thứ tự danh mục thành công!", 'success');
         } else {
-            alert(`❌ Không thể di chuyển thứ tự: ${json.message || "Lỗi không xác định"}`);
+            notifyUser(`Không thể di chuyển thứ tự: ${json.message || "Lỗi không xác định"}`, 'error');
         }
     } catch (e) {
-        alert("❌ Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -1508,21 +1518,21 @@ export async function handleProductSubmit(event) {
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
                 window.renderAllProducts();
             }
-            alert(editId ? `🎉 Đã cập nhật mẫu hoa "${name}" thành công!` : `🎉 Đã thêm mẫu hoa mới "${name}" thành công!`);
+            notifyUser(editId ? `Đã cập nhật mẫu hoa "${name}" thành công!` : `Đã thêm mẫu hoa mới "${name}" thành công!`, 'success');
         } else {
             const msg = json.message || "Lỗi lưu sản phẩm";
             if (errBox) {
                 errBox.textContent = "❌ " + msg;
                 errBox.classList.remove("hidden");
             }
-            alert(`❌ Không thể lưu sản phẩm: ${msg}`);
+            notifyUser(`Không thể lưu sản phẩm: ${msg}`, 'error');
         }
     } catch (e) {
         if (errBox) {
             errBox.textContent = "❌ Lỗi kết nối máy chủ: " + e.message;
             errBox.classList.remove("hidden");
         }
-        alert("❌ Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -1550,12 +1560,12 @@ export async function toggleProduct(productId, productName, currentActive) {
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
                 window.renderAllProducts();
             }
-            alert(`🎉 Đã ${actionText.toLowerCase()} mẫu hoa "${displayName}" thành công!`);
+            notifyUser(`Đã ${actionText.toLowerCase()} mẫu hoa "${displayName}" thành công!`, 'success');
         } else {
-            alert("❌ Lỗi đổi trạng thái: " + (json.message || "Không thể đổi trạng thái"));
+            notifyUser("Lỗi đổi trạng thái: " + (json.message || "Không thể đổi trạng thái"), 'error');
         }
     } catch (e) {
-        alert("❌ Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
@@ -1934,12 +1944,12 @@ export async function saveAllTranslations() {
 
         const json = await res.json();
         if (res.ok && json.success) {
-            alert("🎉 Đã lưu toàn bộ bản dịch 5 ngôn ngữ thành công!");
+            notifyUser("Đã lưu toàn bộ bản dịch 5 ngôn ngữ thành công!", 'success');
         } else {
-            alert("Lỗi lưu bản dịch: " + (json.message || "Không xác định"));
+            notifyUser("Lỗi lưu bản dịch: " + (json.message || "Không xác định"), 'error');
         }
     } catch (e) {
-        alert("Lỗi kết nối máy chủ: " + e.message);
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     }
 }
 
