@@ -11,37 +11,74 @@ SRC_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from services.data_service import (
-    CONFIG_DIR,
-    ORDERS_DIR,
-    read_json,
-    write_json,
-    paginate,
-    get_branches,
-    get_branch_by_id,
-    save_branches,
-    get_price_levels,
-    get_price_level_by_id,
-    get_users,
-    get_user_by_id,
-    get_user_by_phone_or_email,
-    get_products,
-    get_product_by_id,
-    get_promotions,
-    get_promotion_by_code,
-    get_translations,
-    save_translations,
-    get_wastage_reports,
-    add_wastage_report,
-    get_customers,
-    get_customer_by_phone,
-    get_monthly_order_filename,
-    read_orders_by_month,
-    write_orders_by_month,
-    get_order_by_id,
-    save_order,
-    update_order_status
-)
+try:
+    from data_service import (
+        CONFIG_DIR,
+        ORDERS_DIR,
+        read_json,
+        read_json_cached,
+        invalidate_file_cache,
+        write_json,
+        paginate,
+        get_branches,
+        get_branch_by_id,
+        save_branches,
+        get_price_levels,
+        get_price_level_by_id,
+        get_users,
+        get_user_by_id,
+        get_user_by_phone_or_email,
+        get_products,
+        get_product_by_id,
+        get_promotions,
+        get_promotion_by_code,
+        get_translations,
+        save_translations,
+        get_wastage_reports,
+        add_wastage_report,
+        get_customers,
+        get_customer_by_phone,
+        get_monthly_order_filename,
+        read_orders_by_month,
+        write_orders_by_month,
+        get_order_by_id,
+        save_order,
+        update_order_status
+    )
+except ImportError:
+    from services.data_service import (
+        CONFIG_DIR,
+        ORDERS_DIR,
+        read_json,
+        read_json_cached,
+        invalidate_file_cache,
+        write_json,
+        paginate,
+        get_branches,
+        get_branch_by_id,
+        save_branches,
+        get_price_levels,
+        get_price_level_by_id,
+        get_users,
+        get_user_by_id,
+        get_user_by_phone_or_email,
+        get_products,
+        get_product_by_id,
+        get_promotions,
+        get_promotion_by_code,
+        get_translations,
+        save_translations,
+        get_wastage_reports,
+        add_wastage_report,
+        get_customers,
+        get_customer_by_phone,
+        get_monthly_order_filename,
+        read_orders_by_month,
+        write_orders_by_month,
+        get_order_by_id,
+        save_order,
+        update_order_status
+    )
 
 
 class TestDataService(unittest.TestCase):
@@ -255,6 +292,49 @@ class TestDataService(unittest.TestCase):
         # Xóa danh mục test
         success, err = delete_category("cat_test_event")
         self.assertTrue(success)
+
+    def test_12_mtime_cached_json_reading_and_invalidation(self):
+        """Kiểm tra cơ chế cache JSON trong RAM theo mtime file và tự động làm mới khi file thay đổi"""
+        temp_dir = tempfile.mkdtemp()
+        try:
+            test_file = os.path.join(temp_dir, "test_cache.json")
+            initial_data = {"version": 1, "status": "active"}
+            write_json(test_file, initial_data)
+
+            # 1. Đọc lần 1 -> Đưa vào RAM cache
+            data1 = read_json_cached(test_file)
+            self.assertEqual(data1, initial_data)
+
+            # 2. Đọc lần 2 -> Phải trả về đúng dữ liệu
+            data2 = read_json_cached(test_file)
+            self.assertEqual(data2, initial_data)
+
+            # 3. Giả lập sửa file trực tiếp trên đĩa với mtime mới
+            time_now = os.path.getmtime(test_file) + 2.0
+            updated_data = {"version": 2, "status": "updated"}
+            with open(test_file, "w", encoding="utf-8") as f:
+                json.dump(updated_data, f)
+            os.utime(test_file, (time_now, time_now))
+
+            # 4. read_json_cached phải tự động nhận biết mtime thay đổi và trả về dữ liệu mới
+            data3 = read_json_cached(test_file)
+            self.assertEqual(data3["version"], 2)
+            self.assertEqual(data3["status"], "updated")
+
+            # 5. Xóa cache thủ công
+            invalidate_file_cache(test_file)
+            data4 = read_json_cached(test_file)
+            self.assertEqual(data4["version"], 2)
+
+            # 6. Kiểm tra get_branches và get_translations hoạt động ổn định với use_cache=True
+            branches = get_branches(use_cache=True)
+            self.assertIsInstance(branches, list)
+            self.assertGreaterEqual(len(branches), 1)
+
+            trans = get_translations(use_cache=True)
+            self.assertIn("translations", trans)
+        finally:
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ Hỗ trợ url_prefix='/api/flower/v1' chuẩn hóa tương tự Lu Quan (/api/h
 import os
 import sys
 import logging
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, make_response
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -20,6 +20,7 @@ from  anne_auth_service import (
     list_crm_customers
 )
 from   data_service import (
+    get_config_path,
     get_user_by_id,
     get_order_by_id,
     read_orders_by_month,
@@ -562,15 +563,42 @@ def api_restore_promotion(promo_id):
 
 
 
+def _build_cached_file_response(filename: str, data_fetcher, max_age: int = 60):
+    """
+    Helper chuẩn hóa sinh ETag theo mtime và kích thước file config JSON.
+    Nếu client gửi If-None-Match trùng khớp, trả về HTTP 304 Not Modified ngay lập tức.
+    """
+    filepath = get_config_path(filename)
+    etag = None
+    if os.path.exists(filepath):
+        try:
+            stat_res = os.stat(filepath)
+            etag = f'W/"{int(stat_res.st_mtime)}-{stat_res.st_size}"'
+        except OSError:
+            pass
+
+    if etag and request.headers.get("If-None-Match") == etag:
+        resp = make_response("", 304)
+        resp.headers["ETag"] = etag
+        resp.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate=300"
+        return resp
+
+    data = data_fetcher()
+    response = jsonify({"success": True, "data": data})
+    if etag:
+        response.set_etag(etag)
+    response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate=300"
+    return response, 200
+
+
 # ==========================================
 # CÁC API ENDPOINTS BIÊN DỊCH ĐA NGÔN NGỮ (TASK 07)
 # ==========================================
 
 @flower_connect_api.route("/translations", methods=["GET"])
 def api_get_translations():
-    """Lấy từ điển đa ngôn ngữ 5 thứ tiếng."""
-    data = get_all_translations()
-    return jsonify({"success": True, "data": data}), 200
+    """Lấy từ điển đa ngôn ngữ 5 thứ tiếng (hỗ trợ HTTP ETag / 304 Not Modified cache)."""
+    return _build_cached_file_response("translations.json", lambda: get_all_translations(use_cache=True), max_age=120)
 
 
 @flower_connect_api.route("/admin/translations", methods=["PUT"])
@@ -646,9 +674,12 @@ def api_get_admin_customers():
 
 @flower_connect_api.route("/branches", methods=["GET"])
 def api_get_public_branches():
-    """Lấy danh sách các chi nhánh đang mở cửa hoạt động (dành cho khách hàng)."""
-    branches = [b for b in get_branches() if b.get("isActive", True)]
-    return jsonify({"success": True, "data": branches}), 200
+    """Lấy danh sách các chi nhánh đang mở cửa hoạt động (hỗ trợ HTTP ETag / 304 Not Modified cache)."""
+    return _build_cached_file_response(
+        "branches.json",
+        lambda: [b for b in get_branches(use_cache=True) if b.get("isActive", True)],
+        max_age=60
+    )
 
 
 @flower_connect_api.route("/admin/branches", methods=["GET"])

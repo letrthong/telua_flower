@@ -29,6 +29,11 @@ ORDERS_DIR = FLOWER_ORDERS_DIR
 # Thread lock để tránh xung đột race-condition khi ghi đồng thời
 _IO_LOCK = threading.Lock()
 
+# Cache lưu trữ dữ liệu JSON trong RAM theo thời gian sửa đổi (mtime) của file (chống rò rỉ RAM với bounded limit)
+_FILE_MTIME_CACHE: Dict[str, Dict[str, Any]] = {}
+_MAX_MTIME_CACHE_SIZE = 64
+_MTIME_CACHE_LOCK = threading.Lock()
+
 
 def get_config_path(filename: str) -> str:
     """Trả về đường dẫn tuyệt đối đến file trong thư mục config."""
@@ -48,6 +53,48 @@ def read_json(filepath: str, default: Any = None) -> Any:
             return json.load(f)
     except (json.JSONDecodeError, IOError, UnicodeDecodeError):
         return default if default is not None else []
+
+
+def read_json_cached(filepath: str, default: Any = None) -> Any:
+    """
+    Đọc dữ liệu từ file JSON có bộ nhớ đệm RAM tự động kiểm tra mtime (file modification time).
+    Nếu file không thay đổi trên đĩa, trả về dữ liệu parse từ RAM (0ms I/O).
+    Nếu file bị thay đổi trên đĩa, tự động tải lại dữ liệu mới nhất.
+    """
+    if not os.path.exists(filepath):
+        return default if default is not None else []
+
+    try:
+        current_mtime = os.path.getmtime(filepath)
+    except OSError:
+        return read_json(filepath, default)
+
+    with _MTIME_CACHE_LOCK:
+        cached_entry = _FILE_MTIME_CACHE.get(filepath)
+        if cached_entry and cached_entry.get("mtime") == current_mtime:
+            return cached_entry.get("data")
+
+    # Đọc từ đĩa nếu chưa có hoặc file đã thay đổi mtime
+    data = read_json(filepath, default)
+    with _MTIME_CACHE_LOCK:
+        if len(_FILE_MTIME_CACHE) >= _MAX_MTIME_CACHE_SIZE and filepath not in _FILE_MTIME_CACHE:
+            # Thu hồi phần tử cũ nhất theo FIFO để giữ dung lượng RAM cố định
+            first_key = next(iter(_FILE_MTIME_CACHE))
+            _FILE_MTIME_CACHE.pop(first_key, None)
+        _FILE_MTIME_CACHE[filepath] = {
+            "mtime": current_mtime,
+            "data": data
+        }
+    return data
+
+
+def invalidate_file_cache(filepath: Optional[str] = None) -> None:
+    """Xóa cache RAM cho một file cụ thể hoặc toàn bộ file cache."""
+    with _MTIME_CACHE_LOCK:
+        if filepath:
+            _FILE_MTIME_CACHE.pop(filepath, None)
+        else:
+            _FILE_MTIME_CACHE.clear()
 
 
 def _normalize_list_of_dicts(data: Any) -> List[Dict[str, Any]]:
@@ -99,6 +146,8 @@ def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
                         os.remove(temp_path)
                     except Exception:
                         pass
+            # Xóa cache RAM khi file được ghi mới
+            invalidate_file_cache(filepath)
             return True
         except Exception as e:
             if os.path.exists(temp_path):
@@ -160,16 +209,18 @@ def paginate(
 # CÁC SERVICE TRUY XUẤT CHO TỪNG ĐỐI TƯỢNG
 # ==========================================
 
-# 1. Chi Nhánh (Branches) - Hỗ trợ cache LRU
+# 1. Chi Nhánh (Branches) - Hỗ trợ cache RAM theo mtime file
 @functools.lru_cache(maxsize=32)
 def _get_cached_branches() -> List[Dict[str, Any]]:
-    return _normalize_list_of_dicts(read_json(get_config_path("branches.json"), default=[]))
+    return _normalize_list_of_dicts(read_json_cached(get_config_path("branches.json"), default=[]))
 
 
 def get_branches(use_cache: bool = True) -> List[Dict[str, Any]]:
     if use_cache:
-        return _get_cached_branches()
-    return _normalize_list_of_dicts(read_json(get_config_path("branches.json"), default=[]))
+        raw = read_json_cached(get_config_path("branches.json"), default=[])
+    else:
+        raw = read_json(get_config_path("branches.json"), default=[])
+    return _normalize_list_of_dicts(raw)
 
 
 def get_branch_by_id(branch_id: str) -> Optional[Dict[str, Any]]:
@@ -181,7 +232,9 @@ def get_branch_by_id(branch_id: str) -> Optional[Dict[str, Any]]:
 
 
 def save_branches(branches: List[Dict[str, Any]]) -> bool:
-    success = write_json(get_config_path("branches.json"), branches)
+    filepath = get_config_path("branches.json")
+    success = write_json(filepath, branches)
+    invalidate_file_cache(filepath)
     _get_cached_branches.cache_clear()
     return success
 
@@ -988,20 +1041,22 @@ def restore_promotion(promo_id_or_code: str) -> Tuple[bool, Optional[Dict[str, A
 
 
 
-# 6. Biên Dịch Đa Ngôn Ngữ (Translations i18n) - Hỗ trợ cache LRU
+# 6. Biên Dịch Đa Ngôn Ngữ (Translations i18n) - Hỗ trợ cache RAM theo mtime file
 @functools.lru_cache(maxsize=32)
 def _get_cached_translations() -> Dict[str, Any]:
-    return read_json(get_config_path("translations.json"), default={})
+    return read_json_cached(get_config_path("translations.json"), default={})
 
 
 def get_translations(use_cache: bool = True) -> Dict[str, Any]:
     if use_cache:
-        return _get_cached_translations()
+        return read_json_cached(get_config_path("translations.json"), default={})
     return read_json(get_config_path("translations.json"), default={})
 
 
 def save_translations(translations: Dict[str, Any]) -> bool:
-    success = write_json(get_config_path("translations.json"), translations)
+    filepath = get_config_path("translations.json")
+    success = write_json(filepath, translations)
+    invalidate_file_cache(filepath)
     _get_cached_translations.cache_clear()
     return success
 

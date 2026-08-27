@@ -222,6 +222,28 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         # Dọn dẹp
         delete_product(test_prod_id)
 
+    def test_09_http_etag_304_cache_translations_and_branches(self):
+        """Kiểm tra phản hồi HTTP ETag và mã 304 Not Modified khi dữ liệu không thay đổi"""
+        # 1. Kiểm tra API Translations
+        res_trans = self.client.get("/api/translations")
+        self.assertEqual(res_trans.status_code, 200)
+        etag_trans = res_trans.headers.get("ETag")
+        self.assertIsNotNone(etag_trans, "API /api/translations phải trả về header ETag")
+
+        # Gửi lại với If-None-Match -> Phải trả về 304 Not Modified
+        res_trans_304 = self.client.get("/api/translations", headers={"If-None-Match": etag_trans})
+        self.assertEqual(res_trans_304.status_code, 304)
+
+        # 2. Kiểm tra API Branches
+        res_branches = self.client.get("/api/branches")
+        self.assertEqual(res_branches.status_code, 200)
+        etag_branches = res_branches.headers.get("ETag")
+        self.assertIsNotNone(etag_branches, "API /api/branches phải trả về header ETag")
+
+        # Gửi lại với If-None-Match -> Phải trả về 304 Not Modified
+        res_branches_304 = self.client.get("/api/branches", headers={"If-None-Match": etag_branches})
+        self.assertEqual(res_branches_304.status_code, 304)
+
 
 if __name__ == "__main__":
     unittest.main()

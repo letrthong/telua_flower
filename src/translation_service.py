@@ -12,9 +12,9 @@ from data_service import (
 SUPPORTED_LANGUAGES = ["vi", "en", "ja", "ko", "zh"]
 
 
-def get_all_translations() -> Dict[str, Any]:
-    """Lấy toàn bộ từ điển 5 ngôn ngữ."""
-    return get_translations(use_cache=False)
+def get_all_translations(use_cache: bool = True) -> Dict[str, Any]:
+    """Lấy toàn bộ từ điển 5 ngôn ngữ (mặc định dùng cache RAM theo mtime file)."""
+    return get_translations(use_cache=use_cache)
 
 
 def update_translation_key(
