@@ -258,6 +258,13 @@ function openAuthModal(tab = "login") {
     if (!modal) return;
     modal.style.display = "flex";
     modal.classList.remove("hidden");
+    
+    const pwInput = document.getElementById("loginPassword");
+    if (pwInput) pwInput.value = "";
+    
+    const regPwInput = document.getElementById("regPassword");
+    if (regPwInput) regPwInput.value = "";
+    
     switchAuthTab(tab);
 }
 
@@ -305,8 +312,12 @@ function fillDemoAccount(identifier, password = "123456") {
     switchAuthTab("login");
     const idInput = document.getElementById("loginIdentifier");
     const pwInput = document.getElementById("loginPassword");
+    const errorBox = document.getElementById("loginError");
+    if (errorBox) errorBox.classList.add("hidden");
+
     if (idInput) idInput.value = identifier;
     if (pwInput) pwInput.value = password;
+
     // Tự động kích hoạt submit
     const submitBtn = document.getElementById("btnLoginSubmit");
     if (submitBtn) {
@@ -326,11 +337,21 @@ async function handleLoginSubmit(event) {
     const identifier = idInput.value.trim();
     const password = pwInput.value;
 
-    if (!identifier || !password) {
+    if (!identifier) {
         if (errorBox) {
-            errorBox.textContent = "Vui lòng nhập đầy đủ Số điện thoại/Email và Mật khẩu";
+            errorBox.textContent = "Vui lòng nhập Số điện thoại hoặc Email đăng nhập!";
             errorBox.classList.remove("hidden");
         }
+        idInput.focus();
+        return;
+    }
+
+    if (!password) {
+        if (errorBox) {
+            errorBox.textContent = "Vui lòng nhập mật khẩu vào để đăng nhập!";
+            errorBox.classList.remove("hidden");
+        }
+        pwInput.focus();
         return;
     }
 
@@ -461,15 +482,24 @@ function updateAuthUI() {
         let portalActionBtn = "";
         if (isAdminOrManager) {
             portalActionBtn = `
-                <button onclick="openAdminPortalModal()" class="w-full flex items-center px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-lg shadow-sm">
-                    <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
-                </button>
+                <div class="p-2 space-y-1.5 border-b border-gray-100">
+                    <button onclick="openAdminPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
+                        <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
+                    </button>
+                    ${user.role === 'super_admin' ? `
+                    <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
+                        <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
+                    </button>
+                    ` : ''}
+                </div>
             `;
         } else if (isFlorist) {
             portalActionBtn = `
-                <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal();" class="w-full flex items-center px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-sm">
-                    <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
-                </button>
+                <div class="p-1.5 border-b border-gray-100">
+                    <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal();" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-sm">
+                        <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
+                    </button>
+                </div>
             `;
         } else {
             // Customer (Khách hàng thân thiết)
@@ -495,7 +525,7 @@ function updateAuthUI() {
                 </button>
 
                 <!-- Dropdown Menu -->
-                <div id="userDropdownMenu" class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50 animate-fadeIn">
+                <div id="userDropdownMenu" class="hidden absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-50 animate-fadeIn">
                     <div class="px-4 py-2.5 border-b border-gray-100 bg-pink-50/50">
                         <p class="text-xs text-gray-500 font-medium">Đang đăng nhập với vai trò:</p>
                         <p class="text-xs font-bold text-primary mt-0.5">${roleName}</p>
@@ -504,7 +534,7 @@ function updateAuthUI() {
                     
                     ${portalActionBtn}
 
-                    <button onclick="logout()" class="w-full text-left flex items-center px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition">
+                    <button onclick="logout()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
                     </button>
                 </div>
@@ -527,9 +557,16 @@ function updateAuthUI() {
                     </div>
 
                     ${isAdminOrManager ? `
-                        <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-lg shadow-xs">
-                            <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
-                        </button>
+                        <div class="space-y-2">
+                            <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
+                                <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
+                            </button>
+                            ${user.role === 'super_admin' ? `
+                            <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
+                                <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
+                            </button>
+                            ` : ''}
+                        </div>
                     ` : isFlorist ? `
                         <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-xs">
                             <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa

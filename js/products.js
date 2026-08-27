@@ -185,8 +185,8 @@ export const default_categories = [
         image: "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
         icon: "fa-solid fa-basket-shopping",
         order: 1,
-        status: "active",
-        isActive: true,
+        status: "inactive",
+        isActive: false,
         isDeleted: false,
         description: "Giỏ hoa và lẵng hoa để bàn sang trọng, tinh tế"
     },

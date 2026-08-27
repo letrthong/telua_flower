@@ -332,8 +332,15 @@ export async function renderStorefrontCategories() {
 
     // Helper render categories lên UI
     function applyCategories(cats) {
-        if (!Array.isArray(cats) || cats.length === 0) return;
-        const activeCats = cats.filter(c => c && c.isActive !== false && c.status !== 'deleted' && !c.isDeleted);
+        if (!Array.isArray(cats)) return;
+        const activeCats = cats.filter(c => 
+            c && 
+            c.isActive !== false && 
+            c.isActive !== 'false' && 
+            c.status !== 'inactive' && 
+            c.status !== 'deleted' && 
+            !c.isDeleted
+        );
         activeCats.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
 
         // 1. Quick Category Circles trên Storefront
@@ -387,15 +394,15 @@ export async function renderStorefrontCategories() {
         });
     }
 
-    // Nạp danh mục mặc định từ categories.json
+    // Nạp danh mục mặc định ban đầu
     applyCategories(defaultCats);
 
     // Nạp đồng bộ từ API backend /api/flower/v1/categories
     try {
-        const res = await fetch(`${API_BASE}/categories?active=true`);
+        const res = await fetch(`${API_BASE}/categories?active=true&_t=${Date.now()}`);
         if (res.ok) {
             const json = await res.json();
-            if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            if (json.success && Array.isArray(json.data)) {
                 if (typeof window !== 'undefined') window.default_categories = json.data;
                 applyCategories(json.data);
             }
@@ -405,11 +412,93 @@ export async function renderStorefrontCategories() {
     }
 }
 
-// 3. Khởi chạy khi tải xong trang (DOM Content Loaded)
+/**
+ * 3. Đồng bộ thông tin thương hiệu & liên hệ doanh nghiệp (infoCompany.json) lên Storefront
+ */
+export function applyStorefrontCompanyInfo(info) {
+    if (!info || typeof document === 'undefined') return;
+
+    const setHtml = (id, html) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+    };
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+    const setHref = (id, href) => {
+        const el = document.getElementById(id);
+        if (el && href) el.setAttribute('href', href);
+    };
+
+    if (info.address) {
+        setText('footerAddress', info.address);
+        setText('storeAddressVal', info.address);
+    }
+
+    if (info.phone || info.hotline) {
+        const phone = info.hotline || info.phone;
+        const cleanPhone = phone.replace(/[^\d+]/g, '');
+        setText('footerPhone', phone);
+        setHref('footerPhone', `tel:${cleanPhone}`);
+        setText('storeHotlineLink', phone);
+        setHref('storeHotlineLink', `tel:${cleanPhone}`);
+        setHref('floatingHotlineLink', `tel:${cleanPhone}`);
+        setText('floatingHotlineText', phone);
+    }
+
+    if (info.email) {
+        setText('footerEmail', info.email);
+        setHref('footerEmail', `mailto:${info.email}`);
+    }
+
+    if (info.workingHours) {
+        setText('footerHours', info.workingHours);
+        setText('storeHoursVal', info.workingHours);
+    }
+
+    if (info.companyName) {
+        const yr = new Date().getFullYear();
+        setText('footerCopyright', `© ${yr} Bản quyền thuộc về ${info.companyName}.`);
+    }
+
+    if (info.zalo) {
+        setHref('floatingZaloLink', info.zalo);
+    }
+
+    if (info.mapUrl) {
+        setHref('storeDirectionsLink', info.mapUrl);
+        setHref('storeLargerMapLink', info.mapUrl);
+    }
+
+    if (info.mapEmbedUrl) {
+        const iframe = document.getElementById('storeMapIframe');
+        if (iframe && info.mapEmbedUrl) {
+            iframe.src = info.mapEmbedUrl;
+        }
+    }
+}
+
+export async function loadStorefrontCompanyInfo() {
+    try {
+        const res = await fetch(`${API_BASE}/company-info?_t=${Date.now()}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+                applyStorefrontCompanyInfo(json.data);
+            }
+        }
+    } catch (e) {
+        console.log("Using local company info default.");
+    }
+}
+
+// 4. Khởi chạy khi tải xong trang (DOM Content Loaded)
 function initApp() {
     initMobileMenu();
     renderStorefrontCategories();
     renderAllProducts();
+    loadStorefrontCompanyInfo();
     
     // Gắn sự kiện đóng modal bằng phím ESC và click ra ngoài backdrop
     if (typeof document !== 'undefined') {
@@ -457,6 +546,8 @@ if (typeof window !== 'undefined') {
     window.initMobileMenu = initMobileMenu;
     window.openProductQuickDetail = openProductQuickDetail;
     window.closeProductQuickDetail = closeProductQuickDetail;
+    window.applyStorefrontCompanyInfo = applyStorefrontCompanyInfo;
+    window.loadStorefrontCompanyInfo = loadStorefrontCompanyInfo;
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initApp);

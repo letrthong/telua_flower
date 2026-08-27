@@ -268,7 +268,6 @@
                     
                     <!-- Dynamic categories rendered from categories.json -->
                     <li class="flex items-center space-x-7" id="dynamicNavItems">
-                        <a href="#cat-gio_hoa" onclick="scrollToCategory('gio_hoa'); return false;" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Giỏ & Lẵng Hoa</a>
                         <a href="#cat-bo_hoa" onclick="scrollToCategory('bo_hoa'); return false;" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Bó Hoa Tươi</a>
                         <a href="#cat-ke_hoa" onclick="scrollToCategory('ke_hoa'); return false;" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Kệ Hoa Khai Trương</a>
                         <a href="#cat-binh_hoa" onclick="scrollToCategory('binh_hoa'); return false;" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">Bình Cắm Hoa</a>
@@ -306,7 +305,6 @@
                         
                         <!-- Dynamic Categories in Mobile Menu from categories.json -->
                         <div id="mobileDynamicNavItems" class="space-y-4 pt-1 pb-1 border-t border-b border-gray-100">
-                            <li><a href="#cat-gio_hoa" onclick="scrollToCategory('gio_hoa'); closeMenu();" class="block">Giỏ & Lẵng Hoa</a></li>
                             <li><a href="#cat-bo_hoa" onclick="scrollToCategory('bo_hoa'); closeMenu();" class="block">Bó Hoa Tươi</a></li>
                             <li><a href="#cat-ke_hoa" onclick="scrollToCategory('ke_hoa'); closeMenu();" class="block">Kệ Hoa Khai Trương</a></li>
                             <li><a href="#cat-binh_hoa" onclick="scrollToCategory('binh_hoa'); closeMenu();" class="block">Bình Cắm Hoa</a></li>
@@ -392,17 +390,6 @@
         <div class="container mx-auto max-w-7xl px-4">
             <div id="storefrontQuickCategories" class="flex flex-wrap justify-center gap-4 md:gap-8">
                 <!-- Render động qua JS theo danh sách isActive: true -->
-                <!-- Category Item 1: Giỏ & Lẵng hoa (order 1) -->
-                <div class="flex flex-col items-center group cursor-pointer w-24 md:w-32">
-                    <div
-                        class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-transparent group-hover:border-primary transition p-1 img-skeleton">
-                        <img src="https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
-                            alt="Lẵng hoa" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement.classList.remove('img-skeleton');" class="w-full h-full object-cover rounded-full">
-                    </div>
-                    <span
-                        class="mt-3 font-semibold text-gray-700 group-hover:text-primary transition text-sm md:text-base text-center" data-i18n="cat_basket">Lẵng
-                        Hoa</span>
-                </div>
                 <!-- Category Item 2: Bó hoa tươi (order 2) -->
                 <div class="flex flex-col items-center group cursor-pointer w-24 md:w-32">
                     <div
@@ -463,7 +450,7 @@
     </section>
 
     <!-- 1. DANH MỤC: GIỎ & LẴNG HOA -->
-    <section id="cat-gio_hoa" class="py-12 md:py-16 bg-white scroll-mt-20">
+    <section id="cat-gio_hoa" class="py-12 md:py-16 bg-white scroll-mt-20" style="display: none;">
         <div class="container mx-auto max-w-7xl px-4">
             <div class="text-center mb-8">
                 <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
@@ -757,23 +744,28 @@
 
                 <!-- Cột 2 -->
                 <div>
-                    <h3 class="font-bold text-white mb-6 text-lg" data-i18n="footer_contact_title">Thông Tin Liên Hệ</h3>
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-bold text-white text-lg" data-i18n="footer_contact_title">Thông Tin Liên Hệ</h3>
+                        <button onclick="if(typeof openSystemConfigModal==='function'){openSystemConfigModal('company');}else if(typeof openAdminPortalModal==='function'){openAdminPortalModal('company');}" class="text-[11px] text-pink-400 hover:text-white bg-gray-800 hover:bg-primary px-2.5 py-1 rounded-lg border border-gray-700 transition flex items-center shadow-xs" title="Chỉnh sửa thông tin liên hệ (infoCompany.json)">
+                            <i class="fa-solid fa-pen-to-square mr-1 text-[10px]"></i> Sửa
+                        </button>
+                    </div>
                     <ul class="space-y-4 text-sm">
                         <li class="flex items-start">
                             <i class="fa-solid fa-location-dot mt-1 mr-3 text-primary"></i>
-                            <span data-i18n="store_address_val">183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM</span>
+                            <span id="footerAddress" data-i18n="store_address_val">183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM</span>
                         </li>
                         <li class="flex items-center">
                             <i class="fa-solid fa-phone mr-3 text-primary"></i>
-                            <span>0976.491.322</span>
+                            <a id="footerPhone" href="tel:0976491322" class="hover:text-primary transition">0976.491.322</a>
                         </li>
                         <li class="flex items-center">
                             <i class="fa-solid fa-envelope mr-3 text-primary"></i>
-                            <span>cskh@nohoathabinh.vn</span>
+                            <a id="footerEmail" href="mailto:cskh@nohoathabinh.vn" class="hover:text-primary transition">cskh@nohoathabinh.vn</a>
                         </li>
                         <li class="flex items-center">
                             <i class="fa-solid fa-clock mr-3 text-primary"></i>
-                            <span data-i18n="footer_hours">Thứ 2 - Chủ Nhật: 7:00 - 21:00</span>
+                            <span id="footerHours" data-i18n="footer_hours">Thứ 2 - Chủ Nhật: 7:00 - 21:00</span>
                         </li>
                     </ul>
                 </div>
@@ -806,7 +798,7 @@
 
             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
                 <div class="flex flex-col md:flex-row items-center space-y-1 md:space-y-0 md:space-x-3 text-center md:text-left">
-                    <p data-i18n="footer_copyright">&copy; 2026 Bản quyền thuộc về Công ty TNHH Nở Hoa Thả Bình.</p>
+                    <p id="footerCopyright" data-i18n="footer_copyright">&copy; 2026 Bản quyền thuộc về Công ty TNHH Nở Hoa Thả Bình.</p>
                     <span class="hidden md:inline text-gray-600">|</span>
                     <p class="text-xs text-gray-400">
                         <i class="fa-solid fa-code-branch text-pink-400 mr-1"></i> Build: <span class="text-pink-300 font-mono font-bold" id="buildTimestamp">2026-08-22 21:46:00 (UTC+7)</span>
@@ -824,7 +816,7 @@
     <!-- Floating Contact Buttons (Zalo OA & Hotline) -->
     <div class="fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3.5 select-none" id="floatingContact">
         <!-- Zalo OA Button -->
-        <a href="https://zalo.me/0976491322" target="_blank" rel="noopener noreferrer"
+        <a id="floatingZaloLink" href="https://zalo.me/0976491322" target="_blank" rel="noopener noreferrer"
             class="group flex items-center bg-white hover:bg-blue-50 text-blue-600 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 p-1.5 border border-blue-100"
             title="Chat Zalo với Nở Hoa Thả Bình">
             <div class="w-12 h-12 rounded-full bg-[#0068ff] text-white flex items-center justify-center flex-shrink-0 pulse-zalo shadow-md">
@@ -838,7 +830,7 @@
         </a>
 
         <!-- Hotline Button -->
-        <a href="tel:0976491322"
+        <a id="floatingHotlineLink" href="tel:0976491322"
             class="group flex items-center bg-white hover:bg-pink-50 text-primary rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 p-1.5 border border-pink-100"
             title="Gọi Hotline tư vấn đặt hoa">
             <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 pulse-hotline shadow-md">
@@ -1200,19 +1192,17 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-4">
-                    <div class="hidden sm:flex items-center space-x-2 text-xs font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-xl">
-                        <i class="fa-solid fa-user-shield text-primary"></i>
-                        <span id="adminUserName">Tổng Quản Trị Viên</span>
-                        <span id="adminUserRole" class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold">super_admin</span>
-                    </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="openSystemConfigModal()" type="button" class="flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl border border-blue-200 transition shadow-2xs" title="Mở Cấu Hình Hệ Thống (Đa ngôn ngữ & Doanh nghiệp)">
+                        <i class="fa-solid fa-sliders text-blue-600"></i> Cấu Hình Hệ Thống
+                    </button>
                     <button onclick="closeAdminPortalModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
                         <i class="fa-solid fa-xmark text-base"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Tab Navigation Bar -->
+            <!-- Tab Navigation Bar (Nghiệp vụ Bán hàng & Vận hành) -->
             <div class="flex border-b border-gray-200 bg-gray-50/70 px-6 space-x-4 sm:space-x-6 flex-shrink-0 overflow-x-auto">
                 <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-spa mr-1.5 text-base"></i> Mẫu Hoa & Bảng Giá
@@ -1231,9 +1221,6 @@
                 </button>
                 <button onclick="switchAdminTab('promotions')" id="tabBtnPromotions" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-ticket-simple mr-1.5 text-base"></i> Khuyến Mãi & Voucher
-                </button>
-                <button onclick="switchAdminTab('translations')" id="tabBtnTranslations" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
-                    <i class="fa-solid fa-language mr-1.5 text-base"></i> Biên Dịch Đa Ngôn Ngữ
                 </button>
             </div>
 
@@ -1481,21 +1468,364 @@
                         </div>
                     </div>
                 </section>
+            </div>
+        </div>
+    </div>
 
-                <!-- ================= TAB 3: ĐA NGÔN NGỮ ================= -->
-                <section id="tabContentTranslations" class="space-y-4 hidden">
-                    <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
-                        <div>
-                            <h4 class="text-sm font-bold text-gray-800">Biên Dịch Đa Ngôn Ngữ Động (5 Thứ Tiếng)</h4>
-                            <p class="text-[11px] text-gray-500">Chỉnh sửa trực tiếp và lưu ngay vào translations.json</p>
+    <!-- ================= SYSTEM CONFIG MODAL (CẤU HÌNH HỆ THỐNG: DOANH NGHIỆP & ĐA NGÔN NGỮ) ================= -->
+    <div id="systemConfigModal" onclick="if (event.target === this) closeSystemConfigModal();" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[215] items-center justify-center p-2 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden border border-blue-100 h-[92vh] max-h-[92vh] flex flex-col animate-fadeIn relative">
+            <!-- Top Header -->
+            <div class="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-base shadow-inner">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif text-lg font-bold text-gray-800">Cấu Hình Hệ Thống (System Settings)</h3>
+                        <p class="text-xs text-gray-500">Cài đặt Thông Tin Doanh Nghiệp (infoCompany.json) • Biên Dịch Đa Ngôn Ngữ 5 Thứ Tiếng (translations.json)</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button onclick="closeSystemConfigModal(); openAdminPortalModal();" type="button" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-primary text-xs font-bold rounded-xl border border-pink-200 transition shadow-2xs">
+                        <i class="fa-solid fa-gauge-high text-primary"></i> Quản Trị Nghiệp Vụ (CMS)
+                    </button>
+                    <button onclick="closeSystemConfigModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar for System Config -->
+            <div class="flex border-b border-gray-200 bg-gray-50/70 px-6 space-x-4 sm:space-x-6 flex-shrink-0">
+                <button onclick="switchSystemConfigTab('company')" id="tabSysBtnCompany" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-building mr-1.5 text-base text-blue-600"></i> Thông Tin Doanh Nghiệp
+                </button>
+                <button onclick="switchSystemConfigTab('translations')" id="tabSysBtnTranslations" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-language mr-1.5 text-base text-purple-600"></i> Biên Dịch Đa Ngôn Ngữ
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-6 bg-gray-50/50">
+                <!-- ================= TAB 1: THÔNG TIN DOANH NGHIỆP ================= -->
+                <section id="tabSysContentCompany" class="space-y-6">
+                    <!-- Header Actions -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner border border-blue-100">
+                                <i class="fa-solid fa-building-circle-check"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-gray-800">Cấu Hình Thông Tin Doanh Nghiệp & Liên Hệ (infoCompany.json)</h4>
+                                    <span id="companyInfoDebugStatus" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                        <i class="fa-solid fa-circle-notch fa-spin mr-1 text-[8px]"></i> Đang khởi tạo...
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500">Dữ liệu này được đồng bộ thời gian thực lên toàn bộ Header, Hotline, Showroom, Footer & Zalo OA</p>
+                            </div>
                         </div>
-                        <button onclick="saveAllTranslations()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center">
-                            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Toàn Bộ Bản Dịch
+                        <button type="button" onclick="document.getElementById('companyInfoForm').requestSubmit()" class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center flex-shrink-0">
+                            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Cấu Hình Doanh Nghiệp
                         </button>
                     </div>
 
-                    <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden p-4 space-y-3">
-                        <input type="text" id="searchTranslationKey" oninput="filterTranslations()" placeholder="Tìm kiếm theo khóa (VD: site_title, top_hotline...)" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs w-72 focus:outline-none focus:border-primary">
+                    <!-- Company Info Form -->
+                    <form id="companyInfoForm" onsubmit="handleCompanyInfoSubmit(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Left Column: Form Fields (8 cols) -->
+                        <div class="lg:col-span-8 space-y-5">
+                            <!-- Card 1: Thương hiệu & Pháp nhân -->
+                            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4">
+                                <div class="flex items-center space-x-2 pb-3 border-b border-gray-100">
+                                    <i class="fa-solid fa-certificate text-primary"></i>
+                                    <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wide">1. Thương Hiệu & Pháp Nhân</h5>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Thương Hiệu / Công Ty *</label>
+                                        <input type="text" id="companyNameInput" value="NỞ HOA THẢ BÌNH" placeholder="NỞ HOA THẢ BÌNH" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white transition" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Khẩu Hiệu / Slogan</label>
+                                        <input type="text" id="companySloganInput" value="Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình Nghệ Thuật" placeholder="Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình Nghệ Thuật" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Mã Số Thuế (MST)</label>
+                                        <input type="text" id="companyTaxCodeInput" value="0318999888" placeholder="0318999888" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Website Chính Thức</label>
+                                        <input type="url" id="companyWebsiteInput" value="https://nohoathabinh.vn" placeholder="https://nohoathabinh.vn" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Trụ Sở & Hotline CSKH -->
+                            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4">
+                                <div class="flex items-center space-x-2 pb-3 border-b border-gray-100">
+                                    <i class="fa-solid fa-headset text-primary"></i>
+                                    <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wide">2. Địa Chỉ Trụ Sở & Hotline CSKH</h5>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Địa Chỉ Trụ Sở Chính *</label>
+                                    <input type="text" id="companyAddressInput" value="183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh" placeholder="183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:bg-white transition" required>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Hotline Đặt Hoa (24/7) *</label>
+                                        <input type="text" id="companyHotlineInput" value="0976.491.322" placeholder="0976.491.322" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-primary focus:outline-none focus:border-primary focus:bg-white transition" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Số Điện Thoại Cửa Hàng</label>
+                                        <input type="text" id="companyPhoneInput" value="0976.491.322" placeholder="0976.491.322" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Email Tiếp Nhận & CSKH *</label>
+                                        <input type="email" id="companyEmailInput" value="cskh@nohoathabinh.vn" placeholder="cskh@nohoathabinh.vn" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Thời Gian Hoạt Động (Giờ Mở Cửa) *</label>
+                                        <input type="text" id="companyHoursInput" value="Thứ 2 - Chủ Nhật: 7:00 - 21:00" placeholder="Thứ 2 - Chủ Nhật: 7:00 - 21:00" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white transition" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Mạng Xã Hội & Google Maps -->
+                            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4">
+                                <div class="flex items-center space-x-2 pb-3 border-b border-gray-100">
+                                    <i class="fa-solid fa-share-nodes text-primary"></i>
+                                    <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wide">3. Kênh Mạng Xã Hội & Bản Đồ Trực Tuyến</h5>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1"><i class="fa-brands fa-facebook text-blue-600 mr-1"></i> Fanpage Facebook</label>
+                                        <input type="url" id="companyFacebookInput" value="https://facebook.com/nohoathabinh" placeholder="https://facebook.com/nohoathabinh" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1"><i class="fa-brands fa-instagram text-pink-600 mr-1"></i> Instagram</label>
+                                        <input type="url" id="companyInstagramInput" value="https://instagram.com/nohoathabinh" placeholder="https://instagram.com/nohoathabinh" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1"><i class="fa-solid fa-comment-dots text-blue-500 mr-1"></i> Zalo OA Link</label>
+                                        <input type="text" id="companyZaloInput" value="https://zalo.me/0976491322" placeholder="https://zalo.me/0976491322" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1"><i class="fa-solid fa-map-location-dot text-red-500 mr-1"></i> Google Maps URL (Mở tab mới)</label>
+                                        <input type="url" id="companyMapUrlInput" value="https://maps.google.com/?q=183/37+Đường+3+Tháng+2,+Phường+11,+Quận+10,+TP.+Hồ+Chí+Minh" placeholder="https://maps.google.com/..." class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1"><i class="fa-solid fa-code text-blue-600 mr-1"></i> Google Maps Embed URL (Iframe nhúng)</label>
+                                        <input type="url" id="companyMapEmbedUrlInput" value="https://maps.google.com/maps?q=183%2F37%20%C4%90%C6%B0%E1%BB%9Dng%203%20Th%C3%A1ng%202%2C%20Ph%C6%B0%E1%BB%9Dng%2011%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh&t=&z=16&ie=UTF8&iwloc=&output=embed" placeholder="https://maps.google.com/maps?q=...output=embed" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Live Preview & Submit (4 cols) -->
+                        <div class="lg:col-span-4 space-y-5">
+                            <div class="bg-gradient-to-br from-pink-50/70 to-rose-50/50 rounded-2xl p-5 border border-pink-100 shadow-2xs space-y-4 sticky top-0">
+                                <div class="flex items-center justify-between pb-3 border-b border-pink-200/60">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fa-solid fa-eye text-primary"></i>
+                                        <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wider">Xem Trước Trực Quan</h5>
+                                    </div>
+                                    <span class="text-[10px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">Live Preview</span>
+                                </div>
+
+                                <!-- Card Preview -->
+                                <div class="bg-white rounded-xl p-4 border border-pink-100 shadow-xs space-y-3">
+                                    <div class="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                                        <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no.jpg" class="w-10 h-10 rounded-full object-cover border border-pink-200 shadow-2xs" alt="Logo Preview">
+                                        <div>
+                                            <h6 id="previewCompanyName" class="font-serif font-bold text-sm text-gray-900 line-clamp-1">NỞ HOA THẢ BÌNH</h6>
+                                            <p id="previewCompanySlogan" class="text-[10px] text-gray-500 line-clamp-1">Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình Nghệ Thuật</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-2 text-xs">
+                                        <div class="flex items-start space-x-2.5">
+                                            <i class="fa-solid fa-location-dot text-primary mt-0.5 flex-shrink-0"></i>
+                                            <span id="previewCompanyAddress" class="text-gray-600 line-clamp-2">183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2.5">
+                                            <i class="fa-solid fa-phone text-primary flex-shrink-0"></i>
+                                            <div>
+                                                <span class="font-bold text-gray-700 block text-[11px]">Hotline CSKH 24/7:</span>
+                                                <span id="previewCompanyHotline" class="text-primary font-bold">0976.491.322</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-2.5">
+                                            <i class="fa-solid fa-envelope text-primary flex-shrink-0"></i>
+                                            <div>
+                                                <span class="font-bold text-gray-700 block text-[11px]">Email liên hệ:</span>
+                                                <span id="previewCompanyEmail" class="text-gray-600">cskh@nohoathabinh.vn</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-2.5">
+                                            <i class="fa-solid fa-clock text-primary mt-0.5 flex-shrink-0"></i>
+                                            <div>
+                                                <span class="font-bold text-gray-700 block text-[11px]">Thời gian làm việc:</span>
+                                                <span id="previewCompanyHours" class="text-gray-600">Thứ 2 - Chủ Nhật: 7:00 - 21:00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <button type="submit" class="w-full py-3 bg-primary hover:bg-primaryHover text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center">
+                                        <i class="fa-solid fa-check-double mr-1.5"></i> Cập Nhật Cấu Hình Doanh Nghiệp
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- ================= TAB 2: BIÊN DỊCH ĐA NGÔN NGỮ ================= -->
+                <section id="tabSysContentTranslations" class="space-y-5 hidden">
+                    <!-- Top Bar -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shadow-inner border border-purple-100">
+                                <i class="fa-solid fa-language"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-gray-800">Biên Dịch Đa Ngôn Ngữ Động (5 Thứ Tiếng)</h4>
+                                    <span id="transStatusBadge" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                                        <i class="fa-solid fa-circle-check mr-1 text-[8px] text-purple-500"></i> Sẵn sàng
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500">Chọn Text ID bất kỳ trong danh mục để xem & chỉnh sửa trực tiếp 5 ngôn ngữ</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                            <!-- Toggle View Mode -->
+                            <div class="inline-flex p-1 bg-gray-100 rounded-xl border border-gray-200 text-xs">
+                                <button type="button" id="btnTransViewSingle" onclick="switchTransViewMode('single')" class="px-3 py-1.5 font-bold rounded-lg bg-white text-primary shadow-xs transition flex items-center gap-1">
+                                    <i class="fa-solid fa-list-check text-xs"></i> Chọn Từng Khóa
+                                </button>
+                                <button type="button" id="btnTransViewTable" onclick="switchTransViewMode('table')" class="px-3 py-1.5 font-bold rounded-lg text-gray-600 hover:text-gray-900 transition flex items-center gap-1">
+                                    <i class="fa-solid fa-table-cells text-xs"></i> Bảng Ma Trận
+                                </button>
+                            </div>
+
+                            <button type="button" onclick="saveAllTranslations()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center flex-shrink-0">
+                                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Toàn Bộ Bản Dịch
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 1: SINGLE KEY SELECTOR & 5-LANGUAGES EDITOR (CHÍNH) -->
+                    <div id="transSingleKeyView" class="space-y-4">
+                        <!-- Key Selection Toolbar -->
+                        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-2xs space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                <div class="md:col-span-6">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1.5 flex items-center justify-between">
+                                        <span><i class="fa-solid fa-key text-primary mr-1"></i> Chọn Khóa Văn Bản (Text ID / Key):</span>
+                                        <span id="transKeyCounter" class="text-[11px] font-mono text-gray-500 font-normal">0 / 0 khóa</span>
+                                    </label>
+                                    <select id="selectTranslationKey" onchange="onSelectTranslationKeyChange(this.value)" class="w-full px-3.5 py-2.5 bg-gray-50 border-2 border-pink-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition cursor-pointer">
+                                        <!-- Render danh sách keys qua JS -->
+                                    </select>
+                                </div>
+
+                                <div class="md:col-span-4">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1.5">
+                                        <i class="fa-solid fa-magnifying-glass text-gray-400 mr-1"></i> Lọc danh sách Text ID:
+                                    </label>
+                                    <input type="text" id="filterTransKeyInput" oninput="onFilterTransKeyDropdown(this.value)" placeholder="Gõ tìm Text ID (VD: nav_, store_...)" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary focus:bg-white transition">
+                                </div>
+
+                                <div class="md:col-span-2 flex items-end justify-start md:justify-end gap-2 pt-2 md:pt-0">
+                                    <button type="button" onclick="navigateTransKey(-1)" class="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition flex-1 md:flex-initial flex items-center justify-center shadow-2xs" title="Khóa trước đó">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                    <button type="button" onclick="navigateTransKey(1)" class="p-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition flex-1 md:flex-initial flex items-center justify-center shadow-2xs" title="Khóa tiếp theo">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5 Languages Editor Cards for Selected Key -->
+                        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 shadow-2xs space-y-5">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-gray-100 gap-3">
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Đang chỉnh sửa Text ID:</span>
+                                        <span id="currentEditingKeyBadge" class="font-mono text-sm font-bold text-primary bg-pink-50 px-2.5 py-1 rounded-lg border border-pink-200 shadow-2xs">—</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-400 mt-1">Dữ liệu bản dịch được đồng bộ tức thì trên Frontend khi khách chuyển đổi ngôn ngữ</p>
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="saveCurrentSingleTranslationKey()" class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center">
+                                        <i class="fa-solid fa-check mr-1.5"></i> Cập Nhật Khóa Này
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Grid 5 Ngôn Ngữ -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- 1. Tiếng Việt -->
+                                <div class="space-y-1.5 bg-gray-50/80 p-4 rounded-2xl border border-gray-200 focus-within:border-primary transition">
+                                    <label class="block text-xs font-bold text-gray-800 flex items-center">
+                                        <span class="text-base mr-2">🇻🇳</span> Tiếng Việt (VI - Ngôn ngữ gốc) *
+                                    </label>
+                                    <textarea id="singleTransInput_vi" oninput="syncSingleKeyInputToDictionary()" rows="2" class="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition shadow-2xs resize-none"></textarea>
+                                </div>
+
+                                <!-- 2. English -->
+                                <div class="space-y-1.5 bg-gray-50/80 p-4 rounded-2xl border border-gray-200 focus-within:border-primary transition">
+                                    <label class="block text-xs font-bold text-gray-800 flex items-center">
+                                        <span class="text-base mr-2">🇬🇧</span> English (EN)
+                                    </label>
+                                    <textarea id="singleTransInput_en" oninput="syncSingleKeyInputToDictionary()" rows="2" class="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition shadow-2xs resize-none"></textarea>
+                                </div>
+
+                                <!-- 3. 日本語 -->
+                                <div class="space-y-1.5 bg-gray-50/80 p-4 rounded-2xl border border-gray-200 focus-within:border-primary transition">
+                                    <label class="block text-xs font-bold text-gray-800 flex items-center">
+                                        <span class="text-base mr-2">🇯🇵</span> 日本語 (JA - Japanese)
+                                    </label>
+                                    <textarea id="singleTransInput_ja" oninput="syncSingleKeyInputToDictionary()" rows="2" class="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition shadow-2xs resize-none"></textarea>
+                                </div>
+
+                                <!-- 4. 한국어 -->
+                                <div class="space-y-1.5 bg-gray-50/80 p-4 rounded-2xl border border-gray-200 focus-within:border-primary transition">
+                                    <label class="block text-xs font-bold text-gray-800 flex items-center">
+                                        <span class="text-base mr-2">🇰🇷</span> 한국어 (KO - Korean)
+                                    </label>
+                                    <textarea id="singleTransInput_ko" oninput="syncSingleKeyInputToDictionary()" rows="2" class="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition shadow-2xs resize-none"></textarea>
+                                </div>
+
+                                <!-- 5. 中文 -->
+                                <div class="space-y-1.5 bg-gray-50/80 p-4 rounded-2xl border border-gray-200 focus-within:border-primary transition md:col-span-2">
+                                    <label class="block text-xs font-bold text-gray-800 flex items-center">
+                                        <span class="text-base mr-2">🇨🇳</span> 中文 (ZH - Chinese)
+                                    </label>
+                                    <textarea id="singleTransInput_zh" oninput="syncSingleKeyInputToDictionary()" rows="2" class="w-full px-3.5 py-2 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-primary transition shadow-2xs resize-none"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: FULL MATRIX TABLE (TÙY CHỌN DỰ PHÒNG KHI CẦN XEM TOÀN BỘ) -->
+                    <div id="transFullTableView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden p-4 space-y-3 hidden">
+                        <div class="flex items-center justify-between">
+                            <input type="text" id="searchTranslationKey" oninput="filterTranslations()" placeholder="Tìm kiếm theo khóa trong bảng..." class="px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs w-72 focus:outline-none focus:border-primary">
+                            <span class="text-xs text-gray-500">Chế độ xem bảng toàn bộ</span>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs">
                                 <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
@@ -2012,13 +2342,13 @@
     </div>
 
     <!-- Modular JavaScript Files (ES Module Support) -->
-    <script type="module" src="js/products.js?v=2.7"></script>
-    <script type="module" src="js/translations.js?v=2.7"></script>
-    <script type="module" src="js/i18n.js?v=2.7"></script>
-    <script type="module" src="js/utils.js?v=2.7"></script>
-    <script type="module" src="js/auth.js?v=2.7"></script>
-    <script type="module" src="js/checkout.js?v=2.7"></script>
-    <script type="module" src="js/portal_admin.js?v=2.7"></script>
-    <script type="module" src="js/flower_app.js?v=2.7"></script>
+    <script type="module" src="js/products.js?v=3.6"></script>
+    <script type="module" src="js/translations.js?v=3.6"></script>
+    <script type="module" src="js/i18n.js?v=3.6"></script>
+    <script type="module" src="js/utils.js?v=3.6"></script>
+    <script type="module" src="js/auth.js?v=3.6"></script>
+    <script type="module" src="js/checkout.js?v=3.6"></script>
+    <script type="module" src="js/portal_admin.js?v=3.6"></script>
+    <script type="module" src="js/flower_app.js?v=3.6"></script>
 </body>
 </html>

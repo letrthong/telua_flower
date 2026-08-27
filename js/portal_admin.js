@@ -1,5 +1,15 @@
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
-import { API_BASE, showToast, showConfirmDialog } from './utils.js';
+import { API_BASE, showToast, showConfirmDialog, showScreenLock, hideScreenLock } from './utils.js';
+
+function lockScreen(msg) {
+    if (typeof showScreenLock === 'function') showScreenLock(msg);
+    else if (typeof window !== 'undefined' && typeof window.showScreenLock === 'function') window.showScreenLock(msg);
+}
+
+function unlockScreen() {
+    if (typeof hideScreenLock === 'function') hideScreenLock();
+    else if (typeof window !== 'undefined' && typeof window.hideScreenLock === 'function') window.hideScreenLock();
+}
 
 function notifyUser(message, type = 'success', duration = 5000) {
     if (typeof showToast === 'function') {
@@ -30,6 +40,7 @@ let allAdminUsers = [];
 let allAdminBranches = [];
 
 document.addEventListener("DOMContentLoaded", () => {
+    loadAdminCompanyInfo();
     const path = (window.location.pathname || "").toLowerCase();
     const hash = (window.location.hash || "").toLowerCase();
     if (path.includes("/portal/admin") || path.includes("/portal/manager") || hash === "#admin") {
@@ -44,7 +55,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-export function openAdminPortalModal() {
+if (typeof document !== "undefined" && document.readyState !== "loading") {
+    loadAdminCompanyInfo();
+}
+
+export function openAdminPortalModal(initialTab = null) {
+    // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
+    if (initialTab === "company" || initialTab === "translations") {
+        openSystemConfigModal(initialTab);
+        return;
+    }
+
     const dropdown = document.getElementById("userDropdownMenu");
     if (dropdown) dropdown.classList.add("hidden");
 
@@ -74,7 +95,6 @@ export function openAdminPortalModal() {
     const filterBranchSelect = document.getElementById("filterUserBranch");
 
     if (user.role === "branch_manager") {
-        // Quản lý chi nhánh không thấy tab chuỗi cửa hàng
         if (branchTabBtn) branchTabBtn.classList.add("hidden");
         if (optSuperAdmin) optSuperAdmin.classList.add("hidden");
         if (optBranchManager) optBranchManager.classList.add("hidden");
@@ -83,7 +103,6 @@ export function openAdminPortalModal() {
             filterBranchSelect.disabled = true;
         }
     } else {
-        // Super Admin thấy toàn bộ
         if (branchTabBtn) branchTabBtn.classList.remove("hidden");
         if (optSuperAdmin) optSuperAdmin.classList.remove("hidden");
         if (optBranchManager) optBranchManager.classList.remove("hidden");
@@ -97,6 +116,10 @@ export function openAdminPortalModal() {
     loadAdminProducts();
     loadAdminBranches();
     onPriceLevelChange();
+
+    if (initialTab) {
+        switchAdminTab(initialTab);
+    }
 }
 
 export function closeAdminPortalModal() {
@@ -105,6 +128,68 @@ export function closeAdminPortalModal() {
         modal.style.display = "none";
         modal.classList.add("hidden");
     }
+}
+
+// ==========================================
+// MODAL CẤU HÌNH HỆ THỐNG (DOANH NGHIỆP & ĐA NGÔN NGỮ)
+// ==========================================
+
+export function openSystemConfigModal(initialTab = "company") {
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+
+    const user = (typeof getCurrentUser === "function") 
+        ? getCurrentUser() 
+        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+
+    if (!user || user.role !== "super_admin") {
+        alert("Chức năng Cấu Hình Hệ Thống chỉ dành cho Tổng Quản Trị Viên (Super Admin)!");
+        if (!user && typeof openAuthModal === "function") openAuthModal("login");
+        return;
+    }
+
+    const modal = document.getElementById("systemConfigModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    switchSystemConfigTab(initialTab);
+}
+
+export function closeSystemConfigModal() {
+    const modal = document.getElementById("systemConfigModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function switchSystemConfigTab(tabName) {
+    if (tabName !== "company" && tabName !== "translations") tabName = "company";
+
+    const btnCompany = document.getElementById("tabSysBtnCompany");
+    const btnTranslations = document.getElementById("tabSysBtnTranslations");
+    const contentCompany = document.getElementById("tabSysContentCompany");
+    const contentTranslations = document.getElementById("tabSysContentTranslations");
+
+    console.group(`%c⚙️ [SYSTEM_CONFIG] Đang mở tab cấu hình: "${tabName === 'company' ? 'Thông Tin Doanh Nghiệp' : 'Biên Dịch Đa Ngôn Ngữ'}"`, "color: #7b1fa2; font-weight: bold; font-size: 12px;");
+
+    if (tabName === "company") {
+        if (btnCompany) btnCompany.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
+        if (btnTranslations) btnTranslations.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+        if (contentCompany) contentCompany.classList.remove("hidden");
+        if (contentTranslations) contentTranslations.classList.add("hidden");
+        loadAdminCompanyInfo();
+    } else {
+        if (btnCompany) btnCompany.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+        if (btnTranslations) btnTranslations.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
+        if (contentCompany) contentCompany.classList.add("hidden");
+        if (contentTranslations) contentTranslations.classList.remove("hidden");
+        loadAdminTranslations();
+    }
+
+    console.groupEnd();
 }
 
 export function checkAdminAccess() {
@@ -117,10 +202,30 @@ export function checkAdminAccess() {
 }
 
 export function switchAdminTab(tabName) {
+    // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
+    if (tabName === "company" || tabName === "translations") {
+        closeAdminPortalModal();
+        openSystemConfigModal(tabName);
+        return;
+    }
+
     // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
     if (tabName === "users") tabName = "staff";
 
-    const tabs = ["products", "categories", "staff", "customers", "branches", "promotions", "translations"];
+    const tabTitles = {
+        products: "Mẫu Hoa & Bảng Giá",
+        categories: "Danh Mục Hoa",
+        staff: "Nhân Sự Nội Bộ",
+        customers: "Khách Hàng & CRM",
+        branches: "Chuỗi Showroom",
+        promotions: "Khuyến Mãi & Voucher"
+    };
+
+    console.group(`%c🖥️ [GUI_VIEW] Đang hiển thị Tab: "${tabTitles[tabName] || tabName}" (#tabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)})`, "color: #0288d1; font-weight: bold; font-size: 12px;");
+    console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
+    console.log("📂 Tab Identifier:", tabName);
+
+    const tabs = ["products", "categories", "staff", "customers", "branches", "promotions"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -128,6 +233,10 @@ export function switchAdminTab(tabName) {
             if (t === tabName) {
                 btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
                 content.classList.remove("hidden");
+                console.log(`  👁️ [GUI Hiển Thị] Element #${content.id} -> visible (class 'hidden' removed)`);
+                try {
+                    btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                } catch (e) {}
             } else {
                 btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
                 content.classList.add("hidden");
@@ -135,12 +244,14 @@ export function switchAdminTab(tabName) {
         }
     });
 
+    console.log(`  🚀 Bắt đầu nạp/đồng bộ dữ liệu phân hệ: ${tabTitles[tabName] || tabName}`);
     if (tabName === "categories") loadAdminCategories();
     if (tabName === "staff") loadAdminUsers();
     if (tabName === "customers") loadAdminCustomers();
     if (tabName === "branches") loadAdminBranches();
     if (tabName === "promotions") loadAdminPromotions();
-    if (tabName === "translations") loadAdminTranslations();
+
+    console.groupEnd();
 }
 
 // ==========================================
@@ -373,6 +484,7 @@ export async function handleCategorySubmit(event) {
     const method = isEdit ? "PUT" : "POST";
     const errBox = document.getElementById("categoryModalError");
 
+    lockScreen(isEdit ? `Đang lưu cấu hình danh mục "${name}"...` : `Đang tạo mới danh mục "${name}"...`);
     try {
         const res = await fetch(url, {
             method: method,
@@ -386,7 +498,7 @@ export async function handleCategorySubmit(event) {
         const json = await res.json();
         if (res.ok && json.success) {
             closeCategoryModal();
-            loadAdminCategories();
+            await loadAdminCategories();
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
             notifyUser(isEdit ? `Đã cập nhật danh mục "${name}" thành công!` : `Đã tạo danh mục mới "${name}" thành công!`, 'success');
@@ -404,6 +516,8 @@ export async function handleCategorySubmit(event) {
             errBox.classList.remove("hidden");
         }
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -427,6 +541,7 @@ export async function toggleCategory(catId, catName, currentActive) {
     });
     if (!isConfirmed) return;
 
+    lockScreen(`Đang ${actionText.toLowerCase()} danh mục "${displayName}"...`);
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/categories/${catId}/toggle`, {
@@ -435,7 +550,7 @@ export async function toggleCategory(catId, catName, currentActive) {
         });
         const json = await res.json();
         if (json.success) {
-            loadAdminCategories();
+            await loadAdminCategories();
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
             notifyUser(`Đã ${actionText.toLowerCase()} danh mục "${displayName}" thành công!`, 'success');
@@ -444,6 +559,8 @@ export async function toggleCategory(catId, catName, currentActive) {
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -459,6 +576,7 @@ export async function deleteCategory(catId, catName) {
     });
     if (!isConfirmed) return;
 
+    lockScreen(`Đang xóa danh mục "${catName}"...`);
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/categories/${catId}`, {
@@ -467,17 +585,20 @@ export async function deleteCategory(catId, catName) {
         });
         const json = await res.json();
         if (json.success) {
-            loadAdminCategories();
+            await loadAdminCategories();
             notifyUser("Đã chuyển danh mục sang trạng thái Đã Xóa thành công!", 'success');
         } else {
             notifyUser("Không thể xóa danh mục: " + (json.message || ""), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
 export async function restoreCategory(catId, catName) {
+    lockScreen(`Đang khôi phục danh mục "${catName || catId}"...`);
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/categories/${catId}/restore`, {
@@ -486,17 +607,20 @@ export async function restoreCategory(catId, catName) {
         });
         const json = await res.json();
         if (json.success) {
-            loadAdminCategories();
+            await loadAdminCategories();
             notifyUser(`Đã khôi phục danh mục "${catName || catId}" thành công!`, 'success');
         } else {
             notifyUser("Lỗi khôi phục danh mục: " + (json.message || ""), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
 export async function moveCategory(catId, direction) {
+    lockScreen("Đang cập nhật vị trí thứ tự danh mục...");
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/categories/${catId}/move`, {
@@ -518,7 +642,7 @@ export async function moveCategory(catId, direction) {
         }
 
         if (json.success) {
-            loadAdminCategories();
+            await loadAdminCategories();
             if (typeof renderStorefrontCategories === "function") {
                 renderStorefrontCategories();
             }
@@ -531,6 +655,8 @@ export async function moveCategory(catId, direction) {
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -916,7 +1042,27 @@ export async function handleUserSubmit(event) {
     const branchSelect = document.getElementById("staffBranch");
     const branchId = branchSelect.value;
     const password = document.getElementById("staffPassword").value;
-    const isActive = document.getElementById("staffIsActive").checked;
+    const errBox = document.getElementById("userModalError");
+
+    if (!isEdit && !password) {
+        if (errBox) {
+            errBox.textContent = "❌ Vui lòng nhập mật khẩu cho tài khoản nhân sự mới (tối thiểu 6 ký tự)";
+            errBox.classList.remove("hidden");
+        }
+        notifyUser("Vui lòng nhập mật khẩu cho nhân sự mới!", 'error');
+        document.getElementById("staffPassword")?.focus();
+        return;
+    }
+
+    if (password && password.length < 6) {
+        if (errBox) {
+            errBox.textContent = "❌ Mật khẩu phải có độ dài tối thiểu 6 ký tự";
+            errBox.classList.remove("hidden");
+        }
+        notifyUser("Mật khẩu phải có tối thiểu 6 ký tự!", 'error');
+        document.getElementById("staffPassword")?.focus();
+        return;
+    }
 
     const payload = { fullName, phone, email, role, branchId, isActive };
     if (password) payload.password = password;
@@ -926,8 +1072,7 @@ export async function handleUserSubmit(event) {
     const url = isEdit ? `${API_BASE}/admin/users/${editId}` : `${API_BASE}/admin/users`;
     const method = isEdit ? "PUT" : "POST";
 
-    const errBox = document.getElementById("userModalError");
-
+    lockScreen(isEdit ? `Đang cập nhật nhân sự "${fullName}"...` : `Đang tạo tài khoản nhân sự "${fullName}"...`);
     try {
         const res = await fetch(url, {
             method: method,
@@ -941,21 +1086,23 @@ export async function handleUserSubmit(event) {
         const json = await res.json();
         if (res.ok && json.success) {
             closeUserModal();
-            loadAdminUsers();
-            alert(isEdit ? "Cập nhật nhân sự thành công!" : "🎉 Thêm nhân sự mới thành công!");
+            await loadAdminUsers();
+            notifyUser(isEdit ? "Cập nhật nhân sự thành công!" : "🎉 Thêm nhân sự mới thành công!", 'success');
         } else {
             if (errBox) {
                 errBox.textContent = json.message || "Lỗi lưu thông tin nhân sự";
                 errBox.classList.remove("hidden");
-            } else {
-                alert(json.message || "Lỗi lưu thông tin nhân sự");
             }
+            notifyUser(json.message || "Lỗi lưu thông tin nhân sự", 'error');
         }
     } catch (e) {
         if (errBox) {
             errBox.textContent = "Lỗi kết nối: " + e.message;
             errBox.classList.remove("hidden");
         }
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -971,6 +1118,7 @@ export async function deleteUser(userId, fullName) {
     });
     if (!isConfirmed) return;
 
+    lockScreen(`Đang xóa tài khoản nhân sự "${fullName}"...`);
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
@@ -980,13 +1128,15 @@ export async function deleteUser(userId, fullName) {
 
         const json = await res.json();
         if (res.ok && json.success) {
-            loadAdminUsers();
+            await loadAdminUsers();
             notifyUser("Đã xóa tài khoản nhân sự thành công!", 'success');
         } else {
             notifyUser("Lỗi: " + (json.message || "Không thể xóa nhân sự"), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -1169,6 +1319,7 @@ export async function handleBranchSubmit(event) {
     const method = isEdit ? "PUT" : "POST";
     const errBox = document.getElementById("branchModalError");
 
+    lockScreen(isEdit ? `Đang lưu chi nhánh "${name}"...` : `Đang mở thêm chi nhánh "${name}"...`);
     try {
         const res = await fetch(url, {
             method: method,
@@ -1182,7 +1333,7 @@ export async function handleBranchSubmit(event) {
         const json = await res.json();
         if (res.ok && json.success) {
             closeBranchModal();
-            loadAdminBranches();
+            await loadAdminBranches();
             notifyUser(isEdit ? `Cập nhật chi nhánh "${name}" thành công!` : `Mở chi nhánh mới "${name}" thành công!`, 'success');
         } else {
             const msg = json.message || "Lỗi lưu thông tin chi nhánh";
@@ -1198,10 +1349,13 @@ export async function handleBranchSubmit(event) {
             errBox.classList.remove("hidden");
         }
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
 export async function toggleBranch(branchId) {
+    lockScreen("Đang cập nhật trạng thái chi nhánh...");
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/branches/${branchId}/toggle`, {
@@ -1211,13 +1365,15 @@ export async function toggleBranch(branchId) {
 
         const json = await res.json();
         if (res.ok && json.success) {
-            loadAdminBranches();
+            await loadAdminBranches();
             notifyUser("Đã cập nhật trạng thái chi nhánh thành công!", 'success');
         } else {
             notifyUser("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -1585,6 +1741,7 @@ export async function handleProductSubmit(event) {
 
     const errBox = document.getElementById("productModalError");
 
+    lockScreen(editId ? `Đang lưu cấu hình mẫu hoa "${name}"...` : `Đang tạo mẫu hoa mới "${name}"...`);
     try {
         const res = await fetch(url, {
             method: method,
@@ -1598,7 +1755,7 @@ export async function handleProductSubmit(event) {
         const json = await res.json();
         if (res.ok && json.success) {
             closeProductModal();
-            loadAdminProducts();
+            await loadAdminProducts();
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
                 window.renderAllProducts();
             }
@@ -1617,6 +1774,8 @@ export async function handleProductSubmit(event) {
             errBox.classList.remove("hidden");
         }
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -1640,6 +1799,7 @@ export async function toggleProduct(productId, productName, currentActive) {
     });
     if (!isConfirmed) return;
 
+    lockScreen(`Đang ${actionText.toLowerCase()} mẫu hoa "${displayName}"...`);
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/products/${productId}/toggle`, {
@@ -1648,7 +1808,7 @@ export async function toggleProduct(productId, productName, currentActive) {
         });
         const json = await res.json();
         if (res.ok && json.success) {
-            loadAdminProducts();
+            await loadAdminProducts();
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
                 window.renderAllProducts();
             }
@@ -1658,6 +1818,8 @@ export async function toggleProduct(productId, productName, currentActive) {
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -1877,6 +2039,7 @@ export async function handlePromoSubmit(event) {
     };
 
     if (btn) btn.disabled = true;
+    lockScreen(editId ? "Đang cập nhật voucher..." : "Đang tạo voucher mới...");
     try {
         const url = editId ? `${API_BASE}/admin/promotions/${editId}` : `${API_BASE}/admin/promotions`;
         const method = editId ? "PUT" : "POST";
@@ -1893,7 +2056,7 @@ export async function handlePromoSubmit(event) {
         const json = await res.json();
         if (json.success) {
             closePromoModal();
-            loadAdminPromotions();
+            await loadAdminPromotions();
             notifyUser(editId ? "Đã cập nhật voucher thành công!" : "Đã tạo voucher mới thành công!", 'success');
         } else {
             const msg = json.message || "Lỗi lưu voucher";
@@ -1911,10 +2074,12 @@ export async function handlePromoSubmit(event) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
     } finally {
         if (btn) btn.disabled = false;
+        unlockScreen();
     }
 }
 
 export async function togglePromo(promoId) {
+    lockScreen("Đang cập nhật trạng thái...");
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/promotions/${promoId}/toggle`, {
@@ -1923,13 +2088,15 @@ export async function togglePromo(promoId) {
         });
         const json = await res.json();
         if (json.success) {
-            loadAdminPromotions();
+            await loadAdminPromotions();
             notifyUser("Đã cập nhật trạng thái voucher khuyến mãi thành công!", 'success');
         } else {
             notifyUser("Lỗi: " + (json.message || "Lỗi cập nhật trạng thái voucher"), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -1945,6 +2112,7 @@ export async function deletePromo(promoId, promoCode) {
     });
     if (!isConfirmed) return;
 
+    lockScreen("Đang xóa voucher...");
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/promotions/${promoId}`, {
@@ -1953,17 +2121,20 @@ export async function deletePromo(promoId, promoCode) {
         });
         const json = await res.json();
         if (json.success) {
-            loadAdminPromotions();
+            await loadAdminPromotions();
             notifyUser("Đã chuyển voucher sang trạng thái Đã Xóa thành công!", 'success');
         } else {
             notifyUser("Không thể xóa voucher: " + (json.message || ""), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
 export async function restorePromo(promoId, promoCode) {
+    lockScreen("Đang khôi phục voucher...");
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     try {
         const res = await fetch(`${API_BASE}/admin/promotions/${promoId}/restore`, {
@@ -1972,33 +2143,209 @@ export async function restorePromo(promoId, promoCode) {
         });
         const json = await res.json();
         if (json.success) {
-            loadAdminPromotions();
+            await loadAdminPromotions();
             notifyUser(`Đã khôi phục voucher "${promoCode || promoId}" thành công!`, 'success');
         } else {
             notifyUser(json.message || "Lỗi khôi phục voucher", 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
 // ==========================================
-// BIÊN DỊCH ĐA NGÔN NGỮ ĐỘNG (i18n Matrix)
+// BIÊN DỊCH ĐA NGÔN NGỮ ĐỘNG (Single Key Selector & Matrix View)
 // ==========================================
 
+let currentSelectedTransKey = "";
+let currentFilteredTransKeys = [];
+
 export async function loadAdminTranslations() {
-    const tbody = document.getElementById("translationsTableBody");
-    if (!tbody) return;
+    const badge = document.getElementById("transStatusBadge");
+    if (badge) {
+        badge.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-1 text-[8px]"></i> Đang tải từ điển...`;
+        badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200";
+    }
 
     try {
-        const res = await fetch(`${API_BASE}/translations`);
+        const res = await fetch(`${API_BASE}/translations?_t=${Date.now()}`);
         const json = await res.json();
         if (json.success && json.data) {
             allAdminTranslations = json.data.translations || {};
+            
+            // Khởi tạo danh sách dropdown và bảng
+            populateTranslationKeyDropdown(allAdminTranslations);
             renderTranslationsTable(allAdminTranslations);
+            
+            if (badge) {
+                const count = Object.keys(allAdminTranslations).length;
+                badge.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-green-500"></i> ${count} khóa • Sẵn sàng`;
+                badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200";
+            }
         }
     } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">Lỗi tải từ điển: ${e.message}</td></tr>`;
+        console.error("Lỗi tải từ điển:", e);
+        const tbody = document.getElementById("translationsTableBody");
+        if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">Lỗi tải từ điển: ${e.message}</td></tr>`;
+        if (badge) {
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi kết nối`;
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+        }
+    }
+}
+
+export function populateTranslationKeyDropdown(transObj, filterQuery = "") {
+    const select = document.getElementById("selectTranslationKey");
+    if (!select) return;
+
+    const allKeys = Object.keys(transObj || {}).sort();
+    const q = (filterQuery || "").trim().toLowerCase();
+    
+    currentFilteredTransKeys = q ? allKeys.filter(k => k.toLowerCase().includes(q)) : allKeys;
+
+    let html = "";
+    if (currentFilteredTransKeys.length === 0) {
+        html = `<option value="">(Không tìm thấy Text ID nào khớp với "${filterQuery}")</option>`;
+    } else {
+        currentFilteredTransKeys.forEach((key, idx) => {
+            const row = transObj[key] || {};
+            const viPreview = (row.vi || "").slice(0, 35) + ((row.vi || "").length > 35 ? "..." : "");
+            html += `<option value="${key}">[${idx + 1}/${currentFilteredTransKeys.length}] ${key} — "${viPreview || 'Chưa dịch'}"</option>`;
+        });
+    }
+    select.innerHTML = html;
+
+    // Cập nhật key đang chọn
+    if (currentFilteredTransKeys.length > 0) {
+        if (!currentSelectedTransKey || !currentFilteredTransKeys.includes(currentSelectedTransKey)) {
+            currentSelectedTransKey = currentFilteredTransKeys[0];
+        }
+        select.value = currentSelectedTransKey;
+        loadSingleKeyIntoEditor(currentSelectedTransKey);
+    } else {
+        currentSelectedTransKey = "";
+        clearSingleKeyEditor();
+    }
+    updateTransKeyCounter();
+}
+
+export function onSelectTranslationKeyChange(key) {
+    if (!key) return;
+    currentSelectedTransKey = key;
+    loadSingleKeyIntoEditor(key);
+    updateTransKeyCounter();
+    console.log(`🔤 [TRANSLATION_GUI] Đang chỉnh sửa Text ID: "${key}"`);
+}
+
+export function onFilterTransKeyDropdown(query) {
+    populateTranslationKeyDropdown(allAdminTranslations, query);
+}
+
+export function navigateTransKey(direction) {
+    if (!currentFilteredTransKeys || currentFilteredTransKeys.length === 0) return;
+    let idx = currentFilteredTransKeys.indexOf(currentSelectedTransKey);
+    if (idx === -1) idx = 0;
+    
+    idx += direction;
+    if (idx < 0) idx = currentFilteredTransKeys.length - 1;
+    if (idx >= currentFilteredTransKeys.length) idx = 0;
+
+    const nextKey = currentFilteredTransKeys[idx];
+    const select = document.getElementById("selectTranslationKey");
+    if (select) select.value = nextKey;
+    onSelectTranslationKeyChange(nextKey);
+}
+
+function updateTransKeyCounter() {
+    const counter = document.getElementById("transKeyCounter");
+    if (!counter) return;
+    if (!currentFilteredTransKeys || currentFilteredTransKeys.length === 0) {
+        counter.textContent = "0 / 0 khóa";
+        return;
+    }
+    const idx = currentFilteredTransKeys.indexOf(currentSelectedTransKey);
+    counter.textContent = `${idx >= 0 ? idx + 1 : 1} / ${currentFilteredTransKeys.length} khóa`;
+}
+
+function loadSingleKeyIntoEditor(key) {
+    const badge = document.getElementById("currentEditingKeyBadge");
+    if (badge) badge.textContent = key || "—";
+
+    const data = (allAdminTranslations && allAdminTranslations[key]) || {};
+    const setVal = (lang, val) => {
+        const el = document.getElementById(`singleTransInput_${lang}`);
+        if (el) el.value = val || "";
+    };
+
+    setVal("vi", data.vi || "");
+    setVal("en", data.en || "");
+    setVal("ja", data.ja || "");
+    setVal("ko", data.ko || "");
+    setVal("zh", data.zh || "");
+}
+
+function clearSingleKeyEditor() {
+    const badge = document.getElementById("currentEditingKeyBadge");
+    if (badge) badge.textContent = "—";
+    ["vi", "en", "ja", "ko", "zh"].forEach(lang => {
+        const el = document.getElementById(`singleTransInput_${lang}`);
+        if (el) el.value = "";
+    });
+}
+
+export function syncSingleKeyInputToDictionary() {
+    if (!currentSelectedTransKey) return;
+    if (!allAdminTranslations[currentSelectedTransKey]) {
+        allAdminTranslations[currentSelectedTransKey] = {};
+    }
+    const getVal = (lang) => {
+        const el = document.getElementById(`singleTransInput_${lang}`);
+        return el ? el.value : "";
+    };
+
+    allAdminTranslations[currentSelectedTransKey] = {
+        vi: getVal("vi"),
+        en: getVal("en"),
+        ja: getVal("ja"),
+        ko: getVal("ko"),
+        zh: getVal("zh")
+    };
+}
+
+export async function saveCurrentSingleTranslationKey() {
+    if (!currentSelectedTransKey) {
+        notifyUser("Vui lòng chọn một Text ID để lưu!", "warning");
+        return;
+    }
+    syncSingleKeyInputToDictionary();
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen(`Đang lưu bản dịch Text ID "${currentSelectedTransKey}"...`);
+    try {
+        const res = await fetch(`${API_BASE}/admin/translations`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(allAdminTranslations)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            notifyUser(`Đã lưu bản dịch cho Text ID "${currentSelectedTransKey}" thành công!`, 'success');
+            const q = document.getElementById("filterTransKeyInput") ? document.getElementById("filterTransKeyInput").value : "";
+            populateTranslationKeyDropdown(allAdminTranslations, q);
+            renderTranslationsTable(allAdminTranslations);
+        } else {
+            notifyUser("Lỗi lưu bản dịch: " + (json.message || "Không xác định"), 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -2038,38 +2385,311 @@ export function filterTranslations() {
     });
 }
 
-export async function saveAllTranslations() {
-    const inputs = document.querySelectorAll(".i18n-input");
-    const updatedDict = {};
+export function switchTransViewMode(mode) {
+    const singleView = document.getElementById("transSingleKeyView");
+    const tableView = document.getElementById("transFullTableView");
+    const btnSingle = document.getElementById("btnTransViewSingle");
+    const btnTable = document.getElementById("btnTransViewTable");
 
+    if (mode === "single") {
+        if (singleView) singleView.classList.remove("hidden");
+        if (tableView) tableView.classList.add("hidden");
+        if (btnSingle) {
+            btnSingle.className = "px-3 py-1.5 font-bold rounded-lg bg-white text-primary shadow-xs transition flex items-center gap-1";
+        }
+        if (btnTable) {
+            btnTable.className = "px-3 py-1.5 font-bold rounded-lg text-gray-600 hover:text-gray-900 transition flex items-center gap-1";
+        }
+    } else {
+        if (singleView) singleView.classList.add("hidden");
+        if (tableView) tableView.classList.remove("hidden");
+        if (btnSingle) {
+            btnSingle.className = "px-3 py-1.5 font-bold rounded-lg text-gray-600 hover:text-gray-900 transition flex items-center gap-1";
+        }
+        if (btnTable) {
+            btnTable.className = "px-3 py-1.5 font-bold rounded-lg bg-white text-primary shadow-xs transition flex items-center gap-1";
+        }
+    }
+}
+
+export async function saveAllTranslations() {
+    syncSingleKeyInputToDictionary();
+
+    const inputs = document.querySelectorAll(".i18n-input");
     inputs.forEach((inp) => {
         const key = inp.getAttribute("data-key");
         const lang = inp.getAttribute("data-lang");
         const val = inp.value;
 
-        if (!updatedDict[key]) updatedDict[key] = {};
-        updatedDict[key][lang] = val;
+        if (!allAdminTranslations[key]) allAdminTranslations[key] = {};
+        allAdminTranslations[key][lang] = val;
     });
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang lưu toàn bộ từ điển đa ngôn ngữ (5 ngôn ngữ)...");
     try {
         const res = await fetch(`${API_BASE}/admin/translations`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
             },
-            body: JSON.stringify(updatedDict)
+            body: JSON.stringify(allAdminTranslations)
         });
 
         const json = await res.json();
         if (res.ok && json.success) {
             notifyUser("Đã lưu toàn bộ bản dịch 5 ngôn ngữ thành công!", 'success');
+            const q = document.getElementById("filterTransKeyInput") ? document.getElementById("filterTransKeyInput").value : "";
+            populateTranslationKeyDropdown(allAdminTranslations, q);
+            renderTranslationsTable(allAdminTranslations);
         } else {
             notifyUser("Lỗi lưu bản dịch: " + (json.message || "Không xác định"), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+// ==========================================
+// CẤU HÌNH THÔNG TIN DOANH NGHIỆP (infoCompany.json)
+// ==========================================
+
+const DEFAULT_STATIC_COMPANY_INFO = {
+    companyName: "NỞ HOA THẢ BÌNH",
+    brandSlogan: "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình Nghệ Thuật",
+    address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
+    phone: "0976.491.322",
+    hotline: "0976.491.322",
+    email: "cskh@nohoathabinh.vn",
+    workingHours: "Thứ 2 - Chủ Nhật: 7:00 - 21:00",
+    taxCode: "0318999888",
+    website: "https://nohoathabinh.vn",
+    facebook: "https://facebook.com/nohoathabinh",
+    instagram: "https://instagram.com/nohoathabinh",
+    zalo: "https://zalo.me/0976491322",
+    mapUrl: "https://maps.google.com/?q=183/37+Đường+3+Tháng+2,+Phường+11,+Quận+10,+TP.+Hồ+Chí+Minh",
+    mapEmbedUrl: "https://maps.google.com/maps?q=183%2F37%20%C4%90%C6%B0%E1%BB%9Dng%203%20Th%C3%A1ng%202%2C%20Ph%C6%B0%E1%BB%9Dng%2011%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh&t=&z=16&ie=UTF8&iwloc=&output=embed"
+};
+
+let adminCompanyInfo = { ...DEFAULT_STATIC_COMPANY_INFO };
+
+export async function loadAdminCompanyInfo() {
+    bindLiveCompanyInfoInputs();
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    let dataLoaded = false;
+    let source = "unknown";
+
+    const updateBadge = (text, type = "success") => {
+        const badge = document.getElementById("companyInfoDebugStatus");
+        if (!badge) return;
+        const timeStr = new Date().toLocaleTimeString();
+        if (type === "success") {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 shadow-2xs";
+            badge.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[9px] text-green-500"></i> ${text} • ${timeStr}`;
+        } else if (type === "warning") {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 shadow-2xs";
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[9px] text-yellow-500"></i> ${text} • ${timeStr}`;
+        } else {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs";
+            badge.innerHTML = `<i class="fa-solid fa-info-circle mr-1 text-[9px] text-blue-500"></i> ${text} • ${timeStr}`;
+        }
+    };
+
+    console.group("%c[DEBUG_COMPANY_INFO] Bắt đầu nạp cấu hình doanh nghiệp", "color: #d81b60; font-weight: bold; font-size: 12px;");
+    console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
+    console.log("🌐 API_BASE:", API_BASE);
+    console.log("🔑 Auth Token hiện tại:", token ? `Đã có token (${token.slice(0, 15)}...)` : "Chưa có token (Anonymous)");
+
+    // 1. Thử gọi API Admin
+    try {
+        const adminUrl = `${API_BASE}/admin/company-info?_t=${Date.now()}`;
+        console.log("📡 [1/3] Đang gọi Admin API:", adminUrl);
+        const res = await fetch(adminUrl, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        console.log("📥 Kết quả HTTP Admin API:", res.status, res.statusText);
+
+        if (res.ok) {
+            const json = await res.json();
+            console.log("📦 Dữ liệu JSON Admin API:", json);
+            if (json.success && json.data && typeof json.data === 'object') {
+                adminCompanyInfo = { ...DEFAULT_STATIC_COMPANY_INFO, ...json.data };
+                populateCompanyInfoForm(adminCompanyInfo);
+                updateLiveCompanyPreview(adminCompanyInfo);
+                dataLoaded = true;
+                source = "Admin API (/admin/company-info)";
+                updateBadge("Đã nạp từ Admin API", "success");
+                console.log("✅ Nạp thành công từ Admin API:", adminCompanyInfo);
+            }
+        } else {
+            console.warn("⚠️ Admin API trả về mã lỗi HTTP:", res.status);
+        }
+    } catch (e) {
+        console.warn("⚠️ Lỗi kết nối /admin/company-info:", e.message);
+    }
+
+    // 2. Thử fallback qua Public API
+    if (!dataLoaded) {
+        try {
+            const pubUrl = `${API_BASE}/company-info?_t=${Date.now()}`;
+            console.log("📡 [2/3] Đang thử Public API:", pubUrl);
+            const pubRes = await fetch(pubUrl);
+            console.log("📥 Kết quả HTTP Public API:", pubRes.status, pubRes.statusText);
+
+            if (pubRes.ok) {
+                const pubJson = await pubRes.json();
+                console.log("📦 Dữ liệu JSON Public API:", pubJson);
+                if (pubJson.success && pubJson.data && typeof pubJson.data === 'object') {
+                    adminCompanyInfo = { ...DEFAULT_STATIC_COMPANY_INFO, ...pubJson.data };
+                    populateCompanyInfoForm(adminCompanyInfo);
+                    updateLiveCompanyPreview(adminCompanyInfo);
+                    dataLoaded = true;
+                    source = "Public API (/company-info)";
+                    updateBadge("Đã nạp từ Public API", "success");
+                    console.log("✅ Nạp thành công từ Public API:", adminCompanyInfo);
+                }
+            } else {
+                console.warn("⚠️ Public API trả về mã lỗi HTTP:", pubRes.status);
+            }
+        } catch (err) {
+            console.warn("⚠️ Không kết nối được public API company-info:", err.message);
+        }
+    }
+
+    // 3. Fallback mặc định an toàn nếu chưa load được
+    if (!dataLoaded) {
+        console.log("🛡️ [3/3] Áp dụng cấu hình tĩnh mặc định (DEFAULT_STATIC_COMPANY_INFO):", DEFAULT_STATIC_COMPANY_INFO);
+        populateCompanyInfoForm(DEFAULT_STATIC_COMPANY_INFO);
+        updateLiveCompanyPreview(DEFAULT_STATIC_COMPANY_INFO);
+        source = "Cấu hình tĩnh (Static Fallback)";
+        updateBadge("Nạp từ Cấu hình tĩnh", "warning");
+    }
+
+    console.log("🏁 Hoàn tất nạp thông tin doanh nghiệp! Nguồn dữ liệu:", source);
+    console.groupEnd();
+}
+
+function populateCompanyInfoForm(data) {
+    if (!data) return;
+    const setValue = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = (val !== undefined && val !== null) ? val : "";
+            console.log(`  📝 [Gán input] #${id} = "${el.value}"`);
+        } else {
+            console.warn(`  ❌ Không tìm thấy element DOM: #${id}`);
+        }
+    };
+
+    console.log("📋 Bắt đầu điền dữ liệu vào form:", data.companyName);
+    setValue("companyNameInput", data.companyName);
+    setValue("companySloganInput", data.brandSlogan);
+    setValue("companyTaxCodeInput", data.taxCode);
+    setValue("companyWebsiteInput", data.website);
+    setValue("companyAddressInput", data.address);
+    setValue("companyHotlineInput", data.hotline || data.phone);
+    setValue("companyPhoneInput", data.phone);
+    setValue("companyEmailInput", data.email);
+    setValue("companyHoursInput", data.workingHours);
+    setValue("companyFacebookInput", data.facebook);
+    setValue("companyInstagramInput", data.instagram);
+    setValue("companyZaloInput", data.zalo);
+    setValue("companyMapUrlInput", data.mapUrl);
+    setValue("companyMapEmbedUrlInput", data.mapEmbedUrl);
+}
+
+function updateLiveCompanyPreview(data) {
+    if (!data) return;
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val || "—";
+    };
+
+    setText("previewCompanyName", data.companyName || "NỞ HOA THẢ BÌNH");
+    setText("previewCompanySlogan", data.brandSlogan || "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình");
+    setText("previewCompanyAddress", data.address || "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh");
+    setText("previewCompanyHotline", data.hotline || data.phone || "0976.491.322");
+    setText("previewCompanyEmail", data.email || "cskh@nohoathabinh.vn");
+    setText("previewCompanyHours", data.workingHours || "Thứ 2 - Chủ Nhật: 7:00 - 21:00");
+}
+
+function bindLiveCompanyInfoInputs() {
+    const inputs = [
+        { id: "companyNameInput", target: "previewCompanyName", fallback: "NỞ HOA THẢ BÌNH" },
+        { id: "companySloganInput", target: "previewCompanySlogan", fallback: "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình" },
+        { id: "companyAddressInput", target: "previewCompanyAddress", fallback: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh" },
+        { id: "companyHotlineInput", target: "previewCompanyHotline", fallback: "0976.491.322" },
+        { id: "companyEmailInput", target: "previewCompanyEmail", fallback: "cskh@nohoathabinh.vn" },
+        { id: "companyHoursInput", target: "previewCompanyHours", fallback: "Thứ 2 - Chủ Nhật: 7:00 - 21:00" }
+    ];
+
+    inputs.forEach(item => {
+        const el = document.getElementById(item.id);
+        const targetEl = document.getElementById(item.target);
+        if (el && targetEl && !el.dataset.liveBound) {
+            el.dataset.liveBound = "true";
+            el.addEventListener("input", () => {
+                targetEl.textContent = el.value.trim() || item.fallback;
+            });
+        }
+    });
+}
+
+export async function handleCompanyInfoSubmit(event) {
+    if (event) event.preventDefault();
+
+    const getValue = (id) => (document.getElementById(id)?.value || "").trim();
+
+    const payload = {
+        companyName: getValue("companyNameInput") || "NỞ HOA THẢ BÌNH",
+        brandSlogan: getValue("companySloganInput"),
+        taxCode: getValue("companyTaxCodeInput"),
+        website: getValue("companyWebsiteInput"),
+        address: getValue("companyAddressInput"),
+        hotline: getValue("companyHotlineInput") || "0976.491.322",
+        phone: getValue("companyPhoneInput") || getValue("companyHotlineInput"),
+        email: getValue("companyEmailInput") || "cskh@nohoathabinh.vn",
+        workingHours: getValue("companyHoursInput") || "Thứ 2 - Chủ Nhật: 7:00 - 21:00",
+        facebook: getValue("companyFacebookInput"),
+        instagram: getValue("companyInstagramInput"),
+        zalo: getValue("companyZaloInput"),
+        mapUrl: getValue("companyMapUrlInput"),
+        mapEmbedUrl: getValue("companyMapEmbedUrlInput")
+    };
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang lưu cấu hình thông tin doanh nghiệp (infoCompany.json)...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/company-info`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            adminCompanyInfo = json.data || payload;
+            updateLiveCompanyPreview(adminCompanyInfo);
+            
+            // Cập nhật ngay lên giao diện bán hàng khách hàng nếu có hàm đồng bộ
+            if (typeof window !== "undefined" && typeof window.applyStorefrontCompanyInfo === "function") {
+                window.applyStorefrontCompanyInfo(adminCompanyInfo);
+            }
+            
+            notifyUser("Đã cập nhật thông tin doanh nghiệp thành công!", 'success');
+        } else {
+            notifyUser("Lỗi lưu thông tin: " + (json.message || "Không xác định"), 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
     }
 }
 
@@ -2078,6 +2698,9 @@ if (typeof window !== "undefined") {
     window.openAdminPortalModal = openAdminPortalModal;
     window.closeAdminPortalModal = closeAdminPortalModal;
     window.switchAdminTab = switchAdminTab;
+    window.openSystemConfigModal = openSystemConfigModal;
+    window.closeSystemConfigModal = closeSystemConfigModal;
+    window.switchSystemConfigTab = switchSystemConfigTab;
     window.loadAdminProducts = loadAdminProducts;
     window.openProductModal = openProductModal;
     window.closeProductModal = closeProductModal;
@@ -2090,6 +2713,17 @@ if (typeof window !== "undefined") {
     window.validateLivePrice = validateLivePrice;
     window.filterTranslations = filterTranslations;
     window.saveAllTranslations = saveAllTranslations;
+    window.populateTranslationKeyDropdown = populateTranslationKeyDropdown;
+    window.onSelectTranslationKeyChange = onSelectTranslationKeyChange;
+    window.onFilterTransKeyDropdown = onFilterTransKeyDropdown;
+    window.navigateTransKey = navigateTransKey;
+    window.syncSingleKeyInputToDictionary = syncSingleKeyInputToDictionary;
+    window.saveCurrentSingleTranslationKey = saveCurrentSingleTranslationKey;
+    window.switchTransViewMode = switchTransViewMode;
+
+    // Company Info
+    window.loadAdminCompanyInfo = loadAdminCompanyInfo;
+    window.handleCompanyInfoSubmit = handleCompanyInfoSubmit;
 
     // Promotions & Vouchers
     window.loadAdminPromotions = loadAdminPromotions;

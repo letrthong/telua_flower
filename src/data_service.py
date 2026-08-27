@@ -19,7 +19,8 @@ from flower_config import (
     PRICE_LEVELS_FILE_PATH,
     PROMOTIONS_FILE_PATH,
     TRANSLATIONS_FILE_PATH,
-    WASTAGE_REPORTS_FILE_PATH
+    WASTAGE_REPORTS_FILE_PATH,
+    COMPANY_INFO_FILE_PATH
 )
 
 CONFIG_DIR = FLOWER_CONFIG_DIR
@@ -1328,6 +1329,93 @@ def migrate_existing_orders_to_users() -> int:
         if sync_order_to_user_folder(ord_item):
             synced_count += 1
     return synced_count
+
+
+# ==========================================
+# THÔNG TIN DOANH NGHIỆP & LIÊN HỆ (infoCompany.json)
+# ==========================================
+
+DEFAULT_COMPANY_INFO: Dict[str, Any] = {
+    "companyName": "NỞ HOA THẢ BÌNH",
+    "brandSlogan": "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình Nghệ Thuật",
+    "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
+    "phone": "0976.491.322",
+    "hotline": "0976.491.322",
+    "email": "cskh@nohoathabinh.vn",
+    "workingHours": "Thứ 2 - Chủ Nhật: 7:00 - 21:00",
+    "taxCode": "0318999888",
+    "website": "https://nohoathabinh.vn",
+    "facebook": "https://facebook.com/nohoathabinh",
+    "instagram": "https://instagram.com/nohoathabinh",
+    "zalo": "https://zalo.me/0976491322",
+    "mapUrl": "https://maps.google.com/?q=183/37+Đường+3+Tháng+2,+Phường+11,+Quận+10,+TP.+Hồ+Chí+Minh",
+    "mapEmbedUrl": "https://maps.google.com/maps?q=183%2F37%20%C4%90%C6%B0%E1%BB%9Dng%203%20Th%C3%A1ng%202%2C%20Ph%C6%B0%E1%BB%9Dng%2011%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh&t=&z=16&ie=UTF8&iwloc=&output=embed",
+    "updatedAt": "2026-08-26T12:00:00Z"
+}
+
+
+def get_company_info(use_cache: bool = False) -> Dict[str, Any]:
+    """
+    Đọc thông tin doanh nghiệp từ file config infoCompany.json.
+    Tự động khởi tạo dữ liệu mặc định nếu file chưa tồn tại.
+    """
+    filepath = get_config_path("infoCompany.json")
+    if not os.path.exists(filepath):
+        write_json(filepath, DEFAULT_COMPANY_INFO)
+        return dict(DEFAULT_COMPANY_INFO)
+
+    data = read_json(filepath, default={})
+    if not isinstance(data, dict) or not data:
+        data = dict(DEFAULT_COMPANY_INFO)
+        write_json(filepath, data)
+
+    # Đảm bảo có đầy đủ các trường thiết yếu
+    for k, v in DEFAULT_COMPANY_INFO.items():
+        if k not in data or data[k] is None:
+            data[k] = v
+
+    return data
+
+
+def save_company_info(info_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Lưu cấu hình thông tin doanh nghiệp vào file infoCompany.json.
+    """
+    if not isinstance(info_dict, dict):
+        return False, None, "Dữ liệu cấu hình doanh nghiệp không hợp lệ"
+
+    current = get_company_info(use_cache=False)
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    # Cập nhật các trường
+    company_name = (info_dict.get("companyName") or current.get("companyName", "NỞ HOA THẢ BÌNH")).strip()
+    if not company_name:
+        return False, None, "Vui lòng nhập tên công ty / thương hiệu"
+
+    updated = {
+        "companyName": company_name,
+        "brandSlogan": (info_dict.get("brandSlogan") or current.get("brandSlogan", "")).strip(),
+        "address": (info_dict.get("address") or current.get("address", "")).strip(),
+        "phone": (info_dict.get("phone") or current.get("phone", "")).strip(),
+        "hotline": (info_dict.get("hotline") or current.get("hotline", "")).strip(),
+        "email": (info_dict.get("email") or current.get("email", "")).strip(),
+        "workingHours": (info_dict.get("workingHours") or current.get("workingHours", "")).strip(),
+        "taxCode": (info_dict.get("taxCode") or current.get("taxCode", "")).strip(),
+        "website": (info_dict.get("website") or current.get("website", "")).strip(),
+        "facebook": (info_dict.get("facebook") or current.get("facebook", "")).strip(),
+        "instagram": (info_dict.get("instagram") or current.get("instagram", "")).strip(),
+        "zalo": (info_dict.get("zalo") or current.get("zalo", "")).strip(),
+        "mapUrl": (info_dict.get("mapUrl") or current.get("mapUrl", "")).strip(),
+        "mapEmbedUrl": (info_dict.get("mapEmbedUrl") or current.get("mapEmbedUrl", "")).strip(),
+        "updatedAt": now_iso
+    }
+
+    filepath = get_config_path("infoCompany.json")
+    success = write_json(filepath, updated)
+    if success:
+        return True, updated, None
+    return False, None, "Không thể ghi file cấu hình infoCompany.json"
+
 
 
 

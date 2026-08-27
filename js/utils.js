@@ -219,6 +219,63 @@ export function showConfirmDialog({
     });
 }
 
+/**
+ * Khóa màn hình với lớp phủ mờ (Screen Lock Overlay) khi cập nhật dữ liệu
+ */
+export function showScreenLock(message = "Đang cập nhật cấu hình & đồng bộ hệ thống...") {
+    if (typeof document === "undefined") return;
+    let overlay = document.getElementById("globalScreenLockOverlay");
+    if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "globalScreenLockOverlay";
+        overlay.className = "fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-black/60 backdrop-blur-xs transition-opacity duration-200 opacity-0 pointer-events-auto select-none";
+        overlay.innerHTML = `
+            <div class="bg-white/95 rounded-2xl p-6 shadow-2xl flex flex-col items-center max-w-xs text-center border border-pink-100 transform scale-95 transition-all duration-200" id="globalScreenLockCard">
+                <div class="w-12 h-12 rounded-full bg-pink-50 text-primary flex items-center justify-center text-xl mb-3 shadow-inner">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+                <div id="globalScreenLockText" class="font-bold text-gray-800 text-sm leading-snug">
+                    ${message}
+                </div>
+                <div class="text-[11px] text-gray-400 mt-1.5 flex items-center justify-center">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-1.5"></span> Đang đồng bộ dữ liệu...
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        const textEl = document.getElementById("globalScreenLockText");
+        if (textEl) textEl.textContent = message;
+    }
+
+    requestAnimationFrame(() => {
+        overlay.classList.remove("opacity-0", "pointer-events-none");
+        overlay.classList.add("opacity-100", "pointer-events-auto");
+        const card = document.getElementById("globalScreenLockCard");
+        if (card) {
+            card.classList.remove("scale-95");
+            card.classList.add("scale-100");
+        }
+    });
+}
+
+export function hideScreenLock() {
+    const overlay = document.getElementById("globalScreenLockOverlay");
+    if (!overlay) return;
+    overlay.classList.remove("opacity-100");
+    overlay.classList.add("opacity-0", "pointer-events-none");
+    const card = document.getElementById("globalScreenLockCard");
+    if (card) {
+        card.classList.remove("scale-100");
+        card.classList.add("scale-95");
+    }
+    setTimeout(() => {
+        if (overlay && overlay.parentElement) {
+            overlay.parentElement.removeChild(overlay);
+        }
+    }, 250);
+}
+
 let storefrontBranches = [];
 let currentSelectedBranch = null;
 
@@ -390,6 +447,8 @@ if (typeof window !== "undefined") {
     window.API_BASE = API_BASE;
     window.showToast = showToast;
     window.showConfirmDialog = showConfirmDialog;
+    window.showScreenLock = showScreenLock;
+    window.hideScreenLock = hideScreenLock;
     window.openStoreMap = openStoreMap;
     window.copyStoreAddress = copyStoreAddress;
     window.selectShowroomBranch = selectShowroomBranch;

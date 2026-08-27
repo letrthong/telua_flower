@@ -76,7 +76,7 @@ def list_products(
     products = get_products()
 
     if is_active is True:
-        active_cats = {c.get("id") for c in get_categories(use_cache=True, active_only=True)}
+        active_cats = {c.get("id") for c in get_categories(use_cache=False, active_only=True)}
         products = [p for p in products if p.get("isActive", True) and p.get("category") in active_cats]
     elif is_active is False:
         products = [p for p in products if not p.get("isActive", True)]

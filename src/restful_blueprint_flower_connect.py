@@ -34,7 +34,9 @@ from   data_service import (
     delete_category,
     restore_category,
     move_category_order,
-    get_user_orders
+    get_user_orders,
+    get_company_info,
+    save_company_info
 )
 from order_service import (
     get_available_delivery_slots,
@@ -328,7 +330,7 @@ def api_admin_orders():
 @flower_connect_api.route("/categories", methods=["GET"])
 def api_get_public_categories():
     """Lấy danh sách các danh mục hoa đang Bật hiển thị trên Frontend."""
-    categories = get_categories(use_cache=True, active_only=True)
+    categories = get_categories(use_cache=False, active_only=True)
     # Sắp xếp theo order (ép kiểu int an toàn)
     categories.sort(key=lambda x: int(x.get("order") or 99))
     return jsonify({"success": True, "data": categories}), 200
@@ -724,4 +726,49 @@ def api_get_customer_orders(user_identifier):
         "data": orders,
         "total": len(orders)
     }), 200
+
+
+# ==========================================
+# CÁC API THÔNG TIN DOANH NGHIỆP (COMPANY INFO)
+# ==========================================
+
+@flower_connect_api.route("/company-info", methods=["GET"])
+def api_get_public_company_info():
+    """Lấy thông tin liên hệ và thương hiệu công ty hiển thị trên Storefront (Header, Footer, Bản đồ)."""
+    info = get_company_info(use_cache=False)
+    return jsonify({
+        "success": True,
+        "data": info
+    }), 200
+
+
+@flower_connect_api.route("/admin/company-info", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_company_info():
+    """Lấy đầy đủ thông tin cấu hình công ty dành cho Cổng Quản Trị."""
+    info = get_company_info(use_cache=False)
+    return jsonify({
+        "success": True,
+        "data": info
+    }), 200
+
+
+@flower_connect_api.route("/admin/company-info", methods=["PUT", "POST"])
+@require_role(["super_admin"])
+def api_update_admin_company_info():
+    """Cập nhật thông tin liên hệ, thương hiệu, địa chỉ, hotline, giờ mở cửa của công ty."""
+    data = request.get_json(silent=True) or {}
+    success, updated_info, err = save_company_info(data)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể lưu thông tin công ty"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã cập nhật thông tin doanh nghiệp thành công!",
+        "data": updated_info
+    }), 200
+
 
