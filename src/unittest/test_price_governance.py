@@ -10,25 +10,25 @@ if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
 from app import app
-from services.product_service import (
+from product_service import (
     validate_product_price_governance,
     create_or_update_product,
     toggle_product_active,
     delete_product,
     list_products
 )
-from services.promotion_service import (
+from promotion_service import (
     create_or_update_promotion,
     toggle_promotion,
     list_all_promotions
 )
-from services.translation_service import (
+from translation_service import (
     get_all_translations,
     update_translation_key,
     batch_update_translations
 )
-from services.auth_service import generate_jwt_token
-from services.data_service import get_product_by_id
+from anne_auth_service import generate_jwt_token
+from data_service import get_product_by_id
 
 
 class TestPriceGovernanceAndProductCMS(unittest.TestCase):
@@ -174,17 +174,17 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         }
 
         # 1. Khách không gửi token -> 401 Unauthorized
-        res_anon = self.client.post("/api/admin/products", json=bad_payload)
+        res_anon = self.client.post("/api/flower/v1/admin/products", json=bad_payload)
         self.assertEqual(res_anon.status_code, 401)
 
         # 2. Khách gửi token Customer -> 403 Forbidden
         headers_cust = {"Authorization": f"Bearer {self.customer_token}"}
-        res_cust = self.client.post("/api/admin/products", json=bad_payload, headers=headers_cust)
+        res_cust = self.client.post("/api/flower/v1/admin/products", json=bad_payload, headers=headers_cust)
         self.assertEqual(res_cust.status_code, 403)
 
         # 3. Super Admin gửi token -> 201 Created
         headers_admin = {"Authorization": f"Bearer {self.admin_token}"}
-        res_admin = self.client.post("/api/admin/products", json=bad_payload, headers=headers_admin)
+        res_admin = self.client.post("/api/flower/v1/admin/products", json=bad_payload, headers=headers_admin)
         self.assertEqual(res_admin.status_code, 201)
 
         # Dọn dẹp hoa vừa tạo
@@ -207,7 +207,7 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         }
 
         headers_admin = {"Authorization": f"Bearer {self.admin_token}"}
-        res = self.client.post("/api/admin/products", json=prod_payload, headers=headers_admin)
+        res = self.client.post("/api/flower/v1/admin/products", json=prod_payload, headers=headers_admin)
         self.assertEqual(res.status_code, 201)
         
         created = res.get_json()["data"]
@@ -215,7 +215,7 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         self.assertTrue(created["image"].startswith("data:image/jpeg;base64,"))
 
         # Kiểm tra tra cứu lại từ API
-        res_get = self.client.get(f"/api/products/{test_prod_id}")
+        res_get = self.client.get(f"/api/flower/v1/products/{test_prod_id}")
         self.assertEqual(res_get.status_code, 200)
         self.assertEqual(res_get.get_json()["data"]["image"], mock_base64)
 
@@ -225,23 +225,23 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
     def test_09_http_etag_304_cache_translations_and_branches(self):
         """Kiểm tra phản hồi HTTP ETag và mã 304 Not Modified khi dữ liệu không thay đổi"""
         # 1. Kiểm tra API Translations
-        res_trans = self.client.get("/api/translations")
+        res_trans = self.client.get("/api/flower/v1/translations")
         self.assertEqual(res_trans.status_code, 200)
         etag_trans = res_trans.headers.get("ETag")
-        self.assertIsNotNone(etag_trans, "API /api/translations phải trả về header ETag")
+        self.assertIsNotNone(etag_trans, "API /api/flower/v1/translations phải trả về header ETag")
 
         # Gửi lại với If-None-Match -> Phải trả về 304 Not Modified
-        res_trans_304 = self.client.get("/api/translations", headers={"If-None-Match": etag_trans})
+        res_trans_304 = self.client.get("/api/flower/v1/translations", headers={"If-None-Match": etag_trans})
         self.assertEqual(res_trans_304.status_code, 304)
 
         # 2. Kiểm tra API Branches
-        res_branches = self.client.get("/api/branches")
+        res_branches = self.client.get("/api/flower/v1/branches")
         self.assertEqual(res_branches.status_code, 200)
         etag_branches = res_branches.headers.get("ETag")
-        self.assertIsNotNone(etag_branches, "API /api/branches phải trả về header ETag")
+        self.assertIsNotNone(etag_branches, "API /api/flower/v1/branches phải trả về header ETag")
 
         # Gửi lại với If-None-Match -> Phải trả về 304 Not Modified
-        res_branches_304 = self.client.get("/api/branches", headers={"If-None-Match": etag_branches})
+        res_branches_304 = self.client.get("/api/flower/v1/branches", headers={"If-None-Match": etag_branches})
         self.assertEqual(res_branches_304.status_code, 304)
 
 

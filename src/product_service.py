@@ -89,10 +89,22 @@ def list_products(
 
     if search:
         s_lower = search.strip().lower()
-        products = [
-            p for p in products
-            if s_lower in (p.get("name") or "").lower() or s_lower in (p.get("flowerComposition") or "").lower()
-        ]
+        matched = []
+        for p in products:
+            p_name = (p.get("name") or "").lower()
+            p_id = (p.get("id") or "").lower()
+            p_comp = (p.get("flowerComposition") or "").lower()
+            if s_lower in p_name or s_lower in p_id or (p_comp and s_lower in p_comp):
+                matched.append(p)
+            else:
+                # Kiểm tra thêm trong file chi tiết nếu cần tìm theo thành phần / mô tả hoa
+                detail = get_product_by_id(p.get("id"))
+                if detail:
+                    d_comp = (detail.get("flowerComposition") or "").lower()
+                    d_desc = (detail.get("description") or "").lower()
+                    if s_lower in d_comp or s_lower in d_desc:
+                        matched.append(p)
+        products = matched
 
     return products
 

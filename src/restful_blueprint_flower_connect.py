@@ -569,24 +569,26 @@ def _build_cached_file_response(filename: str, data_fetcher, max_age: int = 60):
     Nếu client gửi If-None-Match trùng khớp, trả về HTTP 304 Not Modified ngay lập tức.
     """
     filepath = get_config_path(filename)
-    etag = None
+    raw_etag = None
     if os.path.exists(filepath):
         try:
             stat_res = os.stat(filepath)
-            etag = f'W/"{int(stat_res.st_mtime)}-{stat_res.st_size}"'
+            raw_etag = f"{int(stat_res.st_mtime)}-{stat_res.st_size}"
         except OSError:
             pass
 
-    if etag and request.headers.get("If-None-Match") == etag:
+    formatted_etag = f'W/"{raw_etag}"' if raw_etag else None
+    client_etag = request.headers.get("If-None-Match", "")
+    if raw_etag and client_etag in (formatted_etag, raw_etag, f'"{raw_etag}"'):
         resp = make_response("", 304)
-        resp.headers["ETag"] = etag
+        resp.headers["ETag"] = formatted_etag
         resp.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate=300"
         return resp
 
     data = data_fetcher()
     response = jsonify({"success": True, "data": data})
-    if etag:
-        response.set_etag(etag)
+    if raw_etag:
+        response.set_etag(raw_etag, weak=True)
     response.headers["Cache-Control"] = f"public, max-age={max_age}, stale-while-revalidate=300"
     return response, 200
 

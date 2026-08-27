@@ -18,13 +18,7 @@ def _detect_config_dir() -> str:
         os.makedirs(env_dir, exist_ok=True)
         return env_dir
     
-    # 1. Kiểm tra /app/config/anne trong Docker
-    if os.path.exists("/app/config"):
-        target = "/app/config/anne"
-        os.makedirs(target, exist_ok=True)
-        return target
-    
-    # 2. Tìm thư mục config/anne từ root project
+    # 1. Tìm thư mục config/anne từ root project workspace
     current = Path(__file__).resolve()
     for parent in current.parents:
         candidate = parent / "config"
@@ -32,6 +26,12 @@ def _detect_config_dir() -> str:
             target = candidate / "anne"
             target.mkdir(parents=True, exist_ok=True)
             return str(target)
+
+    # 2. Kiểm tra /app/config/anne trong môi trường Docker Linux
+    if os.name != 'nt' and os.path.exists("/app/config"):
+        target = "/app/config/anne"
+        os.makedirs(target, exist_ok=True)
+        return target
             
     # 3. Fallback thư mục config ngay tại Controller/anne/config
     fallback = Path(__file__).resolve().parent / "config"
