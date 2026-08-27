@@ -1,0 +1,27 @@
+{
+  "id": "binh_hoa_02",
+  "name": "Bình Gốm Sứ Bắc Âu Phong Cách Vintage",
+  "category": "binh_hoa",
+  "priceLevelId": "price_lvl_02",
+  "priceNumber": 620000,
+  "salePrice": "620,000₫",
+  "originalPrice": "680,000₫",
+  "badge": "Mới",
+  "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_g%E1%BB%91m_s%E1%BB%A9.jpg",
+  "gallery": [
+    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_g%E1%BB%91m_s%E1%BB%A9.jpg",
+    "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=800"
+  ],
+  "description": "Bình gốm thủ công tráng men mờ theo phong cách Scandinavian Bắc Âu, tôn vinh nghệ thuật cắm hoa 'Thả Bình' tối giản.",
+  "flowerComposition": "Chất liệu Gốm Bát Tràng tráng men cao cấp, bề mặt phủ nhám mịn tinh xảo",
+  "dimension": "Cao 28cm x Đường kính miệng 12cm x Đáy 15cm",
+  "careTips": "Vệ sinh bằng nước ấm và khăn mềm, tránh va đập mạnh hoặc cọ rửa bằng búi kim loại.",
+  "stockByBranch": {
+    "branch_q10": 10,
+    "branch_q1": 6,
+    "branch_thao_dien": 5
+  },
+  "dailyQuota": 20,
+  "isActive": true,
+  "updatedAt": "2026-08-24T12:00:00Z"
+}

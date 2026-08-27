@@ -69,13 +69,6 @@ export function setLanguage(lang) {
         }
         if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
             window.renderAllProducts();
-        } else if (typeof renderProducts === 'function') {
-            const boHoa = (typeof window !== 'undefined' && window.products_bo_hoa) || (typeof products_bo_hoa !== 'undefined' ? products_bo_hoa : []);
-            const keHoa = (typeof window !== 'undefined' && window.products_ke_hoa) || (typeof products_ke_hoa !== 'undefined' ? products_ke_hoa : []);
-            const binhHoa = (typeof window !== 'undefined' && window.products_binh_hoa) || (typeof products_binh_hoa !== 'undefined' ? products_binh_hoa : []);
-            renderProducts(boHoa, 'bo-hoa-grid');
-            renderProducts(keHoa, 'ke-hoa-grid');
-            renderProducts(binhHoa, 'binh-hoa-grid');
         }
     }
 }

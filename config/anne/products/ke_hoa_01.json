@@ -1,0 +1,27 @@
+{
+  "id": "ke_hoa_01",
+  "name": "Kệ Hoa Khai Trương Phát Lộc",
+  "category": "ke_hoa",
+  "priceLevelId": "price_lvl_03",
+  "priceNumber": 2500000,
+  "salePrice": "2,500,000₫",
+  "originalPrice": "2,650,000₫",
+  "badge": "",
+  "image": "https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+  "gallery": [
+    "https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1507290439931-a861b5a38200?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  ],
+  "description": "Kệ hoa khai trương 2 tầng hoành tráng tone màu đỏ vàng rực rỡ, biểu trưng cho sự thịnh vượng, tài lộc dồi dào.",
+  "flowerComposition": "Hoa Đồng Tiền đỏ & vàng (30 bông), Hoa Hướng Dương (10 bông), Lan Vũ Nữ, Hồng Môn đỏ, Kèm Banner in chữ kim nhũ sang trọng",
+  "dimension": "Cao 180cm x Rộng 80cm (Kệ 2 tầng)",
+  "careTips": "Châm 500ml nước vào xốp cắm hoa mỗi sáng để hoa tươi lâu 3-5 ngày.",
+  "stockByBranch": {
+    "branch_q10": 4,
+    "branch_q1": 2,
+    "branch_thao_dien": 2
+  },
+  "dailyQuota": 8,
+  "isActive": true,
+  "updatedAt": "2026-08-24T12:00:00Z"
+}

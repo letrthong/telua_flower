@@ -1,0 +1,27 @@
+{
+  "id": "ke_hoa_04",
+  "name": "Kệ Hoa Phát Tài Phát Đạt",
+  "category": "ke_hoa",
+  "priceLevelId": "price_lvl_03",
+  "priceNumber": 1500000,
+  "salePrice": "1,500,000₫",
+  "originalPrice": "1,600,000₫",
+  "badge": "",
+  "image": "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+  "gallery": [
+    "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  ],
+  "description": "Kệ hoa tone màu đỏ hồng may mắn, gửi trao lời chúc khai trương hồng phát, làm ăn tấn tới.",
+  "flowerComposition": "Hồng Đỏ Sa Mạc (18 cành), Hoa Đồng Tiền đỏ, Hồng Phấn, Lá Bạc Dollar, Kèm Banner chúc mừng cao cấp",
+  "dimension": "Cao 160cm x Rộng 70cm",
+  "careTips": "Bảo quản nơi mát mẻ, châm nước đều vào mút xốp mỗi ngày.",
+  "stockByBranch": {
+    "branch_q10": 4,
+    "branch_q1": 2,
+    "branch_thao_dien": 2
+  },
+  "dailyQuota": 8,
+  "isActive": true,
+  "updatedAt": "2026-08-24T12:00:00Z"
+}

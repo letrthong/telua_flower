@@ -16,8 +16,8 @@
   },
   {
     "id": "branch_q1",
-    "code": "CN_Q1X",
-    "name": "Nở Hoa Thả Bình - Showroom Bến xxx Quận 1",
+    "code": "CN_Q1",
+    "name": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
     "address": "Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
     "lat": 10.7715,
     "lng": 106.7042,
@@ -26,9 +26,9 @@
     "deliveryRadiusKm": 8,
     "managerId": "staff_004",
     "amenities": "Giao hoa hỏa tốc văn phòng Bitexco, gói quà cao cấp",
-    "isActive": false,
+    "isActive": true,
     "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-08-24T15:16:20Z"
+    "updatedAt": "2026-08-27T14:00:00Z"
   },
   {
     "id": "branch_thao_dien",
@@ -42,7 +42,7 @@
     "deliveryRadiusKm": 12,
     "managerId": "staff_005",
     "amenities": "Không gian workshop cắm hoa, hoa nhập khẩu Hà Lan/Ecuador",
-    "isActive": false,
+    "isActive": true,
     "createdAt": "2026-08-21T00:00:00Z"
   }
 ]

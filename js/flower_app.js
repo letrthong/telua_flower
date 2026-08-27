@@ -1,29 +1,21 @@
 import { API_BASE } from './utils.js';
-import { 
-    products_gio_hoa,
-    products_bo_hoa, 
-    products_ke_hoa, 
-    products_binh_hoa, 
-    products_lan_ho_diep,
-    products_hoa_cuoi, 
-    default_categories 
-} from './products.js';
+import { getProducts, getProductById, getCategories } from './products.js';
 import { translations } from './translations.js';
 import { setLanguage } from './i18n.js';
 import { addToCart } from './checkout.js';
 
-// Gắn dữ liệu và hàm vào window cho toàn bộ trang
+// Cache sản phẩm toàn cục cho Storefront
+let allStorefrontProducts = [];
+let activeStorefrontCategories = [];
+
+// Gắn các hàm tiện ích vào window cho toàn bộ trang
 if (typeof window !== 'undefined') {
-    window.products_gio_hoa = products_gio_hoa;
-    window.products_bo_hoa = products_bo_hoa;
-    window.products_ke_hoa = products_ke_hoa;
-    window.products_binh_hoa = products_binh_hoa;
-    window.products_lan_ho_diep = products_lan_ho_diep;
-    window.products_hoa_cuoi = products_hoa_cuoi;
-    window.default_categories = default_categories;
     window.translations = translations;
     window.setLanguage = setLanguage;
     window.addToCart = addToCart;
+    window.getProducts = getProducts;
+    window.getProductById = getProductById;
+    window.getCategories = getCategories;
 }
 
 /**
@@ -31,9 +23,19 @@ if (typeof window !== 'undefined') {
  */
 export function renderProducts(products, containerId) {
     const container = document.getElementById(containerId);
-    if (!container || !Array.isArray(products) || products.length === 0) return;
-    let html = '';
+    if (!container) return;
 
+    if (!Array.isArray(products) || products.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full py-8 text-center text-gray-400 text-sm">
+                <i class="fa-solid fa-seedling text-2xl mb-2 text-pink-300"></i>
+                <p>Danh mục này đang được cập nhật thêm các mẫu hoa mới.</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
     const lang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : 'vi';
     const trans = (typeof window !== 'undefined' && window.translations) ? window.translations : translations;
     const btnText = (trans && trans[lang] && trans[lang].btn_add_to_cart) ? trans[lang].btn_add_to_cart : "Thêm giỏ hàng";
@@ -103,29 +105,11 @@ export async function openProductQuickDetail(productId) {
     }
     if (body) body.classList.add("hidden");
 
-    let prod = null;
+    // Nạp chi tiết sản phẩm qua hàm getProductById (gọi API /api/products/<id> hoặc cache)
+    let prod = await getProductById(productId);
 
-    // 1. Thử gọi API /api/products/<productId>
-    try {
-        const res = await fetch(`${API_BASE}/products/${productId}`);
-        if (res.ok) {
-            const json = await res.json();
-            if (json.success && json.data) {
-                prod = json.data;
-            }
-        }
-    } catch (e) {
-        console.log("Fetching API failed, using fallback mock product.");
-    }
-
-    // 2. Nếu không có từ API -> Tìm trong mock lists
-    if (!prod) {
-        const allMocks = [
-            ...(window.products_bo_hoa || products_bo_hoa || []),
-            ...(window.products_ke_hoa || products_ke_hoa || []),
-            ...(window.products_binh_hoa || products_binh_hoa || [])
-        ];
-        prod = allMocks.find(p => p && (p.id === productId || p.name === productId || `prod_${(p.name || '').toLowerCase().replace(/\s+/g, '_')}` === productId));
+    if (!prod && Array.isArray(allStorefrontProducts) && allStorefrontProducts.length > 0) {
+        prod = allStorefrontProducts.find(p => p && (p.id === productId || p.name === productId));
     }
 
     if (prod) {
@@ -147,7 +131,10 @@ export async function openProductQuickDetail(productId) {
         if (origPriceEl) origPriceEl.textContent = prod.originalPrice && prod.originalPrice !== prod.salePrice ? prod.originalPrice : "";
 
         const catLabelEl = document.getElementById("detailCategoryLabel");
-        if (catLabelEl) catLabelEl.textContent = prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP";
+        if (catLabelEl) {
+            const catObj = (activeStorefrontCategories || []).find(c => c && c.id === prod.category);
+            catLabelEl.textContent = catObj ? catObj.name.toUpperCase() : (prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP");
+        }
 
         const descEl = document.getElementById("detailDescription");
         if (descEl) descEl.textContent = prod.description || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
@@ -239,49 +226,139 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Render toàn bộ danh mục sản phẩm từ Local JS hoặc API Backend vào từng Section riêng biệt
+ * Tự động đổ danh mục vào tất cả các thẻ select dropdown trên giao diện (Không hardcode)
+ */
+export function populateCategoryDropdowns(categories) {
+    if (!Array.isArray(categories)) return;
+    const activeCats = categories.filter(c => c && c.isActive !== false && c.status !== 'inactive' && !c.isDeleted);
+    activeCats.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+
+    // 1. Dropdown bộ lọc sản phẩm trong Admin Portal
+    const filterSelect = document.getElementById('filterProductCategory');
+    if (filterSelect) {
+        const currentVal = filterSelect.value;
+        let optHtml = `<option value="">Tất cả danh mục (${activeCats.length})</option>`;
+        activeCats.forEach(c => {
+            optHtml += `<option value="${c.id}">${c.name}</option>`;
+        });
+        filterSelect.innerHTML = optHtml;
+        if (currentVal) filterSelect.value = currentVal;
+    }
+
+    // 2. Dropdown chọn danh mục trong Form Tạo/Sửa Sản phẩm
+    const formSelect = document.getElementById('prodCategory');
+    if (formSelect) {
+        const currentVal = formSelect.value;
+        let optHtml = '<option value="">-- Chọn danh mục hoa --</option>';
+        activeCats.forEach(c => {
+            optHtml += `<option value="${c.id}">${c.name} (${c.id})</option>`;
+        });
+        formSelect.innerHTML = optHtml;
+        if (currentVal) formSelect.value = currentVal;
+    }
+}
+
+/**
+ * TỰ ĐỘNG TẠO TOÀN BỘ CÁC SECTION DANH MỤC & PRODUCT GRIDS TRÊN STOREFRONT
+ * Thay thế hoàn toàn mã HTML tĩnh / hardcoded
+ */
+export function renderDynamicStorefrontSections(categories, products) {
+    const container = document.getElementById('dynamicCategorySections');
+    if (!container || !Array.isArray(categories)) return;
+
+    const activeCats = categories.filter(c => 
+        c && 
+        c.isActive !== false && 
+        c.isActive !== 'false' && 
+        c.status !== 'inactive' && 
+        c.status !== 'deleted' && 
+        !c.isDeleted
+    );
+    activeCats.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+
+    const allProds = Array.isArray(products) ? products : [];
+    let html = '';
+
+    activeCats.forEach((cat, index) => {
+        const isEven = index % 2 === 0;
+        const bgClass = cat.id === 'hoa_cuoi' 
+            ? 'bg-pink-50/40 border-t border-pink-100' 
+            : (isEven ? 'bg-white' : 'bg-gray-50');
+
+        // Section Danh mục Động
+        html += `
+            <section id="cat-${cat.id}" class="py-12 md:py-16 ${bgClass} scroll-mt-20">
+                <div class="container mx-auto max-w-7xl px-4">
+                    <div class="text-center mb-8">
+                        <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
+                            ${cat.name}
+                            <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
+                        </h2>
+                        ${cat.description ? `<p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">${cat.description}</p>` : ''}
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="dyn-grid-${cat.id}">
+                        <!-- Products rendered dynamically -->
+                    </div>
+                </div>
+            </section>
+        `;
+
+        // Chèn Promo Banner ở vị trí hài hòa sau danh mục thứ 2
+        if (index === 1 || cat.id === 'bo_hoa') {
+            html += `
+                <section class="py-8 bg-white">
+                    <div class="container mx-auto max-w-7xl px-4">
+                        <div class="relative rounded-2xl overflow-hidden h-48 md:h-60 shadow-md group img-skeleton">
+                            <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                                alt="Banner Hoa Chúc Mừng" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement.classList.remove('img-skeleton');"
+                                class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <div class="text-center text-white p-4">
+                                    <h3 class="font-serif text-2xl md:text-4xl font-bold mb-2 shadow-sm" data-i18n="banner_promo_title">Kệ Hoa Chúc Mừng & Khai Trương</h3>
+                                    <p class="mb-4 text-sm md:text-base hidden md:block" data-i18n="banner_promo_desc">Mang thịnh vượng, tài lộc đến đối tác và bạn bè</p>
+                                    <a href="#cat-ke_hoa" onclick="scrollToCategory('ke_hoa'); return false;"
+                                        class="bg-white text-gray-900 hover:bg-primary hover:text-white px-6 py-2 rounded-full font-bold text-sm transition inline-block shadow-md">
+                                        <span data-i18n="banner_promo_btn">Khám Phá Kệ Hoa</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+    });
+
+    container.innerHTML = html;
+
+    // Render sản phẩm vào từng Grid danh mục vừa tạo
+    activeCats.forEach(cat => {
+        const catProds = allProds.filter(p => p && p.category === cat.id && p.isActive !== false);
+        renderProducts(catProds, `dyn-grid-${cat.id}`);
+    });
+}
+
+/**
+ * Render toàn bộ danh mục sản phẩm từ API Backend vào từng Section
  */
 export async function renderAllProducts() {
-    // 1. Render ngay lập tức từ bộ dữ liệu mock cục bộ
-    const gioHoa = (typeof window !== 'undefined' && window.products_gio_hoa) ? window.products_gio_hoa : products_gio_hoa;
-    const boHoa = (typeof window !== 'undefined' && window.products_bo_hoa) ? window.products_bo_hoa : products_bo_hoa;
-    const keHoa = (typeof window !== 'undefined' && window.products_ke_hoa) ? window.products_ke_hoa : products_ke_hoa;
-    const binhHoa = (typeof window !== 'undefined' && window.products_binh_hoa) ? window.products_binh_hoa : products_binh_hoa;
-    const lanHoDiep = (typeof window !== 'undefined' && window.products_lan_ho_diep) ? window.products_lan_ho_diep : products_lan_ho_diep;
-    const hoaCuoi = (typeof window !== 'undefined' && window.products_hoa_cuoi) ? window.products_hoa_cuoi : products_hoa_cuoi;
-
-    if (Array.isArray(gioHoa) && gioHoa.length > 0) renderProducts(gioHoa, 'gio-hoa-grid');
-    if (Array.isArray(boHoa) && boHoa.length > 0) renderProducts(boHoa, 'bo-hoa-grid');
-    if (Array.isArray(keHoa) && keHoa.length > 0) renderProducts(keHoa, 'ke-hoa-grid');
-    if (Array.isArray(binhHoa) && binhHoa.length > 0) renderProducts(binhHoa, 'binh-hoa-grid');
-    if (Array.isArray(lanHoDiep) && lanHoDiep.length > 0) renderProducts(lanHoDiep, 'lan-ho-diep-grid');
-    if (Array.isArray(hoaCuoi) && hoaCuoi.length > 0) renderProducts(hoaCuoi, 'hoa-cuoi-grid');
-
-    // 2. Nạp thêm danh mục động từ Backend API /api/flower/v1/products
     try {
-        const res = await fetch(`${API_BASE}/products?active=true`);
-        if (res.ok) {
-            const json = await res.json();
-            if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-                allStorefrontProducts = json.data;
+        const [prods, cats] = await Promise.all([
+            getProducts(true),
+            getCategories(true)
+        ]);
 
-                const apiGioHoa = json.data.filter(p => p.category === 'gio_hoa');
-                const apiBoHoa = json.data.filter(p => p.category === 'bo_hoa');
-                const apiKeHoa = json.data.filter(p => p.category === 'ke_hoa');
-                const apiBinhHoa = json.data.filter(p => p.category === 'binh_hoa');
-                const apiLanHoDiep = json.data.filter(p => p.category === 'lan_ho_diep');
-                const apiHoaCuoi = json.data.filter(p => p.category === 'hoa_cuoi');
-
-                if (apiGioHoa.length > 0) renderProducts(apiGioHoa, 'gio-hoa-grid');
-                if (apiBoHoa.length > 0) renderProducts(apiBoHoa, 'bo-hoa-grid');
-                if (apiKeHoa.length > 0) renderProducts(apiKeHoa, 'ke-hoa-grid');
-                if (apiBinhHoa.length > 0) renderProducts(apiBinhHoa, 'binh-hoa-grid');
-                if (apiLanHoDiep.length > 0) renderProducts(apiLanHoDiep, 'lan-ho-diep-grid');
-                if (apiHoaCuoi.length > 0) renderProducts(apiHoaCuoi, 'hoa-cuoi-grid');
-            }
+        if (Array.isArray(cats) && cats.length > 0) {
+            activeStorefrontCategories = cats;
+            populateCategoryDropdowns(cats);
         }
+        if (Array.isArray(prods) && prods.length > 0) {
+            allStorefrontProducts = prods;
+        }
+
+        renderDynamicStorefrontSections(activeStorefrontCategories, allStorefrontProducts);
     } catch (e) {
-        console.log("Using static catalogue products.");
+        console.warn("Lỗi nạp danh mục/sản phẩm:", e);
     }
 }
 
@@ -321,19 +398,18 @@ export function initMobileMenu() {
 }
 
 /**
- * Render danh mục nhanh trên Storefront & Navigation từ API /api/categories hoặc categories.json
+ * Render danh mục nhanh trên Storefront & Navigation từ API /api/categories
  */
 export async function renderStorefrontCategories() {
     const container = document.getElementById('storefrontQuickCategories');
     const desktopDynamicNav = document.getElementById('dynamicNavItems');
     const mobileDynamicNav = document.getElementById('mobileDynamicNavItems');
 
-    const defaultCats = (typeof window !== 'undefined' && window.default_categories) ? window.default_categories : default_categories;
+    try {
+        const catsList = await getCategories(true);
+        if (!Array.isArray(catsList) || catsList.length === 0) return;
 
-    // Helper render categories lên UI
-    function applyCategories(cats) {
-        if (!Array.isArray(cats)) return;
-        const activeCats = cats.filter(c => 
+        const activeCats = catsList.filter(c => 
             c && 
             c.isActive !== false && 
             c.isActive !== 'false' && 
@@ -342,6 +418,7 @@ export async function renderStorefrontCategories() {
             !c.isDeleted
         );
         activeCats.sort((a, b) => (Number(a.order) || 99) - (Number(b.order) || 99));
+        activeStorefrontCategories = activeCats;
 
         // 1. Quick Category Circles trên Storefront
         if (container) {
@@ -383,32 +460,10 @@ export async function renderStorefrontCategories() {
             mobileDynamicNav.innerHTML = mobHtml;
         }
 
-        // 4. Tự động Ẩn/Hiện toàn bộ Section của danh mục theo trạng thái Bật/Ẩn của Admin
-        const allPossibleCatIds = ['gio_hoa', 'bo_hoa', 'ke_hoa', 'binh_hoa', 'lan_ho_diep', 'hoa_cuoi'];
-        allPossibleCatIds.forEach(id => {
-            const sec = document.getElementById(`cat-${id}`);
-            const isActive = activeCats.some(c => c && c.id === id);
-            if (sec) {
-                sec.style.display = isActive ? '' : 'none';
-            }
-        });
-    }
-
-    // Nạp danh mục mặc định ban đầu
-    applyCategories(defaultCats);
-
-    // Nạp đồng bộ từ API backend /api/flower/v1/categories
-    try {
-        const res = await fetch(`${API_BASE}/categories?active=true&_t=${Date.now()}`);
-        if (res.ok) {
-            const json = await res.json();
-            if (json.success && Array.isArray(json.data)) {
-                if (typeof window !== 'undefined') window.default_categories = json.data;
-                applyCategories(json.data);
-            }
-        }
+        // 4. Populate các select dropdowns
+        populateCategoryDropdowns(catsList);
     } catch (e) {
-        console.log("Using static categories from categories.json.");
+        console.warn("Lỗi nạp danh mục:", e);
     }
 }
 
@@ -418,10 +473,6 @@ export async function renderStorefrontCategories() {
 export function applyStorefrontCompanyInfo(info) {
     if (!info || typeof document === 'undefined') return;
 
-    const setHtml = (id, html) => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = html;
-    };
     const setText = (id, text) => {
         const el = document.getElementById(id);
         if (el) el.textContent = text;
@@ -543,6 +594,8 @@ if (typeof window !== 'undefined') {
     window.renderProducts = renderProducts;
     window.renderAllProducts = renderAllProducts;
     window.renderStorefrontCategories = renderStorefrontCategories;
+    window.populateCategoryDropdowns = populateCategoryDropdowns;
+    window.renderDynamicStorefrontSections = renderDynamicStorefrontSections;
     window.initMobileMenu = initMobileMenu;
     window.openProductQuickDetail = openProductQuickDetail;
     window.closeProductQuickDetail = closeProductQuickDetail;

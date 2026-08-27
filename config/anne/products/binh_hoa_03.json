@@ -1,0 +1,27 @@
+{
+  "id": "binh_hoa_03",
+  "name": "Bình Thủy Tinh Trong Suốt Dáng Trụ",
+  "category": "binh_hoa",
+  "priceLevelId": "price_lvl_01",
+  "priceNumber": 350000,
+  "salePrice": "350,000₫",
+  "originalPrice": "390,000₫",
+  "badge": "",
+  "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/B%C3%ACnh%20Th%E1%BB%A7y%20Tinh%20Trong%20Su%E1%BB%91t%20D%C3%A1ng%20Tr%E1%BB%A5.webp",
+  "gallery": [
+    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/B%C3%ACnh%20Th%E1%BB%A7y%20Tinh%20Trong%20Su%E1%BB%91t%20D%C3%A1ng%20Tr%E1%BB%A5.webp",
+    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_ho_phach.png"
+  ],
+  "description": "Bình thủy tinh trụ trong suốt độ tinh khiết cao, thích hợp cắm các loại hoa cành dài như Tulip, Hoa Hồng, Hoa Ly phong cách hiện đại.",
+  "flowerComposition": "Thủy tinh cao cấp chịu lực, thành dày 3mm, chống trầy xước",
+  "dimension": "Cao 30cm x Đường kính miệng 10cm",
+  "careTips": "Rửa sạch với nước pha chút giấm hoặc chanh để giữ độ sáng bóng trong vắt của thủy tinh.",
+  "stockByBranch": {
+    "branch_q10": 20,
+    "branch_q1": 12,
+    "branch_thao_dien": 10
+  },
+  "dailyQuota": 50,
+  "isActive": true,
+  "updatedAt": "2026-08-24T12:00:00Z"
+}

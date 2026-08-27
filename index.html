@@ -449,134 +449,11 @@
         </div>
     </section>
 
-    <!-- 1. DANH MỤC: GIỎ & LẴNG HOA -->
-    <section id="cat-gio_hoa" class="py-12 md:py-16 bg-white scroll-mt-20" style="display: none;">
-        <div class="container mx-auto max-w-7xl px-4">
-            <div class="text-center mb-8">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
-                    Giỏ & Lẵng Hoa Tươi
-                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
-                </h2>
-                <p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">
-                    Giỏ mây phối hoa tone màu ấm áp ngọt ngào, món quà trân quý mừng sinh nhật và tri ân đối tác.
-                </p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="gio-hoa-grid">
-                <!-- Render qua JS -->
-            </div>
-        </div>
-    </section>
+    <!-- DYNAMIC STOREFRONT CATEGORY SECTIONS (Tự động tạo & hiển thị theo categories.json & API) -->
+    <div id="dynamicCategorySections">
+        <!-- Render tự động qua JS flower_app.js -->
+    </div>
 
-    <!-- 2. DANH MỤC: BÓ HOA TƯƠI -->
-    <section id="cat-bo_hoa" class="py-12 md:py-16 bg-gray-50 scroll-mt-20">
-        <div class="container mx-auto max-w-7xl px-4">
-            <div class="text-center mb-8">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
-                    Bó Hoa Tươi Thiết Kế
-                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
-                </h2>
-                <p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">
-                    Bó hoa tươi nghệ thuật với phong cách phối màu hiện đại, gửi gắm trọn vẹn yêu thương.
-                </p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="bo-hoa-grid">
-                <!-- Render qua JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- BANNER KHUYẾN MÃI KỆ HOA -->
-    <section class="py-8 bg-white">
-        <div class="container mx-auto max-w-7xl px-4">
-            <div class="relative rounded-2xl overflow-hidden h-48 md:h-60 shadow-md group img-skeleton">
-                <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                    alt="Banner Hoa Chúc Mừng" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement.classList.remove('img-skeleton');"
-                    class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
-                <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div class="text-center text-white p-4">
-                        <h3 class="font-serif text-2xl md:text-4xl font-bold mb-2 shadow-sm">Kệ Hoa Chúc Mừng Khai Trương</h3>
-                        <p class="mb-4 text-sm md:text-base hidden md:block">Mang thịnh vượng, tài lộc và may mắn đến lễ khánh thành, khai trương</p>
-                        <a href="#cat-ke_hoa" onclick="scrollToCategory('ke_hoa'); return false;"
-                            class="bg-white text-gray-900 hover:bg-primary hover:text-white px-6 py-2 rounded-full font-bold text-sm transition inline-block">
-                            Khám Phá Kệ Hoa
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 3. DANH MỤC: KỆ HOA KHAI TRƯƠNG -->
-    <section id="cat-ke_hoa" class="py-12 md:py-16 bg-gray-50 scroll-mt-20">
-        <div class="container mx-auto max-w-7xl px-4">
-            <div class="text-center mb-8">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
-                    Kệ Hoa Khai Trương & Sự Kiện
-                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
-                </h2>
-                <p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">
-                    Kệ hoa đại cát, hồng phát thiết kế 2 tầng hoành tráng cho các buổi lễ trang trọng.
-                </p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="ke-hoa-grid">
-                <!-- Render qua JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- 4. DANH MỤC: BÌNH CẮM HOA -->
-    <section id="cat-binh_hoa" class="py-12 md:py-16 bg-white scroll-mt-20">
-        <div class="container mx-auto max-w-7xl px-4">
-            <div class="text-center mb-8">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
-                    Bình Cắm Hoa Nghệ Thuật ("Thả Bình")
-                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
-                </h2>
-                <p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">
-                    Mẫu bình gốm sứ và thủy tinh cao cấp, nâng tầm vẻ đẹp tự nhiên cho từng cành hoa.
-                </p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="binh-hoa-grid">
-                <!-- Render qua JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- 5. DANH MỤC: LAN HỒ ĐIỆP -->
-    <section id="cat-lan_ho_diep" class="py-12 md:py-16 bg-gray-50 scroll-mt-20">
-        <div class="container mx-auto max-w-7xl px-4">
-            <div class="text-center mb-8">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
-                    Lan Hồ Điệp Hoàng Gia
-                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
-                </h2>
-                <p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">
-                    Chậu hoa lan hồ điệp thuần khiết, sang trọng bậc nhất cho quà tặng tân gia, khánh thành.
-                </p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="lan-ho-diep-grid">
-                <!-- Render qua JS -->
-            </div>
-        </div>
-    </section>
-
-    <!-- 6. DANH MỤC: HOA CƯỚI CẦM TAY -->
-    <section id="cat-hoa_cuoi" class="py-12 md:py-16 bg-pink-50/50 border-t border-pink-100 scroll-mt-20">
-        <div class="container mx-auto max-w-7xl px-4">
-            <div class="text-center mb-8">
-                <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
-                    Hoa Cưới Cầm Tay Cô Dâu
-                    <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
-                </h2>
-                <p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">
-                    Bó hoa cưới cô dâu lộng lẫy, thanh lịch cho khoảnh khắc trọng đại thiêng liêng.
-                </p>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="hoa-cuoi-grid">
-                <!-- Render qua JS -->
-            </div>
-        </div>
-    </section>
 
     <section class="py-12 bg-white border-t border-gray-100">
         <div class="container mx-auto max-w-7xl px-4">
@@ -1236,12 +1113,6 @@
                         <div class="flex items-center gap-2 w-full sm:w-auto">
                             <select id="filterProductCategory" onchange="loadAdminProducts()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
                                 <option value="">Tất cả danh mục</option>
-                                <option value="bo_hoa">Bó Hoa Tươi</option>
-                                <option value="ke_hoa">Kệ Hoa Khai Trương</option>
-                                <option value="binh_hoa">Bình Hoa Nghệ Thuật</option>
-                                <option value="gio_hoa">Giỏ Hoa Vintage</option>
-                                <option value="lan_ho_diep">Lan Hồ Điệp</option>
-                                <option value="hoa_cuoi">Hoa Cưới Cầm Tay</option>
                             </select>
                             <button onclick="openProductModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
                                 <i class="fa-solid fa-plus mr-1"></i> Thêm Mẫu Hoa Mới
@@ -1871,12 +1742,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Danh mục *</label>
                         <select id="prodCategory" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white" required>
-                            <option value="bo_hoa">Bó Hoa Tươi (bo_hoa)</option>
-                            <option value="ke_hoa">Kệ Hoa Khai Trương (ke_hoa)</option>
-                            <option value="binh_hoa">Bình Hoa Gốm Nghệ Thuật (binh_hoa)</option>
-                            <option value="gio_hoa">Giỏ Hoa Vintage (gio_hoa)</option>
-                            <option value="lan_ho_diep">Lan Hồ Điệp (lan_ho_diep)</option>
-                            <option value="hoa_cuoi">Hoa Cưới Cầm Tay (hoa_cuoi)</option>
+                            <option value="">-- Chọn danh mục hoa --</option>
                         </select>
                     </div>
                 </div>

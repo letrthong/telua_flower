@@ -1,0 +1,27 @@
+{
+  "id": "bo_hoa_04",
+  "name": "Lily Julibee Ngọt Ngào",
+  "category": "bo_hoa",
+  "priceLevelId": "price_lvl_02",
+  "priceNumber": 850000,
+  "salePrice": "850,000₫",
+  "originalPrice": "950,000₫",
+  "badge": "Mới",
+  "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/lily_julibee.png",
+  "gallery": [
+    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/lily_julibee.png",
+    "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=800"
+  ],
+  "description": "Bó hoa Lily Julibee cánh kép thơm ngát phối cùng hoa baby và giấy gói phong cách Hàn Quốc ngọt ngào.",
+  "flowerComposition": "Lily Julibee cánh kép (6 cành lớn), Hoa Baby trắng, Cúc Tana, Lá Bạc Dollar",
+  "dimension": "Cao 55cm x Rộng 40cm",
+  "careTips": "Cắt gốc 45 độ, ngắt bớt lá ngập trong nước, tránh để gần quạt gió thổi trực tiếp.",
+  "stockByBranch": {
+    "branch_q10": 7,
+    "branch_q1": 4,
+    "branch_thao_dien": 3
+  },
+  "dailyQuota": 12,
+  "isActive": true,
+  "updatedAt": "2026-08-24T12:00:00Z"
+}
