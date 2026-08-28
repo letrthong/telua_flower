@@ -3,9 +3,34 @@
 
 ---
 
-## 1. Tổng Quan Kiến Trúc Lưu Trữ JSON (Storage Overview)
+## 1. Tổng Quan Kiến Trúc Lưu Trữ JSON & Cơ Chế Nhận Diện Thư Mục Cấu Hình
 
-Toàn bộ dữ liệu của hệ thống được tổ chức thành các tệp JSON độc lập trong thư mục `config/` (hoặc dễ dàng chuyển đổi sang MongoDB / PostgreSQL khi mở rộng quy mô):
+### 📁 Cơ chế Tự Động Nhận Diện Thư Mục Cấu Hình (`_detect_config_dir`)
+Để đảm bảo ứng dụng chạy mượt mà trên mọi môi trường (Windows Workspace, Linux Server, Container Docker `/app`), module [flower_config.py](file:///d:/wmshare/telua_flower/src/flower_config.py) áp dụng thuật toán nhận diện và cô lập dữ liệu theo thứ tự ưu tiên:
+
+1. **Biến môi trường (`FLOWER_CONFIG_DIR`)**: Nếu biến môi trường được thiết lập, ứng dụng sẽ ưu tiên sử dụng đường dẫn này và tự động tạo thư mục nếu chưa tồn tại.
+2. **Tìm kiếm thư mục `config/anne` từ Workspace Root**: Tự động duyệt ngược từ vị trí module `flower_config.py` lên các thư mục cha để tìm thư mục `config`. Khi tìm thấy, ứng dụng tự động gắn sub-folder `anne` (`<root>/config/anne`) để cô lập dữ liệu theo nhãn thương hiệu riêng biệt.
+3. **Môi trường Docker Linux (`/app/config/anne`)**: Trong môi trường container Linux không phải Windows (`os.name != 'nt'`), tự động ánh xạ vào `/app/config/anne`.
+4. **Cơ chế Fallback cục bộ**: Nếu không khớp các điều kiện trên, ứng dụng fallback về thư mục `config` ngay cạnh thư mục controller/source (`<src_parent>/config`).
+
+### 📂 Cấu Trúc Phân Cấp Thư Mục Dữ Liệu (`FLOWER_CONFIG_DIR`)
+```text
+config/anne/
+├── branches.json              # Danh sách showroom, chi nhánh & tọa độ
+├── staff_users.json          # Tài khoản nhân sự nội bộ (admin, manager, florist, sales)
+├── customers.json            # Hồ sơ khách hàng & tích điểm loyalty
+├── products.json             # Danh mục sản phẩm hoa tươi & bình hoa
+├── categories.json           # Danh mục phân loại hoa
+├── price_levels.json         # Phân tầng mức giá & Price Guardrails
+├── promotions.json           # Mã giảm giá Voucher & chiến dịch khuyến mãi
+├── translations.json         # Từ điển đa ngôn ngữ 5 thứ tiếng (Dynamic i18n)
+├── wastage_reports.json      # Báo cáo hủy hoa dập/héo hỏng
+├── infoCompany.json          # Thông tin thương hiệu, hotline, địa chỉ showroom
+├── cache_version.json        # Timestamp đồng bộ cache giữa các workers
+├── orders/                   # Dữ liệu đơn hàng phân mảnh theo tháng (YYYY-MM.json)
+├── products/                 # File JSON chi tiết của từng sản phẩm riêng lẻ
+└── users/                    # Dữ liệu khách hàng/nhân sự mở rộng
+```
 
 ```mermaid
 erDiagram
@@ -22,7 +47,7 @@ erDiagram
 
 ## 2. Chi Tiết Các Tệp JSON & Schema Chuẩn
 
-### 🏬 1. `config/branches.json` - Danh Sách Showroom & Chi Nhánh
+### 🏬 1. `config/branches.json` (hoặc `config/anne/branches.json`) - Danh Sách Showroom & Chi Nhánh
 ```json
 [
   {
