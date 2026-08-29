@@ -54,10 +54,9 @@ graph TD
 *Dành cho khi ra mắt mẫu cắm mới hoặc cập nhật ảnh chụp thực tế:*
 
 1. **Bước 1:** Bấm nút **"Thêm Mẫu Hoa Mới"** hoặc bấm biểu tượng ✏️ **"Chỉnh sửa"** trên sản phẩm.
-2. **Bước 2 (Quản lý Hình ảnh):**
-   - Bấm **"Chọn ảnh từ máy"** (Hỗ trợ kéo thả ảnh `.jpg`, `.png`, `.webp`).
-   - Hệ thống tự động nén dung lượng ảnh để tối ưu tốc độ tải trang dưới 1s.
-   - Hoặc dán trực tiếp đường link ảnh từ kho ảnh công khai.
+2. **Bước 2 (Quản lý Hình ảnh Đại Diện & Bộ Sưu Tập Gallery):**
+   - **Ảnh đại diện chính (`image`):** Upload từ máy hoặc dán link ảnh URL trực tiếp.
+   - **Bộ sưu tập ảnh chụp các góc (`gallery`):** Thêm nhiều link ảnh góc chụp khác hoặc upload ảnh phụ, xem thumbnail trực quan và xóa từng ảnh bằng nút ❌.
 3. **Bước 3 (Nhập Nội dung Chi tiết & Giá bán):**
    - Điền Tên hoa, Danh mục, Huy hiệu nổi bật (`badge`: Bán Chạy, Mới, Hot...).
    - Thiết lập Phân tầng mức giá (Price Level) và Giá bán kiểm soát sàn/trần.
@@ -67,11 +66,21 @@ graph TD
    - Nhập Hướng dẫn chăm sóc hoa tươi lâu (`careTips`).
    - Cập nhật số lượng tồn kho từng chi nhánh (`stockByBranch`: Q.10, Q.1, Thảo Điền).
 4. **Bước 4:** Bấm **"Lưu Sản Phẩm"** $\rightarrow$ Hệ thống tự động:
-   - Ghi đầy đủ 100% dữ liệu chi tiết vào file `config/anne/products/{id}.json`.
+   - Ghi đầy đủ 100% dữ liệu chi tiết vào file `config/anne/products/{id}.json` (kèm mảng `gallery: [...]` đầy đủ).
    - Cập nhật bản tóm tắt tinh gọn vào file `config/anne/products.json`.
    - Hiển thị tức thì trên Modal Chi Tiết Nhanh (`productQuickDetailModal`) và Catalogue trang chủ.
 
 ---
+
+### 📸 Thao tác 3: Quản Lý Bộ Sưu Tập Ảnh Phụ (Product Gallery Manager)
+1. **Thêm ảnh vào Gallery:**
+   - Nhập URL ảnh vào ô **"URL ảnh phụ"** và bấm **"➕ Thêm Ảnh"** (hoặc chọn tệp từ thiết bị).
+   - Ảnh mới lập tức xuất hiện trong danh sách thumbnail xem trước của sản phẩm.
+2. **Xóa ảnh khỏi Gallery:**
+   - Mỗi thumbnail trong danh sách có nút xóa đỏ ❌ ở góc trên.
+   - Bấm nút ❌ để loại bỏ ảnh đó khỏi danh sách gallery.
+3. **Lưu thay đổi:**
+   - Bấm **"Lưu Mẫu Hoa"** để cập nhật mảng `gallery: [...]` vào tệp chi tiết `config/anne/products/{id}.json`.
 
 ## 4. Thiết Kế API Endpoints Quản Lý Nội Dung Sản Phẩm
 

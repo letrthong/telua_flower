@@ -1848,6 +1848,94 @@
                     </div>
                 </div>
 
+                <!-- 3. KHỐI THIẾT LẬP DANH MỤC & GIÁ BÁN -->
+                <div class="space-y-3 pt-2 border-t border-gray-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Danh Mục Hoa *</label>
+                            <select id="prodCategory" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                                <option value="bo_hoa">🌸 Bó Hoa Tươi (bo_hoa)</option>
+                                <option value="gio_hoa">🧺 Giỏ & Lẵng Hoa (gio_hoa)</option>
+                                <option value="ke_hoa">🏆 Kệ Hoa Khai Trương (ke_hoa)</option>
+                                <option value="binh_hoa">🏺 Bình Cắm Hoa (binh_hoa)</option>
+                                <option value="lan_ho_diep">🪴 Lan Hồ Điệp (lan_ho_diep)</option>
+                                <option value="hoa_cuoi">👰 Hoa Cưới Cầm Tay (hoa_cuoi)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Huy Hiệu (Badge)</label>
+                            <input type="text" id="prodBadge" placeholder="VD: Bán Chạy, Mới, Hot, -10%" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Phân Tầng Mức Giá (Governance Level) *</label>
+                            <select id="prodPriceLevel" onchange="onPriceLevelChange()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                                <option value="price_lvl_01">Mức 1: Tiêu chuẩn / Phổ thông (&le; 500k)</option>
+                                <option value="price_lvl_02">Mức 2: Trung cấp / Thiết kế (500k - 1tr)</option>
+                                <option value="price_lvl_03">Mức 3: Cao cấp / Sự kiện (1tr - 2.5tr)</option>
+                                <option value="price_lvl_04">Mức 4: VIP / Lan hồ điệp (&gt; 2.5tr)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Giá Bán Niêm Yết (VNĐ) *</label>
+                            <input type="number" id="prodPriceNumber" oninput="validateLivePrice()" step="10000" placeholder="420000" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-primary focus:outline-none focus:border-primary focus:bg-white" required>
+                            <span id="priceValidationMsg" class="text-[10px] text-gray-500 mt-0.5 block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. KHỐI QUẢN LÝ ẢNH ĐẠI DIỆN CHÍNH -->
+                <div class="p-3.5 bg-gray-50/80 rounded-2xl border border-gray-200/80 space-y-2.5">
+                    <label class="block text-xs font-bold text-gray-800">📸 Ảnh Đại Diện Chính (Cover Image)</label>
+                    <div class="flex items-center gap-3">
+                        <div class="w-16 h-16 rounded-xl border border-gray-200 overflow-hidden bg-white flex-shrink-0 relative group shadow-2xs">
+                            <img id="prodImagePreview" src="https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500" alt="Preview" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 space-y-1.5">
+                            <input type="text" id="prodImage" oninput="document.getElementById('prodImagePreview').src = this.value" placeholder="https://... hoặc tải từ máy" class="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary font-mono">
+                            <div class="flex items-center gap-2">
+                                <label class="cursor-pointer px-2.5 py-1 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-2xs">
+                                    <i class="fa-solid fa-cloud-arrow-up text-primary"></i> Chọn Tệp Từ Máy
+                                    <input type="file" id="prodImageFileInput" accept="image/*" onchange="handleImageFileUpload(event)" class="hidden">
+                                </label>
+                                <span id="imageStatusLabel" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">URL Web</span>
+                                <span id="imageSizeInfo" class="text-[10px] text-gray-400"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. KHỐI BỘ SƯU TẬP ẢNH PHỤ (GALLERY MANAGER) -->
+                <div class="p-3.5 bg-purple-50/30 rounded-2xl border border-purple-100 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-images text-purple-600 text-sm"></i>
+                            <label class="text-xs font-bold text-gray-800">Bộ Sưu Tập Ảnh Phụ (Gallery / Multi-Image)</label>
+                        </div>
+                        <span id="prodGalleryCountBadge" class="text-[10px] font-bold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">0 ảnh</span>
+                    </div>
+
+                    <!-- Danh Sách Thumbnails Ảnh Trong Gallery -->
+                    <div id="prodGalleryThumbnailsContainer" class="flex flex-wrap gap-2.5 min-h-[50px] p-2 bg-white rounded-xl border border-purple-100/80 items-center">
+                        <span class="text-xs text-gray-400 italic">Chưa có ảnh phụ nào trong bộ sưu tập.</span>
+                    </div>
+
+                    <!-- Hàng Thêm Ảnh Mới Vào Gallery -->
+                    <div class="flex items-center gap-2 pt-1">
+                        <input type="url" id="prodGalleryNewInput" placeholder="Dán đường dẫn URL ảnh phụ mới..." class="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-mono focus:outline-none focus:border-purple-500">
+                        <button type="button" onclick="addProductGalleryImageFromInput()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+                            <i class="fa-solid fa-plus"></i> Thêm Link
+                        </button>
+                        <label class="cursor-pointer px-3 py-1.5 bg-white hover:bg-gray-100 border border-purple-200 text-purple-700 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+                            <i class="fa-solid fa-upload"></i> Tải Ảnh
+                            <input type="file" id="prodGalleryFileInput" accept="image/*" onchange="handleGalleryFileUpload(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 6. TỒN KHO TỪNG CHI NHÁNH -->
                 <div class="grid grid-cols-3 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-gray-700 mb-1">Kho Q.10</label>

@@ -1893,6 +1893,83 @@ export async function handleImageFileUpload(event) {
     }
 }
 
+let editingProductGallery = [];
+
+export function renderEditingProductGallery() {
+    const container = document.getElementById("prodGalleryThumbnailsContainer");
+    const countBadge = document.getElementById("prodGalleryCountBadge");
+    if (!container) return;
+
+    if (countBadge) {
+        countBadge.textContent = `${editingProductGallery.length} ảnh`;
+    }
+
+    if (!editingProductGallery || editingProductGallery.length === 0) {
+        container.innerHTML = `<span class="text-xs text-gray-400 italic">Chưa có ảnh phụ nào trong bộ sưu tập.</span>`;
+        return;
+    }
+
+    let html = "";
+    editingProductGallery.forEach((imgUrl, idx) => {
+        const isBase64 = imgUrl.startsWith("data:image");
+        const typeBadge = isBase64 ? "B64" : "URL";
+        html += `
+            <div class="relative group w-20 h-20 rounded-xl border border-gray-200 overflow-hidden bg-gray-50 flex-shrink-0 shadow-2xs">
+                <img src="${imgUrl}" alt="Gallery ${idx + 1}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=200'">
+                <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-mono px-1 rounded">#${idx + 1} ${typeBadge}</span>
+                <button type="button" onclick="removeProductGalleryImage(${idx})" title="Xóa ảnh này" class="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] shadow transition cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+export function addProductGalleryImage(url) {
+    const cleanUrl = (url || "").trim();
+    if (!cleanUrl) return;
+    editingProductGallery.push(cleanUrl);
+    renderEditingProductGallery();
+}
+
+export function addProductGalleryImageFromInput() {
+    const inp = document.getElementById("prodGalleryNewInput");
+    if (!inp) return;
+    const url = inp.value.trim();
+    if (!url) {
+        alert("Vui lòng nhập đường dẫn URL ảnh!");
+        return;
+    }
+    addProductGalleryImage(url);
+    inp.value = "";
+}
+
+export function removeProductGalleryImage(index) {
+    if (index >= 0 && index < editingProductGallery.length) {
+        editingProductGallery.splice(index, 1);
+        renderEditingProductGallery();
+    }
+}
+
+export async function handleGalleryFileUpload(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    lockScreen(`Đang xử lý và nén ảnh phụ: ${file.name}...`);
+    try {
+        const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+        addProductGalleryImage(base64String);
+        notifyUser(`Đã thêm ảnh "${file.name}" vào Gallery!`, "success");
+    } catch (err) {
+        alert("Lỗi xử lý ảnh gallery: " + err.message);
+    } finally {
+        unlockScreen();
+        if (event.target) event.target.value = "";
+    }
+}
+
 export function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");
     const title = document.getElementById("productModalTitle");
@@ -1906,7 +1983,9 @@ export function openProductModal(isEdit = false) {
     if (!modal) return;
 
     editingProductI18n = {};
+    editingProductGallery = [];
     switchProductLangTab("vi");
+    renderEditingProductGallery();
 
     if (errBox) errBox.classList.add("hidden");
     if (fileInput) fileInput.value = "";
@@ -2088,6 +2167,10 @@ export async function editProduct(productId) {
         sizeInfo.textContent = prodImg.startsWith("data:image") ? `Base64 (${(prodImg.length / 1024).toFixed(1)} KB)` : "Đường dẫn URL trực tiếp";
     }
 
+    // Load gallery
+    editingProductGallery = Array.isArray(prod.gallery) ? [...prod.gallery] : [];
+    renderEditingProductGallery();
+
     document.getElementById("prodFlowerComposition").value = prod.flowerComposition || "";
     document.getElementById("prodBadge").value = prod.badge || "";
     document.getElementById("prodDimension").value = prod.dimension || "";
@@ -2150,6 +2233,7 @@ export async function handleProductSubmit(event) {
         priceLevelId,
         priceNumber,
         image,
+        gallery: editingProductGallery,
         badge,
         flowerComposition,
         compTextId,
@@ -3327,6 +3411,11 @@ if (typeof window !== "undefined") {
     window.onProductTextIdChange = onProductTextIdChange;
     window.switchProductLangTab = switchProductLangTab;
     window.saveCurrentProdI18nDraft = saveCurrentProdI18nDraft;
+    window.renderEditingProductGallery = renderEditingProductGallery;
+    window.addProductGalleryImage = addProductGalleryImage;
+    window.addProductGalleryImageFromInput = addProductGalleryImageFromInput;
+    window.removeProductGalleryImage = removeProductGalleryImage;
+    window.handleGalleryFileUpload = handleGalleryFileUpload;
     window.filterTranslations = filterTranslations;
     window.saveAllTranslations = saveAllTranslations;
     window.populateTranslationKeyDropdown = populateTranslationKeyDropdown;
