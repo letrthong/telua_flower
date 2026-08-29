@@ -118,6 +118,7 @@ class TestOrderService(unittest.TestCase):
 
     def test_04_create_order_anonymous_sender(self):
         """Kiểm tra tính năng gửi hoa bí mật (Ẩn danh người gửi)"""
+        future_date = (datetime.now().date() + timedelta(days=2)).strftime("%Y-%m-%d")
         order_req = {
             "sender": {
                 "name": "Người Yêu Cũ",
@@ -130,7 +131,7 @@ class TestOrderService(unittest.TestCase):
                 "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
             },
             "delivery": {
-                "deliveryDate": datetime.now().date().strftime("%Y-%m-%d"),
+                "deliveryDate": future_date,
                 "timeSlot": "14:00 - 16:00"
             },
             "items": [
@@ -148,9 +149,11 @@ class TestOrderService(unittest.TestCase):
 
     def test_05_create_order_with_percentage_voucher(self):
         """Kiểm tra áp dụng voucher giảm 15% PHUNU15"""
+        future_date = (datetime.now().date() + timedelta(days=2)).strftime("%Y-%m-%d")
         order_req = {
             "sender": {"name": "Test Voucher", "phone": "0911000222"},
             "recipient": {"name": "Người Nhận", "phone": "0911000333", "address": "Quận 1, TP.HCM"},
+            "delivery": {"deliveryDate": future_date, "timeSlot": "09:00 - 11:00"},
             "items": [{"productId": "bo_hoa_01", "quantity": 2, "price": 420000}],  # 840.000
             "voucherCode": "PHUNU15"
         }
@@ -187,8 +190,10 @@ class TestOrderService(unittest.TestCase):
 
     def test_07_flask_api_delivery_and_orders_endpoints(self):
         """Kiểm tra các HTTP REST Endpoints: GET /api/delivery/slots, POST /api/orders, GET /api/orders/<id>"""
+        future_date = (datetime.now().date() + timedelta(days=3)).strftime("%Y-%m-%d")
+
         # 1. GET /api/delivery/slots
-        res_slots = self.client.get("/api/delivery/slots?date=2026-08-25")
+        res_slots = self.client.get(f"/api/delivery/slots?date={future_date}")
         self.assertEqual(res_slots.status_code, 200)
         json_slots = res_slots.get_json()
         self.assertTrue(json_slots["success"])
@@ -198,7 +203,7 @@ class TestOrderService(unittest.TestCase):
         order_payload = {
             "sender": {"name": "Khách Test API", "phone": "0988776655"},
             "recipient": {"name": "Người Nhận API", "phone": "0933221100", "address": "Quận 10, TP.HCM"},
-            "delivery": {"deliveryDate": "2026-08-25", "timeSlot": "09:00 - 11:00"},
+            "delivery": {"deliveryDate": future_date, "timeSlot": "09:00 - 11:00"},
             "items": [{"productId": "bo_hoa_01", "quantity": 1, "price": 420000}]
         }
         res_order = self.client.post("/api/orders", json=order_payload)

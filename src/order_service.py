@@ -263,7 +263,9 @@ def create_order(
 
     customer_id = (authenticated_user.get("id") or authenticated_user.get("userId")) if authenticated_user else None
 
-    is_anonymous = bool(sender.get("isAnonymous", False))
+    is_anonymous = bool(sender.get("isAnonymous", False)) or bool(order_data.get("isAnonymous", False))
+    card_msg = (customization.get("cardMessage") or order_data.get("cardMessage") or "").strip()
+    ribbon_msg = (customization.get("ribbonBanner") or order_data.get("ribbonBanner") or "").strip()
 
     new_order = {
         "id": order_id,
@@ -273,6 +275,8 @@ def create_order(
         "branchId": assigned_branch_id,
         "customerId": customer_id,
         "status": "pending",
+        "cardMessage": card_msg,
+        "ribbonBanner": ribbon_msg,
         "sender": {
             "name": "Người gửi bí mật (Ẩn danh)" if is_anonymous else sender_name,
             "realName": sender_name,
@@ -294,8 +298,8 @@ def create_order(
             "isExpress2H": is_express
         },
         "customization": {
-            "cardMessage": customization.get("cardMessage", ""),
-            "ribbonBanner": customization.get("ribbonBanner", "")
+            "cardMessage": card_msg,
+            "ribbonBanner": ribbon_msg
         },
         "items": valid_items,
         "financials": {

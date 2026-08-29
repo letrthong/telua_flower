@@ -736,8 +736,8 @@ def save_staff_users(staff_users: List[Dict[str, Any]]) -> bool:
     return success
 
 
-def get_users(include_customers: bool = True) -> List[Dict[str, Any]]:
-    """Trả về danh sách toàn bộ người dùng hệ thống (Nhân sự nội bộ + Khách hàng CRM)."""
+def get_users(include_customers: bool = False) -> List[Dict[str, Any]]:
+    """Trả về danh sách người dùng hệ thống. Mặc định chỉ nhân sự nội bộ; có thể kèm khách hàng CRM nếu include_customers=True."""
     staff = get_staff_users()
     if include_customers:
         customers = get_customers()
@@ -746,7 +746,8 @@ def get_users(include_customers: bool = True) -> List[Dict[str, Any]]:
 
 
 def save_users(users: List[Dict[str, Any]]) -> bool:
-    return save_staff_users(users)
+    staff_only = [u for u in users if isinstance(u, dict) and u.get("role") != "customer" and not str(u.get("id", "")).startswith("cust_")]
+    return save_staff_users(staff_only)
 
 
 def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:

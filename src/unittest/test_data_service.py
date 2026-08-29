@@ -125,7 +125,7 @@ class TestDataService(unittest.TestCase):
 
     def test_03_users_and_5_roles(self):
         """Kiểm tra đủ 5 vai trò (Roles) trong users.json"""
-        users = get_users()
+        users = get_users(include_customers=True)
         self.assertGreaterEqual(len(users), 5)
         roles = {u.get("role", "customer") for u in users if isinstance(u, dict)}
         expected_roles = {"super_admin", "branch_manager", "florist", "sales_consultant", "customer"}

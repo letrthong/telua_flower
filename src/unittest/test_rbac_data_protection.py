@@ -146,8 +146,8 @@ class TestRBACDataProtection(unittest.TestCase):
             "cardMessage": "Bí mật tình yêu",
             "isAnonymous": True
         }
-        success_b, created_order_b, _ = create_order(order_b_data, authenticated_user=self.cust_b)
-        self.assertTrue(success_b)
+        success_b, created_order_b, err_b = create_order(order_b_data, authenticated_user=self.cust_b)
+        self.assertTrue(success_b, f"Tạo đơn hàng B thất bại: {err_b}")
         order_b_id = created_order_b.get("id") or created_order_b.get("orderId")
 
         # 2. Khách hàng A gửi token của mình để tra cứu đơn hàng của Khách B -> Bị chặn 403 Forbidden
