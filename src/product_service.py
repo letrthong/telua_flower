@@ -190,10 +190,18 @@ def create_or_update_product(
 
         old_detail = get_product_by_id(product_id) or {}
         
+        name_text_id = product_data.get("nameTextId") or product_data.get("textId") or old_detail.get("nameTextId", "")
+        comp_text_id = product_data.get("compTextId") or product_data.get("compositionTextId") or old_detail.get("compTextId", "")
+        desc_text_id = product_data.get("descTextId") or product_data.get("descriptionTextId") or old_detail.get("descTextId", "")
+
+        # Khối đa ngôn ngữ i18n
+        i18n_data = product_data.get("i18n") or old_detail.get("i18n", {})
+
         # 1. Chi tiết đầy đủ
         full_detail = {
             "id": product_id,
             "name": name,
+            "nameTextId": name_text_id or None,
             "category": category,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
@@ -203,9 +211,12 @@ def create_or_update_product(
             "image": product_data.get("image") or old_detail.get("image", ""),
             "gallery": product_data.get("gallery") or old_detail.get("gallery", []),
             "description": product_data.get("description") or old_detail.get("description", ""),
+            "descTextId": desc_text_id or None,
             "flowerComposition": product_data.get("flowerComposition") or old_detail.get("flowerComposition", ""),
+            "compTextId": comp_text_id or None,
             "dimension": product_data.get("dimension") or old_detail.get("dimension", ""),
             "careTips": product_data.get("careTips") or old_detail.get("careTips", ""),
+            "i18n": i18n_data if isinstance(i18n_data, dict) and i18n_data else None,
             "stockByBranch": stock_by_branch,
             "dailyQuota": int(product_data.get("dailyQuota") or old_detail.get("dailyQuota", 15)),
             "isActive": product_data.get("isActive", old_detail.get("isActive", True)),
@@ -215,9 +226,16 @@ def create_or_update_product(
         save_product_detail(product_id, full_detail)
 
         # 2. Bản ghi tóm tắt cho products.json (loại bỏ gallery, description dài, composition, careTips)
+        summary_i18n = {}
+        if isinstance(i18n_data, dict):
+            for l_k, l_v in i18n_data.items():
+                if isinstance(l_v, dict) and l_v.get("name"):
+                    summary_i18n[l_k] = {"name": l_v["name"]}
+
         summary_prod = {
             "id": product_id,
             "name": name,
+            "nameTextId": name_text_id or None,
             "category": category,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
@@ -225,6 +243,7 @@ def create_or_update_product(
             "originalPrice": formatted_orig_price,
             "badge": full_detail["badge"],
             "image": full_detail["image"],
+            "i18n": summary_i18n if summary_i18n else None,
             "stockByBranch": stock_by_branch,
             "dailyQuota": full_detail["dailyQuota"],
             "isActive": full_detail["isActive"],
@@ -237,11 +256,16 @@ def create_or_update_product(
     else:
         # Tạo mới sản phẩm
         new_id = product_data.get("id") or f"{category}_{int(datetime.now().timestamp())}"
+        name_text_id = product_data.get("nameTextId") or product_data.get("textId") or ""
+        comp_text_id = product_data.get("compTextId") or product_data.get("compositionTextId") or ""
+        desc_text_id = product_data.get("descTextId") or product_data.get("descriptionTextId") or ""
+        i18n_data = product_data.get("i18n", {})
         
         # 1. Chi tiết đầy đủ
         full_detail = {
             "id": new_id,
             "name": name,
+            "nameTextId": name_text_id or None,
             "category": category,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
@@ -251,9 +275,12 @@ def create_or_update_product(
             "image": product_data.get("image") or "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
             "gallery": product_data.get("gallery", []),
             "description": product_data.get("description", ""),
+            "descTextId": desc_text_id or None,
             "flowerComposition": product_data.get("flowerComposition", ""),
+            "compTextId": comp_text_id or None,
             "dimension": product_data.get("dimension", ""),
             "careTips": product_data.get("careTips", "Để nơi thoáng mát, phun sương mỗi ngày"),
+            "i18n": i18n_data if isinstance(i18n_data, dict) and i18n_data else None,
             "stockByBranch": stock_by_branch,
             "dailyQuota": int(product_data.get("dailyQuota") or 15),
             "isActive": True,
@@ -264,9 +291,16 @@ def create_or_update_product(
         save_product_detail(new_id, full_detail)
 
         # 2. Bản ghi tóm tắt cho products.json
+        summary_i18n = {}
+        if isinstance(i18n_data, dict):
+            for l_k, l_v in i18n_data.items():
+                if isinstance(l_v, dict) and l_v.get("name"):
+                    summary_i18n[l_k] = {"name": l_v["name"]}
+
         summary_prod = {
             "id": new_id,
             "name": name,
+            "nameTextId": name_text_id or None,
             "category": category,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
@@ -274,6 +308,7 @@ def create_or_update_product(
             "originalPrice": formatted_orig_price,
             "badge": full_detail["badge"],
             "image": full_detail["image"],
+            "i18n": summary_i18n if summary_i18n else None,
             "stockByBranch": stock_by_branch,
             "dailyQuota": full_detail["dailyQuota"],
             "isActive": True,

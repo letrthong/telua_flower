@@ -309,6 +309,31 @@ class TestCatalogAndPromotions(unittest.TestCase):
         all_trans = get_all_translations(use_cache=False).get("translations", {})
         self.assertNotIn(user_key, all_trans)
 
+    def test_11_product_modular_i18n_resolution(self):
+        """Kiểm tra cơ chế phân giải đa ngôn ngữ qua tham số ?lang= trong get_product_by_id"""
+        # 1. Lấy sản phẩm bo_hoa_01 mặc định (tiếng Việt)
+        p_vi = get_product_by_id("bo_hoa_01")
+        self.assertIsNotNone(p_vi)
+        self.assertEqual(p_vi["name"], "Mây Trắng Bồng Bềnh")
+        self.assertIn("Hồng trắng Ohara", p_vi["flowerComposition"])
+
+        # 2. Lấy sản phẩm bo_hoa_01 với lang="en" (tiếng Anh)
+        p_en = get_product_by_id("bo_hoa_01", lang="en")
+        self.assertIsNotNone(p_en)
+        self.assertEqual(p_en["name"], "Floating White Clouds Bouquet")
+        self.assertIn("White Ohara Roses", p_en["flowerComposition"])
+        self.assertIn("pure white bouquet", p_en["description"])
+
+        # 3. Lấy sản phẩm bo_hoa_01 với lang="ja" (tiếng Nhật)
+        p_ja = get_product_by_id("bo_hoa_01", lang="ja")
+        self.assertIsNotNone(p_ja)
+        self.assertEqual(p_ja["name"], "白い雲のフローティングブーケ")
+
+        # 4. Fallback khi ngôn ngữ chưa có bản dịch (lang="fr")
+        p_fr = get_product_by_id("bo_hoa_01", lang="fr")
+        self.assertIsNotNone(p_fr)
+        self.assertEqual(p_fr["name"], "Mây Trắng Bồng Bềnh")
+
 
 if __name__ == "__main__":
     unittest.main()

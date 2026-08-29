@@ -143,6 +143,86 @@
       "ja": "イベントフラワー",
       "ko": "이벤트 플라워",
       "zh": "活动会议鲜花"
+    },
+    "prod_name_bo_hoa_01": {
+      "type": "user",
+      "vi": "Mây Trắng Bồng Bềnh",
+      "en": "Floating White Clouds Bouquet",
+      "ja": "白い雲のフローティングブーケ",
+      "ko": "몽실몽실 하얀 구름 꽃다발",
+      "zh": "漂浮白云艺术花束"
+    },
+    "prod_comp_bo_hoa_01": {
+      "type": "user",
+      "vi": "Hồng trắng Ohara (10 cành), Hoa Sao Xanh, Cúc Tana, Lá Bạc Dollar",
+      "en": "White Ohara Roses (10 stems), Tweedia, Tana Daisies, Silver Dollar Eucalyptus",
+      "ja": "ホワイトオハラローズ（10本）、ブルースター、タナ菊、ユーカリポポラス",
+      "ko": "화이트 오하라 장미 (10송이), 옥시페탈룸, 타나 데이지, 유칼립투스",
+      "zh": "白色欧哈拉玫瑰（10支）、蓝星花、塔娜小雏菊、尤加利叶"
+    },
+    "prod_desc_bo_hoa_01": {
+      "type": "user",
+      "vi": "Bó hoa tone trắng tinh khôi kết hợp hoa sao xanh mang đến cảm giác dịu êm, thanh lịch.",
+      "en": "A pure white bouquet accented with sky blue tweedia, conveying serene elegance and gentle care.",
+      "ja": "純白の花々とブルースターが織りなす、穏やかで上品な特別なフラワーギフト。",
+      "ko": "순백의 꽃과 은은한 블루 스타가 어우러져 차분하고 우아한 감동을 선사합니다.",
+      "zh": "纯净白白色系搭配淡雅蓝星花，传递宁静优雅与真挚心意。"
+    },
+    "cat_desc_basket": {
+      "type": "system",
+      "vi": "Giỏ hoa và lẵng hoa để bàn sang trọng, tinh tế",
+      "en": "Elegant and sophisticated flower baskets and table arrangements",
+      "ja": "華やかで洗練されたテーブルアレンジメント＆フラワーバスケット",
+      "ko": "고급스럽고 우아한 테이블 센터피스 및 플라워 바구니",
+      "zh": "高雅精致的艺术插花手提花篮与桌面花礼"
+    },
+    "cat_desc_bouquet": {
+      "type": "system",
+      "vi": "Các mẫu bó hoa tươi thiết kế cao cấp cho sinh nhật, tình yêu, tốt nghiệp",
+      "en": "Premium designer fresh bouquets for birthdays, romance, and graduations",
+      "ja": "誕生日、記念日、卒業祝いに最適なプレミアムデザイン生花ブーケ",
+      "ko": "생일, 기념일, 졸업 축하를 위한 프리미엄 맞춤 디자인 꽃다발",
+      "zh": "精美设计高端鲜花花束，适于生日、纪念日与毕业庆典"
+    },
+    "cat_desc_stand": {
+      "type": "system",
+      "vi": "Kệ hoa chúc mừng khai trương, kỷ niệm, sự kiện hồng phát",
+      "en": "Grand opening congratulatory flower stands for milestones and prosperity",
+      "ja": "開店祝い、記念式典、繁栄を祈る豪華な祝賀スタンド花",
+      "ko": "개업 축하, 기념식, 사업 번창을 기원하는 품격 있는 축하 화환",
+      "zh": "开业庆典、周年纪念与高端商务祝贺花架"
+    },
+    "cat_desc_vase": {
+      "type": "system",
+      "vi": "Mẫu bình cắm hoa nghệ thuật phong cách 'Thả Bình' tinh tế cho không gian sống",
+      "en": "Artisan vases enhancing the natural beauty of living spaces",
+      "ja": "住空間に自然な美しさと品格を添えるアート花瓶コレクション",
+      "ko": "생활 공간에 자연스러운 아름다움을 더하는 감각적인 플라워 화병",
+      "zh": "为生活空间增添自然艺术美感的精美插花花瓶"
+    },
+    "cat_desc_orchid": {
+      "type": "system",
+      "vi": "Chậu hoa lan hồ điệp thuần khiết, quà tặng cao cấp",
+      "en": "Pure Phalaenopsis orchid pots, the ultimate luxury gift",
+      "ja": "気品あふれる純白・黄金の胡蝶蘭鉢植え、最高級ギフト",
+      "ko": "순수하고 기품 있는 호접란 화분, 최고급 프리미엄 선물",
+      "zh": "高贵典雅特级蝴蝶兰盆栽，至尊商务与节庆礼品"
+    },
+    "cat_desc_wedding": {
+      "type": "system",
+      "vi": "Bó hoa cưới cô dâu lộng lẫy và hoa cài áo chú rể ngày trọng đại",
+      "en": "Splendid bridal wedding bouquets and groom boutonnieres for your big day",
+      "ja": "特別な日を彩る華やかな花嫁ブーケ＆新郎コサージュセット",
+      "ko": "소중한 날을 위한 눈부신 신부 웨딩 부케 및 신랑 부토니에",
+      "zh": "浪漫唯美新娘手捧花与新郎同款精致胸花"
+    },
+    "cat_desc_event": {
+      "type": "system",
+      "vi": "Hoa sự kiện sang trọng, tinh tế cho hội nghị và dạ tiệc",
+      "en": "Luxurious floral arrangements for corporate events and galas",
+      "ja": "イベントや祝賀会を彩る高級フラワーアレンジメント",
+      "ko": "기업 행사 및 파티를 위한 고급스러운 플라워 연출",
+      "zh": "适于高端商务会议与庆典晚宴的豪华花艺"
     }
   }
 }

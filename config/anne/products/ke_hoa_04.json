@@ -16,6 +16,32 @@
   "flowerComposition": "Hồng Đỏ Sa Mạc (18 cành), Hoa Đồng Tiền đỏ, Hồng Phấn, Lá Bạc Dollar, Kèm Banner chúc mừng cao cấp",
   "dimension": "Cao 160cm x Rộng 70cm",
   "careTips": "Bảo quản nơi mát mẻ, châm nước đều vào mút xốp mỗi ngày.",
+  "i18n": {
+    "en": {
+      "name": "Fortune & Flourishing Red Grand Stand",
+      "flowerComposition": "Desert Red Roses (18 stems), Red Gerberas, Soft Pink Roses, Silver Dollar Eucalyptus, Includes Custom Celebration Banner",
+      "description": "Festive and lucky red-pink grand opening flower stand, conveying prosperous wishes for skyrocketing business growth.",
+      "careTips": "Store in a cool shaded area, evenly moisten floral foam with fresh water every morning."
+    },
+    "ja": {
+      "name": "発財発展 祝賀スタンド花",
+      "flowerComposition": "デザートレッドバラ（18本）、赤ガーベラ、ピンクバラ、ユーカリポポラス、高級祝賀名札付き",
+      "description": "吉祥を呼ぶ深紅とピンクの祝賀スタンド花。ビジネスの飛躍的発展と商売繁盛の願いを込めて。",
+      "careTips": "涼しい場所に設置し、毎朝吸水スポンジにまんべんなく水を含ませてください。"
+    },
+    "ko": {
+      "name": "발재발달 대박 기원 레드 스탠드 화환",
+      "flowerComposition": "데저트 레드 장미 (18송이), 레드 거베라, 핑크 장미, 실버 유칼립투스, 고급 행사 리본 포함",
+      "description": "행운과 번영을 상징하는 화사한 레드 & 핑크 톤 축하 화환으로 사업 대박과 승승장구를 기원합니다.",
+      "careTips": "서늘한 곳에 보관하시고 매일 아침 오아시스에 골고루 물을 보충해 주세요."
+    },
+    "zh": {
+      "name": "发财发达 大吉大利庆典花架",
+      "flowerComposition": "沙漠红玫瑰（18支）、红太阳花、粉玫瑰、银叶尤加利、附赠高档开业庆典条幅",
+      "description": "象征吉祥如意与财运亨通的红粉系开业花架，传递生意兴隆通四海、财源广进达三江的美好祝愿。",
+      "careTips": "放置于阴凉环境，每天早晨均匀向花泥注水补湿。"
+    }
+  },
   "stockByBranch": {
     "branch_q10": 4,
     "branch_q1": 2,

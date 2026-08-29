@@ -94,3 +94,55 @@ test('product detail schema - validate all detail fields in config/anne/products
         assert.ok('stockByBranch' in detail, `Thiếu trường 'stockByBranch' trong ${p.id}.json`);
     }
 });
+
+test('product modular i18n - validate embedded i18n resolution and fallback in products/{id}.json', (t) => {
+    const detailsDir = path.resolve(__dirname, '../../config/anne/products');
+    const bo01Path = path.join(detailsDir, 'bo_hoa_01.json');
+    assert.ok(fs.existsSync(bo01Path), "Tệp bo_hoa_01.json phải tồn tại");
+
+    const detail = JSON.parse(fs.readFileSync(bo01Path, 'utf8'));
+    assert.ok(detail.i18n, "bo_hoa_01.json phải có khối dữ liệu i18n");
+    assert.ok(detail.i18n.en, "bo_hoa_01.json phải có bản dịch tiếng Anh (en)");
+    assert.ok(detail.i18n.ja, "bo_hoa_01.json phải có bản dịch tiếng Nhật (ja)");
+    assert.ok(detail.i18n.ko, "bo_hoa_01.json phải có bản dịch tiếng Hàn (ko)");
+    assert.ok(detail.i18n.zh, "bo_hoa_01.json phải có bản dịch tiếng Trung (zh)");
+
+    // Kiểm tra tính đầy đủ của trường dịch
+    assert.strictEqual(detail.i18n.en.name, "Floating White Clouds Bouquet");
+    assert.ok(detail.i18n.en.flowerComposition.includes("White Ohara Roses"));
+    assert.ok(detail.i18n.en.description.includes("pure white bouquet"));
+    assert.ok(detail.i18n.en.careTips.includes("Trim stems"));
+
+    // Hàm mô phỏng phân giải ngôn ngữ phía Backend hoặc Frontend
+    function resolveProductI18n(prod, lang) {
+        if (!lang || lang === 'vi' || !prod.i18n || !prod.i18n[lang]) {
+            return {
+                name: prod.name,
+                flowerComposition: prod.flowerComposition,
+                description: prod.description,
+                careTips: prod.careTips
+            };
+        }
+        const l = prod.i18n[lang];
+        return {
+            name: l.name || prod.name,
+            flowerComposition: l.flowerComposition || prod.flowerComposition,
+            description: l.description || prod.description,
+            careTips: l.careTips || prod.careTips
+        };
+    }
+
+    // 1. Phân giải tiếng Anh
+    const enResolved = resolveProductI18n(detail, 'en');
+    assert.strictEqual(enResolved.name, "Floating White Clouds Bouquet");
+    assert.ok(enResolved.flowerComposition.includes("White Ohara Roses"));
+
+    // 2. Phân giải tiếng Nhật
+    const jaResolved = resolveProductI18n(detail, 'ja');
+    assert.strictEqual(jaResolved.name, "白い雲のフローティングブーケ");
+
+    // 3. Fallback khi ngôn ngữ chưa có bản dịch
+    const frResolved = resolveProductI18n(detail, 'fr');
+    assert.strictEqual(frResolved.name, "Mây Trắng Bồng Bềnh");
+    assert.strictEqual(frResolved.flowerComposition, detail.flowerComposition);
+});

@@ -19,6 +19,81 @@ if (typeof window !== 'undefined') {
 }
 
 /**
+ * Lấy tên hiển thị sản phẩm theo ngôn ngữ hiện tại
+ */
+export function getProductName(prod) {
+    if (!prod) return "";
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    
+    // 1. Ưu tiên đọc từ khối i18n bên trong chính sản phẩm (Modular i18n Architecture)
+    if (prod.i18n && prod.i18n[lang] && prod.i18n[lang].name) {
+        return prod.i18n[lang].name;
+    }
+
+    // 2. Fallback đọc theo Text ID từ từ điển chung
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const textId = prod.nameTextId || prod.textId;
+    if (textId && trans && trans[lang] && trans[lang][textId]) {
+        return trans[lang][textId];
+    }
+    return prod.name || "";
+}
+
+/**
+ * Lấy thành phần hoa theo ngôn ngữ hiện tại
+ */
+export function getProductComposition(prod) {
+    if (!prod) return "";
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    
+    // 1. Ưu tiên đọc từ khối i18n bên trong chính sản phẩm
+    if (prod.i18n && prod.i18n[lang] && prod.i18n[lang].flowerComposition) {
+        return prod.i18n[lang].flowerComposition;
+    }
+
+    // 2. Fallback đọc theo Text ID từ từ điển chung
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const textId = prod.compTextId || prod.compositionTextId;
+    if (textId && trans && trans[lang] && trans[lang][textId]) {
+        return trans[lang][textId];
+    }
+    return prod.flowerComposition || prod.composition || "";
+}
+
+/**
+ * Lấy mô tả cảm xúc theo ngôn ngữ hiện tại
+ */
+export function getProductDescription(prod) {
+    if (!prod) return "";
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    
+    // 1. Ưu tiên đọc từ khối i18n bên trong chính sản phẩm
+    if (prod.i18n && prod.i18n[lang] && prod.i18n[lang].description) {
+        return prod.i18n[lang].description;
+    }
+
+    // 2. Fallback đọc theo Text ID từ từ điển chung
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const textId = prod.descTextId || prod.descriptionTextId;
+    if (textId && trans && trans[lang] && trans[lang][textId]) {
+        return trans[lang][textId];
+    }
+    return prod.description || "";
+}
+
+/**
+ * Lấy hướng dẫn chăm sóc theo ngôn ngữ hiện tại
+ */
+export function getProductCareTips(prod) {
+    if (!prod) return "";
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    if (prod.i18n && prod.i18n[lang] && prod.i18n[lang].careTips) {
+        return prod.i18n[lang].careTips;
+    }
+    return prod.careTips || "";
+}
+
+/**
  * 1. Hàm Render sản phẩm HTML (Tối ưu Lazy Loading & i18n)
  */
 export function renderProducts(products, containerId) {
@@ -54,15 +129,17 @@ export function renderProducts(products, containerId) {
             : `<span class="text-primary font-bold text-sm md:text-base">${salePrice}</span>`;
 
         const numericPrice = product.priceNumber || parseInt(salePrice.replace(/[^\d]/g, ''), 10) || 420000;
-        const safeName = (product.name || "").replace(/'/g, "\\'");
+        const prodDisplayName = getProductName(product);
+        const safeName = (prodDisplayName || product.name || "").replace(/'/g, "\\'");
         const prodId = product.id || `prod_${(product.name || 'hoa').toLowerCase().replace(/\s+/g, '_')}`;
         const prodImg = product.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+        const nameTextId = product.nameTextId || product.textId || "";
 
         html += `
             <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100">
                 ${badgeHtml}
                 <div onclick="openProductQuickDetail('${prodId}')" class="relative h-48 md:h-64 overflow-hidden cursor-pointer">
-                    <img src="${prodImg}" alt="${product.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" class="product-img w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <img src="${prodImg}" alt="${prodDisplayName}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" class="product-img w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     
                     <!-- Nút Thêm vào giỏ hàng (Hiển thị khi hover) -->
                     <div class="absolute inset-0 bg-black/30 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4" onclick="event.stopPropagation()">
@@ -72,7 +149,7 @@ export function renderProducts(products, containerId) {
                     </div>
                 </div>
                 <div class="p-4 flex flex-col flex-grow text-center">
-                    <h3 onclick="openProductQuickDetail('${prodId}')" class="font-bold text-gray-800 text-sm md:text-base mb-2 flex-grow hover:text-primary cursor-pointer line-clamp-2">${product.name}</h3>
+                    <h3 onclick="openProductQuickDetail('${prodId}')" ${nameTextId ? `data-i18n="${nameTextId}"` : ''} class="font-bold text-gray-800 text-sm md:text-base mb-2 flex-grow hover:text-primary cursor-pointer line-clamp-2">${prodDisplayName}</h3>
                     <div class="mt-auto">
                         ${priceHtml}
                     </div>
@@ -105,8 +182,9 @@ export async function openProductQuickDetail(productId) {
     }
     if (body) body.classList.add("hidden");
 
-    // Nạp chi tiết sản phẩm qua hàm getProductById (gọi API /api/products/<id> hoặc cache)
-    let prod = await getProductById(productId);
+    // Nạp chi tiết sản phẩm qua hàm getProductById (gọi API /api/products/<id>?lang=... hoặc cache)
+    const currentAppLang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    let prod = await getProductById(productId, currentAppLang);
 
     if (!prod && Array.isArray(allStorefrontProducts) && allStorefrontProducts.length > 0) {
         prod = allStorefrontProducts.find(p => p && (p.id === productId || p.name === productId));
@@ -114,12 +192,19 @@ export async function openProductQuickDetail(productId) {
 
     if (prod) {
         const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "420000").replace(/[^\d]/g, ''), 10) || 420000;
-        const safeName = (prod.name || "").replace(/'/g, "\\'");
+        const prodDisplayName = getProductName(prod);
+        const prodCompText = getProductComposition(prod);
+        const prodDescText = getProductDescription(prod);
+        const safeName = (prodDisplayName || prod.name || "").replace(/'/g, "\\'");
         const prodImg = prod.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
 
         // Điền thông tin vào modal
         const nameEl = document.getElementById("detailProdName");
-        if (nameEl) nameEl.textContent = prod.name;
+        if (nameEl) {
+            nameEl.textContent = prodDisplayName;
+            if (prod.nameTextId) nameEl.setAttribute("data-i18n", prod.nameTextId);
+            else nameEl.removeAttribute("data-i18n");
+        }
 
         const badgeEl = document.getElementById("detailBadge");
         if (badgeEl) badgeEl.textContent = prod.badge || "Mẫu Mới";
@@ -133,14 +218,22 @@ export async function openProductQuickDetail(productId) {
         const catLabelEl = document.getElementById("detailCategoryLabel");
         if (catLabelEl) {
             const catObj = (activeStorefrontCategories || []).find(c => c && c.id === prod.category);
-            catLabelEl.textContent = catObj ? catObj.name.toUpperCase() : (prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP");
+            catLabelEl.textContent = catObj ? getCategoryDisplayName(catObj).toUpperCase() : (prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP");
         }
 
         const descEl = document.getElementById("detailDescription");
-        if (descEl) descEl.textContent = prod.description || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
+        if (descEl) {
+            descEl.textContent = prodDescText || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
+            if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
+            else descEl.removeAttribute("data-i18n");
+        }
 
         const compEl = document.getElementById("detailComposition");
-        if (compEl) compEl.textContent = prod.flowerComposition || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
+        if (compEl) {
+            compEl.textContent = prodCompText || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
+            if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
+            else compEl.removeAttribute("data-i18n");
+        }
 
         const dimEl = document.getElementById("detailDimension");
         if (dimEl) dimEl.textContent = prod.dimension || "Kích thước tiêu chuẩn";
@@ -151,7 +244,7 @@ export async function openProductQuickDetail(productId) {
         const mainImgEl = document.getElementById("detailMainImg");
         if (mainImgEl) {
             mainImgEl.src = prodImg;
-            mainImgEl.alt = prod.name || "Hoa tươi";
+            mainImgEl.alt = prodDisplayName;
         }
 
         // Gallery thumbnails
@@ -275,6 +368,29 @@ export function getCategoryDisplayName(cat) {
 }
 
 /**
+ * Lấy mô tả hiển thị danh mục theo ngôn ngữ hiện tại:
+ * - Ưu tiên 1: cat.i18n?.[lang]?.description
+ * - Ưu tiên 2: trans[lang][descTextId]
+ * - Fallback: cat.description
+ */
+export function getCategoryDescription(cat) {
+    if (!cat) return "";
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+
+    if (cat.i18n && cat.i18n[lang] && cat.i18n[lang].description) {
+        return cat.i18n[lang].description;
+    }
+
+    const descTextId = cat.descTextId || cat.descriptionTextId;
+    if (descTextId && trans && trans[lang] && trans[lang][descTextId]) {
+        return trans[lang][descTextId];
+    }
+
+    return cat.description || "";
+}
+
+/**
  * TỰ ĐỘNG TẠO TOÀN BỘ CÁC SECTION DANH MỤC & PRODUCT GRIDS TRÊN STOREFRONT
  * Thay thế hoàn toàn mã HTML tĩnh / hardcoded
  */
@@ -302,6 +418,8 @@ export function renderDynamicStorefrontSections(categories, products) {
             : (isEven ? 'bg-white' : 'bg-gray-50');
 
         const catDisplayName = getCategoryDisplayName(cat);
+        const catDesc = getCategoryDescription(cat);
+        const descDataAttr = cat.descTextId ? `data-i18n="${cat.descTextId}"` : '';
 
         // Section Danh mục Động
         html += `
@@ -312,7 +430,7 @@ export function renderDynamicStorefrontSections(categories, products) {
                             ${catDisplayName}
                             <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
                         </h2>
-                        ${cat.description ? `<p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">${cat.description}</p>` : ''}
+                        ${catDesc ? `<p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto" ${descDataAttr}>${catDesc}</p>` : ''}
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="dyn-grid-${cat.id}">
                         <!-- Products rendered dynamically -->
@@ -1091,6 +1209,11 @@ if (typeof window !== 'undefined') {
     window.retryLoadStorefrontProducts = retryLoadStorefrontProducts;
     window.renderStorefrontCategories = renderStorefrontCategories;
     window.getCategoryDisplayName = getCategoryDisplayName;
+    window.getCategoryDescription = getCategoryDescription;
+    window.getProductName = getProductName;
+    window.getProductComposition = getProductComposition;
+    window.getProductDescription = getProductDescription;
+    window.getProductCareTips = getProductCareTips;
     window.populateCategoryDropdowns = populateCategoryDropdowns;
     window.renderDynamicStorefrontSections = renderDynamicStorefrontSections;
     window.searchStorefrontProducts = searchStorefrontProducts;

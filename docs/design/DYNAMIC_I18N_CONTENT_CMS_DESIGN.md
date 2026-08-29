@@ -149,6 +149,17 @@ Nhằm đảm bảo tính mở rộng bền vững khi hệ thống bổ sung th
      * **Nguyên tắc an toàn**: Không bao giờ hardcode `cat.name` tiếng Việt vào template DOM động khi `cat.textId` tồn tại, tránh hiện tượng giật hiển thị tiếng Việt sau vài giây tải bất đồng bộ (Async Data Load Flash).
      * Mọi thẻ HTML danh mục đều được gắn thuộc tính `data-i18n="${cat.textId}"` để hỗ trợ đổi ngôn ngữ tức thì.
 
+### 6.4. Chuẩn Liên Kết Đa Ngôn Ngữ Cho Sản Phẩm Mẫu Hoa (`nameTextId`, `compTextId`, `descTextId`)
+
+Tương tự như Danh mục, từng sản phẩm mẫu hoa trong `products.json` và `products/{id}.json` được hỗ trợ 3 trường Text ID:
+1. **`nameTextId`**: Liên kết với bản dịch Tên hoa trong `translations.json`.
+2. **`compTextId`**: Liên kết với bản dịch Thành phần loài hoa (Flower Composition).
+3. **`descTextId`**: Liên kết với bản dịch Mô tả cảm xúc & Ý nghĩa (Emotional Story).
+4. **Quy tắc hiển thị**:
+   - Sử dụng các hàm tiện ích `getProductName(prod)`, `getProductComposition(prod)`, `getProductDescription(prod)`.
+   - Nếu Text ID tồn tại và có bản dịch $\rightarrow$ hiển thị bản dịch tương ứng.
+   - Nếu không có Text ID $\rightarrow$ fallback về nội dung tĩnh (`prod.name`, `prod.flowerComposition`, `prod.description`).
+
 ---
 
 ## 7. Quy Trình Kiểm Tra Tính Hợp Lệ Của Dữ Liệu Đa Ngôn Ngữ (Multi-Language JSON Validation Guard)
@@ -215,5 +226,45 @@ graph TD
 3. **Trải nghiệm tức thì (Immediate Focus)**:
    - Ngay sau khi khởi tạo, hệ thống tự động chọn khóa mới tạo trên SelectBox và nạp dữ liệu vào 5 ô nhập liệu ngôn ngữ để Quản trị viên tiến hành dịch nội dung theo ý muốn.
 
+## 9. Hỗ Trợ Đa Ngôn Ngữ Cho Mô Tả Danh Mục Hoa (Category Description i18n)
 
+### 9.1 Vấn đề nghiệp vụ
+Khi người dùng chuyển đổi giữa 5 ngôn ngữ (🇻🇳 Tiếng Việt, 🇬🇧 English, 🇯🇵 日本語, 🇰🇷 한국어, 🇨🇳 中文), tiêu đề danh mục đổi qua `textId` nhưng mô tả tóm tắt danh mục (hiển thị trên Storefront Banner và Header Danh mục) cũng cần được hiển thị đa ngữ tương ứng.
 
+### 9.2 Cấu trúc dữ liệu danh mục đa ngữ (`config/anne/categories.json`)
+```json
+{
+  "id": "gio_hoa",
+  "name": "Giỏ & Lẵng Hoa",
+  "textId": "cat_basket",
+  "descTextId": "cat_desc_basket",
+  "description": "Giỏ hoa và lẵng hoa để bàn sang trọng, tinh tế",
+  "i18n": {
+    "en": {
+      "name": "Baskets & Arrangements",
+      "description": "Elegant and sophisticated flower baskets and table arrangements"
+    },
+    "ja": {
+      "name": "バスケット・アレンジメント",
+      "description": "華やかで洗練されたテーブルアレンジメント＆フラワーバスケット"
+    },
+    "ko": {
+      "name": "꽃바구니 & 센터피스",
+      "description": "고급스럽고 우아한 테이블 센터피스 및 플라워 바구니"
+    },
+    "zh": {
+      "name": "精美花篮与桌花",
+      "description": "高雅精致的艺术插花手提花篮与桌面花礼"
+    }
+  }
+}
+```
+
+### 9.3 Quy tắc phân giải đa ngôn ngữ danh mục (`getCategoryDescription`)
+1. **Ưu tiên 1**: `cat.i18n?.[lang]?.description` (nếu có nhúng trong file category).
+2. **Ưu tiên 2**: `t(cat.descTextId || cat.descriptionTextId)` (từ ma trận `translations.json`).
+3. **Ưu tiên 3 (Fallback)**: `cat.description` (Tiếng Việt mặc định).
+
+### 9.4 Giao diện Quản trị Danh mục (`#categoryModal`)
+- Cung cấp ô chọn SelectBox `descTextId` (Mã dịch mô tả đa ngữ) kèm tùy chọn nhập mã tùy chỉnh `__custom__`.
+- Tự động đồng bộ các khóa dịch mô tả chuẩn hệ thống (`cat_desc_basket`, `cat_desc_bouquet`, `cat_desc_stand`, `cat_desc_vase`, `cat_desc_orchid`, `cat_desc_wedding`) vào `translations.json`.

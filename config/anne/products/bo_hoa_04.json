@@ -16,6 +16,32 @@
   "flowerComposition": "Lily Julibee cánh kép (6 cành lớn), Hoa Baby trắng, Cúc Tana, Lá Bạc Dollar",
   "dimension": "Cao 55cm x Rộng 40cm",
   "careTips": "Cắt gốc 45 độ, ngắt bớt lá ngập trong nước, tránh để gần quạt gió thổi trực tiếp.",
+  "i18n": {
+    "en": {
+      "name": "Sweet Double Lily Julibee Bouquet",
+      "flowerComposition": "Double Petal Julibee Lilies (6 large stems), White Baby's Breath, Tana Daisies, Silver Dollar Leaves",
+      "description": "Fragrant double-petal Julibee lilies paired with delicate baby's breath, wrapped in Korean aesthetic pastels.",
+      "careTips": "Trim stems at a 45-degree angle, remove submerged foliage, keep away from direct AC drafts."
+    },
+    "ja": {
+      "name": "甘美な香り 八重咲きジュリビー百合ブーケ",
+      "flowerComposition": "八重咲きジュリビーリリー（大輪6本）、かすみ草、タナデージー、ユーカリ葉",
+      "description": "芳醇な香りを放つ八重咲きジュリビーリリーを韓国風パステルラッピングで包んだ、愛らしく贅沢な花束。",
+      "careTips": "茎を45度でカットし、水に浸かる下葉を取り除いてください。エアコンの風が直接当たらない場所に置きましょう。"
+    },
+    "ko": {
+      "name": "스위트 겹백합 줄리비 꽃다발",
+      "flowerComposition": "겹꽃 줄리비 백합 (대형 6대), 화이트 안개꽃, 타나 마트리카리아, 유칼립투스",
+      "description": "우아한 향기를 품은 프리미엄 겹백합과 한국식 감성 파스텔 패키징이 어우러진 로맨틱 꽃다발.",
+      "careTips": "줄기를 45도로 비스듬히 자르고 물에 잠기는 잎을 제거해 주세요. 에어컨 바람을 피해 보관하세요."
+    },
+    "zh": {
+      "name": "甜美芳华 重瓣香水百合花束",
+      "flowerComposition": "重瓣朱莉百合（6支大花梗）、白色满天星、塔娜小甘菊、尤加利叶",
+      "description": "芬芳馥郁的重瓣朱莉香水百合，搭配韩式甜美柔光包装，呈现温婉浪漫的优雅心意。",
+      "careTips": "花茎剪成45度斜角，去除浸于水中的叶片，避免空调冷热风直吹。"
+    }
+  },
   "stockByBranch": {
     "branch_q10": 7,
     "branch_q1": 4,

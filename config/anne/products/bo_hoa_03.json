@@ -16,6 +16,32 @@
   "flowerComposition": "Tulip Hà Lan nhập khẩu (15 cành), Hoa Lam Tinh (Blue Star), Hoa Phi Yến, Lá Bạc Dollar",
   "dimension": "Cao 55cm x Rộng 45cm",
   "careTips": "Tulip ưa lạnh, bảo quản phòng máy lạnh 18-22 độ C, cắt gốc vát chéo và bổ sung nước sạch mỗi ngày.",
+  "i18n": {
+    "en": {
+      "name": "Dutch Tulip & Blue Star Mix Bouquet",
+      "flowerComposition": "Imported Dutch Tulips (15 stems), Blue Star Tweedia, Larkspur Delphiniums, Silver Dollar Leaves",
+      "description": "Sophisticated bouquet pairing imported Dutch tulips with ethereal Blue Star tweedia, embodying pure aristocratic grace.",
+      "careTips": "Tulips love cool climate (18-22°C), trim stems diagonally and replenish fresh water daily."
+    },
+    "ja": {
+      "name": "オランダ産チューリップ＆ブルースター 爽やかブーケ",
+      "flowerComposition": "オランダ産チューリップ（15本）、ブルースター、デルフィニウム、ユーカリ葉",
+      "description": "オランダ産チューリップと可憐な青いブルースターを組み合わせた、高貴で清らかな美しさを湛えるフラワーギフト。",
+      "careTips": "冷涼な環境（18〜22℃）を好みます。茎の切り口を斜めにカットし、毎日新鮮な水に取り替えてください。"
+    },
+    "ko": {
+      "name": "네덜란드 튤립 & 블루스타 믹스 꽃다발",
+      "flowerComposition": "네덜란드 수입 튤립 (15송이), 블루스타, 델피늄, 실버 달러 유칼립투스",
+      "description": "네덜란드산 프리미엄 튤립과 은은한 푸른빛의 블루스타가 어우러져 청초하고 세련된 기품을 선사합니다.",
+      "careTips": "튤립은 서늘한 온도(18~22℃)를 선호하므로 매일 줄기 끝을 사선으로 다듬고 깨끗한 찬물로 갈아주세요."
+    },
+    "zh": {
+      "name": "荷兰郁金香与蓝星花 优雅混搭花束",
+      "flowerComposition": "荷兰进口郁金香（15支）、蓝星花（Blue Star）、飞燕草、银叶尤加利",
+      "description": "进口荷兰郁金香与纯净蓝星花巧妙交融，宛如清晨微风，流露优雅从容的高贵气质。",
+      "careTips": "郁金香喜凉（保持18-22℃室温），每日斜切花茎根部并更换新鲜清水。"
+    }
+  },
   "stockByBranch": {
     "branch_q10": 5,
     "branch_q1": 3,

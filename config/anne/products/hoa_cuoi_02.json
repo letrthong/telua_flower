@@ -16,6 +16,32 @@
   "flowerComposition": "Hồng Ohara Pink (12 cành), Hoa Baby hồng phun màu tự nhiên, Lá chanh Ý, Tặng kèm 1 hoa cài áo chú rể",
   "dimension": "Cao 40cm x Rộng 35cm",
   "careTips": "Bảo quản phòng mát 20-22 độ C trước giờ làm lễ, xịt nước sương nhẹ lên cánh hoa.",
+  "i18n": {
+    "en": {
+      "name": "Gentle Pink Ohara & Baby's Breath Bridal Bouquet",
+      "flowerComposition": "Pink Ohara Roses (12 stems), Pastel Pink Baby's Breath, Italian Lemon Leaf, Complimentary Groom Boutonniere Included",
+      "description": "Sweet and romantic pastel pink bridal bouquet paired with fragrant pink Ohara roses, includes matching groom boutonniere.",
+      "careTips": "Store in a cool room at 20-22°C before ceremony, lightly mist water spray over petals."
+    },
+    "ja": {
+      "name": "優しいピンク オハラローズ＆かすみ草 ウェディングブーケ",
+      "flowerComposition": "ピンクオハラローズ（12本）、パステルピンクかすみ草、イタリアンルスカス、新郎用ブートニア1点付き",
+      "description": "甘く優しいパステルピンクのオハラローズをあしらった花嫁向けウェディングブーケ。お揃いの新郎用コサージュ付き。",
+      "careTips": "挙式前は20〜22℃の涼しい室内で保管し、花びらに軽く霧吹きで水分を与えてください。"
+    },
+    "ko": {
+      "name": "사랑스러운 핑크 오하라 & 안개꽃 웨딩 부케",
+      "flowerComposition": "핑크 오하라 장미 (12송이), 파스텔 핑크 안개꽃, 이탈리안 레몬 잎, 신랑 부토니에 1개 증정",
+      "description": "달콤하고 로맨틱한 파스텔 핑크 톤의 오하라 장미 본식 부케 세트 (신랑 부토니에 포함).",
+      "careTips": "예식 전까지 20~22℃ 서늘한 곳에 보관하시고, 꽃잎 겉면에 가볍게 분무해 주세요."
+    },
+    "zh": {
+      "name": "温柔粉境 欧哈拉粉玫瑰新娘手捧花",
+      "flowerComposition": "粉色欧哈拉玫瑰（12支）、进口粉色满天星、意大利柠檬叶、免费附赠同款新郎胸花一枚",
+      "description": "甜美温婉的淡粉色新娘手捧花，选用芳香粉欧哈拉玫瑰与满天星精心绑扎，赠送同款新郎精美胸花。",
+      "careTips": "典礼前置于20-22℃阴凉空调房保鲜，可用喷壶向花瓣表面轻柔喷雾保湿。"
+    }
+  },
   "stockByBranch": {
     "branch_q10": 6,
     "branch_q1": 4,

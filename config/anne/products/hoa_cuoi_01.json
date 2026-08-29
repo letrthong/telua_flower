@@ -16,6 +16,32 @@
   "flowerComposition": "Hoa Tulip Trắng Hà Lan (15 cành), Hoa Baby trắng nhập khẩu, Lá bạc Silver Dollar, Nơ ruy băng lụa cao cấp",
   "dimension": "Cao 45cm x Rộng 35cm",
   "careTips": "Cắm cuống hoa trong nước lạnh có đá viên trước giờ làm lễ 2 tiếng, tránh ánh nắng trực tiếp.",
+  "i18n": {
+    "en": {
+      "name": "Pure White Tulip Bridal Wedding Bouquet",
+      "flowerComposition": "Dutch White Tulips (15 stems), Imported White Baby's Breath, Silver Dollar Eucalyptus, Luxury Silk Ribbon Bow",
+      "description": "Exquisite bridal bouquet crafted with imported Dutch white tulips and delicate silk organza, radiating pure elegance for the bride.",
+      "careTips": "Submerge stem ends in ice-cold water 2 hours before the ceremony, avoid direct sunlight."
+    },
+    "ja": {
+      "name": "純白のオランダ産チューリップ ウェディングブーケ",
+      "flowerComposition": "オランダ産白チューリップ（15本）、かすみ草、ユーカリポポラス、高級シルクリボン",
+      "description": "純白のオランダ産チューリップを贅沢に束ねた、花嫁の美しさを引き立てる最高級ウェディングブーケ。",
+      "careTips": "挙式の2時間前に茎の切り口を氷水に浸してください。直射日光を避けて保管してください。"
+    },
+    "ko": {
+      "name": "순백의 네덜란드 화이트 튤립 웨딩 부케",
+      "flowerComposition": "네덜란드 화이트 튤립 (15송이), 수입 화이트 안개꽃, 유칼립투스, 프리미엄 실크 리본",
+      "description": "순수하고 우아한 네덜란드산 화이트 튤립과 실크 리본이 어우러진 신부님만을 위한 프리미엄 본식 웨딩 부케.",
+      "careTips": "예식 2시간 전 줄기 끝을 얼음물에 담가두시고, 직사광선과 건조한 바람을 피해 주세요."
+    },
+    "zh": {
+      "name": "纯洁爱恋 荷兰白郁金香新娘手捧花",
+      "flowerComposition": "荷兰进口白郁金香（15支）、进口满天星、尤加利叶、高档真丝蝴蝶结缎带",
+      "description": "严选荷兰纯白郁金香精制而成的新娘手捧花，搭配高雅真丝欧根纱缎带，展现婚礼殿堂上的极致纯净之美。",
+      "careTips": "婚礼典礼前2小时将花茎底端浸入冰水中保鲜，避免阳光直晒。"
+    }
+  },
   "stockByBranch": {
     "branch_q10": 5,
     "branch_q1": 3,

@@ -597,6 +597,12 @@ def create_or_update_category(
         if image:
             target_cat["image"] = image
         target_cat["description"] = description
+        if "textId" in cat_data:
+            target_cat["textId"] = cat_data.get("textId")
+        if "descTextId" in cat_data:
+            target_cat["descTextId"] = cat_data.get("descTextId")
+        if "i18n" in cat_data and isinstance(cat_data.get("i18n"), dict):
+            target_cat["i18n"] = cat_data.get("i18n")
         target_cat["isActive"] = is_active
         target_cat["status"] = status
         if status == "deleted":
@@ -642,6 +648,12 @@ def create_or_update_category(
             "createdAt": now_iso,
             "updatedAt": now_iso
         }
+        if cat_data.get("textId"):
+            new_cat["textId"] = cat_data.get("textId")
+        if cat_data.get("descTextId"):
+            new_cat["descTextId"] = cat_data.get("descTextId")
+        if cat_data.get("i18n"):
+            new_cat["i18n"] = cat_data.get("i18n")
         insert_idx = max(0, min(order - 1, len(categories)))
         categories.insert(insert_idx, new_cat)
         for i, c in enumerate(categories):
@@ -838,26 +850,52 @@ def get_products() -> List[Dict[str, Any]]:
     return _normalize_list_of_dicts(read_json_cached(get_config_path("products.json"), default=[]))
 
 
-def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
+def get_product_by_id(product_id: str, lang: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """
     Lấy thông tin chi tiết đầy đủ của một sản phẩm (On-demand Lazy Load có RAM cache mtime):
     - Ưu tiên đọc file chi tiết riêng config/anne/products/{product_id}.json
+    - Nếu có tham số lang (en, ja, ko, zh) -> phân giải các trường ngôn ngữ từ khối i18n
     - Nếu chưa có file chi tiết riêng -> đọc từ products.json
     """
     if not product_id:
         return None
     detail_file = get_product_detail_path(product_id)
+    raw_prod = None
     if os.path.exists(detail_file):
         detail = read_json_cached(detail_file, default=None)
         if isinstance(detail, dict):
-            return detail
+            raw_prod = detail
 
-    # Fallback tìm trong products.json
-    products = get_products()
-    for p in products:
-        if isinstance(p, dict) and p.get("id") == product_id:
-            return p
-    return None
+    if not raw_prod:
+        # Fallback tìm trong products.json
+        products = get_products()
+        for p in products:
+            if isinstance(p, dict) and p.get("id") == product_id:
+                raw_prod = p
+                break
+
+    if not raw_prod:
+        return None
+
+    # Nếu không yêu cầu ngôn ngữ cụ thể hoặc là tiếng Việt gốc
+    if not lang or lang == "vi":
+        return raw_prod
+
+    # Áp dụng ngôn ngữ yêu cầu từ khối i18n
+    localized = dict(raw_prod)
+    i18n_dict = raw_prod.get("i18n")
+    if isinstance(i18n_dict, dict) and lang in i18n_dict and isinstance(i18n_dict[lang], dict):
+        l_data = i18n_dict[lang]
+        if l_data.get("name"):
+            localized["name"] = l_data["name"]
+        if l_data.get("flowerComposition"):
+            localized["flowerComposition"] = l_data["flowerComposition"]
+        if l_data.get("description"):
+            localized["description"] = l_data["description"]
+        if l_data.get("careTips"):
+            localized["careTips"] = l_data["careTips"]
+
+    return localized
 
 
 def save_product_detail(product_id: str, product_data: Dict[str, Any]) -> bool:

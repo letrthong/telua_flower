@@ -16,6 +16,32 @@
   "flowerComposition": "Thủy tinh cao cấp chịu lực, thành dày 3mm, chống trầy xước",
   "dimension": "Cao 30cm x Đường kính miệng 10cm",
   "careTips": "Rửa sạch với nước pha chút giấm hoặc chanh để giữ độ sáng bóng trong vắt của thủy tinh.",
+  "i18n": {
+    "en": {
+      "name": "Clear Cylindrical Glass Flower Vase",
+      "flowerComposition": "Heavy-duty Premium Clear Glass, 3mm Thickness, Anti-scratch Coating",
+      "description": "High purity modern clear glass cylinder vase, perfectly suited for long-stemmed blooms like tulips, roses, and lilies.",
+      "careTips": "Rinse with lukewarm water and a drop of lemon juice or vinegar to maintain crystalline brilliance."
+    },
+    "ja": {
+      "name": "透明円柱ガラス フラワーベース",
+      "flowerComposition": "高耐久プレミアムクリアガラス、厚さ3mm、傷防止加工",
+      "description": "高い透明度を誇るスタイリッシュな円柱ガラス花瓶。チューリップやバラ、百合などの茎の美しい花に最適。",
+      "careTips": "ぬるま湯に少量のレモン果汁またはお酢を混ぜて洗うと、クリスタルのような輝きが持続します。"
+    },
+    "ko": {
+      "name": "투명 실린더 글라스 플라워 화병",
+      "flowerComposition": "고강도 프리미엄 클리어 글라스, 두께 3mm, 스크래치 방지",
+      "description": "높은 투명도의 모던 원통형 유리 화병으로 튤립, 장미, 백합 등 줄기가 긴 생화 연출에 완벽합니다.",
+      "careTips": "미온수에 식초나 레몬즙을 몇 방울 섞어 닦아주시면 유리 특유의 맑은 광택이 오래 유지됩니다."
+    },
+    "zh": {
+      "name": "高透圆柱玻璃 现代艺术花瓶",
+      "flowerComposition": "高品质耐用加厚玻璃、3毫米厚实杯壁、防刮耐磨",
+      "description": "高透光度现代简约圆柱玻璃花瓶，尤其适宜插养郁金香、玫瑰、百合等高挺鲜切花材。",
+      "careTips": "使用温水加入少许柠檬汁或白醋冲洗，可长久保持玻璃通透莹亮。"
+    }
+  },
   "stockByBranch": {
     "branch_q10": 20,
     "branch_q1": 12,

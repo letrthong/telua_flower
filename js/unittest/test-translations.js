@@ -163,3 +163,134 @@ test('translations GUI add new key - auto initialization of type user and 5 lang
     assert.strictEqual(created[rawKey].ko, rawKey, "Giá trị ko phải bằng chính textId ban đầu");
     assert.strictEqual(created[rawKey].zh, rawKey, "Giá trị zh phải bằng chính textId ban đầu");
 });
+
+test('product dynamic multi-language resolution - getProductName, getProductComposition, getProductDescription priority & fallback', (t) => {
+    const raw = JSON.parse(fs.readFileSync(translationsPath, 'utf8'));
+    const transDict = raw.translations || raw;
+
+    const mockTrans = {
+        vi: {
+            prod_name_bo_hoa_01: transDict.prod_name_bo_hoa_01.vi,
+            prod_comp_bo_hoa_01: transDict.prod_comp_bo_hoa_01.vi,
+            prod_desc_bo_hoa_01: transDict.prod_desc_bo_hoa_01.vi
+        },
+        en: {
+            prod_name_bo_hoa_01: transDict.prod_name_bo_hoa_01.en,
+            prod_comp_bo_hoa_01: transDict.prod_comp_bo_hoa_01.en,
+            prod_desc_bo_hoa_01: transDict.prod_desc_bo_hoa_01.en
+        },
+        ja: {
+            prod_name_bo_hoa_01: transDict.prod_name_bo_hoa_01.ja,
+            prod_comp_bo_hoa_01: transDict.prod_comp_bo_hoa_01.ja,
+            prod_desc_bo_hoa_01: transDict.prod_desc_bo_hoa_01.ja
+        }
+    };
+
+    function resolveProdName(prod, lang) {
+        if (!prod) return "";
+        const textId = prod.nameTextId || prod.textId;
+        if (textId && mockTrans[lang] && mockTrans[lang][textId]) {
+            return mockTrans[lang][textId];
+        }
+        return prod.name || "";
+    }
+
+    function resolveProdComp(prod, lang) {
+        if (!prod) return "";
+        const textId = prod.compTextId || prod.compositionTextId;
+        if (textId && mockTrans[lang] && mockTrans[lang][textId]) {
+            return mockTrans[lang][textId];
+        }
+        return prod.flowerComposition || prod.composition || "";
+    }
+
+    function resolveProdDesc(prod, lang) {
+        if (!prod) return "";
+        const textId = prod.descTextId || prod.descriptionTextId;
+        if (textId && mockTrans[lang] && mockTrans[lang][textId]) {
+            return mockTrans[lang][textId];
+        }
+        return prod.description || "";
+    }
+
+    const prodWithTextIds = {
+        id: 'bo_hoa_01',
+        name: 'Mây Trắng Bồng Bềnh',
+        nameTextId: 'prod_name_bo_hoa_01',
+        flowerComposition: 'Hồng trắng Ohara, Hoa Sao Xanh',
+        compTextId: 'prod_comp_bo_hoa_01',
+        description: 'Bó hoa tone trắng dịu êm',
+        descTextId: 'prod_desc_bo_hoa_01'
+    };
+
+    // 1. Khi chọn tiếng Anh -> Ưu tiên bản dịch tiếng Anh
+    assert.strictEqual(resolveProdName(prodWithTextIds, 'en'), 'Floating White Clouds Bouquet');
+    assert.ok(resolveProdComp(prodWithTextIds, 'en').includes('White Ohara Roses'));
+    assert.ok(resolveProdDesc(prodWithTextIds, 'en').includes('pure white bouquet'));
+
+    // 2. Khi chọn tiếng Nhật -> Ưu tiên bản dịch tiếng Nhật
+    assert.strictEqual(resolveProdName(prodWithTextIds, 'ja'), '白い雲のフローティングブーケ');
+    assert.ok(resolveProdComp(prodWithTextIds, 'ja').includes('ホワイトオハラローズ'));
+
+    // 3. Khi không có textId -> Fallback an toàn về nội dung tĩnh
+    const prodNoTextIds = {
+        id: 'bo_hoa_02',
+        name: 'Hoa Mùa Thu',
+        flowerComposition: 'Hoa Cúc Họa Mi',
+        description: 'Mẫu hoa phong cách vintage'
+    };
+    assert.strictEqual(resolveProdName(prodNoTextIds, 'en'), 'Hoa Mùa Thu');
+    assert.strictEqual(resolveProdComp(prodNoTextIds, 'en'), 'Hoa Cúc Họa Mi');
+    assert.strictEqual(resolveProdDesc(prodNoTextIds, 'en'), 'Mẫu hoa phong cách vintage');
+});
+
+test('categories dynamic description resolution - getCategoryDescription priority (i18n -> descTextId -> fallback)', (t) => {
+    const raw = JSON.parse(fs.readFileSync(translationsPath, 'utf8'));
+    const transDict = raw.translations || raw;
+
+    const mockTrans = {
+        vi: { cat_desc_basket: transDict.cat_desc_basket.vi },
+        en: { cat_desc_basket: transDict.cat_desc_basket.en },
+        ja: { cat_desc_basket: transDict.cat_desc_basket.ja },
+        ko: { cat_desc_basket: transDict.cat_desc_basket.ko },
+        zh: { cat_desc_basket: transDict.cat_desc_basket.zh }
+    };
+
+    function resolveCatDesc(cat, lang) {
+        if (!cat) return "";
+        if (cat.i18n && cat.i18n[lang] && cat.i18n[lang].description) {
+            return cat.i18n[lang].description;
+        }
+        const descId = cat.descTextId || cat.descriptionTextId;
+        if (descId && mockTrans[lang] && mockTrans[lang][descId]) {
+            return mockTrans[lang][descId];
+        }
+        return cat.description || "";
+    }
+
+    // 1. Kiểm tra danh mục gio_hoa với descTextId cat_desc_basket
+    const catBasket = {
+        id: 'gio_hoa',
+        name: 'Giỏ & Lẵng Hoa',
+        descTextId: 'cat_desc_basket',
+        description: 'Giỏ hoa và lẵng hoa để bàn sang trọng, tinh tế',
+        i18n: {
+            en: { description: 'Custom embedded basket description in English' }
+        }
+    };
+
+    // Ưu tiên 1: cat.i18n.en.description
+    assert.strictEqual(resolveCatDesc(catBasket, 'en'), 'Custom embedded basket description in English');
+
+    // Ưu tiên 2 (khi i18n[ja] không có): descTextId từ translations
+    assert.strictEqual(resolveCatDesc(catBasket, 'ja'), '華やかで洗練されたテーブルアレンジメント＆フラワーバスケット');
+
+    // Ưu tiên 3 (fallback): description gốc tiếng Việt
+    const catNoTrans = {
+        id: 'cat_custom',
+        name: 'Danh Mục Tùy Chỉnh',
+        description: 'Mô tả danh mục thuần tiếng Việt'
+    };
+    assert.strictEqual(resolveCatDesc(catNoTrans, 'en'), 'Mô tả danh mục thuần tiếng Việt');
+});
+

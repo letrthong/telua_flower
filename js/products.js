@@ -43,14 +43,19 @@ export function clearProductDetailCache(productId = null) {
 /**
  * Lấy chi tiết một sản phẩm theo ID (đọc từ config/anne/products/{id}.json có In-Memory RAM Cache giới hạn)
  * @param {string} productId - Mã định danh sản phẩm
+ * @param {string} [lang] - Ngôn ngữ cần lấy (vi, en, ja, ko, zh)
  */
-export async function getProductById(productId) {
+export async function getProductById(productId, lang = null) {
     if (!productId) return null;
-    if (productDetailMemoryCache.has(productId)) {
-        return productDetailMemoryCache.get(productId);
+    const currentLang = lang || ((typeof window !== 'undefined' && window.currentLang) ? window.currentLang : 'vi');
+    const cacheKey = `${productId}_${currentLang}`;
+    
+    if (productDetailMemoryCache.has(cacheKey)) {
+        return productDetailMemoryCache.get(cacheKey);
     }
     try {
-        const res = await fetch(`${API_BASE}/products/${productId}`);
+        const url = `${API_BASE}/products/${productId}?lang=${encodeURIComponent(currentLang)}`;
+        const res = await fetch(url);
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
@@ -59,7 +64,7 @@ export async function getProductById(productId) {
                     const oldestKey = productDetailMemoryCache.keys().next().value;
                     if (oldestKey) productDetailMemoryCache.delete(oldestKey);
                 }
-                productDetailMemoryCache.set(productId, json.data);
+                productDetailMemoryCache.set(cacheKey, json.data);
                 return json.data;
             }
         }

@@ -456,8 +456,9 @@ def api_get_products():
 
 @flower_connect_api.route("/products/<product_id>", methods=["GET"])
 def api_get_product_detail(product_id):
-    """Lấy chi tiết một sản phẩm hoa tươi theo ID (có Cache-Control)."""
-    prod = get_product_by_id(product_id)
+    """Lấy chi tiết một sản phẩm hoa tươi theo ID (hỗ trợ tham số ?lang= và có Cache-Control)."""
+    lang = request.args.get("lang")
+    prod = get_product_by_id(product_id, lang=lang)
     if not prod:
         return jsonify({"success": False, "message": "Không tìm thấy sản phẩm"}), 404
     resp = jsonify({"success": True, "data": prod})

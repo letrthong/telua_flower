@@ -1746,100 +1746,106 @@
                 <input type="hidden" id="editProductId">
                 <div id="productModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Mẫu Hoa *</label>
-                        <input type="text" id="prodName" placeholder="VD: Mây Trắng Bồng Bềnh" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Danh mục *</label>
-                        <select id="prodCategory" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white" required>
-                            <option value="">-- Chọn danh mục hoa --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Huy hiệu (Badge)</label>
-                        <input type="text" id="prodBadge" placeholder="VD: Bán Chạy, Mới, Hot, -10%" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
-                    </div>
+                <!-- THANH CHUYỂN TAB ĐA NGÔN NGỮ CHO MẪU HOA -->
+                <div class="border-b border-gray-200 bg-gray-50 px-3 py-2 rounded-xl flex items-center gap-1.5 overflow-x-auto text-xs">
+                    <span class="text-[11px] font-bold text-gray-500 mr-1 flex items-center"><i class="fa-solid fa-language text-primary mr-1"></i> Ngôn ngữ:</span>
+                    <button type="button" id="prodLangTab_vi" onclick="switchProductLangTab('vi')" class="px-3 py-1.5 rounded-lg font-bold bg-white text-primary shadow-2xs border border-pink-200 whitespace-nowrap cursor-pointer">🇻🇳 Tiếng Việt (Gốc)</button>
+                    <button type="button" id="prodLangTab_en" onclick="switchProductLangTab('en')" class="px-3 py-1.5 rounded-lg font-medium text-gray-600 hover:text-primary hover:bg-white transition whitespace-nowrap cursor-pointer">🇬🇧 English</button>
+                    <button type="button" id="prodLangTab_ja" onclick="switchProductLangTab('ja')" class="px-3 py-1.5 rounded-lg font-medium text-gray-600 hover:text-primary hover:bg-white transition whitespace-nowrap cursor-pointer">🇯🇵 日本語</button>
+                    <button type="button" id="prodLangTab_ko" onclick="switchProductLangTab('ko')" class="px-3 py-1.5 rounded-lg font-medium text-gray-600 hover:text-primary hover:bg-white transition whitespace-nowrap cursor-pointer">🇰🇷 한국어</button>
+                    <button type="button" id="prodLangTab_zh" onclick="switchProductLangTab('zh')" class="px-3 py-1.5 rounded-lg font-medium text-gray-600 hover:text-primary hover:bg-white transition whitespace-nowrap cursor-pointer">🇨🇳 中文</button>
                 </div>
 
-                <!-- PRICE GOVERNANCE SECTION -->
-                <div class="p-4 bg-pink-50/60 rounded-xl border border-pink-100 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase text-primary flex items-center">
-                            <i class="fa-solid fa-shield-halved mr-1.5"></i> Hàng Rào Phân Tầng Mức Giá (Price Governance)
-                        </span>
-                        <span id="priceRangeHint" class="text-[11px] font-bold text-pink-700 bg-white px-2 py-0.5 rounded-md border border-pink-200">
-                            Khung giá: 300,000₫ - 550,000₫
-                        </span>
-                    </div>
-
+                <!-- 1. KHỐI NỘI DUNG TIẾNG VIỆT GỐC -->
+                <div id="prodFields_vi" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-700 mb-1">Phân Tầng Mức Giá *</label>
-                            <select id="prodPriceLevel" onchange="onPriceLevelChange()" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary" required>
-                                <option value="price_lvl_01">LV_01: Phổ Thông (300k - 550k)</option>
-                                <option value="price_lvl_02">LV_02: Cao Cấp (600k - 950k)</option>
-                                <option value="price_lvl_03">LV_03: Sang Trọng (1.000k - 2.500k)</option>
-                                <option value="price_lvl_04">LV_04: Độc Bản VIP (2.600k - 15.000k)</option>
-                            </select>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Tên Mẫu Hoa (Tiếng Việt) *</label>
+                            <input type="text" id="prodName" placeholder="VD: Mây Trắng Bồng Bềnh" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-700 mb-1">Giá Bán Niêm Yết (VND) *</label>
-                            <input type="number" id="prodPriceNumber" oninput="validateLivePrice()" placeholder="420000" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary" required>
-                            <span id="livePriceWarning" class="text-[10px] text-red-500 font-bold mt-1 hidden block"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ẢNH SẢN PHẨM (HỖ TRỢ UPLOAD TỪ MÁY HOẶC NHẬP URL) -->
-                <div class="space-y-2">
-                    <label class="block text-xs font-bold text-gray-700">Hình Ảnh Sản Phẩm (Upload từ máy hoặc Nhập Link) *</label>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-                        <!-- Dropzone Upload File & Convert to Base64 -->
-                        <div onclick="document.getElementById('prodImageFileInput').click()" class="border-2 border-dashed border-pink-200 hover:border-primary bg-pink-50/30 hover:bg-pink-50/60 rounded-xl p-3 text-center cursor-pointer transition flex flex-col items-center justify-center min-h-[100px]">
-                            <i class="fa-solid fa-cloud-arrow-up text-primary text-xl mb-1"></i>
-                            <span class="text-xs font-bold text-gray-700">Chọn ảnh tải lên</span>
-                            <span class="text-[10px] text-gray-400">Tự động nén & chuyển sang Base64</span>
-                            <input type="file" id="prodImageFileInput" accept="image/*" onchange="handleImageFileUpload(event)" class="hidden">
-                        </div>
-
-                        <!-- Khung xem trước ảnh (Preview) -->
-                        <div id="imagePreviewContainer" class="relative bg-gray-50 border border-gray-200 rounded-xl p-2 flex items-center gap-3 min-h-[100px]">
-                            <img id="prodImagePreview" src="https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500" alt="Preview" class="w-16 h-16 object-cover rounded-lg border border-gray-200 shadow-2xs">
-                            <div class="flex-1 min-w-0 text-left">
-                                <span id="imageStatusLabel" class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block">Ảnh mặc định</span>
-                                <p id="imageSizeInfo" class="text-[10px] text-gray-400 mt-1 truncate">Sẵn sàng lưu</p>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mã Dịch Tên Hoa (Text ID) 🌐</label>
+                            <select id="prodNameTextId" onchange="onProductTextIdChange('name')" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white">
+                                <option value="">-- Mặc định (Theo tên tiếng Việt) --</option>
+                            </select>
+                            <div id="prodNameTextIdCustomContainer" class="hidden mt-1.5">
+                                <input type="text" id="prodNameTextIdCustom" placeholder="vd: prod_name_bo_hoa_01" class="w-full px-3 py-1.5 bg-white border border-primary rounded-xl text-xs font-mono font-semibold text-primary focus:outline-none shadow-2xs">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Ô chứa chuỗi Base64 hoặc URL -->
-                    <div class="relative">
-                        <input type="text" id="prodImage" placeholder="Chuỗi Data Base64 hoặc Link URL ảnh (https://...)" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[11px] font-mono focus:outline-none focus:border-primary focus:bg-white" required>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Thành Phần Hoa (Flower Composition)</label>
+                            <input type="text" id="prodFlowerComposition" placeholder="VD: Hồng cam Spirit (12 cành), Cúc Mẫu Đơn, Lá Khuynh Diệp" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mã Dịch Thành Phần (Text ID) 🌐</label>
+                            <select id="prodCompTextId" onchange="onProductTextIdChange('comp')" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white">
+                                <option value="">-- Mặc định (Theo text thành phần) --</option>
+                            </select>
+                            <div id="prodCompTextIdCustomContainer" class="hidden mt-1.5">
+                                <input type="text" id="prodCompTextIdCustom" placeholder="vd: prod_comp_bo_hoa_01" class="w-full px-3 py-1.5 bg-white border border-primary rounded-xl text-xs font-mono font-semibold text-primary focus:outline-none shadow-2xs">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Cảm Xúc & Ý Nghĩa (Description)</label>
+                            <textarea id="prodDescription" rows="2" placeholder="VD: Tone cam cháy rực rỡ mang đến nguồn năng lượng tích cực..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mã Dịch Mô Tả (Text ID) 🌐</label>
+                            <select id="prodDescTextId" onchange="onProductTextIdChange('desc')" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white">
+                                <option value="">-- Mặc định (Theo text mô tả) --</option>
+                            </select>
+                            <div id="prodDescTextIdCustomContainer" class="hidden mt-1.5">
+                                <input type="text" id="prodDescTextIdCustom" placeholder="vd: prod_desc_bo_hoa_01" class="w-full px-3 py-1.5 bg-white border border-primary rounded-xl text-xs font-mono font-semibold text-primary focus:outline-none shadow-2xs">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Kích Thước (Dimension)</label>
+                            <input type="text" id="prodDimension" placeholder="VD: Cao 55cm x Rộng 45cm" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mẹo Chăm Sóc Hoa (Care Tips)</label>
+                            <input type="text" id="prodCareTips" placeholder="VD: Thay nước 2 ngày/lần, cắt gốc xéo 45 độ" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- 2. KHỐI NỘI DUNG DỊCH ĐA NGÔN NGỮ (i18n) -->
+                <div id="prodFields_i18n" class="hidden space-y-4 p-4 bg-pink-50/40 rounded-xl border border-pink-100">
+                    <div class="flex items-center justify-between pb-2 border-b border-pink-100">
+                        <span id="prodI18nHeaderBadge" class="text-xs font-bold text-primary flex items-center gap-1.5">
+                            <i class="fa-solid fa-globe"></i> Bản dịch: <span id="prodI18nLangName" class="font-bold">English (🇬🇧)</span>
+                        </span>
+                        <span class="text-[11px] text-gray-500">Tự động fallback về Tiếng Việt nếu để trống</span>
+                    </div>
+
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Thành Phần Hoa (Flower Composition)</label>
-                        <input type="text" id="prodFlowerComposition" placeholder="VD: Hồng cam Spirit (12 cành), Cúc Mẫu Đơn, Lá Khuynh Diệp" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Mẫu Hoa Dịch (<span class="prodCurrentLangLabel">English</span>)</label>
+                        <input type="text" id="prodI18nName" oninput="saveCurrentProdI18nDraft()" placeholder="VD: Floating White Clouds Bouquet" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary">
                     </div>
+
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Kích Thước (Dimension)</label>
-                        <input type="text" id="prodDimension" placeholder="VD: Cao 55cm x Rộng 45cm" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Thành Phần Hoa Dịch (<span class="prodCurrentLangLabel">English</span>)</label>
+                        <input type="text" id="prodI18nComposition" oninput="saveCurrentProdI18nDraft()" placeholder="VD: White Ohara Roses (10 stems), Tweedia, Tana Daisies" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary">
                     </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Cảm Xúc & Ý Nghĩa (Description)</label>
-                    <textarea id="prodDescription" rows="2" placeholder="VD: Tone cam cháy rực rỡ mang đến nguồn năng lượng tích cực và sự ấm áp..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white resize-none"></textarea>
-                </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Cảm Xúc Dịch (<span class="prodCurrentLangLabel">English</span>)</label>
+                        <textarea id="prodI18nDescription" oninput="saveCurrentProdI18nDraft()" rows="2" placeholder="VD: A pure white bouquet accented with sky blue tweedia..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary resize-none"></textarea>
+                    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Mẹo Chăm Sóc Hoa Tươi Lâu (Care Tips)</label>
-                    <textarea id="prodCareTips" rows="2" placeholder="VD: Thay nước bình hoa 2 ngày một lần, cắt xéo gốc 45 độ, tránh ánh nắng trực tiếp..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white resize-none"></textarea>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mẹo Chăm Sóc Hoa Dịch (<span class="prodCurrentLangLabel">English</span>)</label>
+                        <input type="text" id="prodI18nCareTips" oninput="saveCurrentProdI18nDraft()" placeholder="VD: Trim stems at 45 degrees, lightly mist petals every morning." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">
@@ -2032,59 +2038,112 @@
                 <input type="hidden" id="editCategoryId">
                 <div id="categoryModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Mã ID Danh Mục *</label>
-                        <input type="text" id="catIdInput" placeholder="vd: bo_hoa, lan_ho_diep" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-primary focus:bg-white" required>
-                        <p class="text-[10px] text-gray-400 mt-0.5">Viết liền không dấu, gạch dưới</p>
+                <!-- Thanh Tab Chọn Ngôn Ngữ Soạn Thảo Cho Danh Mục -->
+                <div class="flex items-center space-x-1.5 p-1 bg-gray-100/80 rounded-xl border border-gray-200/60 overflow-x-auto text-[11px] font-bold">
+                    <button type="button" onclick="switchCategoryLangTab('vi')" id="catLangTab_vi" class="cat-lang-tab px-3 py-1.5 rounded-lg transition bg-white text-primary shadow-xs">🇻🇳 Tiếng Việt (Gốc)</button>
+                    <button type="button" onclick="switchCategoryLangTab('en')" id="catLangTab_en" class="cat-lang-tab px-3 py-1.5 rounded-lg transition text-gray-600 hover:text-gray-900">🇬🇧 English</button>
+                    <button type="button" onclick="switchCategoryLangTab('ja')" id="catLangTab_ja" class="cat-lang-tab px-3 py-1.5 rounded-lg transition text-gray-600 hover:text-gray-900">🇯🇵 日本語</button>
+                    <button type="button" onclick="switchCategoryLangTab('ko')" id="catLangTab_ko" class="cat-lang-tab px-3 py-1.5 rounded-lg transition text-gray-600 hover:text-gray-900">🇰🇷 한국어</button>
+                    <button type="button" onclick="switchCategoryLangTab('zh')" id="catLangTab_zh" class="cat-lang-tab px-3 py-1.5 rounded-lg transition text-gray-600 hover:text-gray-900">🇨🇳 中文</button>
+                </div>
+
+                <!-- KHỐI NHẬP LIỆU GỐC TIẾNG VIỆT -->
+                <div id="catFields_vi" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mã ID Danh Mục *</label>
+                            <input type="text" id="catIdInput" placeholder="vd: bo_hoa, lan_ho_diep" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                            <p class="text-[10px] text-gray-400 mt-0.5">Viết liền không dấu, gạch dưới</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Tên Danh Mục *</label>
+                            <input type="text" id="catName" placeholder="vd: Bó Hoa Tươi" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mã Dịch Tên (textId) 🌐</label>
+                            <select id="catTextId" onchange="onCategoryTextIdChange()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white">
+                                <option value="">-- Mặc định (Theo tên danh mục) --</option>
+                                <optgroup label="Danh mục chuẩn hệ thống (System)">
+                                    <option value="cat_bouquet">cat_bouquet — 🌸 Bó Hoa Tươi</option>
+                                    <option value="cat_basket">cat_basket — 🧺 Giỏ & Lẵng Hoa</option>
+                                    <option value="cat_stand">cat_stand — 🏆 Kệ Hoa Khai Trương</option>
+                                    <option value="cat_vase">cat_vase — 🏺 Bình Cắm Hoa</option>
+                                    <option value="cat_orchid">cat_orchid — 🪴 Lan Hồ Điệp</option>
+                                    <option value="cat_wedding">cat_wedding — 👰 Hoa Cưới Cầm Tay</option>
+                                    <option value="cat_event">cat_event — 🎪 Hoa Sự Kiện</option>
+                                    <option value="cat_all">cat_all — 🌟 Tất Cả Danh Mục</option>
+                                </optgroup>
+                                <optgroup label="Tùy chọn khác">
+                                    <option value="__custom__">➕ Nhập mã textId tùy chỉnh khác...</option>
+                                </optgroup>
+                            </select>
+                            <div id="catTextIdCustomContainer" class="hidden mt-1.5">
+                                <input type="text" id="catTextIdCustom" placeholder="vd: cat_seasonal_promo" class="w-full px-3 py-1.5 bg-white border border-primary rounded-xl text-xs font-mono font-semibold text-primary focus:outline-none shadow-2xs">
+                            </div>
+                        </div>
                     </div>
+
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Danh Mục *</label>
-                        <input type="text" id="catName" placeholder="vd: Bó Hoa Tươi" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">URL Hình Ảnh Đại Diện</label>
+                        <input type="url" id="catImage" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Mã Đa Ngôn Ngữ (textId) 🌐</label>
-                        <select id="catTextId" onchange="onCategoryTextIdChange()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white">
-                            <option value="">-- Mặc định (Theo tên danh mục) --</option>
-                            <optgroup label="Danh mục chuẩn hệ thống (System)">
-                                <option value="cat_bouquet">cat_bouquet — 🌸 Bó Hoa Tươi</option>
-                                <option value="cat_basket">cat_basket — 🧺 Giỏ & Lẵng Hoa</option>
-                                <option value="cat_stand">cat_stand — 🏆 Kệ Hoa Khai Trương</option>
-                                <option value="cat_vase">cat_vase — 🏺 Bình Cắm Hoa</option>
-                                <option value="cat_orchid">cat_orchid — 🪴 Lan Hồ Điệp</option>
-                                <option value="cat_wedding">cat_wedding — 👰 Hoa Cưới Cầm Tay</option>
-                                <option value="cat_event">cat_event — 🎪 Hoa Sự Kiện</option>
-                                <option value="cat_all">cat_all — 🌟 Tất Cả Danh Mục</option>
-                            </optgroup>
-                            <optgroup label="Tùy chọn khác">
-                                <option value="__custom__">➕ Nhập mã textId tùy chỉnh khác...</option>
-                            </optgroup>
-                        </select>
-                        <div id="catTextIdCustomContainer" class="hidden mt-1.5">
-                            <input type="text" id="catTextIdCustom" placeholder="vd: cat_seasonal_promo" class="w-full px-3 py-1.5 bg-white border border-primary rounded-xl text-xs font-mono font-semibold text-primary focus:outline-none shadow-2xs">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Icon FontAwesome</label>
+                            <input type="text" id="catIcon" placeholder="fa-solid fa-spa" value="fa-solid fa-spa" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:outline-none focus:border-primary focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Thứ Tự Sắp Xếp (Order)</label>
+                            <input type="number" id="catOrder" value="1" min="1" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Danh Mục</label>
+                            <textarea id="catDescription" rows="2" placeholder="Ghi chú ngắn về nhóm sản phẩm này..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Mã Dịch Mô Tả (descTextId) 🌐</label>
+                            <select id="catDescTextId" onchange="onCategoryDescTextIdChange()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white">
+                                <option value="">-- Mặc định (Theo mô tả tĩnh) --</option>
+                                <optgroup label="Mô tả danh mục hệ thống (System)">
+                                    <option value="cat_desc_bouquet">cat_desc_bouquet — 🌸 Mô tả Bó Hoa Tươi</option>
+                                    <option value="cat_desc_basket">cat_desc_basket — 🧺 Mô tả Giỏ & Lẵng Hoa</option>
+                                    <option value="cat_desc_stand">cat_desc_stand — 🏆 Mô tả Kệ Hoa Khai Trương</option>
+                                    <option value="cat_desc_vase">cat_desc_vase — 🏺 Mô tả Bình Cắm Hoa</option>
+                                    <option value="cat_desc_orchid">cat_desc_orchid — 🪴 Mô tả Lan Hồ Điệp</option>
+                                    <option value="cat_desc_wedding">cat_desc_wedding — 👰 Mô tả Hoa Cưới Cầm Tay</option>
+                                    <option value="cat_desc_event">cat_desc_event — 🎪 Mô tả Hoa Sự Kiện</option>
+                                </optgroup>
+                                <optgroup label="Tùy chọn khác">
+                                    <option value="__custom__">➕ Nhập mã descTextId tùy chỉnh khác...</option>
+                                </optgroup>
+                            </select>
+                            <div id="catDescTextIdCustomContainer" class="hidden mt-1.5">
+                                <input type="text" id="catDescTextIdCustom" placeholder="vd: cat_desc_custom" class="w-full px-3 py-1.5 bg-white border border-primary rounded-xl text-xs font-mono font-semibold text-primary focus:outline-none shadow-2xs">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">URL Hình Ảnh Đại Diện</label>
-                    <input type="url" id="catImage" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Icon FontAwesome</label>
-                        <input type="text" id="catIcon" placeholder="fa-solid fa-spa" value="fa-solid fa-spa" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:outline-none focus:border-primary focus:bg-white">
+                <!-- KHỐI NHẬP LIỆU BẢN DỊCH ĐA NGÔN NGỮ (i18n) -->
+                <div id="catFields_i18n" class="space-y-4 hidden bg-pink-50/30 p-3.5 rounded-2xl border border-pink-100">
+                    <div class="p-2.5 bg-white rounded-xl border border-pink-100 text-[11px] text-gray-600 flex items-center gap-2">
+                        <i class="fa-solid fa-language text-primary text-sm"></i>
+                        <span>Đang chỉnh sửa bản dịch cho ngôn ngữ: <strong class="catCurrentLangLabel text-primary">English</strong></span>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Thứ Tự Sắp Xếp (Order)</label>
-                        <input type="number" id="catOrder" value="1" min="1" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white">
-                    </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Danh Mục</label>
-                    <textarea id="catDescription" rows="2" placeholder="Ghi chú ngắn về nhóm sản phẩm này..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white"></textarea>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Danh Mục Dịch (<span class="catCurrentLangLabel">English</span>)</label>
+                        <input type="text" id="catI18nName" oninput="saveCurrentCatI18nDraft()" placeholder="VD: Baskets & Arrangements" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Danh Mục Dịch (<span class="catCurrentLangLabel">English</span>)</label>
+                        <textarea id="catI18nDescription" oninput="saveCurrentCatI18nDraft()" rows="2" placeholder="VD: Elegant and sophisticated flower baskets and table arrangements..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary resize-none"></textarea>
+                    </div>
                 </div>
 
                 <div class="flex items-center space-x-2 pt-2 bg-pink-50/50 p-3 rounded-xl border border-pink-100">
