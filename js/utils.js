@@ -32,8 +32,8 @@ function initLazyLoadingImages() {
         if (img.complete && img.naturalWidth > 0) {
             markLoaded();
         } else {
-            img.addEventListener('load', markLoaded);
-            img.addEventListener('error', markLoaded);
+            img.addEventListener('load', markLoaded, { once: true });
+            img.addEventListener('error', markLoaded, { once: true });
         }
     });
 }
@@ -191,6 +191,7 @@ export function showConfirmDialog({
         const closeDialog = (result) => {
             if (isClosed) return;
             isClosed = true;
+            document.removeEventListener("keydown", handleKeyDown);
             container.classList.remove("opacity-100");
             container.classList.add("opacity-0");
             if (card) {

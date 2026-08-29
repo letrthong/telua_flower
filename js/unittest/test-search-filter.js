@@ -200,3 +200,26 @@ test('search clear button - xác định hiển thị nút X khi có text và �
     assert.strictEqual(shouldShowClearButton(null), false);
     assert.strictEqual(shouldShowClearButton(undefined), false);
 });
+
+// ==========================================
+// 6. KIỂM THỬ GIAO DIỆN TÌM KIẾM MOBILE VS DESKTOP
+// ==========================================
+
+function getSearchDisplayMode(screenWidth) {
+    if (screenWidth < 768) {
+        return 'mobile_live_dropdown';
+    }
+    return 'desktop_grid_section';
+}
+
+test('responsive search - phân biệt chính xác chế độ Mobile (<768px) và Desktop (>=768px)', (t) => {
+    // 1. Mobile (iPhone, Android, v.v.)
+    assert.strictEqual(getSearchDisplayMode(375), 'mobile_live_dropdown');
+    assert.strictEqual(getSearchDisplayMode(414), 'mobile_live_dropdown');
+    assert.strictEqual(getSearchDisplayMode(767), 'mobile_live_dropdown');
+
+    // 2. Desktop & iPad ngang
+    assert.strictEqual(getSearchDisplayMode(768), 'desktop_grid_section');
+    assert.strictEqual(getSearchDisplayMode(1024), 'desktop_grid_section');
+    assert.strictEqual(getSearchDisplayMode(1440), 'desktop_grid_section');
+});

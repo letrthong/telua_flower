@@ -27,6 +27,7 @@ export async function getProducts(activeOnly = true) {
 }
 
 const productDetailMemoryCache = new Map();
+const MAX_PRODUCT_CACHE_SIZE = 120; // Giới hạn tối đa 120 sản phẩm trong RAM client chống tràn bộ nhớ
 
 /**
  * Xóa cache chi tiết sản phẩm trong RAM (cho một sản phẩm hoặc toàn bộ)
@@ -40,7 +41,7 @@ export function clearProductDetailCache(productId = null) {
 }
 
 /**
- * Lấy chi tiết một sản phẩm theo ID (đọc từ config/anne/products/{id}.json có In-Memory RAM Cache)
+ * Lấy chi tiết một sản phẩm theo ID (đọc từ config/anne/products/{id}.json có In-Memory RAM Cache giới hạn)
  * @param {string} productId - Mã định danh sản phẩm
  */
 export async function getProductById(productId) {
@@ -53,6 +54,11 @@ export async function getProductById(productId) {
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
+                // Giới hạn kích thước cache RAM: Tự động loại bỏ phần tử cũ nhất (FIFO/LRU) khi vượt ngưỡng
+                if (productDetailMemoryCache.size >= MAX_PRODUCT_CACHE_SIZE) {
+                    const oldestKey = productDetailMemoryCache.keys().next().value;
+                    if (oldestKey) productDetailMemoryCache.delete(oldestKey);
+                }
                 productDetailMemoryCache.set(productId, json.data);
                 return json.data;
             }

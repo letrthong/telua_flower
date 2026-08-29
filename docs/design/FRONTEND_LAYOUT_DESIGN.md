@@ -60,6 +60,16 @@ Tối ưu cho cả máy tính (Desktop) và điện thoại (Mobile) với phong
 +-------------------------------------------------------------------------------+
 ```
 
+### 2.1 Kiến Trúc Trải Nghiệm Tìm Kiếm Đa Thiết Bị (Responsive Search UX):
+
+- **Trên Máy Tính (Desktop Screen `md:` >= 768px)**:
+  - Khi gõ tìm kiếm, kết quả được hiển thị toàn diện dạng lưới sản phẩm 4 cột (`#search-results-section`) trong khu vực `#dynamicCategorySections`.
+  - Tự động cuộn trang mượt mà (Smooth scroll) để người dùng bao quát toàn bộ sản phẩm.
+- **Trên Điện Thoại (Mobile Screen `< 768px`)**:
+  - Do màn hình điện thoại nhỏ và bàn phím ảo che khuất nửa dưới, kết quả tìm kiếm xuất hiện **NGAY DƯỚI THANH TÌM KIẾM** dưới dạng **Bảng Kết Quả Trực Tiếp (Mobile Live Search Dropdown - `#mobileLiveSearchResults`)**.
+  - Hiển thị danh sách thẻ hoa nhỏ gọn: Ảnh thu nhỏ (Thumbnail), Tên hoa, Phân loại, Giá bán VND, Trạng thái còn hàng và Nút xem chi tiết/Đặt mua tức thì.
+  - Hỗ trợ nút đóng nhanh và nút cuộn xuống dạng lưới nếu muốn duyệt toàn bộ.
+
 ---
 
 ## 3. Layout 2: Cổng Thợ Cắm Hoa & Nhân Viên Chi Nhánh (`/portal/staff`)

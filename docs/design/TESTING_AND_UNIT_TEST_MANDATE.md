@@ -24,7 +24,7 @@ Hệ thống Frontend sử dụng **Node.js Built-in Test Runner** (`node:test` 
 
 | File Test | Số Lượng Test | Nội Dung Kiểm Thử |
 | :--- | :--- | :--- |
-| **`test-search-filter.js`** | 8 tests | - Chuẩn hóa tiếng Việt không dấu (`removeVietnameseTones`).<br>- Tìm kiếm theo tên hoa, thành phần hoa (`composition`), SKU/ID.<br>- Bộ lọc trạng thái Đang bán / Đã ẩn (`isActive`).<br>- Trích xuất từ khóa tìm kiếm từ Hash routing chuẩn (`/#/search?q=...`). |
+| **`test-search-filter.js`** | 10 tests | - Chuẩn hóa tiếng Việt không dấu (`removeVietnameseTones`).<br>- Tìm kiếm theo tên hoa, thành phần hoa (`composition`), SKU/ID.<br>- Bộ lọc trạng thái Đang bán / Đã ẩn (`isActive`).<br>- Trích xuất từ khóa tìm kiếm từ Hash routing chuẩn (`/#/search?q=...`).<br>- Nút xóa tìm kiếm (dấu X) theo trạng thái text.<br>- Phân biệt trải nghiệm tìm kiếm Responsive Mobile (<768px) vs Desktop (>=768px). |
 | **`test-staff-rbac.js`** | 4 tests | - Ma trận hiển thị và phân quyền 5 nhóm vai trò (`super_admin`, `branch_manager`, `florist`, `sales_consultant`, `customer`).<br>- Quản lý chi nhánh chỉ được tạo nhân sự thuộc chi nhánh của mình.<br>- Super Admin có toàn quyền tạo mọi vai trò trên mọi chi nhánh. |
 | **`test-portal-governance.js`** | 3 tests | - Kiểm soát biên độ giá theo tầng giá (Price Governance Guardrails).<br>- Chặn đặt giá thấp hơn giá sàn (`minPrice`) hoặc vượt giá trần (`maxPrice`). |
 | **`test-products.js`** | 3 tests | - Xác thực tính hợp lệ của tệp dữ liệu `products.json`.<br>- Kiểm tra đầy đủ các trường bắt buộc (`id`, `name`, `priceNumber`, `category`, `stockByBranch`).<br>- Kiểm tra sự tồn tại của các file chi tiết trong `config/anne/products/`. |
@@ -32,7 +32,7 @@ Hệ thống Frontend sử dụng **Node.js Built-in Test Runner** (`node:test` 
 | **`test-auth.js`** | 2 tests | - Giải mã JWT Payload phía client.<br>- Xử lý an toàn khi token không hợp lệ hoặc bị hỏng format. |
 | **`test-translations.js`** | 3 tests | - Xác thực ma trận từ điển đa ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung).<br>- Đồng bộ đầy đủ các khóa từ điển giữa các ngôn ngữ, không để trống giá trị. |
 
-**Tổng cộng: 27 / 27 Tests PASS (100%)**
+**Tổng cộng: 29 / 29 Tests PASS (100%)**
 
 ### 2.2 Câu lệnh thực thi Unit Test JavaScript
 

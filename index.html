@@ -234,10 +234,10 @@
         </div>
 
         <!-- Thanh tìm kiếm (Mobile) -->
-        <div class="md:hidden px-4 pb-4">
+        <div class="md:hidden px-4 pb-4 relative">
             <div class="relative w-full flex items-center">
                 <input type="text" id="storefrontSearchMobileInput" oninput="debouncedSearchStorefrontProducts(this.value)" data-i18n-placeholder="search_placeholder_mobile" placeholder="Tìm hoa tươi..."
-                    class="w-full border border-gray-300 rounded-full py-2 pl-4 pr-16 focus:outline-none focus:border-primary text-xs">
+                    class="w-full border border-gray-300 rounded-full py-2 pl-4 pr-16 focus:outline-none focus:border-primary text-xs shadow-2xs">
                 <!-- Nút Xóa Search (Mobile) -->
                 <button id="storefrontSearchMobileClearBtn" onclick="clearStorefrontSearch()" title="Xóa nội dung tìm kiếm"
                     class="hidden absolute right-9 text-gray-400 hover:text-red-500 p-1 rounded-full transition text-xs items-center justify-center cursor-pointer">
@@ -246,6 +246,11 @@
                 <button onclick="searchStorefrontProducts(document.getElementById('storefrontSearchMobileInput').value)" class="absolute right-3 top-2.5 text-gray-400">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
+            </div>
+
+            <!-- Bảng kết quả tìm kiếm hiển thị NGAY DƯỚI thanh tìm kiếm Mobile -->
+            <div id="mobileLiveSearchResults" 
+                 class="hidden absolute left-4 right-4 top-full mt-1 bg-white rounded-2xl shadow-2xl border border-pink-100 z-50 max-h-[70vh] overflow-y-auto p-3 transition-all duration-200">
             </div>
         </div>
 
@@ -679,12 +684,8 @@
             </div>
 
             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
-                <div class="flex flex-col md:flex-row items-center space-y-1 md:space-y-0 md:space-x-3 text-center md:text-left">
+                <div class="flex flex-col md:flex-row items-center text-center md:text-left">
                     <p id="footerCopyright" data-i18n="footer_copyright">&copy; 2026 Bản quyền thuộc về Công ty TNHH Nở Hoa Thả Bình.</p>
-                    <span class="hidden md:inline text-gray-600">|</span>
-                    <p class="text-xs text-gray-400">
-                        <i class="fa-solid fa-code-branch text-pink-400 mr-1"></i> Build: <span class="text-pink-300 font-mono font-bold" id="buildTimestamp">2026-08-22 21:46:00 (UTC+7)</span>
-                    </p>
                 </div>
                 <div class="flex space-x-4 mt-4 md:mt-0">
                     <i class="fa-brands fa-cc-visa text-2xl text-gray-500 hover:text-white transition"></i>
@@ -991,29 +992,6 @@
                     <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-primary hover:bg-primaryHover text-white font-bold text-sm rounded-xl shadow-lg shadow-pink-200 transition duration-300 flex items-center justify-center">
                         Đăng Nhập <i class="fa-solid fa-arrow-right ml-2"></i>
                     </button>
-
-                    <!-- Khối tài khoản thử nghiệm nhanh (Quick Demo Logins) -->
-                    <div class="pt-3 border-t border-gray-100">
-                        <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 text-center">⚡ Đăng nhập thử nghiệm 1-chạm (Demo Roles)</p>
-                        <div class="grid grid-cols-2 gap-1.5 text-xs">
-                            <button type="button" onclick="fillDemoAccount('admin@nohoathabinh.vn')" class="p-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-left font-medium border border-purple-100 transition flex items-center">
-                                <span class="mr-1.5">👑</span> <div><div class="font-bold">Super Admin</div><div class="text-[10px] text-purple-500">Toàn quyền hệ thống</div></div>
-                            </button>
-                            <button type="button" onclick="fillDemoAccount('0909123456')" class="p-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-left font-medium border border-blue-100 transition flex items-center">
-                                <span class="mr-1.5">🏬</span> <div><div class="font-bold">Quản Lý Q.10</div><div class="text-[10px] text-blue-500">Showroom Q10 Flagship</div></div>
-                            </button>
-                            <button type="button" onclick="fillDemoAccount('0909654321')" class="p-2 bg-pink-50 hover:bg-pink-100 text-pink-700 rounded-lg text-left font-medium border border-pink-100 transition flex items-center">
-                                <span class="mr-1.5">🌸</span> <div><div class="font-bold">Thợ Cắm Hoa</div><div class="text-[10px] text-pink-500">Cổng cắm hoa & ảnh</div></div>
-                            </button>
-                            <button type="button" onclick="fillDemoAccount('0909777888')" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-left font-medium border border-amber-100 transition flex items-center">
-                                <span class="mr-1.5">💼</span> <div><div class="font-bold">Tư Vấn Sales</div><div class="text-[10px] text-amber-500">Tiếp nhận & tư vấn đơn</div></div>
-                            </button>
-                            <button type="button" onclick="fillDemoAccount('0987654321')" class="col-span-2 p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-left font-medium border border-emerald-100 transition flex items-center justify-between">
-                                <div class="flex items-center"><span class="mr-1.5">🛒</span> <span class="font-bold">Khách Hàng (Anh Nguyễn Văn A)</span></div>
-                                <span class="text-[10px] bg-emerald-200 text-emerald-800 px-1.5 py-0.5 rounded font-bold">50 Điểm</span>
-                            </button>
-                        </div>
-                    </div>
                 </form>
 
                 <!-- FORM ĐĂNG KÝ KHÁCH HÀNG -->
