@@ -75,6 +75,14 @@ export function setLanguage(lang) {
         if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
             window.renderAllProducts();
         }
+
+        // 11. Render lại giỏ hàng và cập nhật đơn hàng
+        if (typeof window !== 'undefined' && typeof window.renderCartDrawer === 'function') {
+            window.renderCartDrawer();
+        }
+        if (typeof window !== 'undefined' && typeof window.updateOrderSummary === 'function') {
+            window.updateOrderSummary();
+        }
     }
 }
 

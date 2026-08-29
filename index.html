@@ -767,9 +767,9 @@
                 <span data-i18n="cart_subtotal_lbl">Tạm tính:</span>
                 <span id="cartDrawerSubtotal" class="font-bold text-primary text-base">0₫</span>
             </div>
-            <p class="text-[11px] text-gray-400">💡 Miễn phí vận chuyển cho đơn hàng hoa tươi từ 500.000₫</p>
+            <p class="text-[11px] text-gray-400" data-i18n="cart_free_ship_hint">💡 Miễn phí vận chuyển cho đơn hàng hoa tươi từ 500.000₫</p>
             <button id="btnDrawerCheckout" onclick="openCheckoutModal()" class="w-full py-3.5 bg-primary hover:bg-primaryHover text-white font-bold text-sm rounded-xl shadow-lg shadow-pink-200 transition duration-300 flex items-center justify-center">
-                Tiến Hành Đặt Hoa <i class="fa-solid fa-arrow-right ml-2"></i>
+                <span data-i18n="cart_checkout_btn">Tiến Hành Đặt Hoa</span> <i class="fa-solid fa-arrow-right ml-2"></i>
             </button>
         </div>
     </div>
@@ -788,8 +788,8 @@
                     <i class="fa-solid fa-truck-fast"></i>
                 </div>
                 <div>
-                    <h3 class="font-serif text-lg sm:text-xl font-bold text-gray-800">Đặt Hoa Giao Tận Nơi</h3>
-                    <p class="text-xs text-gray-500">Hẹn giờ 30 ngày • Tặng thiệp & ruy-băng • Giao hỏa tốc 2H</p>
+                    <h3 class="font-serif text-lg sm:text-xl font-bold text-gray-800" data-i18n="checkout_modal_title">Đặt Hoa Giao Tận Nơi</h3>
+                    <p class="text-xs text-gray-500" data-i18n="checkout_modal_subtitle">Hẹn giờ 30 ngày • Tặng thiệp & ruy-băng • Giao hỏa tốc 2H</p>
                 </div>
             </div>
 
@@ -801,25 +801,25 @@
                 <div class="bg-pink-50/40 p-4 rounded-xl border border-pink-100 space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold uppercase tracking-wider text-primary flex items-center">
-                            <i class="fa-solid fa-calendar-days mr-1.5"></i> 1. Thời Gian Giao Hoa
+                            <i class="fa-solid fa-calendar-days mr-1.5"></i> <span data-i18n="checkout_sec_delivery_time">1. Thời Gian Giao Hoa</span>
                         </span>
                         <!-- Toggle Hỏa tốc 2H -->
                         <label class="inline-flex items-center cursor-pointer text-xs font-bold text-gray-700">
                             <input type="checkbox" id="checkoutIsExpress2H" onchange="toggleExpress2H()" class="sr-only peer">
                             <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                            <span class="ms-2 text-primary font-bold">⚡ Hỏa Tốc 2H</span>
+                            <span class="ms-2 text-primary font-bold" data-i18n="checkout_express_2h">⚡ Hỏa Tốc 2H</span>
                         </label>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Ngày giao hoa (Chọn trong 30 ngày) *</label>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_delivery_date">Ngày giao hoa (Chọn trong 30 ngày) *</label>
                             <select id="checkoutDeliveryDate" onchange="onDeliveryDateChange()" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-primary transition" required>
                                 <!-- Render 30 ngày qua JS -->
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Khung giờ giao hàng *</label>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_timeslot">Khung giờ giao hàng *</label>
                             <select id="checkoutTimeSlot" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-primary transition" required>
                                 <option value="09:00 - 11:00">09:00 - 11:00 (Sáng)</option>
                                 <option value="14:00 - 16:00">14:00 - 16:00 (Chiều)</option>
@@ -832,41 +832,41 @@
                 <!-- 2. THÔNG TIN NGƯỜI NHẬN & CHỈ DẪN ĐỊA CHỈ -->
                 <div class="space-y-3">
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
-                        <i class="fa-solid fa-location-dot text-primary mr-1.5"></i> 2. Thông Tin Người Nhận
+                        <i class="fa-solid fa-location-dot text-primary mr-1.5"></i> <span data-i18n="checkout_sec_recipient">2. Thông Tin Người Nhận</span>
                     </span>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Họ tên người nhận *</label>
-                            <input type="text" id="checkoutRecipientName" placeholder="Ví dụ: Trần Thị Mai" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_recipient_name">Họ tên người nhận *</label>
+                            <input type="text" id="checkoutRecipientName" data-i18n-placeholder="checkout_placeholder_recipient_name" placeholder="Ví dụ: Trần Thị Mai" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Số điện thoại nhận hoa *</label>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_recipient_phone">Số điện thoại nhận hoa *</label>
                             <input type="tel" id="checkoutRecipientPhone" placeholder="0911223344" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Địa chỉ giao hoa chi tiết *</label>
-                        <input type="text" id="checkoutRecipientAddress" placeholder="Số nhà, tên đường, Phường/Xã, Quận/Huyện, TP.HCM..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
+                        <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_recipient_address">Địa chỉ giao hoa chi tiết *</label>
+                        <input type="text" id="checkoutRecipientAddress" data-i18n-placeholder="checkout_placeholder_recipient_address" placeholder="Số nhà, tên đường, Phường/Xã, Quận/Huyện, TP.HCM..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-gray-600 mb-1">Chỉ dẫn địa chỉ giao (deliveryNotes)</label>
-                        <input type="text" id="checkoutDeliveryNotes" placeholder="Ví dụ: Tòa nhà Bitexco, Tầng 12 - Công ty FPT, gọi trước 15p hoặc gửi Lễ tân..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition">
+                        <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_delivery_notes">Chỉ dẫn địa chỉ giao (Ghi chú)</label>
+                        <input type="text" id="checkoutDeliveryNotes" data-i18n-placeholder="checkout_placeholder_delivery_notes" placeholder="Ví dụ: Tòa nhà Bitexco, Tầng 12 - Công ty FPT, gọi trước 15p hoặc gửi Lễ tân..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition">
                     </div>
                 </div>
 
                 <!-- 3. THIỆP CHÚC MỪNG & BANNER RUY-BĂNG -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
-                        <i class="fa-solid fa-envelope-open-text text-accent mr-1.5"></i> 3. Lời Chúc Viết Thiệp & Banner Ruy-băng (Miễn phí)
+                        <i class="fa-solid fa-envelope-open-text text-accent mr-1.5"></i> <span data-i18n="checkout_sec_card_ribbon">3. Lời Chúc Viết Thiệp & Banner Ruy-băng (Miễn phí)</span>
                     </span>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Lời chúc viết tay trên thiệp</label>
-                            <textarea id="checkoutCardMessage" rows="2" placeholder="Chúc em sinh nhật vui vẻ, luôn xinh đẹp và hạnh phúc..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary transition resize-none"></textarea>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_card_message">Lời chúc viết tay trên thiệp</label>
+                            <textarea id="checkoutCardMessage" rows="2" data-i18n-placeholder="checkout_placeholder_card_message" placeholder="Chúc em sinh nhật vui vẻ, luôn xinh đẹp và hạnh phúc..." class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary transition resize-none"></textarea>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Nội dung dải ruy-băng / Banner kệ hoa</label>
-                            <textarea id="checkoutRibbonBanner" rows="2" placeholder="Ví dụ: Công ty ABC Chúc Mừng Khai Trương Hồng Phát" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary transition resize-none"></textarea>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_ribbon_banner">Nội dung dải ruy-băng / Banner kệ hoa</label>
+                            <textarea id="checkoutRibbonBanner" rows="2" data-i18n-placeholder="checkout_placeholder_ribbon_banner" placeholder="Ví dụ: Công ty ABC Chúc Mừng Khai Trương Hồng Phát" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary transition resize-none"></textarea>
                         </div>
                     </div>
                 </div>
@@ -875,27 +875,27 @@
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
-                            <i class="fa-solid fa-user-tag text-primary mr-1.5"></i> 4. Thông Tin Người Gửi
+                            <i class="fa-solid fa-user-tag text-primary mr-1.5"></i> <span data-i18n="checkout_sec_sender">4. Thông Tin Người Gửi</span>
                         </span>
                         <!-- Tùy chọn gửi hoa bí mật (Ẩn danh) -->
                         <label class="inline-flex items-center cursor-pointer text-xs font-bold text-purple-700">
                             <input type="checkbox" id="checkoutIsAnonymous" class="sr-only peer">
                             <div class="relative w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:start-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-purple-600"></div>
-                            <span class="ms-1.5">🎭 Gửi hoa bí mật (Ẩn danh)</span>
+                            <span class="ms-1.5" data-i18n="checkout_anonymous_option">🎭 Gửi hoa bí mật (Ẩn danh)</span>
                         </label>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Họ tên của bạn *</label>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_sender_name">Họ tên của bạn *</label>
                             <input type="text" id="checkoutSenderName" placeholder="Nguyễn Văn A" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Số điện thoại *</label>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_sender_phone">Số điện thoại *</label>
                             <input type="tel" id="checkoutSenderPhone" placeholder="0987654321" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" required>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Email nhận hóa đơn</label>
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_sender_email">Email nhận hóa đơn</label>
                             <input type="email" id="checkoutSenderEmail" placeholder="email@gmail.com" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition">
                         </div>
                     </div>
@@ -904,17 +904,17 @@
                 <!-- 5. MÃ GIẢM GIÁ & TỔNG KẾT CHI PHÍ -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                     <div class="flex gap-2">
-                        <input type="text" id="checkoutVoucherInput" placeholder="Nhập mã voucher (PHUNU15, FREESHIP, ANNE10...)" class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-primary transition">
-                        <button type="button" onclick="handleApplyVoucher()" class="px-4 py-2 bg-gray-800 hover:bg-black text-white text-xs font-bold rounded-xl transition">Áp Dụng</button>
+                        <input type="text" id="checkoutVoucherInput" data-i18n-placeholder="checkout_placeholder_voucher" placeholder="Nhập mã voucher (PHUNU15, FREESHIP, ANNE10...)" class="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs uppercase font-bold focus:outline-none focus:border-primary transition">
+                        <button type="button" onclick="handleApplyVoucher()" class="px-4 py-2 bg-gray-800 hover:bg-black text-white text-xs font-bold rounded-xl transition" data-i18n="checkout_btn_apply_voucher">Áp Dụng</button>
                     </div>
                     <span id="checkoutVoucherMsg" class="hidden text-xs"></span>
 
                     <div class="pt-2 border-t border-gray-200 space-y-1.5 text-xs text-gray-600">
-                        <div class="flex justify-between"><span>Tiền hàng:</span><span id="summarySubtotal" class="font-bold text-gray-800">0₫</span></div>
-                        <div class="flex justify-between"><span>Phí vận chuyển:</span><span id="summaryShipping" class="font-bold text-gray-800">35.000₫</span></div>
-                        <div class="flex justify-between text-green-600 font-bold"><span>Giảm giá voucher:</span><span id="summaryDiscount">0₫</span></div>
+                        <div class="flex justify-between"><span data-i18n="checkout_lbl_subtotal">Tiền hàng:</span><span id="summarySubtotal" class="font-bold text-gray-800">0₫</span></div>
+                        <div class="flex justify-between"><span data-i18n="checkout_lbl_shipping">Phí vận chuyển:</span><span id="summaryShipping" class="font-bold text-gray-800">35.000₫</span></div>
+                        <div class="flex justify-between text-green-600 font-bold"><span data-i18n="checkout_lbl_discount">Giảm giá voucher:</span><span id="summaryDiscount">0₫</span></div>
                         <div class="flex justify-between text-sm sm:text-base font-extrabold text-primary pt-2 border-t border-gray-200">
-                            <span>Tổng thanh toán:</span>
+                            <span data-i18n="checkout_lbl_total">Tổng thanh toán:</span>
                             <span id="summaryTotal">0₫</span>
                         </div>
                     </div>
@@ -922,22 +922,22 @@
 
                 <!-- 6. PHƯƠNG THỨC THANH TOÁN -->
                 <div>
-                    <span class="text-xs font-bold uppercase tracking-wider text-gray-700 block mb-2">5. Phương Thức Thanh Toán</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-700 block mb-2" data-i18n="checkout_sec_payment">5. Phương Thức Thanh Toán</span>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <label class="flex items-center p-3 border border-pink-200 bg-pink-50/50 rounded-xl cursor-pointer font-bold text-gray-800">
                             <input type="radio" name="paymentMethod" value="vietqr" checked class="text-primary mr-2">
-                            <span>⚡ Quét mã VietQR (Tự động)</span>
+                            <span data-i18n="checkout_pay_vietqr">⚡ Quét mã VietQR (Tự động)</span>
                         </label>
                         <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer font-semibold text-gray-700 hover:bg-gray-50">
                             <input type="radio" name="paymentMethod" value="cod" class="text-primary mr-2">
-                            <span>💵 Thanh toán tiền mặt (COD)</span>
+                            <span data-i18n="checkout_pay_cod">💵 Thanh toán tiền mặt (COD)</span>
                         </label>
                     </div>
                 </div>
 
                 <!-- Nút Submit -->
                 <button type="submit" id="btnSubmitOrder" class="w-full py-4 bg-primary hover:bg-primaryHover text-white font-extrabold text-sm sm:text-base rounded-xl shadow-lg shadow-pink-200 transition duration-300 flex items-center justify-center">
-                    Hoàn Tất Đặt Hoa <i class="fa-solid fa-arrow-right ml-2"></i>
+                    <span data-i18n="checkout_btn_submit">Hoàn Tất Đặt Hoa</span> <i class="fa-solid fa-arrow-right ml-2"></i>
                 </button>
             </form>
         </div>

@@ -52,11 +52,19 @@ export function addToCart(productId, name, priceNumber, image, category = "bo_ho
 
     saveCartItems(items);
 
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[lang]) ? trans[lang] : {};
+    const toastTemplate = dict.toast_added_cart_item || 'Đã thêm "{name}" vào giỏ hàng!';
+    const toastMsg = toastTemplate.replace("{name}", name || "");
+
     if (typeof showToast === "function") {
-        showToast(`Đã thêm "${name}" vào giỏ hàng!`);
+        showToast(toastMsg);
     } else {
         const toast = document.getElementById("toast");
         if (toast) {
+            const span = toast.querySelector("span");
+            if (span) span.textContent = toastMsg;
             toast.classList.remove("translate-y-20", "opacity-0");
             setTimeout(() => toast.classList.add("translate-y-20", "opacity-0"), 2500);
         }
@@ -154,12 +162,27 @@ export function renderCartDrawer() {
 
     if (!container) return;
 
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[lang]) ? trans[lang] : {};
+
+    // Cập nhật lại toàn bộ nhãn tĩnh trong Cart Drawer
+    const drawer = document.getElementById("cartDrawer");
+    if (drawer) {
+        drawer.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) el.innerHTML = dict[key];
+        });
+    }
+
     if (items.length === 0) {
+        const emptyTitle = dict.cart_empty_title || "Giỏ hàng của bạn đang trống";
+        const emptyDesc = dict.cart_empty_desc || "Hãy chọn những đóa hoa tươi đẹp nhất nhé!";
         container.innerHTML = `
             <div class="flex flex-col items-center justify-center py-16 text-center text-gray-400">
                 <i class="fa-solid fa-basket-shopping text-5xl mb-4 text-pink-200"></i>
-                <p class="font-medium text-sm text-gray-500">Giỏ hàng của bạn đang trống</p>
-                <p class="text-xs text-gray-400 mt-1">Hãy chọn những đóa hoa tươi đẹp nhất nhé!</p>
+                <p class="font-medium text-sm text-gray-500" data-i18n="cart_empty_title">${emptyTitle}</p>
+                <p class="text-xs text-gray-400 mt-1" data-i18n="cart_empty_desc">${emptyDesc}</p>
             </div>
         `;
         if (subtotalEl) subtotalEl.textContent = "0₫";
@@ -211,6 +234,20 @@ export function openCheckoutModal() {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[lang]) ? trans[lang] : {};
+
+    // Cập nhật nhãn & placeholder đa ngôn ngữ trong modal
+    modal.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.innerHTML = dict[key];
+    });
+    modal.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (dict[key]) el.setAttribute('placeholder', dict[key]);
+    });
+
     // 1. Khởi tạo danh sách ngày (30 ngày từ hôm nay)
     initDeliveryDatePicker();
 
@@ -249,6 +286,13 @@ export function initDeliveryDatePicker() {
     const dateSelect = document.getElementById("checkoutDeliveryDate");
     if (!dateSelect) return;
 
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[lang]) ? trans[lang] : {};
+
+    const todayWord = dict.checkout_date_today || "Hôm nay";
+    const tomorrowWord = dict.checkout_date_tomorrow || "Ngày mai";
+
     dateSelect.innerHTML = "";
     const today = new Date();
 
@@ -261,9 +305,9 @@ export function initDeliveryDatePicker() {
         const dd = String(d.getDate()).padStart(2, "0");
         const valStr = `${yyyy}-${mm}-${dd}`;
 
-        let label = `Ngày ${dd}/${mm}/${yyyy}`;
-        if (i === 0) label = `Hôm nay (${dd}/${mm})`;
-        else if (i === 1) label = `Ngày mai (${dd}/${mm})`;
+        let label = `${dd}/${mm}/${yyyy}`;
+        if (i === 0) label = `${todayWord} (${dd}/${mm})`;
+        else if (i === 1) label = `${tomorrowWord} (${dd}/${mm})`;
 
         const opt = document.createElement("option");
         opt.value = valStr;
@@ -413,13 +457,19 @@ export function updateOrderSummary() {
 
     const finalTotal = Math.max(0, subtotal + shippingFee - discount);
 
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[lang]) ? trans[lang] : {};
+
     const subtotalEl = document.getElementById("summarySubtotal");
     const shippingEl = document.getElementById("summaryShipping");
     const discountEl = document.getElementById("summaryDiscount");
     const totalEl = document.getElementById("summaryTotal");
 
+    const freeShippingText = dict.checkout_lbl_free_shipping || "Miễn phí";
+
     if (subtotalEl) subtotalEl.textContent = formatVND(subtotal);
-    if (shippingEl) shippingEl.textContent = shippingFee === 0 ? "Miễn phí" : formatVND(shippingFee);
+    if (shippingEl) shippingEl.textContent = shippingFee === 0 ? freeShippingText : formatVND(shippingFee);
     if (discountEl) discountEl.textContent = discount > 0 ? `-${formatVND(discount)}` : "0₫";
     if (totalEl) totalEl.textContent = formatVND(finalTotal);
 }

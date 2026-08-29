@@ -208,6 +208,366 @@
       "ko": "엄선된 프리미엄 1등급 생화, 쇼룸 전용 고급 포장재 사용.",
       "zh": "甄选特级新鲜花材，展厅级精美高端包装。"
     },
+    "cart_drawer_title": {
+      "type": "system",
+      "vi": "Giỏ Hàng Của Bạn",
+      "en": "Your Shopping Cart",
+      "ja": "ショッピングカート",
+      "ko": "내 장바구니",
+      "zh": "我的购物车"
+    },
+    "cart_empty_title": {
+      "type": "system",
+      "vi": "Giỏ hàng của bạn đang trống",
+      "en": "Your cart is currently empty",
+      "ja": "カートは空です",
+      "ko": "장바구니가 비어 있습니다",
+      "zh": "您的购物车是空的"
+    },
+    "cart_empty_desc": {
+      "type": "system",
+      "vi": "Hãy chọn những đóa hoa tươi đẹp nhất nhé!",
+      "en": "Explore and pick your favorite fresh blooms!",
+      "ja": "素敵なお花をお選びください！",
+      "ko": "아름다운 생화를 장바구니에 담아보세요!",
+      "zh": "挑选您心仪的美丽鲜花吧！"
+    },
+    "cart_subtotal_lbl": {
+      "type": "system",
+      "vi": "Tạm tính:",
+      "en": "Subtotal:",
+      "ja": "小計:",
+      "ko": "소계:",
+      "zh": "小计:"
+    },
+    "cart_free_ship_hint": {
+      "type": "system",
+      "vi": "💡 Miễn phí vận chuyển cho đơn hàng hoa tươi từ 500.000₫",
+      "en": "💡 Free shipping on flower orders from 500,000₫",
+      "ja": "💡 500,000₫以上のご注文で送料無料",
+      "ko": "💡 500,000₫ 이상 주문 시 무료 배송",
+      "zh": "💡 鲜花订单满 500,000₫ 享免运费"
+    },
+    "cart_checkout_btn": {
+      "type": "system",
+      "vi": "Tiến Hành Đặt Hoa",
+      "en": "Proceed to Checkout",
+      "ja": "注文手続きへ進む",
+      "ko": "주문 결제 진행하기",
+      "zh": "前往结账下单"
+    },
+    "toast_added_cart_item": {
+      "type": "system",
+      "vi": "Đã thêm \"{name}\" vào giỏ hàng!",
+      "en": "Added \"{name}\" to cart!",
+      "ja": "「{name}」をカートに追加しました！",
+      "ko": "\"{name}\" 상품을 장바구니에 담았습니다!",
+      "zh": "已将“{name}”加入购物车！"
+    },
+    "checkout_modal_title": {
+      "type": "system",
+      "vi": "Đặt Hoa Giao Tận Nơi",
+      "en": "Doorstep Flower Delivery",
+      "ja": "フラワーお届け配達",
+      "ko": "꽃 배달 주문하기",
+      "zh": "鲜花专人配送预订"
+    },
+    "checkout_modal_subtitle": {
+      "type": "system",
+      "vi": "Hẹn giờ 30 ngày • Tặng thiệp & ruy-băng • Giao hỏa tốc 2H",
+      "en": "30-day scheduled delivery • Free card & ribbon • 2H express dispatch",
+      "ja": "30日先まで指定可能 • メッセージカード＆リボン無料 • 2時間特急配達",
+      "ko": "30일 예약 배송 • 무료 카드 & 리본 증정 • 2시간 특급 배송",
+      "zh": "30天预约配送 • 免费赠送精美贺卡及横幅 • 2小时极速送达"
+    },
+    "checkout_sec_delivery_time": {
+      "type": "system",
+      "vi": "1. Thời Gian Giao Hoa",
+      "en": "1. Delivery Time",
+      "ja": "1. お届け日時",
+      "ko": "1. 배송 희망 일시",
+      "zh": "1. 配送时间"
+    },
+    "checkout_express_2h": {
+      "type": "system",
+      "vi": "⚡ Hỏa Tốc 2H",
+      "en": "⚡ 2H Express",
+      "ja": "⚡ 2時間特急",
+      "ko": "⚡ 2시간 특급",
+      "zh": "⚡ 2小时极速"
+    },
+    "checkout_lbl_delivery_date": {
+      "type": "system",
+      "vi": "Ngày giao hoa (Chọn trong 30 ngày) *",
+      "en": "Delivery Date (Choose within 30 days) *",
+      "ja": "お届け日 (30日以内指定) *",
+      "ko": "배송 날짜 (30일 이내 선택) *",
+      "zh": "配送日期 (30天内预约) *"
+    },
+    "checkout_lbl_timeslot": {
+      "type": "system",
+      "vi": "Khung giờ giao hàng *",
+      "en": "Delivery Time Slot *",
+      "ja": "お届け時間帯 *",
+      "ko": "배송 시간대 *",
+      "zh": "配送时间段 *"
+    },
+    "checkout_sec_recipient": {
+      "type": "system",
+      "vi": "2. Thông Tin Người Nhận",
+      "en": "2. Recipient Information",
+      "ja": "2. お届け先情報",
+      "ko": "2. 수령인 정보",
+      "zh": "2. 收件人信息"
+    },
+    "checkout_lbl_recipient_name": {
+      "type": "system",
+      "vi": "Họ tên người nhận *",
+      "en": "Recipient Name *",
+      "ja": "お届け先のお名前 *",
+      "ko": "수령인 이름 *",
+      "zh": "收件人姓名 *"
+    },
+    "checkout_placeholder_recipient_name": {
+      "type": "system",
+      "vi": "Ví dụ: Trần Thị Mai",
+      "en": "e.g. Mary Jane",
+      "ja": "例：山田 花子",
+      "ko": "예: 김영희",
+      "zh": "例如：张小丽"
+    },
+    "checkout_lbl_recipient_phone": {
+      "type": "system",
+      "vi": "Số điện thoại nhận hoa *",
+      "en": "Recipient Phone Number *",
+      "ja": "お届け先電話番号 *",
+      "ko": "수령인 연락처 *",
+      "zh": "收件人电话 *"
+    },
+    "checkout_lbl_recipient_address": {
+      "type": "system",
+      "vi": "Địa chỉ giao hoa chi tiết *",
+      "en": "Detailed Delivery Address *",
+      "ja": "お届け先詳細住所 *",
+      "ko": "상세 배송 주소 *",
+      "zh": "详细配送地址 *"
+    },
+    "checkout_placeholder_recipient_address": {
+      "type": "system",
+      "vi": "Số nhà, tên đường, Phường/Xã, Quận/Huyện, TP.HCM...",
+      "en": "House number, street, ward, district, HCMC...",
+      "ja": "番地、建物名、区、ホーチミン市...",
+      "ko": "상세 주소, 동/호수, 구, 호치민시...",
+      "zh": "门牌号、街道、坊、郡、胡志明市..."
+    },
+    "checkout_lbl_delivery_notes": {
+      "type": "system",
+      "vi": "Chỉ dẫn địa chỉ giao (Ghi chú)",
+      "en": "Delivery Instructions (Notes)",
+      "ja": "配達時のご要望・目印",
+      "ko": "배송 요청사항 / 위치 안내",
+      "zh": "配送指引与备注"
+    },
+    "checkout_placeholder_delivery_notes": {
+      "type": "system",
+      "vi": "Ví dụ: Tòa nhà Bitexco, Tầng 12, gọi trước 15p hoặc gửi Lễ tân...",
+      "en": "e.g. Bitexco Tower, 12th Floor, call 15 mins ahead or leave at reception...",
+      "ja": "例：Bitexcoタワー12階、到着15分前に連絡、または受付預け...",
+      "ko": "예: 비텍스코 타워 12층, 15분 전 연락 또는 안내데스크 보관...",
+      "zh": "例如：Bitexco大厦12层，提前15分钟致电或交前台..."
+    },
+    "checkout_sec_card_ribbon": {
+      "type": "system",
+      "vi": "3. Lời Chúc Viết Thiệp & Banner Ruy-băng (Miễn phí)",
+      "en": "3. Complimentary Card Message & Ribbon Banner",
+      "ja": "3. メッセージカード＆リボン名札（無料）",
+      "ko": "3. 축하 카드 & 리본 문구 (무료)",
+      "zh": "3. 免费贺卡寄语与横幅丝带"
+    },
+    "checkout_lbl_card_message": {
+      "type": "system",
+      "vi": "Lời chúc viết tay trên thiệp",
+      "en": "Handwritten Card Message",
+      "ja": "手書きメッセージカードの内容",
+      "ko": "카드에 적을 축하 메시지",
+      "zh": "手写贺卡寄语"
+    },
+    "checkout_placeholder_card_message": {
+      "type": "system",
+      "vi": "Chúc em sinh nhật vui vẻ, luôn xinh đẹp và hạnh phúc...",
+      "en": "Wishing you a happy birthday, always bright and joyful...",
+      "ja": "お誕生日おめでとうございます。幸せに満ちた素敵な一年になりますように...",
+      "ko": "생일을 진심으로 축하하며 언제나 행복이 가득하길 바랍니다...",
+      "zh": "祝你生日快乐，永远美丽幸福..."
+    },
+    "checkout_lbl_ribbon_banner": {
+      "type": "system",
+      "vi": "Nội dung dải ruy-băng / Banner kệ hoa",
+      "en": "Ribbon Banner / Stand Header Text",
+      "ja": "リボン・立て札のメッセージ",
+      "ko": "리본 / 화환 문구",
+      "zh": "丝带 / 花牌横幅文字"
+    },
+    "checkout_placeholder_ribbon_banner": {
+      "type": "system",
+      "vi": "Ví dụ: Công ty ABC Chúc Mừng Khai Trương Hồng Phát",
+      "en": "e.g. ABC Company Congratulates Grand Opening",
+      "ja": "例：株式会社ABC 祝 開店御祝",
+      "ko": "예: ABC 주식회사 개업을 축하합니다",
+      "zh": "例如：ABC公司 祝 开业大吉"
+    },
+    "checkout_sec_sender": {
+      "type": "system",
+      "vi": "4. Thông Tin Người Gửi",
+      "en": "4. Sender Information",
+      "ja": "4. ご注文者様情報",
+      "ko": "4. 주문자 정보",
+      "zh": "4. 发件人信息"
+    },
+    "checkout_anonymous_option": {
+      "type": "system",
+      "vi": "🎭 Gửi hoa bí mật (Ẩn danh)",
+      "en": "🎭 Send anonymously (Secret Sender)",
+      "ja": "🎭 匿名配送（シークレットギフト）",
+      "ko": "🎭 익명 배송 (보내는 분 숨김)",
+      "zh": "🎭 匿名送花（隐藏发件人）"
+    },
+    "checkout_lbl_sender_name": {
+      "type": "system",
+      "vi": "Họ tên của bạn *",
+      "en": "Your Full Name *",
+      "ja": "ご注文者様のお名前 *",
+      "ko": "주문자 성함 *",
+      "zh": "您的姓名 *"
+    },
+    "checkout_lbl_sender_phone": {
+      "type": "system",
+      "vi": "Số điện thoại *",
+      "en": "Your Phone Number *",
+      "ja": "ご注文者様電話番号 *",
+      "ko": "주문자 연락처 *",
+      "zh": "您的电话 *"
+    },
+    "checkout_lbl_sender_email": {
+      "type": "system",
+      "vi": "Email nhận hóa đơn",
+      "en": "Email for Receipt",
+      "ja": "領収書受け取り用メールアドレス",
+      "ko": "영수증 수신용 이메일",
+      "zh": "接收电子收据邮箱"
+    },
+    "checkout_placeholder_voucher": {
+      "type": "system",
+      "vi": "Nhập mã voucher (PHUNU15, FREESHIP, ANNE10...)",
+      "en": "Enter promo code (PHUNU15, FREESHIP, ANNE10...)",
+      "ja": "クーポンコードを入力 (PHUNU15, FREESHIP, ANNE10...)",
+      "ko": "할인 코드 입력 (PHUNU15, FREESHIP, ANNE10...)",
+      "zh": "输入优惠券代码 (PHUNU15, FREESHIP, ANNE10...)"
+    },
+    "checkout_btn_apply_voucher": {
+      "type": "system",
+      "vi": "Áp Dụng",
+      "en": "Apply",
+      "ja": "適用",
+      "ko": "적용",
+      "zh": "应用"
+    },
+    "checkout_lbl_subtotal": {
+      "type": "system",
+      "vi": "Tiền hàng:",
+      "en": "Subtotal:",
+      "ja": "商品合計:",
+      "ko": "상품 금액:",
+      "zh": "商品小计:"
+    },
+    "checkout_lbl_shipping": {
+      "type": "system",
+      "vi": "Phí vận chuyển:",
+      "en": "Shipping Fee:",
+      "ja": "配送料:",
+      "ko": "배송비:",
+      "zh": "配送费用:"
+    },
+    "checkout_lbl_free_shipping": {
+      "type": "system",
+      "vi": "Miễn phí",
+      "en": "Free",
+      "ja": "無料",
+      "ko": "무료",
+      "zh": "免费"
+    },
+    "checkout_lbl_discount": {
+      "type": "system",
+      "vi": "Giảm giá voucher:",
+      "en": "Voucher Discount:",
+      "ja": "クーポン割引:",
+      "ko": "할인 금액:",
+      "zh": "优惠券抵扣:"
+    },
+    "checkout_lbl_total": {
+      "type": "system",
+      "vi": "Tổng thanh toán:",
+      "en": "Total Payment:",
+      "ja": "お支払い合計:",
+      "ko": "최종 결제 금액:",
+      "zh": "最终总额:"
+    },
+    "checkout_sec_payment": {
+      "type": "system",
+      "vi": "5. Phương Thức Thanh Toán",
+      "en": "5. Payment Method",
+      "ja": "5. お支払い方法",
+      "ko": "5. 결제 수단",
+      "zh": "5. 支付方式"
+    },
+    "checkout_pay_vietqr": {
+      "type": "system",
+      "vi": "⚡ Quét mã VietQR (Tự động)",
+      "en": "⚡ VietQR Scan (Instant)",
+      "ja": "⚡ VietQRコード決済 (自動)",
+      "ko": "⚡ VietQR 간편결제 (자동)",
+      "zh": "⚡ VietQR扫码支付 (即时)"
+    },
+    "checkout_pay_cod": {
+      "type": "system",
+      "vi": "💵 Thanh toán tiền mặt (COD)",
+      "en": "💵 Cash on Delivery (COD)",
+      "ja": "💵 代金引換 (COD)",
+      "ko": "💵 착불 현금 결제 (COD)",
+      "zh": "💵 货到付款 (COD)"
+    },
+    "checkout_btn_submit": {
+      "type": "system",
+      "vi": "Hoàn Tất Đặt Hoa",
+      "en": "Complete Order",
+      "ja": "注文を確定する",
+      "ko": "주문 완료하기",
+      "zh": "完成预订下单"
+    },
+    "checkout_submitting": {
+      "type": "system",
+      "vi": "Đang tạo đơn hàng...",
+      "en": "Creating your order...",
+      "ja": "ご注文を作成中...",
+      "ko": "주문을 접수하는 중...",
+      "zh": "正在生成订单..."
+    },
+    "checkout_date_today": {
+      "type": "system",
+      "vi": "Hôm nay",
+      "en": "Today",
+      "ja": "本日",
+      "ko": "오늘",
+      "zh": "今天"
+    },
+    "checkout_date_tomorrow": {
+      "type": "system",
+      "vi": "Ngày mai",
+      "en": "Tomorrow",
+      "ja": "明日",
+      "ko": "내일",
+      "zh": "明天"
+    },
     "cat_all": {
       "type": "system",
       "vi": "Tất Cả",
