@@ -850,6 +850,7 @@ export async function renderStorefrontCategories() {
  */
 export function applyStorefrontCompanyInfo(info) {
     if (!info || typeof document === 'undefined') return;
+    if (typeof window !== 'undefined') window.currentCompanyInfo = info;
 
     const setText = (id, text) => {
         const el = document.getElementById(id);
@@ -873,16 +874,7 @@ export function applyStorefrontCompanyInfo(info) {
         setText('topHeaderHotlineVal', phone);
         setHref('topHeaderHotlineLink', `tel:${cleanPhone}`);
 
-        // 2. Cập nhật trong từ điển đa ngôn ngữ i18n
-        if (typeof window !== 'undefined' && window.translations) {
-            Object.keys(window.translations).forEach(l => {
-                if (window.translations[l] && window.translations[l].top_hotline) {
-                    window.translations[l].top_hotline = window.translations[l].top_hotline.replace(/[\d\.\-\s]{8,}/, phone);
-                }
-            });
-        }
-
-        // 3. Cập nhật Footer, Store Locator & Floating Buttons
+        // 2. Cập nhật Footer, Store Locator & Floating Buttons
         setText('footerPhone', phone);
         setHref('footerPhone', `tel:${cleanPhone}`);
         setText('storeHotlineLink', phone);
@@ -932,10 +924,21 @@ export async function loadStorefrontCompanyInfo() {
             const json = await res.json();
             if (json.success && json.data) {
                 applyStorefrontCompanyInfo(json.data);
+                return;
             }
         }
     } catch (e) {
-        console.log("Using local company info default.");
+        // Thử fallback trực tiếp từ file JSON tĩnh
+    }
+
+    try {
+        const fallbackRes = await fetch(`config/anne/infoCompany.json?_t=${Date.now()}`);
+        if (fallbackRes.ok) {
+            const info = await fallbackRes.json();
+            if (info) applyStorefrontCompanyInfo(info);
+        }
+    } catch (err) {
+        console.log("Using static default company info.");
     }
 }
 

@@ -15,12 +15,12 @@
       "ko": "Nở Hoa Thả Bình - 온라인 꽃 배달 서비스",
       "zh": "Nở Hoa Thả Bình - 鲜花在线订购与配送"
     },
-    "top_hotline": {
-      "vi": "Hotline: 0976.491.322",
-      "en": "Hotline: +84 976.491.322",
-      "ja": "ホットライン: 0976.491.322",
-      "ko": "고객센터: 0976.491.322",
-      "zh": "服务热线: 0976.491.322"
+    "hotline": {
+      "vi": "Hotline:",
+      "en": "Hotline:",
+      "ja": "ホットライン:",
+      "ko": "고객센터:",
+      "zh": "服务热线:"
     },
     "hero_heading": {
       "vi": "Gửi Trọn Vẹn Cảm Xúc",

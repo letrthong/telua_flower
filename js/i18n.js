@@ -63,7 +63,12 @@ export function setLanguage(lang) {
         const langMenuMobile = document.getElementById('langDropdownMenuMobile');
         if (langMenuMobile) langMenuMobile.classList.add('hidden');
 
-        // 9. Render lại danh mục & sản phẩm
+        // 9. Giữ vững thông tin doanh nghiệp động (hotline, email, địa chỉ) sau khi đổi ngôn ngữ
+        if (typeof window !== 'undefined' && typeof window.applyStorefrontCompanyInfo === 'function' && window.currentCompanyInfo) {
+            window.applyStorefrontCompanyInfo(window.currentCompanyInfo);
+        }
+
+        // 10. Render lại danh mục & sản phẩm
         if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
             window.renderStorefrontCategories();
         }

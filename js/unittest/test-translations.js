@@ -31,24 +31,16 @@ test('i18n - non-empty translation values', (t) => {
     }
 });
 
-test('company info - dynamic hotline and email synchronization from infoCompany.json', (t) => {
-    const mockCompanyInfo = {
-        hotline: "0976.999.888",
-        phone: "0976.999.888",
-        email: "contact@nohoathabinh.vn"
-    };
+test('company info vs i18n - separation of concerns for hotline and infoCompany', (t) => {
+    // 1. Từ điển dịch chỉ chứa nhãn text hiển thị, không chứa số điện thoại cố định
+    assert.strictEqual(translations.vi.hotline, "Hotline:");
+    assert.strictEqual(translations.en.hotline, "Hotline:");
+    assert.strictEqual(translations.ja.hotline, "ホットライン:");
+    assert.strictEqual(translations.ko.hotline, "고객센터:");
+    assert.strictEqual(translations.zh.hotline, "服务热线:");
 
-    // Giả lập logic đồng bộ hotline vào từ điển
-    const testTrans = JSON.parse(JSON.stringify(translations));
-    Object.keys(testTrans).forEach(l => {
-        if (testTrans[l] && testTrans[l].top_hotline) {
-            testTrans[l].top_hotline = testTrans[l].top_hotline.replace(/[\d\.\-\s]{8,}/, mockCompanyInfo.hotline);
-        }
+    // 2. Không được chứa số điện thoại trong từ điển
+    ['vi', 'en', 'ja', 'ko', 'zh'].forEach(l => {
+        assert.ok(!/\d{4}/.test(translations[l].hotline), `Từ điển ngôn ngữ '${l}' của hotline không được chứa số điện thoại hardcode`);
     });
-
-    assert.ok(testTrans.vi.top_hotline.includes("0976.999.888"), "Hotline tiếng Việt phải chứa số điện thoại động");
-    assert.ok(testTrans.en.top_hotline.includes("0976.999.888"), "Hotline tiếng Anh phải chứa số điện thoại động");
-    assert.ok(testTrans.ja.top_hotline.includes("0976.999.888"), "Hotline tiếng Nhật phải chứa số điện thoại động");
-    assert.ok(testTrans.ko.top_hotline.includes("0976.999.888"), "Hotline tiếng Hàn phải chứa số điện thoại động");
-    assert.ok(testTrans.zh.top_hotline.includes("0976.999.888"), "Hotline tiếng Trung phải chứa số điện thoại động");
 });

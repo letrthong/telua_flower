@@ -4,7 +4,7 @@
 export const translations = {
     vi: {
         site_title: "Nở Hoa Thả Bình - Đặt Hoa Online Giao Tận Nơi",
-        top_hotline: "Hotline: 0976.491.322",
+        hotline: "Hotline:",
         nav_store_locator: "Tìm cửa hàng",
         nav_store_locator_map: "Tìm Cửa Hàng (Map)",
         nav_about: "Về chúng tôi",
@@ -97,7 +97,7 @@ export const translations = {
     },
     en: {
         site_title: "Nở Hoa Thả Bình - Online Fresh Flower Delivery",
-        top_hotline: "Hotline: +84 976.491.322",
+        hotline: "Hotline:",
         nav_store_locator: "Store Locator",
         nav_store_locator_map: "Store Locator (Map)",
         nav_about: "About Us",
@@ -190,7 +190,7 @@ export const translations = {
     },
     ja: {
         site_title: "Nở Hoa Thả Bình - オンラインフラワーデリバリー",
-        top_hotline: "ホットライン: 0976.491.322",
+        hotline: "ホットライン:",
         nav_store_locator: "店舗案内",
         nav_store_locator_map: "店舗案内 (地図)",
         nav_about: "会社概要",
@@ -283,7 +283,7 @@ export const translations = {
     },
     ko: {
         site_title: "Nở Hoa Thả Bình - 온라인 꽃 배달 서비스",
-        top_hotline: "고객센터: 0976.491.322",
+        hotline: "고객센터:",
         nav_store_locator: "매장 찾기",
         nav_store_locator_map: "매장 찾기 (지도)",
         nav_about: "회사 소개",
@@ -376,7 +376,7 @@ export const translations = {
     },
     zh: {
         site_title: "Nở Hoa Thả Bình - 鲜花在线订购与配送",
-        top_hotline: "服务热线: 0976.491.322",
+        hotline: "服务热线:",
         nav_store_locator: "门店查询",
         nav_store_locator_map: "门店查询 (地图)",
         nav_about: "关于我们",

@@ -149,7 +149,7 @@ class TestCatalogAndPromotions(unittest.TestCase):
 
         translations_dict = trans.get("translations", {})
         self.assertIn("site_title", translations_dict)
-        self.assertIn("top_hotline", translations_dict)
+        self.assertIn("hotline", translations_dict)
         self.assertIn("hero_heading", translations_dict)
 
         for lang in trans["languages"]:

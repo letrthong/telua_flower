@@ -25,52 +25,26 @@ graph TD
 
 Màn hình hiển thị dạng bảng lưới ma trận (Grid Table) theo từng nhóm nội dung (Header, Hero, Showroom, Footer, Giỏ hàng...):
 
-### Bảng Ma Trận Biên Dịch Trực Quan:
+### Bảng Ma Trận Biên Dịch Trực Quan (Chỉ Chứa Nhãn & Nội Dung Dịch):
 
 | Nhóm / Key | 🇻🇳 Tiếng Việt (Gốc) | 🇬🇧 English | 🇯🇵 日本語 | 🇰🇷 한국어 | 🇨🇳 中文 | Thao tác |
 | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
 | `hero_heading` | Gửi Trọn Vẹn Cảm Xúc | Deliver Pure Emotions | 想いを届ける華やかな彩り | 마음을 전하는 우아한 플라워 | 传递真挚浪漫与感动 | ✏️ Sửa |
-| `top_hotline` | Hotline: 0976.491.322 | Hotline: +84 976.491.322 | ホットライン: 0976.491.322 | 고객센터: 0976.491.322 | 服务热线: 0976.491.322 | ✏️ Sửa |
+| `hotline` | Hotline: | Hotline: | ホットライン: | 고객센터: | 服务热线: | ✏️ Sửa |
 | `feat_delivery_title` | Giao Hàng Nhanh 2H | 2H Fast Delivery | 2時間特急配達 | 2시간 빠른 배송 | 2小时极速送达 | ✏️ Sửa |
-| `store_address_val` | 183/37 Đường 3/2, P.11, Q.10, TP.HCM | 183/37 3/2 St, W.11, D.10, HCMC | 183/37 3/2通り, 11街区, 10区, ホーチミン市 | 183/37 3/2 거리, 11동, 10군, 호치민시 | 胡志明市第10郡2月3日街183/37号 | ✏️ Sửa |
+| `store_lbl_address` | Địa chỉ cửa hàng: | Store Address: | 店舗所在地: | 매장 주소: | 门店地址: | ✏️ Sửa |
+| `store_lbl_hotline` | Hotline đặt hoa nhanh: | Fast Order Hotline: | ご注文ホットライン: | 빠른 주문 핫라인: | 快速订花热线: | ✏️ Sửa |
 
 ---
 
-## 3. Cấu Trúc Dữ Liệu Lưu Trữ (`config/translations.json`)
+## 3. Nguyên Tắc Tách Bạch Dữ Liệu & Bản Dịch (Separation of Concerns)
 
-```json
-{
-  "vi": {
-    "site_title": "Nở Hoa Thả Bình - Đặt Hoa Online Giao Tận Nơi",
-    "top_hotline": "Hotline: 0976.491.322",
-    "hero_heading": "Gửi Trọn Vẹn Cảm Xúc",
-    "store_address_val": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh"
-  },
-  "en": {
-    "site_title": "Nở Hoa Thả Bình - Online Fresh Flower Delivery",
-    "top_hotline": "Hotline: +84 976.491.322",
-    "hero_heading": "Deliver Pure Emotions",
-    "store_address_val": "183/37 3/2 Street, Ward 11, District 10, Ho Chi Minh City"
-  },
-  "ja": {
-    "site_title": "Nở Hoa Thả Bình - オンラインフラワーデリバリー",
-    "top_hotline": "ホットライン: 0976.491.322",
-    "hero_heading": "想いを届ける華やかな彩り",
-    "store_address_val": "183/37 3/2通り, 11街区, 10区, ホーチミン市"
-  },
-  "ko": {
-    "site_title": "Nở Hoa Thả Bình - 온라인 꽃 배달 서비스",
-    "top_hotline": "고객센터: 0976.491.322",
-    "hero_heading": "마음을 전하는 우아한 플라워",
-    "store_address_val": "183/37 3/2 거리, 11동, 10군, 호치민시"
-  },
-  "zh": {
-    "site_title": "Nở Hoa Thả Bình - 鲜花在线订购与配送",
-    "top_hotline": "服务热线: 0976.491.322",
-    "hero_heading": "传递真挚浪漫与感动",
-    "store_address_val": "胡志明市第10郡第11坊2月3日街183/37号"
-  }
-}
+1. **`translations.json` (Biên Dịch Đa Ngôn Ngữ)**:
+   - **Chỉ lưu trữ nhãn giao diện (UI Labels, Buttons, Headings, Policies)**: Ví dụ: `hotline` ("Hotline:"), `store_lbl_address` ("Địa chỉ cửa hàng:"), `footer_contact_title` ("Thông Tin Liên Hệ").
+   - **Không lưu trữ dữ liệu doanh nghiệp cố định**: Loại bỏ các chuỗi chứa số điện thoại, email, địa chỉ cố định khỏi từ điển để tránh trùng lặp và xung đột dữ liệu.
+2. **`infoCompany.json` (Thông Tin Doanh Nghiệp - Single Source of Truth)**:
+   - Lưu trữ toàn bộ dữ liệu thực tế: `companyName`, `hotline`, `phone`, `email`, `address`, `workingHours`, `taxCode`, `website`, `zalo`, `mapUrl`.
+   - Mọi thay đổi về số điện thoại hoặc địa chỉ trong `infoCompany.json` sẽ tự động hiển thị trên toàn bộ giao diện mà không cần chỉnh sửa từ điển dịch thuật.
 ```
 
 ---
@@ -78,7 +52,7 @@ Màn hình hiển thị dạng bảng lưới ma trận (Grid Table) theo từng
 ## 4. Thiết Kế API Endpoints Quản Trị Bản Dịch
 
 | Method | Endpoint | Quyền hạn | Mô tả |
-| :--- | :--- | :---: | :--- |
+| :--- | :--- | :--- | :--- |
 | `GET` | `/api/translations` | Public | Tải toàn bộ từ điển 5 ngôn ngữ mới nhất (hỗ trợ HTTP ETag Cache) |
 | `GET` | `/api/admin/translations` | Staff, Manager, Admin | Xem bảng ma trận từ điển để hiển thị trên CMS |
 | `PUT` | `/api/admin/translations` | Manager, Admin | **Lưu cập nhật nội dung bản dịch của 1 hoặc nhiều key** |
@@ -88,13 +62,13 @@ Màn hình hiển thị dạng bảng lưới ma trận (Grid Table) theo từng
 #### Request mẫu cập nhật bản dịch (`PUT /api/admin/translations`):
 ```json
 {
-  "key": "top_hotline",
+  "key": "hotline",
   "translations": {
-    "vi": "Hotline hỗ trợ: 0976.491.322",
-    "en": "Customer Hotline: +84 976.491.322",
-    "ja": "お問い合わせ窓口: 0976.491.322",
-    "ko": "주문 핫라인: 0976.491.322",
-    "zh": "快速订花热线: 0976.491.322"
+    "vi": "Hotline:",
+    "en": "Hotline:",
+    "ja": "ホットライン:",
+    "ko": "고객센터:",
+    "zh": "服务热线:"
   }
 }
 ```
@@ -109,7 +83,7 @@ Hệ thống loại bỏ hoàn toàn việc hardcode số điện thoại hotlin
    - Tự động gán số hotline động vào thanh tiêu đề Top Header Bar (`#topHeaderHotlineVal`, `#topHeaderHotlineLink`).
    - Tự động gán email động vào Top Header Bar (`#topHeaderEmailVal`, `#topHeaderEmailLink`).
    - Tự động đồng bộ số hotline vào Footer (`#footerPhone`), Bản đồ cửa hàng (`#storeHotlineLink`), và Nút gọi nổi góc màn hình (`#floatingHotlineLink`, `#floatingHotlineText`).
-   - Tự động cập nhật số điện thoại trong ma trận từ điển đa ngôn ngữ (`window.translations[*].top_hotline`) để khi người dùng chuyển ngôn ngữ (Anh, Nhật, Hàn, Trung), số hotline mới nhất từ `infoCompany.json` vẫn luôn được hiển thị chính xác.
+   - Tự động hiển thị nhãn dịch qua `data-i18n="hotline"` độc lập với số điện thoại thực tế nạp từ `infoCompany.json` vào `#topHeaderHotlineVal`.
 
 ---
 
