@@ -60,13 +60,16 @@ Tối ưu cho cả máy tính (Desktop) và điện thoại (Mobile) với phong
 +-------------------------------------------------------------------------------+
 ```
 
-### 2.1 Kiến Trúc Trải Nghiệm Tìm Kiếm Đa Thiết Bị (Responsive Search UX):
+### 2.1 Kiến Trúc Trải Nghiệm Tìm Kiếm Trực Tiếp Đa Nền Tảng (Unified Live Search Dropdown on PC & Mobile):
 
 - **Trên Máy Tính (Desktop Screen `md:` >= 768px)**:
-  - Khi gõ tìm kiếm, kết quả được hiển thị toàn diện dạng lưới sản phẩm 4 cột (`#search-results-section`) trong khu vực `#dynamicCategorySections`.
-  - Tự động cuộn trang mượt mà (Smooth scroll) để người dùng bao quát toàn bộ sản phẩm.
+  - Khi gõ tìm kiếm, bảng kết quả trực tiếp **(Desktop Live Search Dropdown - `#desktopLiveSearchResults`)** xuất hiện ngay dưới thanh tìm kiếm ở Header.
+  - Hiển thị danh sách hoa tươi khớp từ khóa với ảnh thumbnail, tên hoa, giá bán VND, nhãn khuyến mãi và nút thêm vào giỏ hàng tức thì.
+  - Tích hợp nút xem chi tiết nhanh và nút *"Xem toàn bộ kết quả dạng lưới bên dưới"* (tự động cuộn trang xuống `#search-results-section`).
+  - Hỗ trợ đóng nhanh bằng phím ESC, nhấp ra ngoài hoặc bấm nút đóng.
 - **Trên Điện Thoại (Mobile Screen `< 768px`)**:
-  - Do màn hình điện thoại nhỏ và bàn phím ảo che khuất nửa dưới, kết quả tìm kiếm xuất hiện **NGAY DƯỚI THANH TÌM KIẾM** dưới dạng **Bảng Kết Quả Trực Tiếp (Mobile Live Search Dropdown - `#mobileLiveSearchResults`)**.
+  - Hiển thị bảng kết quả trực tiếp **(Mobile Live Search Dropdown - `#mobileLiveSearchResults`)** ngay dưới thanh tìm kiếm mobile, tránh việc bàn phím ảo che mất kết quả.
+  - Trải nghiệm đồng bộ, nhanh chóng và mượt mà trên cả máy tính lẫn điện thoại di động.
 ### 2.2 Cơ Chế Xử Lý Lỗi Tải Sản Phẩm Quá Hạn (5-Second Load Timeout & Graceful Recovery):
 
 - Khi người dùng truy cập trang chủ, hệ thống hiển thị Skeleton Loader và bắt đầu nạp danh mục/sản phẩm từ Backend API.

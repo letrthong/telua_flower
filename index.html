@@ -136,8 +136,14 @@
     <div class="bg-primary text-white text-sm py-2 px-4 hidden md:block relative z-[60]">
         <div class="container mx-auto max-w-7xl flex justify-between items-center">
             <div class="flex space-x-6">
-                <span><i class="fa-solid fa-phone mr-2"></i> <span data-i18n="top_hotline">Hotline: 0976.491.322</span></span>
-                <span><i class="fa-regular fa-envelope mr-2"></i> cskh@nohoathabinh.vn</span>
+                <a id="topHeaderHotlineLink" href="tel:0976491322" class="hover:text-pink-200 transition inline-flex items-center">
+                    <i class="fa-solid fa-phone mr-2"></i> 
+                    <span data-i18n="top_hotline">Hotline: <span id="topHeaderHotlineVal">0976.491.322</span></span>
+                </a>
+                <a id="topHeaderEmailLink" href="mailto:cskh@nohoathabinh.vn" class="hover:text-pink-200 transition inline-flex items-center">
+                    <i class="fa-regular fa-envelope mr-2"></i> 
+                    <span id="topHeaderEmailVal">cskh@nohoathabinh.vn</span>
+                </a>
             </div>
             <div class="flex items-center space-x-4">
                 <a href="#tim-cua-hang" onclick="openStoreMap(event)" class="hover:text-secondary transition flex items-center"><i class="fa-solid fa-location-dot mr-1 text-xs"></i> <span data-i18n="nav_store_locator">Tìm cửa hàng</span></a>
@@ -197,6 +203,11 @@
                     class="absolute right-0 top-0 h-full px-5 text-gray-500 hover:text-primary transition rounded-r-full">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
+
+                <!-- Bảng kết quả tìm kiếm hiển thị NGAY DƯỚI thanh tìm kiếm Desktop -->
+                <div id="desktopLiveSearchResults" 
+                     class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-pink-100 z-50 max-h-[65vh] overflow-y-auto p-3.5 transition-all duration-200">
+                </div>
             </div>
 
             <!-- Icons (Tài khoản, Ngôn ngữ mobile & Giỏ hàng) -->

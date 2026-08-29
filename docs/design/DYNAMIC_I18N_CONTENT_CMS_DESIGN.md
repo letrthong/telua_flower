@@ -101,6 +101,18 @@ Màn hình hiển thị dạng bảng lưới ma trận (Grid Table) theo từng
 
 ---
 
+## 4. Đồng Bộ Hotline & Thông Tin Doanh Nghiệp Tự Động (`infoCompany.json` -> UI)
+
+Hệ thống loại bỏ hoàn toàn việc hardcode số điện thoại hotline trên toàn bộ giao diện:
+1. **Nguồn dữ liệu duy nhất (Single Source of Truth)**: Toàn bộ số điện thoại hotline và email được quản lý tại file `config/anne/infoCompany.json` qua API `/api/company-info`.
+2. **Cơ chế nạp động phía Frontend (`applyStorefrontCompanyInfo`)**:
+   - Tự động gán số hotline động vào thanh tiêu đề Top Header Bar (`#topHeaderHotlineVal`, `#topHeaderHotlineLink`).
+   - Tự động gán email động vào Top Header Bar (`#topHeaderEmailVal`, `#topHeaderEmailLink`).
+   - Tự động đồng bộ số hotline vào Footer (`#footerPhone`), Bản đồ cửa hàng (`#storeHotlineLink`), và Nút gọi nổi góc màn hình (`#floatingHotlineLink`, `#floatingHotlineText`).
+   - Tự động cập nhật số điện thoại trong ma trận từ điển đa ngôn ngữ (`window.translations[*].top_hotline`) để khi người dùng chuyển ngôn ngữ (Anh, Nhật, Hàn, Trung), số hotline mới nhất từ `infoCompany.json` vẫn luôn được hiển thị chính xác.
+
+---
+
 ## 5. Tối Ưu Hiệu Năng Phía Client (Frontend Caching)
 
 1. Khi người dùng mở trang web, hàm `setLanguage(lang)` trong `js/i18n.js` sẽ:

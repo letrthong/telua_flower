@@ -202,24 +202,25 @@ test('search clear button - xác định hiển thị nút X khi có text và �
 });
 
 // ==========================================
-// 6. KIỂM THỬ GIAO DIỆN TÌM KIẾM MOBILE VS DESKTOP
+// 6. KIỂM THỬ BẢNG KẾT QUẢ TÌM KIẾM TRỰC TIẾP (PC & MOBILE LIVE SEARCH DROPDOWNS)
 // ==========================================
 
-function getSearchDisplayMode(screenWidth) {
+function getActiveSearchDropdownTarget(screenWidth) {
     if (screenWidth < 768) {
-        return 'mobile_live_dropdown';
+        return 'mobileLiveSearchResults';
     }
-    return 'desktop_grid_section';
+    return 'desktopLiveSearchResults';
 }
 
-test('responsive search - phân biệt chính xác chế độ Mobile (<768px) và Desktop (>=768px)', (t) => {
-    // 1. Mobile (iPhone, Android, v.v.)
-    assert.strictEqual(getSearchDisplayMode(375), 'mobile_live_dropdown');
-    assert.strictEqual(getSearchDisplayMode(414), 'mobile_live_dropdown');
-    assert.strictEqual(getSearchDisplayMode(767), 'mobile_live_dropdown');
+test('live search dropdown - hỗ trợ bảng kết quả trực tiếp ngay dưới ô tìm kiếm trên cả PC Desktop và Mobile', (t) => {
+    // 1. Mobile (<768px): Hiển thị vào dropdown mobile
+    assert.strictEqual(getActiveSearchDropdownTarget(375), 'mobileLiveSearchResults');
+    assert.strictEqual(getActiveSearchDropdownTarget(414), 'mobileLiveSearchResults');
+    assert.strictEqual(getActiveSearchDropdownTarget(767), 'mobileLiveSearchResults');
 
-    // 2. Desktop & iPad ngang
-    assert.strictEqual(getSearchDisplayMode(768), 'desktop_grid_section');
-    assert.strictEqual(getSearchDisplayMode(1024), 'desktop_grid_section');
-    assert.strictEqual(getSearchDisplayMode(1440), 'desktop_grid_section');
+    // 2. Desktop & PC (>=768px): Hiển thị vào dropdown desktop ngay dưới search bar
+    assert.strictEqual(getActiveSearchDropdownTarget(768), 'desktopLiveSearchResults');
+    assert.strictEqual(getActiveSearchDropdownTarget(1024), 'desktopLiveSearchResults');
+    assert.strictEqual(getActiveSearchDropdownTarget(1440), 'desktopLiveSearchResults');
+    assert.strictEqual(getActiveSearchDropdownTarget(1920), 'desktopLiveSearchResults');
 });

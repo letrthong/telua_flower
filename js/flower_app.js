@@ -502,90 +502,115 @@ export function debouncedSearchStorefrontProducts(query, updateUrl = true, delay
 }
 
 /**
- * Render bảng kết quả tìm kiếm ngay dưới thanh tìm kiếm Mobile (Mobile Live Search Dropdown)
+ * Đóng tất cả bảng kết quả tìm kiếm trực tiếp (Desktop & Mobile)
  */
-export function renderMobileSearchResults(matchedProds = [], rawQuery = '') {
+export function closeLiveSearchResults() {
     if (typeof document === 'undefined') return;
+    const desktopResults = document.getElementById('desktopLiveSearchResults');
     const mobileResults = document.getElementById('mobileLiveSearchResults');
-    if (!mobileResults) return;
+    if (desktopResults) desktopResults.classList.add('hidden');
+    if (mobileResults) mobileResults.classList.add('hidden');
+}
+
+/**
+ * Render bảng kết quả tìm kiếm ngay dưới thanh tìm kiếm (Hỗ trợ cả PC Desktop & Mobile)
+ */
+export function renderLiveSearchResults(matchedProds = [], rawQuery = '') {
+    if (typeof document === 'undefined') return;
+    const desktopResults = document.getElementById('desktopLiveSearchResults');
+    const mobileResults = document.getElementById('mobileLiveSearchResults');
+
+    const containers = [
+        { el: desktopResults, isDesktop: true },
+        { el: mobileResults, isDesktop: false }
+    ];
 
     if (!rawQuery || !rawQuery.trim()) {
-        mobileResults.classList.add('hidden');
-        mobileResults.innerHTML = '';
+        containers.forEach(({ el }) => {
+            if (el) {
+                el.classList.add('hidden');
+                el.innerHTML = '';
+            }
+        });
         return;
     }
 
-    if (matchedProds.length === 0) {
-        mobileResults.innerHTML = `
-            <div class="py-5 px-3 text-center">
-                <div class="w-10 h-10 bg-pink-50 text-pink-400 rounded-full flex items-center justify-center text-base mx-auto mb-2 shadow-inner">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </div>
-                <p class="text-xs font-bold text-gray-800">Không tìm thấy mẫu hoa nào khớp với "${rawQuery}"</p>
-                <p class="text-[11px] text-gray-500 mt-1">Gợi ý: <i>Hoa hồng, Lan hồ điệp, Tulip, Khai trương...</i></p>
-            </div>
-        `;
-        mobileResults.classList.remove('hidden');
-        return;
-    }
+    containers.forEach(({ el, isDesktop }) => {
+        if (!el) return;
 
-    let itemsHtml = `
-        <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 px-1">
-            <span class="text-[11px] font-bold text-gray-600">
-                Tìm thấy <b class="text-primary font-bold">${matchedProds.length}</b> mẫu hoa
-            </span>
-            <button onclick="document.getElementById('mobileLiveSearchResults').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 p-1 text-xs font-bold flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-xmark"></i> Đóng
-            </button>
-        </div>
-        <div class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 divide-y divide-gray-50">
-    `;
-
-    matchedProds.forEach(prod => {
-        const priceFmt = (prod.priceNumber || 0).toLocaleString('vi-VN') + '₫';
-        const imgUrl = prod.image || 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80';
-        itemsHtml += `
-            <div class="flex items-center gap-3 pt-2 first:pt-0 p-1.5 rounded-xl hover:bg-pink-50/50 transition cursor-pointer border border-transparent hover:border-pink-100"
-                 onclick="openProductQuickDetail('${prod.id}'); document.getElementById('mobileLiveSearchResults').classList.add('hidden');">
-                <img src="${imgUrl}" alt="${prod.name}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0 shadow-xs">
-                <div class="flex-1 min-w-0">
-                    <h4 class="text-xs font-bold text-gray-800 truncate">${prod.name}</h4>
-                    <div class="flex items-center gap-2 mt-0.5">
-                        <span class="text-xs font-bold text-primary">${priceFmt}</span>
-                        ${prod.badge ? `<span class="text-[9px] bg-pink-100 text-pink-700 px-1.5 py-0.2 rounded font-semibold">${prod.badge}</span>` : ''}
+        if (matchedProds.length === 0) {
+            el.innerHTML = `
+                <div class="py-5 px-3 text-center">
+                    <div class="w-10 h-10 bg-pink-50 text-pink-400 rounded-full flex items-center justify-center text-base mx-auto mb-2 shadow-inner">
+                        <i class="fa-solid fa-magnifying-glass"></i>
                     </div>
+                    <p class="text-xs font-bold text-gray-800">Không tìm thấy mẫu hoa nào khớp với "${rawQuery}"</p>
+                    <p class="text-[11px] text-gray-500 mt-1">Gợi ý: <i>Hoa hồng, Lan hồ điệp, Tulip, Khai trương...</i></p>
                 </div>
-                <button type="button" onclick="event.stopPropagation(); addToCart('${prod.id}'); document.getElementById('mobileLiveSearchResults').classList.add('hidden');" 
-                        title="Thêm vào giỏ hàng"
-                        class="w-7 h-7 bg-primary hover:bg-primaryHover text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 shadow-xs cursor-pointer">
-                    <i class="fa-solid fa-bag-shopping text-[10px]"></i>
+            `;
+            el.classList.remove('hidden');
+            return;
+        }
+
+        let itemsHtml = `
+            <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-gray-100 px-1">
+                <span class="text-xs font-bold text-gray-600">
+                    Tìm thấy <b class="text-primary font-bold">${matchedProds.length}</b> mẫu hoa
+                </span>
+                <button type="button" onclick="closeLiveSearchResults()" class="text-gray-400 hover:text-gray-600 p-1 text-xs font-bold flex items-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i> Đóng
+                </button>
+            </div>
+            <div class="space-y-2 max-h-[50vh] overflow-y-auto pr-1 divide-y divide-gray-50">
+        `;
+
+        matchedProds.forEach(prod => {
+            const priceFmt = (prod.priceNumber || 0).toLocaleString('vi-VN') + '₫';
+            const imgUrl = prod.image || 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=500&q=80';
+            itemsHtml += `
+                <div class="flex items-center gap-3 pt-2 first:pt-0 p-2 rounded-xl hover:bg-pink-50/60 transition cursor-pointer border border-transparent hover:border-pink-100 group"
+                     onclick="openProductQuickDetail('${prod.id}'); closeLiveSearchResults();">
+                    <img src="${imgUrl}" alt="${prod.name}" class="w-12 h-12 md:w-13 md:h-13 object-cover rounded-lg flex-shrink-0 shadow-xs group-hover:scale-105 transition">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-xs md:text-sm font-bold text-gray-800 truncate group-hover:text-primary transition">${prod.name}</h4>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span class="text-xs md:text-sm font-bold text-primary">${priceFmt}</span>
+                            ${prod.badge ? `<span class="text-[9px] bg-pink-100 text-pink-700 px-1.5 py-0.2 rounded font-semibold">${prod.badge}</span>` : ''}
+                        </div>
+                    </div>
+                    <button type="button" onclick="event.stopPropagation(); addToCart('${prod.id}'); closeLiveSearchResults();" 
+                            title="Thêm vào giỏ hàng"
+                            class="w-8 h-8 bg-primary hover:bg-primaryHover text-white rounded-full flex items-center justify-center text-xs flex-shrink-0 shadow-xs cursor-pointer hover:scale-110 transition">
+                        <i class="fa-solid fa-bag-shopping text-xs"></i>
+                    </button>
+                </div>
+            `;
+        });
+
+        itemsHtml += `
+            </div>
+            <div class="pt-2.5 mt-2.5 border-t border-gray-100 text-center">
+                <button type="button" onclick="closeLiveSearchResults(); document.getElementById('search-results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
+                        class="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1.5 cursor-pointer">
+                    Xem toàn bộ kết quả dạng lưới bên dưới <i class="fa-solid fa-arrow-down text-xs"></i>
                 </button>
             </div>
         `;
+
+        el.innerHTML = itemsHtml;
+        el.classList.remove('hidden');
     });
-
-    itemsHtml += `
-        </div>
-        <div class="pt-2.5 mt-2 border-t border-gray-100 text-center">
-            <button onclick="document.getElementById('mobileLiveSearchResults').classList.add('hidden'); document.getElementById('search-results-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });"
-                    class="text-[11px] font-bold text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
-                Xem toàn bộ kết quả dạng lưới <i class="fa-solid fa-arrow-down text-[10px]"></i>
-            </button>
-        </div>
-    `;
-
-    mobileResults.innerHTML = itemsHtml;
-    mobileResults.classList.remove('hidden');
 }
+
+export const renderMobileSearchResults = renderLiveSearchResults;
 
 /**
  * Tìm kiếm sản phẩm theo tên / mô tả / thành phần trên Storefront
  * Hỗ trợ tìm kiếm cả tiếng Việt CÓ DẤU và KHÔNG DẤU (vd: 'hoa hong' -> khớp 'Hoa hồng')
  * Hỗ trợ đồng bộ Hash URL dạng: /#/search?q=tên_hoa
- * Trên Mobile: Hiển thị ngay bảng kết quả bên dưới thanh tìm kiếm
- * Trên Desktop: Hiển thị dạng lưới và cuộn trang xuống phần kết quả
+ * Hiển thị bảng kết quả trực tiếp ngay dưới thanh tìm kiếm trên cả PC (Desktop) và Mobile
  */
-export function searchStorefrontProducts(query, updateUrl = true, autoScroll = true) {
+export function searchStorefrontProducts(query, updateUrl = true, autoScroll = false) {
     const rawQuery = (query || '').trim();
     const q = rawQuery.toLowerCase();
     const normQ = removeVietnameseTones(rawQuery);
@@ -616,7 +641,7 @@ export function searchStorefrontProducts(query, updateUrl = true, autoScroll = t
     }
 
     if (!q) {
-        renderMobileSearchResults([], '');
+        renderLiveSearchResults([], '');
         renderDynamicStorefrontSections(activeStorefrontCategories, allStorefrontProducts);
         return;
     }
@@ -635,13 +660,8 @@ export function searchStorefrontProducts(query, updateUrl = true, autoScroll = t
         return normName.includes(normQ) || id.includes(q) || normComp.includes(normQ) || normDesc.includes(normQ);
     });
 
-    // 1. Nếu đang ở chế độ Mobile (màn hình nhỏ < 768px): Hiển thị kết quả ngay dưới thanh tìm kiếm Mobile
-    const isMobileView = typeof window !== 'undefined' && window.innerWidth < 768;
-    if (isMobileView) {
-        renderMobileSearchResults(matchedProds, rawQuery);
-    } else {
-        renderMobileSearchResults([], '');
-    }
+    // 1. Hiển thị bảng kết quả trực tiếp ngay bên dưới thanh tìm kiếm (cả PC và Mobile)
+    renderLiveSearchResults(matchedProds, rawQuery);
 
     let html = `
         <section class="py-12 bg-white min-h-[50vh] scroll-mt-20" id="search-results-section">
@@ -848,6 +868,21 @@ export function applyStorefrontCompanyInfo(info) {
     if (info.phone || info.hotline) {
         const phone = info.hotline || info.phone;
         const cleanPhone = phone.replace(/[^\d+]/g, '');
+
+        // 1. Cập nhật Hotline trên Top Header Bar
+        setText('topHeaderHotlineVal', phone);
+        setHref('topHeaderHotlineLink', `tel:${cleanPhone}`);
+
+        // 2. Cập nhật trong từ điển đa ngôn ngữ i18n
+        if (typeof window !== 'undefined' && window.translations) {
+            Object.keys(window.translations).forEach(l => {
+                if (window.translations[l] && window.translations[l].top_hotline) {
+                    window.translations[l].top_hotline = window.translations[l].top_hotline.replace(/[\d\.\-\s]{8,}/, phone);
+                }
+            });
+        }
+
+        // 3. Cập nhật Footer, Store Locator & Floating Buttons
         setText('footerPhone', phone);
         setHref('footerPhone', `tel:${cleanPhone}`);
         setText('storeHotlineLink', phone);
@@ -857,6 +892,8 @@ export function applyStorefrontCompanyInfo(info) {
     }
 
     if (info.email) {
+        setText('topHeaderEmailVal', info.email);
+        setHref('topHeaderEmailLink', `mailto:${info.email}`);
         setText('footerEmail', info.email);
         setHref('footerEmail', `mailto:${info.email}`);
     }
@@ -966,6 +1003,29 @@ async function initApp() {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' || e.key === 'Esc') {
                 closeProductQuickDetail();
+                closeLiveSearchResults();
+            }
+        });
+
+        // Đóng bảng live search khi nhấp chuột ra ngoài
+        document.addEventListener('click', (e) => {
+            const deskInput = document.getElementById('storefrontSearchInput');
+            const deskResults = document.getElementById('desktopLiveSearchResults');
+            const mobInput = document.getElementById('storefrontSearchMobileInput');
+            const mobResults = document.getElementById('mobileLiveSearchResults');
+
+            if (deskResults && !deskResults.classList.contains('hidden')) {
+                const isInsideDesk = (deskInput && deskInput.parentElement && deskInput.parentElement.contains(e.target));
+                if (!isInsideDesk) {
+                    deskResults.classList.add('hidden');
+                }
+            }
+
+            if (mobResults && !mobResults.classList.contains('hidden')) {
+                const isInsideMob = (mobInput && mobInput.parentElement && mobInput.parentElement.contains(e.target));
+                if (!isInsideMob) {
+                    mobResults.classList.add('hidden');
+                }
             }
         });
 
@@ -1011,7 +1071,9 @@ if (typeof window !== 'undefined') {
     window.searchStorefrontProducts = searchStorefrontProducts;
     window.debouncedSearchStorefrontProducts = debouncedSearchStorefrontProducts;
     window.clearStorefrontSearch = clearStorefrontSearch;
+    window.renderLiveSearchResults = renderLiveSearchResults;
     window.renderMobileSearchResults = renderMobileSearchResults;
+    window.closeLiveSearchResults = closeLiveSearchResults;
     window.updateSearchClearButtonVisibility = updateSearchClearButtonVisibility;
     window.removeVietnameseTones = removeVietnameseTones;
     window.initMobileMenu = initMobileMenu;

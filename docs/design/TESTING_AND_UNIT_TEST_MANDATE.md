@@ -30,9 +30,9 @@ Hệ thống Frontend sử dụng **Node.js Built-in Test Runner** (`node:test` 
 | **`test-products.js`** | 4 tests | - Xác thực tính hợp lệ của tệp dữ liệu `products.json`.<br>- Kiểm tra đầy đủ các trường bắt buộc (`id`, `name`, `priceNumber`, `category`, `stockByBranch`).<br>- Kiểm tra sự tồn tại của các file chi tiết trong `config/anne/products/`.<br>- Cơ chế phát hiện lỗi tải quá hạn 5s (Load Timeout & Graceful Recovery). |
 | **`test-checkout.js`** | 3 tests | - Tính toán tổng tiền giỏ hàng (`calculateSubtotal`).<br>- Định dạng tiền tệ VND (`formatVND`).<br>- Quy tắc tính phí vận chuyển theo khoảng cách / hỏa tốc. |
 | **`test-auth.js`** | 2 tests | - Giải mã JWT Payload phía client.<br>- Xử lý an toàn khi token không hợp lệ hoặc bị hỏng format. |
-| **`test-translations.js`** | 3 tests | - Xác thực ma trận từ điển đa ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung).<br>- Đồng bộ đầy đủ các khóa từ điển giữa các ngôn ngữ, không để trống giá trị. |
+| **`test-translations.js`** | 4 tests | - Xác thực ma trận từ điển đa ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung).<br>- Đồng bộ đầy đủ các khóa từ điển giữa các ngôn ngữ, không để trống giá trị.<br>- Đồng bộ số điện thoại Hotline động từ `infoCompany.json` vào Top Header và từ điển. |
 
-**Tổng cộng: 30 / 30 Tests PASS (100%)**
+**Tổng cộng: 31 / 31 Tests PASS (100%)**
 
 ### 2.2 Câu lệnh thực thi Unit Test JavaScript
 
