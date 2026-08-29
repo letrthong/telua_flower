@@ -305,5 +305,37 @@
     "savedAddresses": [],
     "isActive": true,
     "createdAt": "2026-08-29T00:28:59Z"
+  },
+  {
+    "id": "cust_1787963362",
+    "phone": "09333362",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:1000000$cHLoibR9fhkHH7C9$fa3a4c3f5103d506bbea4de948dbb37220634cc95ef5afc21f9ee4b4c73e13df",
+    "role": "customer",
+    "branchId": null,
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "isActive": true,
+    "createdAt": "2026-08-29T00:29:22Z"
+  },
+  {
+    "id": "cust_1787963394",
+    "phone": "09333394",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:1000000$TgRlX5uyzFAosjdF$672d4799e9f70bc9aa05f3c387d2485ace74cd3243e165ed4f42474133a85183",
+    "role": "customer",
+    "branchId": null,
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "isActive": true,
+    "createdAt": "2026-08-29T00:29:54Z"
   }
 ]
