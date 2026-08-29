@@ -26,17 +26,34 @@ export async function getProducts(activeOnly = true) {
     return cachedProducts;
 }
 
+const productDetailMemoryCache = new Map();
+
 /**
- * Lấy chi tiết một sản phẩm theo ID (đọc từ config/anne/products/{id}.json)
+ * Xóa cache chi tiết sản phẩm trong RAM (cho một sản phẩm hoặc toàn bộ)
+ */
+export function clearProductDetailCache(productId = null) {
+    if (productId) {
+        productDetailMemoryCache.delete(productId);
+    } else {
+        productDetailMemoryCache.clear();
+    }
+}
+
+/**
+ * Lấy chi tiết một sản phẩm theo ID (đọc từ config/anne/products/{id}.json có In-Memory RAM Cache)
  * @param {string} productId - Mã định danh sản phẩm
  */
 export async function getProductById(productId) {
     if (!productId) return null;
+    if (productDetailMemoryCache.has(productId)) {
+        return productDetailMemoryCache.get(productId);
+    }
     try {
-        const res = await fetch(`${API_BASE}/products/${productId}?_t=${Date.now()}`);
+        const res = await fetch(`${API_BASE}/products/${productId}`);
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
+                productDetailMemoryCache.set(productId, json.data);
                 return json.data;
             }
         }

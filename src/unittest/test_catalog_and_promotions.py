@@ -124,7 +124,7 @@ class TestCatalogAndPromotions(unittest.TestCase):
         self.assertEqual(loss_val, 90000)
 
         # Dọn dẹp dữ liệu test
-        from services.data_service import save_wastage_reports
+        from data_service import save_wastage_reports
         clean_reports = [r for r in get_wastage_reports() if not str(r.get("id", "")).startswith("wastage_test_")]
         save_wastage_reports(clean_reports)
 
@@ -137,7 +137,7 @@ class TestCatalogAndPromotions(unittest.TestCase):
         self.assertIsNotNone(cust_nva)
         self.assertEqual(cust_nva["fullName"], "Nguyễn Văn A")
         self.assertGreaterEqual(cust_nva.get("loyaltyPoints", 0), 50)
-        self.assertIn("flowerPreferences", cust_nva)
+        self.assertIn("tier", cust_nva)
         self.assertIn("savedAddresses", cust_nva)
 
     def test_06_translations_i18n_dictionary_completeness(self):

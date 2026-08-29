@@ -314,16 +314,16 @@ def toggle_branch_active(branch_id: str) -> Tuple[bool, Optional[Dict[str, Any]]
 
 
 
-# 2. Phân Tầng Mức Giá (Price Levels) - Hỗ trợ cache LRU
+# 2. Phân Tầng Mức Giá (Price Levels) - Hỗ trợ cache LRU & mtime
 @functools.lru_cache(maxsize=32)
 def _get_cached_price_levels() -> List[Dict[str, Any]]:
-    return _normalize_list_of_dicts(read_json(get_config_path("price_levels.json"), default=[]))
+    return _normalize_list_of_dicts(read_json_cached(get_config_path("price_levels.json"), default=[]))
 
 
 def get_price_levels(use_cache: bool = True) -> List[Dict[str, Any]]:
     if use_cache:
         return _get_cached_price_levels()
-    return _normalize_list_of_dicts(read_json(get_config_path("price_levels.json"), default=[]))
+    return _normalize_list_of_dicts(read_json_cached(get_config_path("price_levels.json"), default=[]))
 
 
 def get_price_level_by_id(price_lvl_id: str) -> Optional[Dict[str, Any]]:
@@ -427,11 +427,11 @@ DEFAULT_CATEGORIES = [
     }
 ]
 
-# 2b. Danh Mục Hoa Tươi (Categories) - Hỗ trợ cache LRU, Timestamps & Xóa Mềm (Soft Delete)
+# 2b. Danh Mục Hoa Tươi (Categories) - Hỗ trợ cache LRU & mtime
 @functools.lru_cache(maxsize=32)
 def _get_cached_categories() -> List[Dict[str, Any]]:
     cat_file = get_config_path("categories.json")
-    cats = _normalize_list_of_dicts(read_json(cat_file, default=[]))
+    cats = _normalize_list_of_dicts(read_json_cached(cat_file, default=[]))
     if not cats:
         cats = DEFAULT_CATEGORIES
         write_json(cat_file, DEFAULT_CATEGORIES)
@@ -447,7 +447,7 @@ def get_categories(use_cache: bool = True, active_only: bool = False, include_de
         cats = _get_cached_categories()
     else:
         cat_file = get_config_path("categories.json")
-        cats = _normalize_list_of_dicts(read_json(cat_file, default=[]))
+        cats = _normalize_list_of_dicts(read_json_cached(cat_file, default=[]))
         if not cats:
             cats = DEFAULT_CATEGORIES
             write_json(cat_file, DEFAULT_CATEGORIES)
@@ -597,8 +597,11 @@ def create_or_update_category(
         if not new_id:
             new_id = f"cat_{int(time.time()) % 100000}"
         
-        if any(c.get("id") == new_id for c in categories):
-            return False, None, f"Mã danh mục '{new_id}' đã tồn tại"
+        existing_idx = next((i for i, c in enumerate(categories) if c.get("id") == new_id), -1)
+        if existing_idx != -1:
+            if not categories[existing_idx].get("isDeleted"):
+                return False, None, f"Mã danh mục '{new_id}' đã tồn tại"
+            categories.pop(existing_idx)
 
         new_cat = {
             "id": new_id,
@@ -733,9 +736,13 @@ def save_staff_users(staff_users: List[Dict[str, Any]]) -> bool:
     return success
 
 
-def get_users() -> List[Dict[str, Any]]:
-    """Trả về danh sách nhân sự nội bộ (tương thích ngược)."""
-    return get_staff_users()
+def get_users(include_customers: bool = True) -> List[Dict[str, Any]]:
+    """Trả về danh sách toàn bộ người dùng hệ thống (Nhân sự nội bộ + Khách hàng CRM)."""
+    staff = get_staff_users()
+    if include_customers:
+        customers = get_customers()
+        return staff + customers
+    return staff
 
 
 def save_users(users: List[Dict[str, Any]]) -> bool:
@@ -801,13 +808,13 @@ def get_product_detail_path(product_id: str) -> str:
 
 
 def get_products() -> List[Dict[str, Any]]:
-    """Lấy danh mục tóm tắt siêu nhẹ cho toàn bộ sản phẩm (phục vụ Grid & List)."""
-    return _normalize_list_of_dicts(read_json(get_config_path("products.json"), default=[]))
+    """Lấy danh mục tóm tắt siêu nhẹ cho toàn bộ sản phẩm (phục vụ Grid & List có RAM cache mtime)."""
+    return _normalize_list_of_dicts(read_json_cached(get_config_path("products.json"), default=[]))
 
 
 def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
     """
-    Lấy thông tin chi tiết đầy đủ của một sản phẩm (On-demand Lazy Load):
+    Lấy thông tin chi tiết đầy đủ của một sản phẩm (On-demand Lazy Load có RAM cache mtime):
     - Ưu tiên đọc file chi tiết riêng config/anne/products/{product_id}.json
     - Nếu chưa có file chi tiết riêng -> đọc từ products.json
     """
@@ -815,7 +822,7 @@ def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
         return None
     detail_file = get_product_detail_path(product_id)
     if os.path.exists(detail_file):
-        detail = read_json(detail_file, default=None)
+        detail = read_json_cached(detail_file, default=None)
         if isinstance(detail, dict):
             return detail
 
@@ -830,12 +837,17 @@ def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
 def save_product_detail(product_id: str, product_data: Dict[str, Any]) -> bool:
     """Lưu file chi tiết riêng cho sản phẩm vào config/anne/products/{product_id}.json."""
     detail_file = get_product_detail_path(product_id)
-    return write_json(detail_file, product_data)
+    success = write_json(detail_file, product_data)
+    invalidate_file_cache(detail_file)
+    return success
 
 
 def save_products(products: List[Dict[str, Any]]) -> bool:
     """Lưu danh mục sản phẩm tóm tắt vào products.json."""
-    return write_json(get_config_path("products.json"), products)
+    filepath = get_config_path("products.json")
+    success = write_json(filepath, products)
+    invalidate_file_cache(filepath)
+    return success
 
 
 
@@ -856,7 +868,7 @@ def get_promotions(include_deleted: bool = True, active_only: bool = False) -> L
     - Mặc định active_only: Chỉ lấy voucher đang bật và chưa xóa trong promotions.json.
     - include_deleted: Gộp cả danh sách trong promotions.json và promotions_history.json cho Admin.
     """
-    promos = _normalize_list_of_dicts(read_json(get_config_path("promotions.json"), default=[]))
+    promos = _normalize_list_of_dicts(read_json_cached(get_config_path("promotions.json"), default=[]))
     if active_only:
         return [p for p in promos if isinstance(p, dict) and p.get("isActive") is not False and p.get("status") != "deleted" and not p.get("isDeleted")]
     
@@ -1409,9 +1421,9 @@ DEFAULT_COMPANY_INFO: Dict[str, Any] = {
 }
 
 
-def get_company_info(use_cache: bool = False) -> Dict[str, Any]:
+def get_company_info(use_cache: bool = True) -> Dict[str, Any]:
     """
-    Đọc thông tin doanh nghiệp từ file config infoCompany.json.
+    Đọc thông tin doanh nghiệp từ file config infoCompany.json (có RAM cache mtime).
     Tự động khởi tạo dữ liệu mặc định nếu file chưa tồn tại.
     """
     filepath = get_config_path("infoCompany.json")
@@ -1419,7 +1431,7 @@ def get_company_info(use_cache: bool = False) -> Dict[str, Any]:
         write_json(filepath, DEFAULT_COMPANY_INFO)
         return dict(DEFAULT_COMPANY_INFO)
 
-    data = read_json(filepath, default={})
+    data = read_json_cached(filepath, default={})
     if not isinstance(data, dict) or not data:
         data = dict(DEFAULT_COMPANY_INFO)
         write_json(filepath, data)

@@ -330,11 +330,15 @@ def api_admin_orders():
 
 @flower_connect_api.route("/categories", methods=["GET"])
 def api_get_public_categories():
-    """Lấy danh sách các danh mục hoa đang Bật hiển thị trên Frontend."""
-    categories = get_categories(use_cache=False, active_only=True)
-    # Sắp xếp theo order (ép kiểu int an toàn)
-    categories.sort(key=lambda x: int(x.get("order") or 99))
-    return jsonify({"success": True, "data": categories}), 200
+    """Lấy danh sách các danh mục hoa đang Bật hiển thị trên Frontend (hỗ trợ HTTP ETag & Cache-Control)."""
+    return _build_cached_file_response(
+        "categories.json",
+        lambda: sorted(
+            [c for c in get_categories(use_cache=True, active_only=True) if isinstance(c, dict)],
+            key=lambda x: int(x.get("order") or 99)
+        ),
+        max_age=120
+    )
 
 
 @flower_connect_api.route("/admin/categories", methods=["GET"])
@@ -431,30 +435,33 @@ def api_move_category(cat_id):
 
 @flower_connect_api.route("/price-levels", methods=["GET"])
 def api_get_price_levels():
-    """Lấy danh sách 4 phân tầng giá chuẩn kèm hạn mức min/max."""
-    levels = get_price_levels()
-    return jsonify({"success": True, "data": levels}), 200
+    """Lấy danh sách 4 phân tầng giá chuẩn kèm hạn mức min/max (hỗ trợ HTTP ETag Cache)."""
+    return _build_cached_file_response("price_levels.json", lambda: get_price_levels(use_cache=True), max_age=120)
 
 
 @flower_connect_api.route("/products", methods=["GET"])
 def api_get_products():
-    """Lấy danh sách sản phẩm hoa tươi (hỗ trợ lọc theo category, search, active)."""
+    """Lấy danh sách sản phẩm hoa tươi (hỗ trợ lọc theo category, search, active có Cache-Control)."""
     category = request.args.get("category")
     search = request.args.get("search")
     is_active_param = request.args.get("active")
     is_active = True if is_active_param == "true" else (False if is_active_param == "false" else None)
 
     prods = list_products(category=category, search=search, is_active=is_active)
-    return jsonify({"success": True, "data": prods}), 200
+    resp = jsonify({"success": True, "data": prods})
+    resp.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
+    return resp, 200
 
 
 @flower_connect_api.route("/products/<product_id>", methods=["GET"])
 def api_get_product_detail(product_id):
-    """Lấy chi tiết một sản phẩm hoa tươi theo ID."""
+    """Lấy chi tiết một sản phẩm hoa tươi theo ID (có Cache-Control)."""
     prod = get_product_by_id(product_id)
     if not prod:
         return jsonify({"success": False, "message": "Không tìm thấy sản phẩm"}), 404
-    return jsonify({"success": True, "data": prod}), 200
+    resp = jsonify({"success": True, "data": prod})
+    resp.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+    return resp, 200
 
 
 @flower_connect_api.route("/admin/products", methods=["POST"])
@@ -767,12 +774,8 @@ def api_get_customer_orders(user_identifier):
 
 @flower_connect_api.route("/company-info", methods=["GET"])
 def api_get_public_company_info():
-    """Lấy thông tin liên hệ và thương hiệu công ty hiển thị trên Storefront (Header, Footer, Bản đồ)."""
-    info = get_company_info(use_cache=False)
-    return jsonify({
-        "success": True,
-        "data": info
-    }), 200
+    """Lấy thông tin liên hệ và thương hiệu công ty hiển thị trên Storefront (hỗ trợ HTTP ETag & Cache-Control)."""
+    return _build_cached_file_response("infoCompany.json", lambda: get_company_info(use_cache=True), max_age=120)
 
 
 @flower_connect_api.route("/admin/company-info", methods=["GET"])

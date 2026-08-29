@@ -1,0 +1,25 @@
+{
+  "id": "lan_test_1787964482799",
+  "name": "Chậu Lan Test Xóa",
+  "category": "lan_ho_diep",
+  "priceLevelId": "price_lvl_04",
+  "priceNumber": 3500000,
+  "salePrice": "3,500,000₫",
+  "originalPrice": "3,500,000₫",
+  "badge": "Mới",
+  "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
+  "gallery": [],
+  "description": "",
+  "flowerComposition": "",
+  "dimension": "",
+  "careTips": "Để nơi thoáng mát, phun sương mỗi ngày",
+  "stockByBranch": {
+    "branch_q10": 10,
+    "branch_q1": 5,
+    "branch_thao_dien": 5
+  },
+  "dailyQuota": 15,
+  "isActive": true,
+  "createdAt": "2026-08-29T07:48:03Z",
+  "updatedAt": "2026-08-29T07:48:03Z"
+}

@@ -377,6 +377,18 @@ export function removeVietnameseTones(str) {
         .trim();
 }
 
+let _searchDebounceTimer = null;
+
+/**
+ * Tìm kiếm có Debounce (trì hoãn ~120ms) giúp tối ưu hiệu năng và tránh giật lag UI khi gõ nhanh
+ */
+export function debouncedSearchStorefrontProducts(query, updateUrl = true, delay = 120) {
+    if (_searchDebounceTimer) clearTimeout(_searchDebounceTimer);
+    _searchDebounceTimer = setTimeout(() => {
+        searchStorefrontProducts(query, updateUrl);
+    }, delay);
+}
+
 /**
  * Tìm kiếm sản phẩm theo tên / mô tả / thành phần trên Storefront
  * Hỗ trợ tìm kiếm cả tiếng Việt CÓ DẤU và KHÔNG DẤU (vd: 'hoa hong' -> khớp 'Hoa hồng')
@@ -772,6 +784,7 @@ if (typeof window !== 'undefined') {
     window.populateCategoryDropdowns = populateCategoryDropdowns;
     window.renderDynamicStorefrontSections = renderDynamicStorefrontSections;
     window.searchStorefrontProducts = searchStorefrontProducts;
+    window.debouncedSearchStorefrontProducts = debouncedSearchStorefrontProducts;
     window.clearStorefrontSearch = clearStorefrontSearch;
     window.removeVietnameseTones = removeVietnameseTones;
     window.initMobileMenu = initMobileMenu;

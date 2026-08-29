@@ -208,7 +208,7 @@ class TestAuthService(unittest.TestCase):
     def test_14_locked_account_rejection(self):
         """Kiểm tra chặn tài khoản đã bị khóa (isActive = False)"""
         # Tạo mock user bị khóa và test hàm xác thực
-        from services.data_service import get_users, save_users
+        from data_service import get_users, save_users
         users = get_users()
         # Thêm tạm 1 user bị khóa
         locked_user = {
