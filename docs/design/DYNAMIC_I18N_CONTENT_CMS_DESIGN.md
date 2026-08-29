@@ -93,3 +93,41 @@ Hệ thống loại bỏ hoàn toàn việc hardcode số điện thoại hotlin
    - Kiểm tra xem từ điển đã có trong `localStorage` chưa.
    - Nếu chưa hoặc đã hết hạn $\rightarrow$ Gọi `GET /api/translations` để nạp từ điển động mới nhất về.
 2. Khi Admin chỉnh sửa bản dịch trên CMS $\rightarrow$ API tự động tăng phiên bản cache (`translation_version`) để trình duyệt của toàn bộ khách hàng tự động cập nhật bản dịch mới nhất.
+
+---
+
+## 6. Quy Chuẩn Đặt Tên Tiền Tố (Key Namespacing) & Tham Số Động (Variable Interpolation)
+
+Nhằm đảm bảo tính mở rộng bền vững khi hệ thống bổ sung thêm tính năng mới, toàn bộ từ khóa bản dịch (i18n Keys) phải tuân thủ nghiêm ngặt bảng quy chuẩn tiền tố ngữ cảnh sau:
+
+### 6.1. Bảng Quy Chuẩn Tiền Tố Ngữ Cảnh (Contextual Prefixes)
+
+| Tiền Tố (Prefix) | Phân Hệ / Ngữ Cảnh Sử Dụng | Ví Dụ Key Điển Hình |
+| :--- | :--- | :--- |
+| **`nav_*`** | Thanh điều hướng, menu chính, menu mobile | `nav_home`, `nav_themes`, `nav_store_locator`, `nav_contact` |
+| **`hero_*`** | Khối Banner chính & khẩu hiệu đầu trang | `hero_badge`, `hero_heading`, `hero_desc`, `hero_cta` |
+| **`feat_*`** | Khối cam kết chất lượng & dịch vụ (Showroom Features) | `feat_delivery_title`, `feat_fresh_title`, `feat_photo_title` |
+| **`cat_*` / `sec_*` | Danh mục sản phẩm & tiêu đề khối bộ sưu tập | `cat_bouquet`, `cat_basket`, `sec_bouquets`, `sec_vases` |
+| **`store_*`** | Nhãn thông tin Showroom & bản đồ vị trí cửa hàng | `store_lbl_address`, `store_lbl_hours`, `store_lbl_hotline`, `store_btn_directions` |
+| **`cart_*`** | Trạng thái giỏ hàng & hành động thêm sản phẩm | `btn_add_to_cart`, `cart_empty_alert`, `cart_checkout_alert` |
+| **`checkout_*`** | Màn hình thanh toán, thông tin nhận hàng, hóa đơn | `checkout_lbl_receiver`, `checkout_btn_pay`, `checkout_ship_method` |
+| **`footer_*`** | Chân trang: Tiêu đề liên hệ, bản quyền, liên kết chính sách | `footer_contact_title`, `footer_policy_title`, `footer_link_privacy` |
+| **`auth_*`** | Đăng nhập, đăng ký, xác thực và đổi mật khẩu | `auth_login_title`, `auth_lbl_phone`, `auth_btn_submit` |
+| **`toast_*` / `err_*` | Thông báo thành công, cảnh báo và thông điệp lỗi hệ thống | `toast_added_cart`, `store_copied_toast`, `err_load_timeout` |
+
+### 6.2. Quy Chuẩn Tham Số Động (Variable Interpolation Standard)
+
+* Khi chuỗi dịch chứa dữ liệu động (số lượng sản phẩm, giá tiền, tên chi nhánh, thời gian), sử dụng cú pháp đóng mở ngoặc nhọn: `{tên_tham_số}`.
+* **Ví dụ chuẩn:**
+  * `cart_checkout_alert`:
+    * *VI:* `"Giỏ hàng của bạn hiện có {n} sản phẩm. Đang chuyển sang thanh toán!"`
+    * *EN:* `"You have {n} items in your cart. Proceeding to checkout!"`
+    * *JA:* `"現在カートに {n} 点の商品があります。決済画面へ進みます！"`
+    * *KO:* `"장바구니에 {n}개의 상품이 있습니다. 주문 결제를 진행합니다!"`
+    * *ZH:* `"您的购物车现有 {n} 件商品，正在为您跳转结算！"`
+* **Cơ chế xử lý phía Client (`i18n.format`)**:
+  ```javascript
+  export function formatMessage(template, params = {}) {
+      return template.replace(/\{(\w+)\}/g, (_, key) => params[key] !== undefined ? params[key] : `{${key}}`);
+  }
+  ```
