@@ -2043,7 +2043,7 @@
 
             <div id="detailLoadingSpinner" class="p-12 flex flex-col items-center justify-center space-y-3">
                 <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
-                <span class="text-xs text-gray-400 font-medium">Đang tải chi tiết & album ảnh...</span>
+                <span class="text-xs text-gray-400 font-medium" data-i18n="loading_detail">Đang tải chi tiết & album ảnh...</span>
             </div>
 
             <div id="detailContentBody" class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 hidden">
@@ -2070,31 +2070,31 @@
 
                         <!-- Story / Description -->
                         <div class="bg-gray-50/80 p-3 rounded-xl border border-gray-100">
-                            <h4 class="font-bold text-gray-800 mb-1"><i class="fa-solid fa-quote-left text-primary mr-1"></i> Ý Nghĩa & Thiết Kế</h4>
+                            <h4 class="font-bold text-gray-800 mb-1"><i class="fa-solid fa-quote-left text-primary mr-1"></i> <span data-i18n="prod_detail_story_title">Ý Nghĩa & Thiết Kế</span></h4>
                             <p id="detailDescription" class="text-gray-600 leading-relaxed italic text-[11px]">—</p>
                         </div>
 
                         <!-- Flower Composition -->
                         <div>
-                            <span class="font-bold text-gray-800 block mb-1"><i class="fa-solid fa-spa text-primary mr-1"></i> Thành Phần Hoa:</span>
+                            <span class="font-bold text-gray-800 block mb-1"><i class="fa-solid fa-spa text-primary mr-1"></i> <span data-i18n="prod_detail_composition_title">Thành Phần Hoa:</span></span>
                             <p id="detailComposition" class="text-gray-600 bg-white p-2.5 rounded-xl border border-gray-200 text-[11px]">—</p>
                         </div>
 
                         <!-- Care Tips & Dimensions -->
                         <div class="grid grid-cols-2 gap-2 text-[11px]">
                             <div class="bg-amber-50/50 p-2.5 rounded-xl border border-amber-100">
-                                <span class="font-bold text-amber-800 block"><i class="fa-solid fa-ruler-combined mr-1"></i> Kích Thước</span>
+                                <span class="font-bold text-amber-800 block"><i class="fa-solid fa-ruler-combined mr-1"></i> <span data-i18n="prod_detail_dimensions_title">Kích Thước</span></span>
                                 <span id="detailDimension" class="text-gray-600">—</span>
                             </div>
                             <div class="bg-green-50/50 p-2.5 rounded-xl border border-green-100">
-                                <span class="font-bold text-green-800 block"><i class="fa-solid fa-hand-holding-droplet mr-1"></i> Giữ Hoa Tươi</span>
+                                <span class="font-bold text-green-800 block"><i class="fa-solid fa-hand-holding-droplet mr-1"></i> <span data-i18n="prod_detail_care_title">Giữ Hoa Tươi</span></span>
                                 <span id="detailCareTips" class="text-gray-600 line-clamp-2">—</span>
                             </div>
                         </div>
 
                         <!-- Stock at Showrooms -->
                         <div class="pt-2 border-t border-gray-100">
-                            <span class="font-bold text-gray-700 block text-[11px] mb-1.5"><i class="fa-solid fa-store text-primary mr-1"></i> Tồn kho tại Showroom:</span>
+                            <span class="font-bold text-gray-700 block text-[11px] mb-1.5"><i class="fa-solid fa-store text-primary mr-1"></i> <span data-i18n="prod_detail_stock_title">Tồn kho tại Showroom:</span></span>
                             <div id="detailStockGrid" class="flex flex-wrap gap-2">
                                 <!-- Render stock tags -->
                             </div>
@@ -2104,9 +2104,9 @@
             </div>
 
             <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
-                <button type="button" onclick="closeProductQuickDetail()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Đóng</button>
+                <button type="button" onclick="closeProductQuickDetail()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition" data-i18n="modal_btn_close">Đóng</button>
                 <button type="button" id="btnQuickAddToCart" class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition flex items-center">
-                    <i class="fa-solid fa-cart-plus mr-1.5"></i> Thêm Vào Giỏ Hàng
+                    <i class="fa-solid fa-cart-plus mr-1.5"></i> <span data-i18n="modal_btn_add_to_cart">Thêm Vào Giỏ Hàng</span>
                 </button>
             </div>
         </div>

@@ -195,8 +195,20 @@ export async function openProductQuickDetail(productId) {
         const prodDisplayName = getProductName(prod);
         const prodCompText = getProductComposition(prod);
         const prodDescText = getProductDescription(prod);
+        const prodCareTipsText = getProductCareTips(prod);
         const safeName = (prodDisplayName || prod.name || "").replace(/'/g, "\\'");
         const prodImg = prod.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+
+        const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+        const dict = (trans && trans[currentAppLang]) ? trans[currentAppLang] : {};
+
+        // Cập nhật lại toàn bộ nhãn tĩnh đa ngôn ngữ trong modal
+        modal.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) {
+                el.innerHTML = dict[key];
+            }
+        });
 
         // Điền thông tin vào modal
         const nameEl = document.getElementById("detailProdName");
@@ -207,7 +219,7 @@ export async function openProductQuickDetail(productId) {
         }
 
         const badgeEl = document.getElementById("detailBadge");
-        if (badgeEl) badgeEl.textContent = prod.badge || "Mẫu Mới";
+        if (badgeEl) badgeEl.textContent = prod.badge || dict.prod_badge_new || "Mẫu Mới";
 
         const salePriceEl = document.getElementById("detailSalePrice");
         if (salePriceEl) salePriceEl.textContent = prod.salePrice || `${numericPrice.toLocaleString()}₫`;
@@ -223,23 +235,23 @@ export async function openProductQuickDetail(productId) {
 
         const descEl = document.getElementById("detailDescription");
         if (descEl) {
-            descEl.textContent = prodDescText || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
+            descEl.textContent = prodDescText || dict.prod_desc_fallback || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
             if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
             else descEl.removeAttribute("data-i18n");
         }
 
         const compEl = document.getElementById("detailComposition");
         if (compEl) {
-            compEl.textContent = prodCompText || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
+            compEl.textContent = prodCompText || dict.prod_comp_fallback || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
             if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
             else compEl.removeAttribute("data-i18n");
         }
 
         const dimEl = document.getElementById("detailDimension");
-        if (dimEl) dimEl.textContent = prod.dimension || "Kích thước tiêu chuẩn";
+        if (dimEl) dimEl.textContent = prod.dimension || dict.prod_dim_standard || "Kích thước tiêu chuẩn";
 
         const careEl = document.getElementById("detailCareTips");
-        if (careEl) careEl.textContent = prod.careTips || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
+        if (careEl) careEl.textContent = prodCareTipsText || dict.prod_care_default || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
 
         const mainImgEl = document.getElementById("detailMainImg");
         if (mainImgEl) {
@@ -410,6 +422,16 @@ export function renderDynamicStorefrontSections(categories, products) {
 
     const allProds = Array.isArray(products) ? products : [];
     let html = '';
+    let promoBannerRendered = false;
+
+    // Lấy từ điển đa ngôn ngữ cho Banner Khuyến Mãi
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[lang]) ? trans[lang] : {};
+
+    const promoTitle = dict.banner_promo_title || "Kệ Hoa Chúc Mừng & Khai Trương";
+    const promoDesc = dict.banner_promo_desc || "Mang thịnh vượng, tài lộc đến đối tác và bạn bè";
+    const promoBtn = dict.banner_promo_btn || "Khám Phá Kệ Hoa";
 
     activeCats.forEach((cat, index) => {
         const isEven = index % 2 === 0;
@@ -439,8 +461,10 @@ export function renderDynamicStorefrontSections(categories, products) {
             </section>
         `;
 
-        // Chèn Promo Banner ở vị trí hài hòa sau danh mục thứ 2
-        if (index === 1 || cat.id === 'bo_hoa') {
+        // Chèn Promo Banner ở vị trí hài hòa duy nhất 1 lần (sau danh mục thứ 2 hoặc sau danh mục đầu tiên nếu chỉ có 1 danh mục)
+        const shouldInsertBanner = !promoBannerRendered && (index === 1 || (index === 0 && activeCats.length === 1));
+        if (shouldInsertBanner) {
+            promoBannerRendered = true;
             html += `
                 <section class="py-8 bg-white">
                     <div class="container mx-auto max-w-7xl px-4">
@@ -450,11 +474,11 @@ export function renderDynamicStorefrontSections(categories, products) {
                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
                                 <div class="text-center text-white p-4">
-                                    <h3 class="font-serif text-2xl md:text-4xl font-bold mb-2 shadow-sm" data-i18n="banner_promo_title">Kệ Hoa Chúc Mừng & Khai Trương</h3>
-                                    <p class="mb-4 text-sm md:text-base hidden md:block" data-i18n="banner_promo_desc">Mang thịnh vượng, tài lộc đến đối tác và bạn bè</p>
+                                    <h3 class="font-serif text-2xl md:text-4xl font-bold mb-2 shadow-sm" data-i18n="banner_promo_title">${promoTitle}</h3>
+                                    <p class="mb-4 text-sm md:text-base hidden md:block" data-i18n="banner_promo_desc">${promoDesc}</p>
                                     <a href="#cat-ke_hoa" onclick="scrollToCategory('ke_hoa'); return false;"
                                         class="bg-white text-gray-900 hover:bg-primary hover:text-white px-6 py-2 rounded-full font-bold text-sm transition inline-block shadow-md">
-                                        <span data-i18n="banner_promo_btn">Khám Phá Kệ Hoa</span>
+                                        <span data-i18n="banner_promo_btn">${promoBtn}</span>
                                     </a>
                                 </div>
                             </div>

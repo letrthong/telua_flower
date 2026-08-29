@@ -80,6 +80,134 @@
       "ko": "Nở Hoa Thả Bình - 사랑의 꽃",
       "zh": "Nở Hoa Thả Bình - 爱的绽放"
     },
+    "banner_promo_title": {
+      "type": "system",
+      "vi": "Kệ Hoa Chúc Mừng & Khai Trương",
+      "en": "Congratulation & Grand Opening Stands",
+      "ja": "お祝い・開店祝いスタンド花",
+      "ko": "축하 & 개업 스탠드 화환",
+      "zh": "开业庆典 & 商务花牌"
+    },
+    "banner_promo_desc": {
+      "type": "system",
+      "vi": "Mang thịnh vượng, tài lộc đến đối tác và bạn bè",
+      "en": "Bring prosperity, good fortune and elegance to partners and friends",
+      "ja": "ビジネスパートナーやご友人に繁栄と幸福をお届けします",
+      "ko": "소중한 파트너와 지인에게 번영과 성공을 기원합니다",
+      "zh": "为合作伙伴与亲友送上繁荣昌盛的美好祝愿"
+    },
+    "banner_promo_btn": {
+      "type": "system",
+      "vi": "Khám Phá Kệ Hoa",
+      "en": "Discover Stands",
+      "ja": "スタンド花を見る",
+      "ko": "화환 둘러보기",
+      "zh": "探索花牌"
+    },
+    "prod_detail_story_title": {
+      "type": "system",
+      "vi": "Ý Nghĩa & Thiết Kế",
+      "en": "Meaning & Design",
+      "ja": "意味・デザインコンセプト",
+      "ko": "의미 & 디자인",
+      "zh": "花语寓意与设计"
+    },
+    "prod_detail_composition_title": {
+      "type": "system",
+      "vi": "Thành Phần Hoa:",
+      "en": "Flower Composition:",
+      "ja": "使用花材:",
+      "ko": "꽃 구성:",
+      "zh": "鲜花花材:"
+    },
+    "prod_detail_dimensions_title": {
+      "type": "system",
+      "vi": "Kích Thước",
+      "en": "Dimensions",
+      "ja": "サイズ",
+      "ko": "크기 / 사이즈",
+      "zh": "规格尺寸"
+    },
+    "prod_detail_care_title": {
+      "type": "system",
+      "vi": "Giữ Hoa Tươi",
+      "en": "Care Tips",
+      "ja": "お手入れ方法",
+      "ko": "꽃 관리법",
+      "zh": "保鲜保养"
+    },
+    "prod_detail_stock_title": {
+      "type": "system",
+      "vi": "Tồn kho tại Showroom:",
+      "en": "Showroom Availability:",
+      "ja": "ショールーム在庫状況:",
+      "ko": "쇼룸 매장 재고:",
+      "zh": "门店展厅库存:"
+    },
+    "modal_btn_close": {
+      "type": "system",
+      "vi": "Đóng",
+      "en": "Close",
+      "ja": "閉じる",
+      "ko": "닫기",
+      "zh": "关闭"
+    },
+    "modal_btn_add_to_cart": {
+      "type": "system",
+      "vi": "Thêm Vào Giỏ Hàng",
+      "en": "Add to Cart",
+      "ja": "カートに追加",
+      "ko": "장바구니 담기",
+      "zh": "加入购物车"
+    },
+    "loading_detail": {
+      "type": "system",
+      "vi": "Đang tải chi tiết & album ảnh...",
+      "en": "Loading details & photo gallery...",
+      "ja": "詳細とギャラリーを読み込み中...",
+      "ko": "상세 정보 및 갤러리를 불러오는 중...",
+      "zh": "正在加载详情与相册..."
+    },
+    "prod_badge_new": {
+      "type": "system",
+      "vi": "Mẫu Mới",
+      "en": "New Arrival",
+      "ja": "新作",
+      "ko": "신상품",
+      "zh": "新品上市"
+    },
+    "prod_dim_standard": {
+      "type": "system",
+      "vi": "Kích thước tiêu chuẩn",
+      "en": "Standard Size",
+      "ja": "標準サイズ",
+      "ko": "표준 사이즈",
+      "zh": "标准规格"
+    },
+    "prod_care_default": {
+      "type": "system",
+      "vi": "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.",
+      "en": "Trim stems at a 45-degree angle, mist petals lightly, and change water daily.",
+      "ja": "茎を斜め45度に切り戻し、花びらに軽く霧吹きをし、毎日清潔な水を取り替えてください。",
+      "ko": "줄기 끝을 45도 사선으로 자르고 꽃잎에 가볍게 분무하며 매일 깨끗한 물로 갈아주세요.",
+      "zh": "斜剪花茎45度，轻微喷雾花瓣，并每日更换新鲜清水。"
+    },
+    "prod_desc_fallback": {
+      "type": "system",
+      "vi": "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.",
+      "en": "Exclusive bespoke floral design from Nở Hoa Thả Bình, creating perfect harmony of colors and scent.",
+      "ja": "Nở Hoa Thả Bình限定のオリジナルデザイン。色合いと香りのハーモニーをお届けします。",
+      "ko": "Nở Hoa Thả Bình만의 독점 디자인으로 색감과 향기가 조화로운 생화 상품입니다.",
+      "zh": "Nở Hoa Thả Bình独家原创设计鲜花，色彩与芬芳完美交融。"
+    },
+    "prod_comp_fallback": {
+      "type": "system",
+      "vi": "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.",
+      "en": "100% select grade-A fresh natural flowers, luxury showroom gift wrapping.",
+      "ja": "厳選された特級生花100%、ショールーム仕様の高級ラッピング。",
+      "ko": "엄선된 프리미엄 1등급 생화, 쇼룸 전용 고급 포장재 사용.",
+      "zh": "甄选特级新鲜花材，展厅级精美高端包装。"
+    },
     "cat_all": {
       "type": "system",
       "vi": "Tất Cả",
