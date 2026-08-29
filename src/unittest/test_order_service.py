@@ -11,15 +11,15 @@ if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
 from app import app
-from services.order_service import (
+from order_service import (
     get_available_delivery_slots,
     calculate_haversine_distance,
     assign_nearest_branch,
     create_order,
     generate_order_code
 )
-from services.auth_service import generate_jwt_token
-from services.data_service import get_order_by_id, get_customer_by_phone, get_customers
+from anne_auth_service import generate_jwt_token
+from data_service import get_order_by_id, get_customer_by_phone, get_customers
 
 
 class TestOrderService(unittest.TestCase):

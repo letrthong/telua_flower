@@ -512,6 +512,36 @@ class TestProductCreateAndUpdate(unittest.TestCase):
         self.assertFalse(data_bad.get("success"))
         self.assertIn("GIÁ QUÁ THẤP", data_bad.get("message", ""))
 
+    def test_15_search_products_unaccented_vietnamese(self):
+        """Kiểm thử tìm kiếm sản phẩm hỗ trợ tiếng Việt không dấu (vd: 'hoa hong' -> khớp 'Hoa hồng đỏ')"""
+        prod_id = f"test_search_{self.test_suffix}"
+        self.created_product_ids.append(prod_id)
+
+        create_or_update_product({
+            "id": prod_id,
+            "name": "Bó Hoa Hồng Đỏ Ecuador Tình Yêu",
+            "category": "bo_hoa",
+            "priceLevelId": "price_lvl_02",
+            "priceNumber": 750000,
+            "flowerComposition": "Hoa hồng đỏ Ecuador, hoa baby trắng, lá phụ nhập khẩu",
+            "description": "Bó hoa hồng sang trọng dành tặng người yêu"
+        })
+
+        # 1. Tìm kiếm không dấu: "hoa hong do"
+        res_unaccented = list_products(search="hoa hong do")
+        self.assertTrue(any(p.get("id") == prod_id for p in res_unaccented))
+
+        # 2. Tìm kiếm không dấu từ thành phần hoa: "baby trang"
+        res_comp = list_products(search="baby trang")
+        self.assertTrue(any(p.get("id") == prod_id for p in res_comp))
+
+        # 3. Tìm kiếm qua REST API GET /products?search=nguoi%20yeu
+        res_api = self.client.get("/api/flower/v1/products?search=nguoi%20yeu")
+        self.assertEqual(res_api.status_code, 200)
+        data = res_api.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertTrue(any(p.get("id") == prod_id for p in data.get("data", [])))
+
 
 if __name__ == "__main__":
     unittest.main()

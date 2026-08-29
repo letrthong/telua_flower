@@ -16,9 +16,9 @@ if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
 from app import app
-from services.auth_service import authenticate_user, register_customer
-from services.order_service import create_order
-from services.data_service import delete_order
+from anne_auth_service import authenticate_user, register_customer
+from order_service import create_order
+from data_service import delete_order
 
 
 class TestRBACDataProtection(unittest.TestCase):

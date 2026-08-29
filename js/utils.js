@@ -3,6 +3,21 @@
 // Base URL chuẩn hóa cho RESTful API Telua Flower Connect v1 (tương tự Lu Quan /api/hotelconnect/v1)
 export const API_BASE = "/api/flower/v1";
 
+/**
+ * Chuẩn hóa chuỗi tiếng Việt: loại bỏ dấu thanh, dấu mũ, chuyển đ/Đ -> d để tìm kiếm không dấu
+ */
+export function removeVietnameseTones(str) {
+    if (!str) return '';
+    return str
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .toLowerCase()
+        .trim();
+}
+
 // Tối ưu hóa Lazy Loading cho hình ảnh toàn trang
 function initLazyLoadingImages() {
     const lazyImages = document.querySelectorAll('img[loading="lazy"]');
@@ -438,9 +453,11 @@ export function copyStoreAddress() {
 }
 
 // Tự động khởi chạy khi DOM sẵn sàng
-document.addEventListener("DOMContentLoaded", () => {
-    loadAndRenderStorefrontBranches();
-});
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+        loadAndRenderStorefrontBranches();
+    });
+}
 
 // Global binding
 if (typeof window !== "undefined") {
@@ -453,4 +470,5 @@ if (typeof window !== "undefined") {
     window.copyStoreAddress = copyStoreAddress;
     window.selectShowroomBranch = selectShowroomBranch;
     window.loadAndRenderStorefrontBranches = loadAndRenderStorefrontBranches;
+    window.removeVietnameseTones = removeVietnameseTones;
 }

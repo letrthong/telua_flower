@@ -1,5 +1,5 @@
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
-import { API_BASE, showToast, showConfirmDialog, showScreenLock, hideScreenLock } from './utils.js';
+import { API_BASE, showToast, showConfirmDialog, showScreenLock, hideScreenLock, removeVietnameseTones } from './utils.js';
 
 function lockScreen(msg) {
     if (typeof showScreenLock === 'function') showScreenLock(msg);
@@ -1382,8 +1382,12 @@ export async function toggleBranch(branchId) {
 // ==========================================
 
 export async function loadAdminProducts() {
+    const searchInput = document.getElementById("searchProductInput");
     const categorySelect = document.getElementById("filterProductCategory");
+    const statusSelect = document.getElementById("filterProductStatus");
+    const search = searchInput ? searchInput.value.trim().toLowerCase() : "";
     const category = categorySelect ? categorySelect.value : "";
+    const status = statusSelect ? statusSelect.value : "";
     const tbody = document.getElementById("productsTableBody");
     if (!tbody) return;
 
@@ -1393,13 +1397,35 @@ export async function loadAdminProducts() {
 
     try {
         let url = `${API_BASE}/products`;
-        if (category) url += `?category=${category}`;
+        if (category) url += `?category=${encodeURIComponent(category)}`;
         const res = await fetch(url);
         const json = await res.json();
 
         if (json.success && json.data) {
             allAdminProducts = json.data;
-            renderProductsTable(allAdminProducts);
+            let displayProducts = allAdminProducts;
+            if (status === "active") {
+                displayProducts = displayProducts.filter(p => p && p.isActive !== false);
+            } else if (status === "inactive") {
+                displayProducts = displayProducts.filter(p => p && p.isActive === false);
+            }
+            if (search) {
+                const normSearch = typeof removeVietnameseTones === 'function' ? removeVietnameseTones(search) : search;
+                displayProducts = displayProducts.filter(p => {
+                    if (!p) return false;
+                    const name = (p.name || "").toLowerCase();
+                    const id = (p.id || "").toLowerCase();
+                    const comp = (p.flowerComposition || "").toLowerCase();
+                    const desc = (p.description || "").toLowerCase();
+
+                    const normName = typeof removeVietnameseTones === 'function' ? removeVietnameseTones(name) : name;
+                    const normComp = typeof removeVietnameseTones === 'function' ? removeVietnameseTones(comp) : comp;
+                    const normDesc = typeof removeVietnameseTones === 'function' ? removeVietnameseTones(desc) : desc;
+
+                    return normName.includes(normSearch) || id.includes(search) || normComp.includes(normSearch) || normDesc.includes(normSearch);
+                });
+            }
+            renderProductsTable(displayProducts);
         }
     } catch (e) {
         if (!allAdminProducts || allAdminProducts.length === 0) {

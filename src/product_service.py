@@ -64,6 +64,21 @@ def validate_product_price_governance(price_level_id: str, price_number: int) ->
     return True, None
 
 
+import unicodedata
+
+
+def remove_vietnamese_accents(text: str) -> str:
+    """
+    Chuẩn hóa chuỗi tiếng Việt: loại bỏ dấu thanh, dấu mũ, chuyển đ/Đ -> d, chuyển về chữ thường.
+    Hỗ trợ tìm kiếm không dấu (vd: 'hoa hong' khớp 'Hoa hồng').
+    """
+    if not text:
+        return ""
+    text = str(text).replace("đ", "d").replace("Đ", "d")
+    nfkd = unicodedata.normalize("NFD", text)
+    return "".join(c for c in nfkd if not unicodedata.combining(c)).lower()
+
+
 def list_products(
     category: Optional[str] = None,
     search: Optional[str] = None,
@@ -71,7 +86,7 @@ def list_products(
     is_active: Optional[bool] = None
 ) -> List[Dict[str, Any]]:
     """
-    Lấy danh sách sản phẩm có bộ lọc theo danh mục, từ khóa tìm kiếm và trạng thái.
+    Lấy danh sách sản phẩm có bộ lọc theo danh mục, từ khóa tìm kiếm (hỗ trợ tiếng Việt không dấu) và trạng thái.
     """
     products = get_products()
 
@@ -88,21 +103,32 @@ def list_products(
         products = [p for p in products if p.get("priceLevelId") == price_level_id]
 
     if search:
+        s_norm = remove_vietnamese_accents(search.strip())
         s_lower = search.strip().lower()
         matched = []
         for p in products:
-            p_name = (p.get("name") or "").lower()
+            p_name = p.get("name") or ""
             p_id = (p.get("id") or "").lower()
-            p_comp = (p.get("flowerComposition") or "").lower()
-            if s_lower in p_name or s_lower in p_id or (p_comp and s_lower in p_comp):
+            p_comp = p.get("flowerComposition") or ""
+            p_desc = p.get("description") or ""
+
+            p_name_norm = remove_vietnamese_accents(p_name)
+            p_comp_norm = remove_vietnamese_accents(p_comp)
+            p_desc_norm = remove_vietnamese_accents(p_desc)
+
+            if (s_norm in p_name_norm or s_norm in p_id or s_lower in p_id or 
+                (p_comp_norm and s_norm in p_comp_norm) or 
+                (p_desc_norm and s_norm in p_desc_norm)):
                 matched.append(p)
             else:
                 # Kiểm tra thêm trong file chi tiết nếu cần tìm theo thành phần / mô tả hoa
                 detail = get_product_by_id(p.get("id"))
                 if detail:
-                    d_comp = (detail.get("flowerComposition") or "").lower()
-                    d_desc = (detail.get("description") or "").lower()
-                    if s_lower in d_comp or s_lower in d_desc:
+                    d_comp = detail.get("flowerComposition") or ""
+                    d_desc = detail.get("description") or ""
+                    d_comp_norm = remove_vietnamese_accents(d_comp)
+                    d_desc_norm = remove_vietnamese_accents(d_desc)
+                    if s_norm in d_comp_norm or s_norm in d_desc_norm:
                         matched.append(p)
         products = matched
 

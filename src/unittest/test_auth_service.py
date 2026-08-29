@@ -10,7 +10,7 @@ if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
 from app import app
-from services.auth_service import (
+from anne_auth_service import (
     hash_password,
     verify_password,
     generate_jwt_token,
@@ -19,7 +19,7 @@ from services.auth_service import (
     register_customer,
     get_redirect_url_for_role
 )
-from decorators.auth_decorator import can_access_branch, require_role
+from auth_decorator import can_access_branch, require_role
 
 
 class TestAuthService(unittest.TestCase):

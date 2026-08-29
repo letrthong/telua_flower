@@ -62,6 +62,7 @@ def resolve_static_file(relative_path):
 
 @app.route("/")
 @app.route("/index.html")
+@app.route("/search")
 @app.route("/portal")
 @app.route("/portal/<path:subpath>")
 @cross_origin()

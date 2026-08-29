@@ -258,7 +258,7 @@ class TestDataService(unittest.TestCase):
 
     def test_11_categories_crud_and_toggle(self):
         """Kiểm tra đọc ghi, cập nhật và bật/tắt hiển thị danh mục hoa (isActive)"""
-        from services.data_service import (
+        from data_service import (
             get_categories,
             get_category_by_id,
             create_or_update_category,

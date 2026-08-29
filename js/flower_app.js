@@ -363,6 +363,133 @@ export async function renderAllProducts() {
 }
 
 /**
+ * Chuẩn hóa chuỗi tiếng Việt: loại bỏ dấu thanh, dấu mũ, chuyển đ/Đ -> d để tìm kiếm không dấu
+ */
+export function removeVietnameseTones(str) {
+    if (!str) return '';
+    return str
+        .toString()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'd')
+        .toLowerCase()
+        .trim();
+}
+
+/**
+ * Tìm kiếm sản phẩm theo tên / mô tả / thành phần trên Storefront
+ * Hỗ trợ tìm kiếm cả tiếng Việt CÓ DẤU và KHÔNG DẤU (vd: 'hoa hong' -> khớp 'Hoa hồng')
+ * Hỗ trợ đồng bộ Hash URL dạng: /#search?q=tên_hoa
+ */
+export function searchStorefrontProducts(query, updateUrl = true) {
+    const rawQuery = (query || '').trim();
+    const q = rawQuery.toLowerCase();
+    const normQ = removeVietnameseTones(rawQuery);
+    const container = document.getElementById('dynamicCategorySections');
+    if (!container) return;
+
+    // Đồng bộ giá trị 2 input desktop & mobile
+    const desktopInput = document.getElementById('storefrontSearchInput');
+    const mobileInput = document.getElementById('storefrontSearchMobileInput');
+    if (desktopInput && desktopInput.value !== query) desktopInput.value = query;
+    if (mobileInput && mobileInput.value !== query) mobileInput.value = query;
+
+    // Cập nhật URL trình duyệt sang dạng Hash: /#search?q=...
+    if (updateUrl && typeof window !== 'undefined') {
+        if (rawQuery) {
+            const targetHash = `#/search?q=${encodeURIComponent(rawQuery)}`;
+            if (window.location.hash !== targetHash) {
+                window.location.hash = `/search?q=${encodeURIComponent(rawQuery)}`;
+            }
+        } else {
+            if (window.location.hash.includes('search') || window.location.hash.includes('q=')) {
+                window.history.pushState(null, '', window.location.pathname);
+            }
+        }
+    }
+
+    if (!q) {
+        renderDynamicStorefrontSections(activeStorefrontCategories, allStorefrontProducts);
+        return;
+    }
+
+    const matchedProds = allStorefrontProducts.filter(p => {
+        if (!p || p.isActive === false) return false;
+        const name = (p.name || '').toLowerCase();
+        const id = (p.id || '').toLowerCase();
+        const comp = (p.flowerComposition || '').toLowerCase();
+        const desc = (p.description || '').toLowerCase();
+
+        const normName = removeVietnameseTones(name);
+        const normComp = removeVietnameseTones(comp);
+        const normDesc = removeVietnameseTones(desc);
+
+        return normName.includes(normQ) || id.includes(q) || normComp.includes(normQ) || normDesc.includes(normQ);
+    });
+
+    let html = `
+        <section class="py-12 bg-white min-h-[50vh] scroll-mt-20" id="search-results-section">
+            <div class="container mx-auto max-w-7xl px-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b border-gray-100 pb-4">
+                    <div>
+                        <h2 class="font-serif text-2xl md:text-3xl font-bold text-gray-900">
+                            Kết quả tìm kiếm cho: <span class="text-primary font-sans italic">"${rawQuery}"</span>
+                        </h2>
+                        <p class="text-gray-500 text-xs sm:text-sm mt-1">Tìm thấy <b class="text-primary font-bold">${matchedProds.length}</b> mẫu hoa tươi phù hợp</p>
+                    </div>
+                    <button onclick="clearStorefrontSearch()" class="text-xs font-bold text-gray-600 hover:text-primary transition flex items-center gap-1.5 self-start sm:self-auto bg-gray-50 hover:bg-pink-50 px-4 py-2 rounded-full border border-gray-200 shadow-2xs cursor-pointer">
+                        <i class="fa-solid fa-xmark text-sm"></i> Xóa tìm kiếm & Xem tất cả
+                    </button>
+                </div>
+    `;
+
+    if (matchedProds.length === 0) {
+        html += `
+                <div class="py-16 text-center">
+                    <div class="w-20 h-20 bg-pink-50 text-pink-400 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">Không tìm thấy mẫu hoa nào khớp với "${rawQuery}"</h3>
+                    <p class="text-gray-500 text-xs sm:text-sm max-w-md mx-auto mb-6">Hãy thử tìm kiếm với các từ khóa phổ biến như: <i>Hoa hồng, Lan hồ điệp, Tulip, Khai trương, Bình cắm hoa...</i></p>
+                    <button onclick="clearStorefrontSearch()" class="px-6 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs sm:text-sm font-bold rounded-full shadow-md transition inline-flex items-center">
+                        <i class="fa-solid fa-house mr-2"></i> Quay lại Tất Cả Danh Mục
+                    </button>
+                </div>
+            </div>
+        </section>
+        `;
+        container.innerHTML = html;
+    } else {
+        html += `
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="search-results-grid">
+                    <!-- Sẽ render sản phẩm tìm kiếm vào đây -->
+                </div>
+            </div>
+        </section>
+        `;
+        container.innerHTML = html;
+        renderProducts(matchedProds, 'search-results-grid');
+    }
+}
+
+/**
+ * Xóa bộ lọc tìm kiếm và đưa Storefront về trang chủ
+ */
+export function clearStorefrontSearch(updateUrl = true) {
+    const desktopInput = document.getElementById('storefrontSearchInput');
+    const mobileInput = document.getElementById('storefrontSearchMobileInput');
+    if (desktopInput) desktopInput.value = '';
+    if (mobileInput) mobileInput.value = '';
+
+    if (updateUrl && typeof window !== 'undefined') {
+        window.history.pushState(null, '', window.location.pathname);
+    }
+
+    renderDynamicStorefrontSections(activeStorefrontCategories, allStorefrontProducts);
+}
+
+/**
  * 2. Logic Menu Mobile
  */
 export function initMobileMenu() {
@@ -544,13 +671,61 @@ export async function loadStorefrontCompanyInfo() {
     }
 }
 
+function parseSearchQueryFromUrl() {
+    if (typeof window === 'undefined') return null;
+    
+    // 1. Kiểm tra từ Hash (ví dụ: #/search?q=h%C3%B4ng hoặc #search?q=h%C3%B4ng hoặc #q=h%C3%B4ng)
+    const hash = (window.location.hash || '').replace(/^#\/?/, '');
+    if (hash) {
+        if (hash.includes('?') || hash.startsWith('q=')) {
+            const queryPart = hash.includes('?') ? hash.split('?')[1] : hash;
+            const params = new URLSearchParams(queryPart);
+            if (params.get('q')) return params.get('q');
+        } else if (hash.startsWith('search/')) {
+            const term = decodeURIComponent(hash.replace('search/', ''));
+            if (term) return term;
+        }
+    }
+    
+    // 2. Kiểm tra từ Search Query String (?q=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('q')) return urlParams.get('q');
+    
+    return null;
+}
+
 // 4. Khởi chạy khi tải xong trang (DOM Content Loaded)
-function initApp() {
+async function initApp() {
     initMobileMenu();
     renderStorefrontCategories();
-    renderAllProducts();
+    await renderAllProducts();
     loadStorefrontCompanyInfo();
     
+    // 1. Kiểm tra tham số tìm kiếm từ URL Hash (#/search?q=...) hoặc query khi vừa tải trang
+    if (typeof window !== 'undefined') {
+        const queryFromUrl = parseSearchQueryFromUrl();
+        if (queryFromUrl) {
+            const desktopInput = document.getElementById('storefrontSearchInput');
+            const mobileInput = document.getElementById('storefrontSearchMobileInput');
+            if (desktopInput) desktopInput.value = queryFromUrl;
+            if (mobileInput) mobileInput.value = queryFromUrl;
+            searchStorefrontProducts(queryFromUrl, false);
+        }
+
+        // Lắng nghe sự kiện đổi Hash và Back/Forward của trình duyệt
+        const handleUrlChange = () => {
+            const q = parseSearchQueryFromUrl();
+            if (q) {
+                searchStorefrontProducts(q, false);
+            } else {
+                clearStorefrontSearch(false);
+            }
+        };
+
+        window.addEventListener('hashchange', handleUrlChange);
+        window.addEventListener('popstate', handleUrlChange);
+    }
+
     // Gắn sự kiện đóng modal bằng phím ESC và click ra ngoài backdrop
     if (typeof document !== 'undefined') {
         document.addEventListener('keydown', (e) => {
@@ -574,7 +749,7 @@ function initApp() {
         checkAuthStatus();
     }
 
-    // 1. Đọc ngôn ngữ từ Cache
+    // 2. Đọc ngôn ngữ từ Cache
     let cachedLang = 'vi';
     try {
         if (typeof localStorage !== 'undefined') {
@@ -596,6 +771,9 @@ if (typeof window !== 'undefined') {
     window.renderStorefrontCategories = renderStorefrontCategories;
     window.populateCategoryDropdowns = populateCategoryDropdowns;
     window.renderDynamicStorefrontSections = renderDynamicStorefrontSections;
+    window.searchStorefrontProducts = searchStorefrontProducts;
+    window.clearStorefrontSearch = clearStorefrontSearch;
+    window.removeVietnameseTones = removeVietnameseTones;
     window.initMobileMenu = initMobileMenu;
     window.openProductQuickDetail = openProductQuickDetail;
     window.closeProductQuickDetail = closeProductQuickDetail;

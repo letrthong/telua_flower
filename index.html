@@ -186,9 +186,9 @@
 
             <!-- Thanh tìm kiếm (Desktop) -->
             <div class="hidden md:flex flex-1 max-w-xl mx-8 relative">
-                <input type="text" data-i18n-placeholder="search_placeholder" placeholder="Tìm kiếm bó hoa, lẵng hoa, sự kiện..."
-                    class="w-full border-2 border-gray-200 rounded-full py-2.5 pl-6 pr-12 focus:outline-none focus:border-primary transition">
-                <button
+                <input type="text" id="storefrontSearchInput" oninput="searchStorefrontProducts(this.value)" data-i18n-placeholder="search_placeholder" placeholder="Tìm kiếm bó hoa, lẵng hoa, sự kiện..."
+                    class="w-full border-2 border-gray-200 rounded-full py-2.5 pl-6 pr-12 focus:outline-none focus:border-primary transition text-sm">
+                <button onclick="searchStorefrontProducts(document.getElementById('storefrontSearchInput').value)"
                     class="absolute right-0 top-0 h-full px-5 text-gray-500 hover:text-primary transition rounded-r-full">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -231,9 +231,9 @@
         <!-- Thanh tìm kiếm (Mobile) -->
         <div class="md:hidden px-4 pb-4">
             <div class="relative w-full">
-                <input type="text" data-i18n-placeholder="search_placeholder_mobile" placeholder="Tìm hoa tươi..."
-                    class="w-full border border-gray-300 rounded-full py-2 pl-4 pr-10 focus:outline-none focus:border-primary">
-                <button class="absolute right-3 top-2.5 text-gray-400">
+                <input type="text" id="storefrontSearchMobileInput" oninput="searchStorefrontProducts(this.value)" data-i18n-placeholder="search_placeholder_mobile" placeholder="Tìm hoa tươi..."
+                    class="w-full border border-gray-300 rounded-full py-2 pl-4 pr-10 focus:outline-none focus:border-primary text-xs">
+                <button onclick="searchStorefrontProducts(document.getElementById('storefrontSearchMobileInput').value)" class="absolute right-3 top-2.5 text-gray-400">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
             </div>
@@ -1105,9 +1105,18 @@
                             <h4 class="text-sm font-bold text-gray-800">Danh Mục Hoa Tươi & Phân Tầng Giá An Toàn</h4>
                             <p class="text-[11px] text-gray-500">Tự động kiểm soát giá sàn/trần tránh phá giá hoặc gõ nhầm số 0</p>
                         </div>
-                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                            <div class="relative w-full sm:w-48">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                                <input type="text" id="searchProductInput" oninput="loadAdminProducts()" placeholder="Tìm tên, ID, hoa..." class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                            </div>
                             <select id="filterProductCategory" onchange="loadAdminProducts()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
                                 <option value="">Tất cả danh mục</option>
+                            </select>
+                            <select id="filterProductStatus" onchange="loadAdminProducts()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="active">🟢 Đang bán (Active)</option>
+                                <option value="inactive">⚪ Đã ẩn (Inactive)</option>
                             </select>
                             <button onclick="openProductModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
                                 <i class="fa-solid fa-plus mr-1"></i> Thêm Mẫu Hoa Mới

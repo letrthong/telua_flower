@@ -83,5 +83,20 @@
     "createdAt": "2026-08-20T08:00:00Z",
     "updatedAt": "2026-08-25T01:40:53Z",
     "deletedAt": null
+  },
+  {
+    "id": "cat_test_event",
+    "name": "Hoa Sự Kiện Test",
+    "slug": "cat-test-event",
+    "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
+    "icon": "fa-solid fa-spa",
+    "order": 7,
+    "status": "deleted",
+    "isActive": false,
+    "isDeleted": true,
+    "description": "",
+    "createdAt": "2026-08-28T16:01:01Z",
+    "updatedAt": "2026-08-28T16:01:01Z",
+    "deletedAt": "2026-08-28T16:01:01Z"
   }
 ]

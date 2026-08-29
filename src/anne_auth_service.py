@@ -153,29 +153,29 @@ def authenticate_user(
     Cổng đăng nhập duy nhất cho tất cả 5 vai trò.
     Trả về: (success, auth_response, error_message)
     """
-    print(f"🔐 [AUTH] Processing login attempt for identifier: '{identifier}'", flush=True)
+    print(f"[AUTH] Processing login attempt for identifier: '{identifier}'", flush=True)
     if not identifier or not password:
-        print("❌ [AUTH] Login failed: Empty identifier or password", flush=True)
+        print("[AUTH] Login failed: Empty identifier or password", flush=True)
         return False, None, "Vui lòng nhập số điện thoại/email và mật khẩu"
 
     user = get_user_by_phone_or_email(identifier)
     if not user:
-        print(f"❌ [AUTH] Login failed: User '{identifier}' not found in database", flush=True)
+        print(f"[AUTH] Login failed: User '{identifier}' not found in database", flush=True)
         return False, None, "Số điện thoại hoặc mật khẩu không chính xác"
 
     if not user.get("isActive", True):
-        print(f"❌ [AUTH] Login failed: User '{identifier}' is disabled (isActive=False)", flush=True)
+        print(f"[AUTH] Login failed: User '{identifier}' is disabled (isActive=False)", flush=True)
         return False, None, "Tài khoản của bạn hiện đang bị tạm khóa"
 
     # Kiểm tra mật khẩu
     stored_hash = user.get("passwordHash", "")
     if not verify_password(password, stored_hash):
-        print(f"❌ [AUTH] Login failed: Password mismatch for user '{identifier}'", flush=True)
+        print(f"[AUTH] Login failed: Password mismatch for user '{identifier}'", flush=True)
         return False, None, "Số điện thoại hoặc mật khẩu không chính xác"
 
     role = user.get("role", "customer")
     branch_id = user.get("branchId")
-    print(f"🎉 [AUTH] Login SUCCESS for user: '{identifier}' (Role: {role}, Branch: {branch_id})", flush=True)
+    print(f"[AUTH] Login SUCCESS for user: '{identifier}' (Role: {role}, Branch: {branch_id})", flush=True)
 
     # Sinh JWT Token
     payload = {

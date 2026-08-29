@@ -16,8 +16,8 @@ if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
 from app import app
-from services.auth_service import authenticate_user, register_customer, delete_staff_user
-from services.data_service import get_branches, save_branches
+from anne_auth_service import authenticate_user, register_customer, delete_staff_user
+from data_service import get_branches, save_branches
 
 
 class TestStaffAndBranchManagement(unittest.TestCase):

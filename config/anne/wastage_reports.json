@@ -1,5 +1,73 @@
 [
   {
+    "id": "wastage_test_1787963228",
+    "branchId": "branch_q10",
+    "reportedBy": "staff_002",
+    "date": "2026-08-22",
+    "items": [
+      {
+        "flowerType": "Hoa Hồng Juliet",
+        "damagedStems": 3,
+        "reason": "gãy_canh_khi_cam",
+        "unitCost": 30000,
+        "totalLoss": 90000
+      }
+    ],
+    "totalLossAmount": 90000,
+    "notes": "Kiểm thử thêm báo cáo hao hụt tự động"
+  },
+  {
+    "id": "wastage_test_1787963077",
+    "branchId": "branch_q10",
+    "reportedBy": "staff_002",
+    "date": "2026-08-22",
+    "items": [
+      {
+        "flowerType": "Hoa Hồng Juliet",
+        "damagedStems": 3,
+        "reason": "gãy_canh_khi_cam",
+        "unitCost": 30000,
+        "totalLoss": 90000
+      }
+    ],
+    "totalLossAmount": 90000,
+    "notes": "Kiểm thử thêm báo cáo hao hụt tự động"
+  },
+  {
+    "id": "wastage_test_1787963048",
+    "branchId": "branch_q10",
+    "reportedBy": "staff_002",
+    "date": "2026-08-22",
+    "items": [
+      {
+        "flowerType": "Hoa Hồng Juliet",
+        "damagedStems": 3,
+        "reason": "gãy_canh_khi_cam",
+        "unitCost": 30000,
+        "totalLoss": 90000
+      }
+    ],
+    "totalLossAmount": 90000,
+    "notes": "Kiểm thử thêm báo cáo hao hụt tự động"
+  },
+  {
+    "id": "wastage_test_1787932860",
+    "branchId": "branch_q10",
+    "reportedBy": "staff_002",
+    "date": "2026-08-22",
+    "items": [
+      {
+        "flowerType": "Hoa Hồng Juliet",
+        "damagedStems": 3,
+        "reason": "gãy_canh_khi_cam",
+        "unitCost": 30000,
+        "totalLoss": 90000
+      }
+    ],
+    "totalLossAmount": 90000,
+    "notes": "Kiểm thử thêm báo cáo hao hụt tự động"
+  },
+  {
     "id": "wastage_20260822_q10",
     "branchId": "branch_q10",
     "date": "2026-08-22",

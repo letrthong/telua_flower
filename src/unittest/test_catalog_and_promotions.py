@@ -9,7 +9,7 @@ SRC_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if SRC_DIR not in sys.path:
     sys.path.insert(0, SRC_DIR)
 
-from services.data_service import (
+from data_service import (
     get_branches,
     get_price_levels,
     get_price_level_by_id,

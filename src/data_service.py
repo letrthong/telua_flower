@@ -719,17 +719,17 @@ def get_staff_users() -> List[Dict[str, Any]]:
         data = DEFAULT_STAFF_USERS
         used_path = staff_file
         save_staff_users(DEFAULT_STAFF_USERS)
-        print(f"🌱 [DATA_SERVICE] Auto-seeded default staff users into: {staff_file}", flush=True)
+        print(f"[DATA_SERVICE] Auto-seeded default staff users into: {staff_file}", flush=True)
 
     normalized = _normalize_list_of_dicts(data)
-    print(f"🔍 [DATA_SERVICE] get_staff_users() | Path: {used_path} | Found {len(normalized)} users", flush=True)
+    print(f"[DATA_SERVICE] get_staff_users() | Path: {used_path} | Found {len(normalized)} users", flush=True)
     return normalized
 
 
 def save_staff_users(staff_users: List[Dict[str, Any]]) -> bool:
     target_path = get_config_path("staff_users.json")
     success = write_json(target_path, staff_users)
-    print(f"💾 [DATA_SERVICE] save_staff_users() -> Saved {len(staff_users)} users to: {target_path}", flush=True)
+    print(f"[DATA_SERVICE] save_staff_users() -> Saved {len(staff_users)} users to: {target_path}", flush=True)
     return success
 
 
@@ -771,7 +771,7 @@ def get_user_by_phone_or_email(identifier: str) -> Optional[Dict[str, Any]]:
         username = str(u.get("username") or "").strip().lower()
         uid = str(u.get("id") or "").strip().lower()
         if clean_id in (phone, email, username, uid):
-            print(f"✅ [DATA_SERVICE] Match found in staff for '{identifier}': id={u.get('id')}, role={u.get('role')}", flush=True)
+            print(f"[DATA_SERVICE] Match found in staff for '{identifier}': id={u.get('id')}, role={u.get('role')}", flush=True)
             return u
 
     # 2. Tìm trong khách hàng
@@ -784,11 +784,11 @@ def get_user_by_phone_or_email(identifier: str) -> Optional[Dict[str, Any]]:
         username = str(c.get("username") or "").strip().lower()
         cid = str(c.get("id") or "").strip().lower()
         if clean_id in (phone, email, username, cid):
-            print(f"✅ [DATA_SERVICE] Match found in customers for '{identifier}': id={c.get('id')}", flush=True)
+            print(f"[DATA_SERVICE] Match found in customers for '{identifier}': id={c.get('id')}", flush=True)
             return c
 
     avail_staff = [s.get("phone") or s.get("username") or s.get("id") for s in staff if isinstance(s, dict)]
-    print(f"❌ [DATA_SERVICE] No user found for '{identifier}'. Available staff identifiers: {avail_staff}", flush=True)
+    print(f"[DATA_SERVICE] No user found for '{identifier}'. Available staff identifiers: {avail_staff}", flush=True)
     return None
 
 
@@ -1086,7 +1086,7 @@ def get_customers() -> List[Dict[str, Any]]:
         used_path = get_config_path("customers_crm.json")
         data = read_json(used_path, default=[])
     normalized = _normalize_list_of_dicts(data)
-    print(f"🔍 [DATA_SERVICE] get_customers() | Path: {used_path} | Found {len(normalized)} customers", flush=True)
+    print(f"[DATA_SERVICE] get_customers() | Path: {used_path} | Found {len(normalized)} customers", flush=True)
     return normalized
 
 
