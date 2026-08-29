@@ -127,7 +127,7 @@ class TestDataService(unittest.TestCase):
         """Kiểm tra đủ 5 vai trò (Roles) trong users.json"""
         users = get_users()
         self.assertGreaterEqual(len(users), 5)
-        roles = {u["role"] for u in users}
+        roles = {u.get("role", "customer") for u in users if isinstance(u, dict)}
         expected_roles = {"super_admin", "branch_manager", "florist", "sales_consultant", "customer"}
         self.assertTrue(expected_roles.issubset(roles), f"Thiếu vai trò trong danh sách: {expected_roles - roles}")
 

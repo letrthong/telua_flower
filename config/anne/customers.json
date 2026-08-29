@@ -7,9 +7,9 @@
     "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
     "role": "customer",
     "tier": "gold",
-    "loyaltyPoints": 434,
-    "totalSpent": 5340000,
-    "orderCount": 6,
+    "loyaltyPoints": 518,
+    "totalSpent": 6180000,
+    "orderCount": 7,
     "savedAddresses": [
       "123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM"
     ],
@@ -440,9 +440,9 @@
     "fullName": "Người Yêu Cũ",
     "email": "",
     "tier": "silver",
-    "loyaltyPoints": 45,
-    "totalSpent": 455000,
-    "orderCount": 1,
+    "loyaltyPoints": 90,
+    "totalSpent": 910000,
+    "orderCount": 2,
     "flowerPreferences": "",
     "savedAddresses": [],
     "createdAt": "2026-08-29T07:47:36Z"
@@ -453,9 +453,9 @@
     "fullName": "Test Voucher",
     "email": "",
     "tier": "silver",
-    "loyaltyPoints": 71,
-    "totalSpent": 714000,
-    "orderCount": 1,
+    "loyaltyPoints": 142,
+    "totalSpent": 1428000,
+    "orderCount": 2,
     "flowerPreferences": "",
     "savedAddresses": [],
     "createdAt": "2026-08-29T07:47:37Z"
