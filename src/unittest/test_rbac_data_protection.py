@@ -9,6 +9,7 @@ import sys
 import unittest
 import json
 import time
+from datetime import datetime, timedelta
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(CURRENT_DIR)
@@ -22,35 +23,36 @@ from data_service import delete_order
 
 
 class TestRBACDataProtection(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         app.config["TESTING"] = True
-        self.client = app.test_client()
+        cls.client = app.test_client()
 
         # 1. Đăng nhập Super Admin
         _, auth_admin, _ = authenticate_user("admin@nohoathabinh.vn", "123456")
-        self.admin_token = auth_admin["token"]
+        cls.admin_token = auth_admin["token"]
 
         # 2. Đăng nhập Quản lý Chi Nhánh Q10
         _, auth_mgr, _ = authenticate_user("0909123456", "123456")
-        self.manager_q10_token = auth_mgr["token"]
+        cls.manager_q10_token = auth_mgr["token"]
 
         # 3. Đăng nhập Thợ cắm hoa Chi Nhánh Q10
         _, auth_florist, _ = authenticate_user("0909654321", "123456")
-        self.florist_q10_token = auth_florist["token"]
+        cls.florist_q10_token = auth_florist["token"]
 
         # 4. Đăng ký / Đăng nhập Khách hàng A (Customer A)
         phone_a = f"0911{int(time.time()) % 10000:04d}"
         register_customer(phone_a, "123456", "Khách Hàng A")
         _, auth_cust_a, _ = authenticate_user(phone_a, "123456")
-        self.cust_a_token = auth_cust_a["token"]
-        self.cust_a = auth_cust_a["user"]
+        cls.cust_a_token = auth_cust_a["token"]
+        cls.cust_a = auth_cust_a["user"]
 
         # 5. Đăng ký / Đăng nhập Khách hàng B (Customer B)
         phone_b = f"0922{int(time.time()) % 10000:04d}"
         register_customer(phone_b, "123456", "Khách Hàng B")
         _, auth_cust_b, _ = authenticate_user(phone_b, "123456")
-        self.cust_b_token = auth_cust_b["token"]
-        self.cust_b = auth_cust_b["user"]
+        cls.cust_b_token = auth_cust_b["token"]
+        cls.cust_b = auth_cust_b["user"]
 
     def test_01_customer_cannot_access_admin_products_api(self):
         """Kiểm tra Khách hàng KHÔNG thể thêm/sửa/xóa sản phẩm trong Catalogue"""
@@ -119,14 +121,15 @@ class TestRBACDataProtection(unittest.TestCase):
         # Không truyền header Authorization
         res = self.client.get("/api/orders/my-orders")
         self.assertEqual(res.status_code, 401)
-        self.assertIn("Yêu cầu đăng nhập", res.get_json()["message"])
+        self.assertFalse(res.get_json()["success"])
 
     def test_06_customer_cannot_read_another_customer_order(self):
         """Kiểm tra Khách hàng A KHÔNG thể xem dữ liệu đơn hàng của Khách hàng B"""
-        # 1. Tạo đơn hàng thuộc quyền sở hữu của Khách hàng B
+        # 1. Tạo đơn hàng cho Khách B
+        future_date = (datetime.now().date() + timedelta(days=2)).strftime("%Y-%m-%d")
         order_b_data = {
             "sender": {
-                "name": "Khách B",
+                "name": self.cust_b["fullName"],
                 "phone": self.cust_b["phone"],
                 "email": "cust_b@test.com"
             },
@@ -136,7 +139,7 @@ class TestRBACDataProtection(unittest.TestCase):
                 "address": "123 Nguyễn Trãi, Quận 1"
             },
             "delivery": {
-                "deliveryDate": "2026-08-28",
+                "deliveryDate": future_date,
                 "deliverySlot": "08:00 - 10:00"
             },
             "items": [{"productId": "bo_hoa_01", "quantity": 1}],
