@@ -217,8 +217,8 @@ class TestAuthService(unittest.TestCase):
             "email": "locked@nohoathabinh.vn",
             "fullName": "Tài Khoản Bị Khóa",
             "passwordHash": hash_password("123456"),
-            "role": "customer",
-            "branchId": None,
+            "role": "florist",
+            "branchId": "branch_q10",
             "isActive": False,
             "createdAt": "2026-08-21T00:00:00Z"
         }
