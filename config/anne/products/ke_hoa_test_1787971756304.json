@@ -1,0 +1,25 @@
+{
+  "id": "ke_hoa_test_1787971756304",
+  "name": "Kệ Hoa Khai Trương Bản Đầu",
+  "category": "ke_hoa",
+  "priceLevelId": "price_lvl_03",
+  "priceNumber": 1800000,
+  "salePrice": "1,800,000₫",
+  "originalPrice": "1,800,000₫",
+  "badge": "Mới",
+  "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
+  "gallery": [],
+  "description": "",
+  "flowerComposition": "",
+  "dimension": "",
+  "careTips": "Để nơi thoáng mát, phun sương mỗi ngày",
+  "stockByBranch": {
+    "branch_q10": 5,
+    "branch_q1": 3,
+    "branch_thao_dien": 2
+  },
+  "dailyQuota": 15,
+  "isActive": true,
+  "createdAt": "2026-08-29T09:49:16Z",
+  "updatedAt": "2026-08-29T09:49:16Z"
+}

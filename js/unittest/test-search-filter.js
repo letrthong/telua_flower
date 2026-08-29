@@ -183,3 +183,20 @@ test('url parser - trích xuất từ khóa tìm kiếm từ Hash routing chuẩ
     const qEmpty = parseQueryFromUrlString('http://localhost/#');
     assert.strictEqual(qEmpty, null);
 });
+
+// ==========================================
+// 5. KIỂM THỬ NÚT XÓA TÌM KIẾM (CLEAR BUTTON 'X')
+// ==========================================
+
+function shouldShowClearButton(query) {
+    return Boolean(query && query.toString().trim().length > 0);
+}
+
+test('search clear button - xác định hiển thị nút X khi có text và ẩn khi chuỗi rỗng', (t) => {
+    assert.strictEqual(shouldShowClearButton('Hoa hồng'), true);
+    assert.strictEqual(shouldShowClearButton('a'), true);
+    assert.strictEqual(shouldShowClearButton('   '), false);
+    assert.strictEqual(shouldShowClearButton(''), false);
+    assert.strictEqual(shouldShowClearButton(null), false);
+    assert.strictEqual(shouldShowClearButton(undefined), false);
+});

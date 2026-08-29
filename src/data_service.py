@@ -135,17 +135,30 @@ def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
                 json.dump(data, f, ensure_ascii=False, indent=indent)
                 f.flush()
                 os.fsync(f.fileno())
-            try:
-                os.replace(temp_path, filepath)
-            except Exception:
-                # Fallback ghi trực tiếp trên Windows nếu os.replace bị lock
-                with open(filepath, "w", encoding="utf-8") as f:
-                    json.dump(data, f, ensure_ascii=False, indent=indent)
-                if os.path.exists(temp_path):
-                    try:
-                        os.remove(temp_path)
-                    except Exception:
-                        pass
+            # Windows atomic replace retry logic (5 attempts with slight backoff)
+            replaced = False
+            for attempt in range(5):
+                try:
+                    os.replace(temp_path, filepath)
+                    replaced = True
+                    break
+                except (PermissionError, OSError):
+                    time.sleep(0.025 * (attempt + 1))
+
+            if not replaced:
+                # Fallback ghi trực tiếp nếu os.replace bị lock bởi file system / antivirus
+                try:
+                    import shutil
+                    shutil.copyfile(temp_path, filepath)
+                except Exception:
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        json.dump(data, f, ensure_ascii=False, indent=indent)
+
+            if os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except Exception:
+                    pass
             # Xóa cache RAM khi file được ghi mới
             invalidate_file_cache(filepath)
             return True

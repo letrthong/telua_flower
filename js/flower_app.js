@@ -380,26 +380,62 @@ export function removeVietnameseTones(str) {
 let _searchDebounceTimer = null;
 
 /**
- * Tìm kiếm có Debounce (trì hoãn ~120ms) giúp tối ưu hiệu năng và tránh giật lag UI khi gõ nhanh
+ * Ẩn/Hiện nút xóa tìm kiếm (dấu X) trên thanh tìm kiếm Desktop và Mobile
  */
-export function debouncedSearchStorefrontProducts(query, updateUrl = true, delay = 120) {
+export function updateSearchClearButtonVisibility(query) {
+    if (typeof document === 'undefined') return;
+    const hasText = Boolean(query && query.toString().trim().length > 0);
+    const deskClearBtn = document.getElementById('storefrontSearchClearBtn');
+    const mobClearBtn = document.getElementById('storefrontSearchMobileClearBtn');
+
+    if (deskClearBtn) {
+        if (hasText) {
+            deskClearBtn.classList.remove('hidden');
+            deskClearBtn.classList.add('flex');
+        } else {
+            deskClearBtn.classList.add('hidden');
+            deskClearBtn.classList.remove('flex');
+        }
+    }
+
+    if (mobClearBtn) {
+        if (hasText) {
+            mobClearBtn.classList.remove('hidden');
+            mobClearBtn.classList.add('flex');
+        } else {
+            mobClearBtn.classList.add('hidden');
+            mobClearBtn.classList.remove('flex');
+        }
+    }
+}
+
+/**
+ * Tìm kiếm có Debounce (trì hoãn ~120ms) giúp tối ưu hiệu năng và tránh giật lag UI khi gõ nhanh
+ * Tự động scroll mượt mà xuống phần kết quả tìm kiếm giống như khi bấm tab danh mục hoa
+ */
+export function debouncedSearchStorefrontProducts(query, updateUrl = true, delay = 120, autoScroll = true) {
+    updateSearchClearButtonVisibility(query);
     if (_searchDebounceTimer) clearTimeout(_searchDebounceTimer);
     _searchDebounceTimer = setTimeout(() => {
-        searchStorefrontProducts(query, updateUrl);
+        searchStorefrontProducts(query, updateUrl, autoScroll);
     }, delay);
 }
 
 /**
  * Tìm kiếm sản phẩm theo tên / mô tả / thành phần trên Storefront
  * Hỗ trợ tìm kiếm cả tiếng Việt CÓ DẤU và KHÔNG DẤU (vd: 'hoa hong' -> khớp 'Hoa hồng')
- * Hỗ trợ đồng bộ Hash URL dạng: /#search?q=tên_hoa
+ * Hỗ trợ đồng bộ Hash URL dạng: /#/search?q=tên_hoa
+ * Tự động cuộn trang (scroll) tới danh sách kết quả để người dùng thấy ngay
  */
-export function searchStorefrontProducts(query, updateUrl = true) {
+export function searchStorefrontProducts(query, updateUrl = true, autoScroll = true) {
     const rawQuery = (query || '').trim();
     const q = rawQuery.toLowerCase();
     const normQ = removeVietnameseTones(rawQuery);
     const container = document.getElementById('dynamicCategorySections');
     if (!container) return;
+
+    // Cập nhật trạng thái hiển thị nút xóa (dấu X)
+    updateSearchClearButtonVisibility(query);
 
     // Đồng bộ giá trị 2 input desktop & mobile
     const desktopInput = document.getElementById('storefrontSearchInput');
@@ -407,7 +443,7 @@ export function searchStorefrontProducts(query, updateUrl = true) {
     if (desktopInput && desktopInput.value !== query) desktopInput.value = query;
     if (mobileInput && mobileInput.value !== query) mobileInput.value = query;
 
-    // Cập nhật URL trình duyệt sang dạng Hash: /#search?q=...
+    // Cập nhật URL trình duyệt sang dạng Hash: /#/search?q=...
     if (updateUrl && typeof window !== 'undefined') {
         if (rawQuery) {
             const targetHash = `#/search?q=${encodeURIComponent(rawQuery)}`;
@@ -483,6 +519,14 @@ export function searchStorefrontProducts(query, updateUrl = true) {
         container.innerHTML = html;
         renderProducts(matchedProds, 'search-results-grid');
     }
+
+    // Tự động cuộn mượt mà tới phần danh sách kết quả tìm kiếm (tương tự như bấm tab danh mục)
+    if (autoScroll && typeof document !== 'undefined') {
+        const searchSec = document.getElementById('search-results-section') || container;
+        if (searchSec && typeof searchSec.scrollIntoView === 'function') {
+            searchSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 }
 
 /**
@@ -494,11 +538,18 @@ export function clearStorefrontSearch(updateUrl = true) {
     if (desktopInput) desktopInput.value = '';
     if (mobileInput) mobileInput.value = '';
 
+    updateSearchClearButtonVisibility('');
+
     if (updateUrl && typeof window !== 'undefined') {
         window.history.pushState(null, '', window.location.pathname);
     }
 
     renderDynamicStorefrontSections(activeStorefrontCategories, allStorefrontProducts);
+
+    const container = document.getElementById('dynamicCategorySections');
+    if (container && typeof container.scrollIntoView === 'function') {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 /**
@@ -786,6 +837,7 @@ if (typeof window !== 'undefined') {
     window.searchStorefrontProducts = searchStorefrontProducts;
     window.debouncedSearchStorefrontProducts = debouncedSearchStorefrontProducts;
     window.clearStorefrontSearch = clearStorefrontSearch;
+    window.updateSearchClearButtonVisibility = updateSearchClearButtonVisibility;
     window.removeVietnameseTones = removeVietnameseTones;
     window.initMobileMenu = initMobileMenu;
     window.openProductQuickDetail = openProductQuickDetail;

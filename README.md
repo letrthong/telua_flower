@@ -119,22 +119,39 @@ npm run build
 
 ---
 
-## 🧪 Chạy Kiểm Thử (Unit Tests)
+## 🧪 Quy Chuẩn Kiểm Thử Bắt Buộc (Mandatory Unit Tests)
 
-### Chạy qua Docker Container trên Ubuntu:
+> **Quy định bắt buộc:** Mọi thay đổi mã nguồn trước khi bàn giao đều phải chạy thành công **100%** cả 2 bộ test suite của hệ thống. Xem chi tiết tại: [Quy chuẩn kiểm thử & Unit Test Mandate](docs/design/TESTING_AND_UNIT_TEST_MANDATE.md).
+
+### 1. Chạy Toàn Bộ Unit Test JavaScript (Frontend & Business Logic):
 ```bash
-./cli_docker.sh run_unittest
+# Cách 1: npm test chuẩn
+npm test
+
+# Cách 2: Node.js test runner
+node --test js/unittest/*.js
 ```
+*(Bao gồm 27 bài test: Tìm kiếm tiếng Việt không dấu, URL Hash Router, Phân quyền RBAC, Tầng giá, Chiết khấu Voucher, i18n)*
 
-### Chạy trên máy cục bộ với Python:
-```bash
+### 2. Chạy Toàn Bộ Unit Test Python (Backend REST API & Data Protection):
+```powershell
+# Windows PowerShell
+$env:PYTHONPATH="src"
 python -m unittest discover -s src/unittest -p "test_*.py"
 ```
+```bash
+# Linux / Ubuntu / Docker
+export PYTHONPATH="src"
+python3 -m unittest discover -s src/unittest -p "test_*.py"
+```
+*(Bao gồm 79 bài test qua 9 test suites: Cấu trúc tệp, File I/O Cache mtime, JWT Auth, Đơn hàng & Ẩn danh, Price Governance, Product CRUD, Voucher & Báo cáo hỏng, Quản trị chi nhánh, Bảo vệ dữ liệu RBAC)*
 
 ---
 
 ## 📖 Tài Liệu Tham Khảo Thêm
 
+- 📋 [Quy Chuẩn Kiểm Thử & Unit Test Mandate](docs/design/TESTING_AND_UNIT_TEST_MANDATE.md)
+- ⚡ [Kiến Trúc Bộ Nhớ Đệm 4 Tầng & Hiệu Năng](docs/design/PERFORMANCE_AND_CACHING_ARCHITECTURE.md)
 - 📋 [Tài Liệu Yêu Cầu Sản Phẩm (PRD)](docs/requirements/PRODUCT_REQUIREMENTS.md)
 - 🐳 [Hướng Dẫn Triển Khai Docker Trên Ubuntu (English Guide)](docs/DOCKER_UBUNTU_GUIDE.md)
 

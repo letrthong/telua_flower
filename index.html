@@ -185,9 +185,14 @@
             </a>
 
             <!-- Thanh tìm kiếm (Desktop) -->
-            <div class="hidden md:flex flex-1 max-w-xl mx-8 relative">
+            <div class="hidden md:flex flex-1 max-w-xl mx-8 relative items-center">
                 <input type="text" id="storefrontSearchInput" oninput="debouncedSearchStorefrontProducts(this.value)" data-i18n-placeholder="search_placeholder" placeholder="Tìm kiếm bó hoa, lẵng hoa, sự kiện..."
-                    class="w-full border-2 border-gray-200 rounded-full py-2.5 pl-6 pr-12 focus:outline-none focus:border-primary transition text-sm">
+                    class="w-full border-2 border-gray-200 rounded-full py-2.5 pl-6 pr-20 focus:outline-none focus:border-primary transition text-sm">
+                <!-- Nút Xóa Search (Desktop) -->
+                <button id="storefrontSearchClearBtn" onclick="clearStorefrontSearch()" title="Xóa nội dung tìm kiếm"
+                    class="hidden absolute right-12 text-gray-400 hover:text-red-500 hover:bg-gray-100 p-1.5 rounded-full transition text-xs items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-circle-xmark text-sm"></i>
+                </button>
                 <button onclick="searchStorefrontProducts(document.getElementById('storefrontSearchInput').value)"
                     class="absolute right-0 top-0 h-full px-5 text-gray-500 hover:text-primary transition rounded-r-full">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -230,9 +235,14 @@
 
         <!-- Thanh tìm kiếm (Mobile) -->
         <div class="md:hidden px-4 pb-4">
-            <div class="relative w-full">
+            <div class="relative w-full flex items-center">
                 <input type="text" id="storefrontSearchMobileInput" oninput="debouncedSearchStorefrontProducts(this.value)" data-i18n-placeholder="search_placeholder_mobile" placeholder="Tìm hoa tươi..."
-                    class="w-full border border-gray-300 rounded-full py-2 pl-4 pr-10 focus:outline-none focus:border-primary text-xs">
+                    class="w-full border border-gray-300 rounded-full py-2 pl-4 pr-16 focus:outline-none focus:border-primary text-xs">
+                <!-- Nút Xóa Search (Mobile) -->
+                <button id="storefrontSearchMobileClearBtn" onclick="clearStorefrontSearch()" title="Xóa nội dung tìm kiếm"
+                    class="hidden absolute right-9 text-gray-400 hover:text-red-500 p-1 rounded-full transition text-xs items-center justify-center cursor-pointer">
+                    <i class="fa-solid fa-circle-xmark text-sm"></i>
+                </button>
                 <button onclick="searchStorefrontProducts(document.getElementById('storefrontSearchMobileInput').value)" class="absolute right-3 top-2.5 text-gray-400">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
