@@ -67,10 +67,16 @@ Tối ưu cho cả máy tính (Desktop) và điện thoại (Mobile) với phong
   - Tự động cuộn trang mượt mà (Smooth scroll) để người dùng bao quát toàn bộ sản phẩm.
 - **Trên Điện Thoại (Mobile Screen `< 768px`)**:
   - Do màn hình điện thoại nhỏ và bàn phím ảo che khuất nửa dưới, kết quả tìm kiếm xuất hiện **NGAY DƯỚI THANH TÌM KIẾM** dưới dạng **Bảng Kết Quả Trực Tiếp (Mobile Live Search Dropdown - `#mobileLiveSearchResults`)**.
-  - Hiển thị danh sách thẻ hoa nhỏ gọn: Ảnh thu nhỏ (Thumbnail), Tên hoa, Phân loại, Giá bán VND, Trạng thái còn hàng và Nút xem chi tiết/Đặt mua tức thì.
-  - Hỗ trợ nút đóng nhanh và nút cuộn xuống dạng lưới nếu muốn duyệt toàn bộ.
+### 2.2 Cơ Chế Xử Lý Lỗi Tải Sản Phẩm Quá Hạn (5-Second Load Timeout & Graceful Recovery):
 
----
+- Khi người dùng truy cập trang chủ, hệ thống hiển thị Skeleton Loader và bắt đầu nạp danh mục/sản phẩm từ Backend API.
+- **Quy tắc 5 giây (5000ms Timeout Policy)**:
+  - Nếu sau 5 giây việc tải sản phẩm bị thất bại hoặc không thể kết nối tới máy chủ (`allStorefrontProducts` rỗng):
+    - Tự động thay thế Skeleton bằng **Khối Thông Báo Lỗi Trang Chủ (Error Recovery State)** ngay tại `#dynamicCategorySections`.
+    - Hiển thị thông điệp hướng dẫn rõ ràng: *"Không thể tải danh sách hoa tươi từ máy chủ. Vui lòng kiểm tra kết nối mạng."*
+    - Cung cấp nút **"Thử lại ngay" (`Tải lại sản phẩm`)** để kích hoạt nạp lại dữ liệu mà không cần tải lại toàn bộ trang web.
+    - Kích hoạt thông báo cảnh báo Toast đỏ để người dùng nhận biết ngay lập tức.
+
 
 ## 3. Layout 2: Cổng Thợ Cắm Hoa & Nhân Viên Chi Nhánh (`/portal/staff`)
 

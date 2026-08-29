@@ -338,15 +338,83 @@ export function renderDynamicStorefrontSections(categories, products) {
     });
 }
 
+let _productLoadTimer = null;
+
+/**
+ * Hiển thị thông báo lỗi khi không thể nạp sản phẩm sau 5 giây
+ */
+export function renderStorefrontLoadError(container) {
+    if (!container) return;
+    container.innerHTML = `
+        <section class="py-16 bg-pink-50/30 border-t border-b border-pink-100/60 my-6" id="storefront-load-error-section">
+            <div class="container mx-auto max-w-xl px-4 text-center">
+                <div class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 shadow-sm animate-bounce">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 class="font-serif text-xl md:text-2xl font-bold text-gray-800 mb-2">
+                    Không thể tải danh sách sản phẩm
+                </h3>
+                <p class="text-xs md:text-sm text-gray-600 mb-6 leading-relaxed">
+                    Hệ thống không thể kết nối tới máy chủ sau 5 giây. Vui lòng kiểm tra lại kết nối mạng hoặc nhấn nút bên dưới để thử lại.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <button type="button" onclick="retryLoadStorefrontProducts()" class="w-full sm:w-auto px-6 py-2.5 bg-primary hover:bg-primaryHover text-white font-bold text-xs md:text-sm rounded-full shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-rotate-right"></i> Thử lại ngay
+                    </button>
+                    <a href="tel:0976491322" class="w-full sm:w-auto px-6 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-bold text-xs md:text-sm rounded-full border border-gray-200 shadow-2xs transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-phone text-primary"></i> Hotline: 0976.491.322
+                    </a>
+                </div>
+            </div>
+        </section>
+    `;
+    if (typeof showToast === 'function') {
+        showToast("Không thể nạp danh sách sản phẩm từ máy chủ. Vui lòng thử lại!", "error", 6000);
+    }
+}
+
+/**
+ * Thử lại nạp sản phẩm cho trang chủ
+ */
+export async function retryLoadStorefrontProducts() {
+    const container = document.getElementById('dynamicCategorySections');
+    if (container) {
+        container.innerHTML = `
+            <div class="py-16 text-center text-gray-500">
+                <div class="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p class="text-xs font-bold text-gray-700">Đang kết nối lại và tải sản phẩm...</p>
+            </div>
+        `;
+    }
+    await renderAllProducts();
+}
+
 /**
  * Render toàn bộ danh mục sản phẩm từ API Backend vào từng Section
+ * Đặt bộ đếm thời gian 5 giây: Nếu không load được sau 5 giây sẽ hiển thị thông báo lỗi
  */
 export async function renderAllProducts() {
+    const container = document.getElementById('dynamicCategorySections');
+
+    // Thiết lập bộ đếm cảnh báo lỗi sau 5 giây nếu dữ liệu chưa nạp xong
+    if (_productLoadTimer) clearTimeout(_productLoadTimer);
+    _productLoadTimer = setTimeout(() => {
+        if (!allStorefrontProducts || allStorefrontProducts.length === 0) {
+            const currentContainer = document.getElementById('dynamicCategorySections');
+            renderStorefrontLoadError(currentContainer);
+        }
+    }, 5000);
+
     try {
         const [prods, cats] = await Promise.all([
             getProducts(true),
             getCategories(true)
         ]);
+
+        if (_productLoadTimer) {
+            clearTimeout(_productLoadTimer);
+            _productLoadTimer = null;
+        }
 
         if (Array.isArray(cats) && cats.length > 0) {
             activeStorefrontCategories = cats;
@@ -356,9 +424,21 @@ export async function renderAllProducts() {
             allStorefrontProducts = prods;
         }
 
+        if (!allStorefrontProducts || allStorefrontProducts.length === 0) {
+            renderStorefrontLoadError(container);
+            return;
+        }
+
         renderDynamicStorefrontSections(activeStorefrontCategories, allStorefrontProducts);
     } catch (e) {
+        if (_productLoadTimer) {
+            clearTimeout(_productLoadTimer);
+            _productLoadTimer = null;
+        }
         console.warn("Lỗi nạp danh mục/sản phẩm:", e);
+        if (!allStorefrontProducts || allStorefrontProducts.length === 0) {
+            renderStorefrontLoadError(container);
+        }
     }
 }
 
@@ -923,6 +1003,8 @@ async function initApp() {
 if (typeof window !== 'undefined') {
     window.renderProducts = renderProducts;
     window.renderAllProducts = renderAllProducts;
+    window.renderStorefrontLoadError = renderStorefrontLoadError;
+    window.retryLoadStorefrontProducts = retryLoadStorefrontProducts;
     window.renderStorefrontCategories = renderStorefrontCategories;
     window.populateCategoryDropdowns = populateCategoryDropdowns;
     window.renderDynamicStorefrontSections = renderDynamicStorefrontSections;
