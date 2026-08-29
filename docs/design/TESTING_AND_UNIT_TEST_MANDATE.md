@@ -27,12 +27,12 @@ Hệ thống Frontend sử dụng **Node.js Built-in Test Runner** (`node:test` 
 | **`test-search-filter.js`** | 10 tests | - Chuẩn hóa tiếng Việt không dấu (`removeVietnameseTones`).<br>- Tìm kiếm theo tên hoa, thành phần hoa (`composition`), SKU/ID.<br>- Bộ lọc trạng thái Đang bán / Đã ẩn (`isActive`).<br>- Trích xuất từ khóa tìm kiếm từ Hash routing chuẩn (`/#/search?q=...`).<br>- Nút xóa tìm kiếm (dấu X) theo trạng thái text.<br>- Phân biệt trải nghiệm tìm kiếm Responsive Mobile (<768px) vs Desktop (>=768px). |
 | **`test-staff-rbac.js`** | 4 tests | - Ma trận hiển thị và phân quyền 5 nhóm vai trò (`super_admin`, `branch_manager`, `florist`, `sales_consultant`, `customer`).<br>- Quản lý chi nhánh chỉ được tạo nhân sự thuộc chi nhánh của mình.<br>- Super Admin có toàn quyền tạo mọi vai trò trên mọi chi nhánh. |
 | **`test-portal-governance.js`** | 3 tests | - Kiểm soát biên độ giá theo tầng giá (Price Governance Guardrails).<br>- Chặn đặt giá thấp hơn giá sàn (`minPrice`) hoặc vượt giá trần (`maxPrice`). |
-| **`test-products.js`** | 4 tests | - Xác thực tính hợp lệ của tệp dữ liệu `products.json`.<br>- Kiểm tra đầy đủ các trường bắt buộc (`id`, `name`, `priceNumber`, `category`, `stockByBranch`).<br>- Kiểm tra sự tồn tại của các file chi tiết trong `config/anne/products/`.<br>- Cơ chế phát hiện lỗi tải quá hạn 5s (Load Timeout & Graceful Recovery). |
+| **`test-products.js`** | 5 tests | - Xác thực tính hợp lệ của tệp dữ liệu `products.json`.<br>- Kiểm tra đầy đủ các trường bắt buộc (`id`, `name`, `priceNumber`, `category`, `stockByBranch`).<br>- Kiểm tra sự tồn tại của các file chi tiết trong `config/anne/products/`.<br>- Kiểm tra đầy đủ các trường chi tiết (`badge`, `dimension`, `description`, `careTips`, `flowerComposition`).<br>- Cơ chế phát hiện lỗi tải quá hạn 5s (Load Timeout & Graceful Recovery). |
 | **`test-checkout.js`** | 3 tests | - Tính toán tổng tiền giỏ hàng (`calculateSubtotal`).<br>- Định dạng tiền tệ VND (`formatVND`).<br>- Quy tắc tính phí vận chuyển theo khoảng cách / hỏa tốc. |
 | **`test-auth.js`** | 2 tests | - Giải mã JWT Payload phía client.<br>- Xử lý an toàn khi token không hợp lệ hoặc bị hỏng format. |
-| **`test-translations.js`** | 4 tests | - Xác thực ma trận từ điển đa ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung).<br>- Đồng bộ đầy đủ các khóa từ điển giữa các ngôn ngữ, không để trống giá trị.<br>- Đồng bộ số điện thoại Hotline động từ `infoCompany.json` vào Top Header và từ điển. |
+| **`test-translations.js`** | 5 tests | - Xác thực ma trận từ điển đa ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung).<br>- Đồng bộ đầy đủ các khóa từ điển giữa các ngôn ngữ, không để trống giá trị.<br>- Đồng bộ số điện thoại Hotline động từ `infoCompany.json` vào Top Header và từ điển.<br>- Kiểm tra an toàn escape dấu ngoặc kép và cú pháp JSON đa ngôn ngữ. |
 
-**Tổng cộng: 31 / 31 Tests PASS (100%)**
+**Tổng cộng: 33 / 33 Tests PASS (100%)**
 
 ### 2.2 Câu lệnh thực thi Unit Test JavaScript
 
@@ -60,11 +60,11 @@ Hệ thống Backend sử dụng thư viện chuẩn `unittest` của Python, k�
 | **`test_order_service.py`** | 7 tests | Đặt hoa hẹn ngày trước 30 ngày, chọn khung giờ/hỏa tốc 2H, gửi hoa ẩn danh (`isAnonymous`), áp dụng Voucher giảm giá %, gán chi nhánh gần nhất tự động, REST API `/api/orders`. |
 | **`test_price_governance.py`** | 8 tests | Kiểm soát biên độ giá theo tầng giá (Price Levels), chống chỉnh sửa giá tùy tiện, chặn vi phạm giá sàn/trần. |
 | **`test_product_crud.py`** | 12 tests | Kiểm thử toàn diện CRUD sản phẩm, soft-delete, phân bổ tồn kho đa chi nhánh (`stockByBranch`), định ngạch xuất bán theo ngày (`dailyQuota`). |
-| **`test_catalog_and_promotions.py`** | 10 tests | Quản lý khuyến mãi Voucher, cấu hình thời hạn/giá trị giảm tối đa, ghi nhận & thống kê báo cáo hoa hao hụt/hỏng hủy (`wastage_reports.json`). |
+| **`test_catalog_and_promotions.py`** | 12 tests | Quản lý khuyến mãi Voucher, cấu hình thời hạn/giá trị giảm tối đa, ghi nhận & thống kê báo cáo hoa hao hụt/hỏng hủy (`wastage_reports.json`), kiểm tra xác thực an toàn định dạng JSON trước khi ghi file (Pre-Write JSON Validation & Multi-Language Matrix Guard). |
 | **`test_staff_and_branch_management.py`** | 6 tests | Quản lý nhân sự phân tán theo chi nhánh, tạo/sửa chi nhánh chuỗi cửa hàng, hỗ trợ song song tiền tố chuẩn hóa `/api/flower/v1` và tương thích ngược `/api`. |
 | **`test_rbac_data_protection.py`** | 8 tests | Kiểm thử an ninh RBAC: Chặn khách hàng/vãng lai can thiệp API Admin, cách ly tuyệt đối đơn hàng giữa các khách hàng, cách ly kho đơn giữa các chi nhánh showroom. |
 
-**Tổng cộng: 79 / 79 Tests PASS (100%)**
+**Tổng cộng: 81 / 81 Tests PASS (100%)**
 
 ### 3.2 Câu lệnh thực thi Unit Test Python
 

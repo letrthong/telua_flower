@@ -73,3 +73,24 @@ test('product load fallback - xác thực cơ chế phát hiện lỗi tải qu�
     assert.strictEqual(res4.status, 'TIMEOUT_ERROR');
     assert.strictEqual(res4.showUi, 'RETRY_ERROR_BANNER');
 });
+
+test('product detail schema - validate all detail fields in config/anne/products/*.json', (t) => {
+    const products = JSON.parse(fs.readFileSync(productsPath, 'utf8'));
+    const detailsDir = path.resolve(__dirname, '../../config/anne/products');
+
+    for (const p of products) {
+        const detailFile = path.join(detailsDir, `${p.id}.json`);
+        assert.ok(fs.existsSync(detailFile), `Thiếu tệp ${p.id}.json`);
+        
+        const detail = JSON.parse(fs.readFileSync(detailFile, 'utf8'));
+        assert.strictEqual(detail.id, p.id, `ID trong file ${p.id}.json không khớp`);
+        assert.strictEqual(detail.name, p.name, `Tên trong file ${p.id}.json không khớp`);
+        
+        // Kiểm tra sự hiện diện của các trường chi tiết
+        assert.ok('description' in detail, `Thiếu trường 'description' trong ${p.id}.json`);
+        assert.ok('flowerComposition' in detail, `Thiếu trường 'flowerComposition' trong ${p.id}.json`);
+        assert.ok('dimension' in detail, `Thiếu trường 'dimension' trong ${p.id}.json`);
+        assert.ok('careTips' in detail, `Thiếu trường 'careTips' trong ${p.id}.json`);
+        assert.ok('stockByBranch' in detail, `Thiếu trường 'stockByBranch' trong ${p.id}.json`);
+    }
+});

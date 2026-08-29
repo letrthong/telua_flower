@@ -131,3 +131,33 @@ Nhằm đảm bảo tính mở rộng bền vững khi hệ thống bổ sung th
       return template.replace(/\{(\w+)\}/g, (_, key) => params[key] !== undefined ? params[key] : `{${key}}`);
   }
   ```
+
+---
+
+## 7. Quy Trình Kiểm Tra Tính Hợp Lệ Của Dữ Liệu Đa Ngôn Ngữ (Multi-Language JSON Validation Guard)
+
+Để ngăn ngừa lỗi rách cấu trúc từ điển đa ngôn ngữ hoặc thiếu bản dịch làm vỡ giao diện, file `config/anne/translations.json` phải luôn được kiểm tra qua bộ quy tắc xác thực nghiêm ngặt trước khi lưu:
+
+```mermaid
+graph TD
+    A[Từ điển Translations mới] --> B{1. Kiểm tra Dict & Khóa hợp lệ}
+    B -- Không hợp lệ --> C[Báo lỗi & Giữ nguyên file cũ]
+    B -- Hợp lệ --> D{2. Kiểm tra 5 Mã Ngôn Ngữ Chuẩn vi/en/ja/ko/zh}
+    D -- Thiếu mã gốc vi --> C
+    D -- Đạt chuẩn --> E{3. Kiểm tra Escape Ngoặc Kép & Tuần Tự Hóa JSON}
+    E -- Lỗi JSON --> C
+    E -- Thành công --> F[4. Ghi Atomic Write xuống translations.json]
+    F --> G[Tự động cập nhật cache_version.json]
+```
+
+### 7.1. Bộ Tiêu Chuẩn Xác Thực (Validation Criteria):
+1. **Cấu trúc ma trận 2 cấp (Two-Tier Structure)**:
+   - Gốc phải là `Dictionary` ánh xạ `key` $\rightarrow$ `{ "vi": "...", "en": "...", "ja": "...", "ko": "...", "zh": "..." }`.
+2. **Ngôn ngữ gốc bắt buộc (`vi`)**:
+   - Mọi khóa từ điển bắt buộc phải có giá trị tiếng Việt (`vi`) làm bản dịch chuẩn (Base Fallback).
+   - Nếu một ngôn ngữ phụ (`ja`, `ko`, `zh`) chưa được dịch, hệ thống tự động điền giá trị `vi` để không hiển thị chuỗi rỗng trên giao diện.
+3. **An toàn ký tự đặc biệt & Dấu ngoặc kép (`"`)**:
+   - Các chuỗi chứa dấu ngoặc kép hoặc ký tự đặc biệt phải được escape đúng quy chuẩn `\"`.
+4. **Kiểm tra khớp thẻ tham số nội suy (`{param}`)**:
+   - Nếu bản dịch tiếng Việt chứa `{n}` hoặc `{name}`, các bản dịch ngôn ngữ khác cũng phải chứa đúng token tham số này.
+

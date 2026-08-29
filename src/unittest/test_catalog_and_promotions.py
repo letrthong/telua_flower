@@ -220,6 +220,64 @@ class TestCatalogAndPromotions(unittest.TestCase):
         self.assertIsNotNone(updated)
         self.assertEqual(get_order_by_id(test_order_id)["status"], "completed")
 
+    def test_08_pre_write_json_validation_and_integrity_guard(self):
+        """Kiểm tra cơ chế xác thực định dạng JSON trước khi ghi file (Pre-Write Validation)"""
+        from data_service import write_json, save_product_detail
+        
+        # 1. Dữ liệu chứa đối tượng không thể serialize (non-serializable object) -> Phải trả về False an toàn
+        invalid_data = {
+            "title": "Hoa Lan",
+            "invalid_func": lambda x: x,
+            "invalid_set": {1, 2, 3}
+        }
+        res = write_json("config/anne/test_invalid.json", invalid_data)
+        self.assertFalse(res, "write_json phải từ chối ghi dữ liệu không hợp lệ")
+
+        # 2. save_product_detail với product_id nguy hiểm (Path Traversal) -> Phải từ chối an toàn
+        bad_id_res = save_product_detail("../../../etc/passwd", {"name": "test"})
+        self.assertFalse(bad_id_res, "save_product_detail phải chặn path traversal")
+
+        # 3. save_product_detail với dữ liệu không phải dict -> Phải từ chối an toàn
+        bad_type_res = save_product_detail("test_prod_01", "not_a_dict")
+        self.assertFalse(bad_type_res, "save_product_detail phải từ chối kiểu dữ liệu không phải dict")
+
+    def test_09_multi_language_json_validation_and_safety(self):
+        """Kiểm tra cơ chế xác thực từ điển đa ngôn ngữ (Multi-language JSON Validation)"""
+        from data_service import validate_translations_matrix, save_translations
+
+        # 1. Kiểm tra từ điển rỗng hoặc sai kiểu
+        ok, err = validate_translations_matrix([])
+        self.assertFalse(ok)
+        ok, err = validate_translations_matrix({})
+        self.assertFalse(ok)
+
+        # 2. Kiểm tra từ điển thiếu ngôn ngữ gốc 'vi'
+        bad_matrix = {
+            "hero_title": {"en": "Welcome to Flower Shop"}
+        }
+        ok, err = validate_translations_matrix(bad_matrix)
+        self.assertFalse(ok, "Phải bắt buộc có bản dịch gốc 'vi'")
+
+        # 3. Kiểm tra từ điển chứa giá trị không phải chuỗi
+        bad_type_matrix = {
+            "hero_title": {"vi": 12345, "en": "Welcome"}
+        }
+        ok, err = validate_translations_matrix(bad_type_matrix)
+        self.assertFalse(ok, "Bản dịch phải là kiểu chuỗi")
+
+        # 4. Kiểm tra từ điển hợp lệ
+        valid_matrix = {
+            "hotline": {
+                "vi": "Hotline:",
+                "en": "Hotline:",
+                "ja": "ホットライン:",
+                "ko": "고객센터:",
+                "zh": "服务热线:"
+            }
+        }
+        ok, err = validate_translations_matrix(valid_matrix)
+        self.assertTrue(ok)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -58,11 +58,18 @@ graph TD
    - Bấm **"Chọn ảnh từ máy"** (Hỗ trợ kéo thả ảnh `.jpg`, `.png`, `.webp`).
    - Hệ thống tự động nén dung lượng ảnh để tối ưu tốc độ tải trang dưới 1s.
    - Hoặc dán trực tiếp đường link ảnh từ kho ảnh công khai.
-3. **Bước 3 (Nhập Nội dung & Giá):**
-   - Điền Tên hoa, Danh mục, Giá gốc và Giá khuyến mãi.
-   - Nhập danh sách thành phần hoa (VD: *Hồng Ecuador, Tulip Hà Lan*).
-   - Nhập lời khuyên chăm sóc hoa tươi lâu.
-4. **Bước 4:** Bấm **"Đăng Lên Website"** $\rightarrow$ Hệ thống tự động đồng bộ và hiển thị ngay trên giao diện `index.html`.
+3. **Bước 3 (Nhập Nội dung Chi tiết & Giá bán):**
+   - Điền Tên hoa, Danh mục, Huy hiệu nổi bật (`badge`: Bán Chạy, Mới, Hot...).
+   - Thiết lập Phân tầng mức giá (Price Level) và Giá bán kiểm soát sàn/trần.
+   - Nhập Kích thước bó hoa (`dimension`: VD: *Cao 55cm x Rộng 45cm*).
+   - Nhập Đoạn văn mô tả cảm xúc sản phẩm (`description`).
+   - Nhập Thành phần loài hoa chi tiết (`flowerComposition`).
+   - Nhập Hướng dẫn chăm sóc hoa tươi lâu (`careTips`).
+   - Cập nhật số lượng tồn kho từng chi nhánh (`stockByBranch`: Q.10, Q.1, Thảo Điền).
+4. **Bước 4:** Bấm **"Lưu Sản Phẩm"** $\rightarrow$ Hệ thống tự động:
+   - Ghi đầy đủ 100% dữ liệu chi tiết vào file `config/anne/products/{id}.json`.
+   - Cập nhật bản tóm tắt tinh gọn vào file `config/anne/products.json`.
+   - Hiển thị tức thì trên Modal Chi Tiết Nhanh (`productQuickDetailModal`) và Catalogue trang chủ.
 
 ---
 

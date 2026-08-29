@@ -503,3 +503,33 @@ Lưu trữ toàn bộ voucher đã xóa mềm có kèm dấu thời gian `delete
   }
 ]
 ```
+
+---
+
+## 11. Quy Trình Kiểm Tra Định Dạng JSON Trước Khi Lưu (Pre-Write Validation & Integrity Guard)
+
+Nhằm ngăn ngừa triệt để lỗi hỏng file (Data Corruption), cú pháp không hợp lệ (Syntax Error), hoặc các kiểu dữ liệu không thể tuần tự hóa (Non-Serializable Objects), toàn bộ thao tác ghi file qua hàm `write_json()` và `save_product_detail()` phải trải qua 4 bước kiểm tra nghiêm ngặt:
+
+```mermaid
+graph TD
+    A[Dữ liệu chuẩn bị lưu] --> B{1. Kiểm tra Kiểu dữ liệu & Schema}
+    B -- Không hợp lệ --> C[Báo lỗi & Hủy ghi đè]
+    B -- Hợp lệ --> D{2. Kiểm tra Tuần Tự Hóa JSON}
+    D -- Lỗi json.dumps --> C
+    D -- Thành công --> E[3. Ghi File Tạm .tmp với fsync]
+    E --> F[4. Thay thế nguyên tử Atomic Replace]
+    F --> G[Xóa Cache In-Memory & Hoàn tất]
+```
+
+### 11.1. Các Quy Tắc Xác Thực Bắt Buộc:
+1. **Kiểm Tra Khả Năng Tuần Tự Hóa (JSON Serializability Pre-Check)**:
+   - Trước khi mở file, dữ liệu được kiểm tra qua `json.dumps(data, ensure_ascii=False)`.
+   - Ngăn chặn triệt để các đối tượng `Set`, `Function`, `datetime` chưa format chuỗi hoặc vòng lặp tham chiếu tuần hoàn (Circular References).
+2. **Kiểm Tra Mã Định Danh Hợp Lệ (Sanitized Identifier)**:
+   - `product_id` phải là chuỗi an toàn, không chứa ký tự duyệt thư mục trái phép (`..`, `/`, `\`) nhằm ngăn chặn lỗ hổng Path Traversal.
+3. **Kiểm Tra Cấu Trúc Bắt Buộc Đối Với Sản Phẩm Chi Tiết (`config/anne/products/*.json`)**:
+   - `id`, `name`, `category`, `priceNumber` phải tồn tại và đúng kiểu dữ liệu.
+   - `stockByBranch` phải là `dict` chứa số nguyên không âm (`>= 0`).
+4. **Cơ Chế Ghi Nguyên Tử (Atomic Write with Fsync)**:
+   - Ghi xuống tệp tạm `<filename>.tmp`, gọi `f.flush()` và `os.fsync()`, sau đó thực hiện `os.replace()` để đảm bảo file chính không bao giờ bị cắt cụt (truncated) nếu xảy ra sự cố sập nguồn hoặc ngắt kết nối đột ngột.
+

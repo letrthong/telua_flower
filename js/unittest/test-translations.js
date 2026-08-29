@@ -44,3 +44,23 @@ test('company info vs i18n - separation of concerns for hotline and infoCompany'
         assert.ok(!/\d{4}/.test(translations[l].hotline), `Từ điển ngôn ngữ '${l}' của hotline không được chứa số điện thoại hardcode`);
     });
 });
+
+test('translations.json - quote escaping and JSON syntax validation', (t) => {
+    const raw = fs.readFileSync(translationsPath, 'utf8');
+    
+    // 1. Phải parse thành công không có lỗi cú pháp
+    let parsed;
+    assert.doesNotThrow(() => {
+        parsed = JSON.parse(raw);
+    }, "translations.json phải là tệp JSON hoàn toàn hợp lệ");
+
+    // 2. Kiểm tra chuỗi chứa ngoặc kép hoặc ký tự đặc biệt được serialize & parse đúng
+    const testMap = {
+        vi: { test_quote: 'Bó hoa "Tình Yêu" đặc biệt' },
+        en: { test_quote: 'Special "Love" bouquet' }
+    };
+    const serialized = JSON.stringify(testMap, null, 2);
+    assert.ok(serialized.includes('\\"Tình Yêu\\"'), "Dấu ngoặc kép phải được escape thành \\\"");
+    const reParsed = JSON.parse(serialized);
+    assert.strictEqual(reParsed.vi.test_quote, 'Bó hoa "Tình Yêu" đặc biệt');
+});

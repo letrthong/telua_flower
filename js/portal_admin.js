@@ -1720,6 +1720,11 @@ export async function editProduct(productId) {
     }
 
     document.getElementById("prodFlowerComposition").value = prod.flowerComposition || "";
+    document.getElementById("prodBadge").value = prod.badge || "";
+    document.getElementById("prodDimension").value = prod.dimension || "";
+    document.getElementById("prodDescription").value = prod.description || "";
+    document.getElementById("prodCareTips").value = prod.careTips || "";
+
     document.getElementById("prodStockQ10").value = prod.stockByBranch?.branch_q10 ?? 10;
     document.getElementById("prodStockQ1").value = prod.stockByBranch?.branch_q1 ?? 5;
     document.getElementById("prodStockTD").value = prod.stockByBranch?.branch_thao_dien ?? 5;
@@ -1741,7 +1746,11 @@ export async function handleProductSubmit(event) {
     const priceLevelId = document.getElementById("prodPriceLevel").value;
     const priceNumber = parseInt(document.getElementById("prodPriceNumber").value, 10);
     const image = document.getElementById("prodImage").value.trim();
-    const flowerComposition = document.getElementById("prodFlowerComposition").value.trim();
+    const badge = document.getElementById("prodBadge") ? document.getElementById("prodBadge").value.trim() : "";
+    const flowerComposition = document.getElementById("prodFlowerComposition") ? document.getElementById("prodFlowerComposition").value.trim() : "";
+    const dimension = document.getElementById("prodDimension") ? document.getElementById("prodDimension").value.trim() : "";
+    const description = document.getElementById("prodDescription") ? document.getElementById("prodDescription").value.trim() : "";
+    const careTips = document.getElementById("prodCareTips") ? document.getElementById("prodCareTips").value.trim() : "";
 
     const stockQ10 = parseInt(document.getElementById("prodStockQ10").value, 10) || 0;
     const stockQ1 = parseInt(document.getElementById("prodStockQ1").value, 10) || 0;
@@ -1753,7 +1762,11 @@ export async function handleProductSubmit(event) {
         priceLevelId,
         priceNumber,
         image,
+        badge,
         flowerComposition,
+        dimension,
+        description,
+        careTips,
         stockByBranch: {
             branch_q10: stockQ10,
             branch_q1: stockQ1,

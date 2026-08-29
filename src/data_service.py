@@ -123,7 +123,18 @@ def _normalize_list_of_dicts(data: Any) -> List[Dict[str, Any]]:
 def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
     """
     Ghi dữ liệu ra file JSON nguyên tử (Atomic Write với Windows retry/fallback).
+    Bao gồm kiểm tra tính hợp lệ của định dạng JSON trước khi tiến hành ghi đĩa.
     """
+    if not filepath or not isinstance(filepath, str):
+        return False
+
+    # 1. Kiểm tra định dạng JSON hợp lệ trước khi thao tác file hệ thống
+    try:
+        serialized_json = json.dumps(data, ensure_ascii=False, indent=indent)
+    except (TypeError, ValueError, OverflowError) as json_err:
+        print(f"[JSON_VALIDATION_ERROR] Không thể tuần tự hóa JSON cho file '{filepath}': {json_err}")
+        return False
+
     dir_name = os.path.dirname(filepath)
     if dir_name and not os.path.exists(dir_name):
         os.makedirs(dir_name, exist_ok=True)
@@ -132,7 +143,7 @@ def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
     with _IO_LOCK:
         try:
             with open(temp_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=indent)
+                f.write(serialized_json)
                 f.flush()
                 os.fsync(f.fileno())
             # Windows atomic replace retry logic (5 attempts with slight backoff)
@@ -152,7 +163,7 @@ def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
                     shutil.copyfile(temp_path, filepath)
                 except Exception:
                     with open(filepath, "w", encoding="utf-8") as f:
-                        json.dump(data, f, ensure_ascii=False, indent=indent)
+                        f.write(serialized_json)
 
             if os.path.exists(temp_path):
                 try:
@@ -168,7 +179,8 @@ def write_json(filepath: str, data: Any, indent: int = 2) -> bool:
                     os.remove(temp_path)
                 except OSError:
                     pass
-            raise IOError(f"Lỗi khi ghi dữ liệu ra file {filepath}: {str(e)}")
+            print(f"Lỗi khi ghi dữ liệu ra file {filepath}: {str(e)}")
+            return False
 
 
 
@@ -849,7 +861,23 @@ def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
 
 
 def save_product_detail(product_id: str, product_data: Dict[str, Any]) -> bool:
-    """Lưu file chi tiết riêng cho sản phẩm vào config/anne/products/{product_id}.json."""
+    """
+    Lưu file chi tiết riêng cho sản phẩm vào config/anne/products/{product_id}.json.
+    Kiểm tra an toàn định danh product_id và tính hợp lệ của dữ liệu trước khi ghi.
+    """
+    if not product_id or not isinstance(product_id, str):
+        print(f"[PRODUCT_DETAIL_ERROR] product_id không hợp lệ: {product_id}")
+        return False
+
+    # Chống path traversal
+    if ".." in product_id or "/" in product_id or "\\" in product_id:
+        print(f"[PRODUCT_DETAIL_ERROR] Phát hiện ký tự không hợp lệ trong product_id: {product_id}")
+        return False
+
+    if not isinstance(product_data, dict):
+        print(f"[PRODUCT_DETAIL_ERROR] product_data phải là kiểu Dictionary, nhận được: {type(product_data)}")
+        return False
+
     detail_file = get_product_detail_path(product_id)
     success = write_json(detail_file, product_data)
     invalidate_file_cache(detail_file)
@@ -1068,6 +1096,42 @@ def restore_promotion(promo_id_or_code: str) -> Tuple[bool, Optional[Dict[str, A
 
 
 # 6. Biên Dịch Đa Ngôn Ngữ (Translations i18n) - Hỗ trợ cache RAM theo mtime file
+SUPPORTED_LANGUAGES = ("vi", "en", "ja", "ko", "zh")
+
+
+def validate_translations_matrix(translations: Any) -> Tuple[bool, Optional[str]]:
+    """
+    Xác thực tính hợp lệ của từ điển đa ngôn ngữ:
+    1. Phải là Dictionary không rỗng.
+    2. Mỗi key phải là chuỗi hợp lệ.
+    3. Mỗi mục phải là Dict chứa tối thiểu bản dịch gốc tiếng Việt ("vi").
+    4. Các bản dịch ngôn ngữ phải là kiểu chuỗi (string).
+    """
+    if not isinstance(translations, dict):
+        return False, "Dữ liệu bản dịch đa ngôn ngữ phải là một Dictionary"
+
+    if len(translations) == 0:
+        return False, "Từ điển bản dịch không được rỗng"
+
+    for k, lang_map in translations.items():
+        if not isinstance(k, str) or not k.strip():
+            return False, f"Khóa bản dịch '{k}' không hợp lệ (phải là chuỗi ký tự)"
+
+        if not isinstance(lang_map, dict):
+            return False, f"Bản dịch cho khóa '{k}' phải là Dictionary ánh xạ ngôn ngữ"
+
+        # Bắt buộc phải có ngôn ngữ gốc tiếng Việt
+        if "vi" not in lang_map or not isinstance(lang_map["vi"], str):
+            return False, f"Khóa '{k}' thiếu bản dịch gốc bắt buộc 'vi' (hoặc giá trị không phải chuỗi)"
+
+        # Kiểm tra kiểu dữ liệu của từng ngôn ngữ
+        for lang, text in lang_map.items():
+            if not isinstance(text, str):
+                return False, f"Bản dịch '{lang}' của khóa '{k}' phải là chuỗi, nhận được {type(text)}"
+
+    return True, None
+
+
 @functools.lru_cache(maxsize=32)
 def _get_cached_translations() -> Dict[str, Any]:
     return read_json_cached(get_config_path("translations.json"), default={})
@@ -1080,6 +1144,12 @@ def get_translations(use_cache: bool = True) -> Dict[str, Any]:
 
 
 def save_translations(translations: Dict[str, Any]) -> bool:
+    """Lưu từ điển đa ngôn ngữ có kiểm tra tính hợp lệ trước khi ghi đĩa."""
+    is_valid, err_msg = validate_translations_matrix(translations)
+    if not is_valid:
+        print(f"[TRANSLATIONS_VALIDATION_ERROR] {err_msg}")
+        return False
+
     filepath = get_config_path("translations.json")
     success = write_json(filepath, translations)
     invalidate_file_cache(filepath)
