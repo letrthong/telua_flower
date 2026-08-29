@@ -132,6 +132,23 @@ Nhằm đảm bảo tính mở rộng bền vững khi hệ thống bổ sung th
   }
   ```
 
+### 6.3. Chuẩn Liên Kết Đa Ngôn Ngữ Cho Danh Mục Sản Phẩm (`categories.json` -> `textId`)
+
+Để hỗ trợ chuyển đổi ngôn ngữ mượt mà cho các danh mục hoa tươi trên cả Desktop Header, Mobile Menu và Storefront Circles:
+1. **Trường dữ liệu `textId` trong `categories.json`**:
+   - Mỗi danh mục có thêm trường `"textId"` (ví dụ: `"cat_bouquet"`, `"cat_basket"`, `"cat_stand"`, `"cat_vase"`, `"cat_orchid"`, `"cat_wedding"`).
+2. **Giao diện Quản trị Admin Category Modal (`#categoryModal`)**:
+   - Sử dụng **SelectBox trực quan (`#catTextId`)** thay vì ô gõ tay tự do để tránh người dùng bị quên mã hoặc gõ sai chính tả (typo):
+     * Nạp sẵn các tùy chọn danh mục chuẩn hệ thống kèm nhãn song ngữ dễ nhớ (Ví dụ: `cat_bouquet — 🌸 Bó Hoa Tươi`, `cat_basket — 🧺 Giỏ & Lẵng Hoa`...).
+     * Tùy chọn mặc định `-- Không sử dụng mã dịch (Dùng tên danh mục) --`.
+     * Tùy chọn mở rộng `➕ Nhập mã textId tùy chỉnh khác...` tự động mở ô text linh hoạt khi cần thêm khóa mới.
+3. **Cơ chế hiển thị đa ngôn ngữ phía Storefront (Dynamic Name Resolution)**:
+   - Hệ thống sử dụng hàm định danh hiển thị `getCategoryDisplayName(cat)`:
+     * **Nếu `textId` tồn tại và có bản dịch**: Ưu tiên hiển thị giá trị dịch tương ứng với ngôn ngữ đang chọn (`trans[currentLang][cat.textId]`).
+     * **Nếu `textId` không tồn tại hoặc chưa có bản dịch**: Fallback về tên gốc `cat.name`.
+     * **Nguyên tắc an toàn**: Không bao giờ hardcode `cat.name` tiếng Việt vào template DOM động khi `cat.textId` tồn tại, tránh hiện tượng giật hiển thị tiếng Việt sau vài giây tải bất đồng bộ (Async Data Load Flash).
+     * Mọi thẻ HTML danh mục đều được gắn thuộc tính `data-i18n="${cat.textId}"` để hỗ trợ đổi ngôn ngữ tức thì.
+
 ---
 
 ## 7. Quy Trình Kiểm Tra Tính Hợp Lệ Của Dữ Liệu Đa Ngôn Ngữ (Multi-Language JSON Validation Guard)
@@ -160,4 +177,43 @@ graph TD
    - Các chuỗi chứa dấu ngoặc kép hoặc ký tự đặc biệt phải được escape đúng quy chuẩn `\"`.
 4. **Kiểm tra khớp thẻ tham số nội suy (`{param}`)**:
    - Nếu bản dịch tiếng Việt chứa `{n}` hoặc `{name}`, các bản dịch ngôn ngữ khác cũng phải chứa đúng token tham số này.
+
+---
+
+## 8. Phân Loại Khóa Bản Dịch (`system` vs `user`) & Cơ Chế Bảo Vệ Chống Xóa (Immutability Guard)
+
+Nhằm bảo đảm an toàn tuyệt đối cho các thành phần cốt lõi của giao diện Web (Header, Footer, Nút Mua, Hotline, Danh Mục...) không bị xóa nhầm bởi người dùng, mỗi khóa trong `config/anne/translations.json` được gán thuộc tính phân loại `"type"`:
+
+```mermaid
+graph TD
+    A[Yêu cầu Xóa Khóa Bản Dịch DELETE /api/admin/translations/key] --> B{Kiểm tra Loại Khóa type}
+    B -- type == system --> C[🔴 403 Forbidden: Khóa Hệ Thống không được phép xóa]
+    B -- type == user --> D[🟢 200 OK: Xóa thành công & Cập nhật Cache]
+```
+
+### 8.1. Quy Tắc Phân Định Loại Khóa:
+1. **Khóa Hệ Thống (`"type": "system"`)**:
+   - Gồm toàn bộ các khóa cố định của khung giao diện: `site_title`, `hotline`, `hero_*`, `feat_*`, `cat_*`, `store_*`, `nav_*`, `footer_*`, `cart_*`, `checkout_*`, `auth_*`.
+   - **Quy tắc an toàn**: Cho phép cập nhật nội dung dịch (Edit Translation Text) nhưng **chặn tuyệt đối thao tác xóa (Cannot be Deleted)** từ cả API lẫn GUI.
+2. **Khóa Người Dùng Thêm Mới (`"type": "user"`)**:
+   - Gồm các khóa thông điệp banner khuyến mãi mùa vụ, thông báo pop-up tùy chỉnh, sự kiện đặc biệt do Admin tạo thêm trong quá trình vận hành.
+   - **Quy tắc**: Toàn quyền chỉnh sửa nội dung và **cho phép xóa hoàn toàn** khi chiến dịch kết thúc.
+3. **Cơ Chế Tự Động Gán Khi Tạo Từ Giao Diện (GUI Creation Rule)**:
+   - Mọi khóa bản dịch mới được tạo từ giao diện Quản trị (`/portal/admin`) hoặc API `POST /api/admin/translations` sẽ **tự động được gán `"type": "user"`**.
+
+### 8.2. Quy Trình Thêm Mới Khóa Bản Dịch Trên GUI (Add New Text ID Workflow):
+1. **Nút bấm Thêm Mới (`➕ Thêm Text ID Mới`)**:
+   - Tích hợp trực tiếp tại thanh công cụ quản lý Bản Dịch (`#transSingleKeyView`).
+2. **Khởi tạo dữ liệu tự động 5 ngôn ngữ (Auto-Fill Placeholder)**:
+   - Khi tạo mới khóa `new_text_id`, hệ thống tự động thiết lập:
+     * `"type": "user"`
+     * `"vi": new_text_id`
+     * `"en": new_text_id`
+     * `"ja": new_text_id`
+     * `"ko": new_text_id`
+     * `"zh": new_text_id`
+3. **Trải nghiệm tức thì (Immediate Focus)**:
+   - Ngay sau khi khởi tạo, hệ thống tự động chọn khóa mới tạo trên SelectBox và nạp dữ liệu vào 5 ô nhập liệu ngôn ngữ để Quản trị viên tiến hành dịch nội dung theo ý muốn.
+
+
 

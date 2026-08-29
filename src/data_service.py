@@ -1124,8 +1124,12 @@ def validate_translations_matrix(translations: Any) -> Tuple[bool, Optional[str]
         if "vi" not in lang_map or not isinstance(lang_map["vi"], str):
             return False, f"Khóa '{k}' thiếu bản dịch gốc bắt buộc 'vi' (hoặc giá trị không phải chuỗi)"
 
-        # Kiểm tra kiểu dữ liệu của từng ngôn ngữ
+        # Kiểm tra kiểu dữ liệu của từng ngôn ngữ và thuộc tính type
         for lang, text in lang_map.items():
+            if lang == "type":
+                if str(text).lower() not in ("system", "user"):
+                    return False, f"Thuộc tính 'type' của khóa '{k}' phải là 'system' hoặc 'user', nhận được '{text}'"
+                continue
             if not isinstance(text, str):
                 return False, f"Bản dịch '{lang}' của khóa '{k}' phải là chuỗi, nhận được {type(text)}"
 

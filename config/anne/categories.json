@@ -2,6 +2,7 @@
   {
     "id": "gio_hoa",
     "name": "Giỏ & Lẵng Hoa",
+    "textId": "cat_basket",
     "slug": "gio-hoa",
     "image": "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
     "icon": "fa-solid fa-basket-shopping",
@@ -16,6 +17,7 @@
   {
     "id": "bo_hoa",
     "name": "Bó Hoa Tươi",
+    "textId": "cat_bouquet",
     "slug": "bo-hoa",
     "image": "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
     "icon": "fa-solid fa-spa",
@@ -30,6 +32,7 @@
   {
     "id": "ke_hoa",
     "name": "Kệ Hoa Khai Trương",
+    "textId": "cat_stand",
     "slug": "ke-hoa",
     "image": "https://images.unsplash.com/photo-1507290439931-a861b5a38200?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
     "icon": "fa-solid fa-crown",
@@ -44,6 +47,7 @@
   {
     "id": "binh_hoa",
     "name": "Bình Cắm Hoa",
+    "textId": "cat_vase",
     "slug": "binh-cam-hoa",
     "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_ho_phach.png",
     "icon": "fa-solid fa-wine-glass",
@@ -58,6 +62,7 @@
   {
     "id": "lan_ho_diep",
     "name": "Lan Hồ Điệp",
+    "textId": "cat_orchid",
     "slug": "lan-ho-diep",
     "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/moth_orchid.jpg",
     "icon": "fa-solid fa-seedling",
@@ -72,6 +77,7 @@
   {
     "id": "hoa_cuoi",
     "name": "Hoa Cưới Cầm Tay",
+    "textId": "cat_wedding",
     "slug": "hoa-cuoi",
     "image": "https://images.unsplash.com/photo-1520763185298-1b434c919102?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
     "icon": "fa-solid fa-heart",
@@ -87,6 +93,7 @@
   {
     "id": "cat_test_event",
     "name": "Hoa Sự Kiện Test",
+    "textId": "cat_event",
     "slug": "cat-test-event",
     "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
     "icon": "fa-solid fa-spa",

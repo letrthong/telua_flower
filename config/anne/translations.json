@@ -9,6 +9,7 @@
   ],
   "translations": {
     "site_title": {
+      "type": "system",
       "vi": "Nở Hoa Thả Bình - Đặt Hoa Online Giao Tận Nơi",
       "en": "Nở Hoa Thả Bình - Online Fresh Flower Delivery",
       "ja": "Nở Hoa Thả Bình - オンラインフラワーデリバリー",
@@ -16,6 +17,7 @@
       "zh": "Nở Hoa Thả Bình - 鲜花在线订购与配送"
     },
     "hotline": {
+      "type": "system",
       "vi": "Hotline:",
       "en": "Hotline:",
       "ja": "ホットライン:",
@@ -23,6 +25,7 @@
       "zh": "服务热线:"
     },
     "hero_heading": {
+      "type": "system",
       "vi": "Gửi Trọn Vẹn Cảm Xúc",
       "en": "Deliver Pure Emotions",
       "ja": "想いを届ける華やかな彩り",
@@ -30,6 +33,7 @@
       "zh": "传递真挚浪漫与感动"
     },
     "hero_desc": {
+      "type": "system",
       "vi": "Khám phá bộ sưu tập hoa tươi thiết kế độc bản, giao hoa hỏa tốc 2H tại TP.HCM.",
       "en": "Explore exclusive bespoke flower arrangements with guaranteed 2-hour express delivery in HCMC.",
       "ja": "ホーチミン市内最短2時間でお届けする特別なオリジナルフラワーコレクション。",
@@ -37,6 +41,7 @@
       "zh": "探索独家原创设计鲜花系列，胡志明市内保证2小时极速准时送达。"
     },
     "feat_delivery_title": {
+      "type": "system",
       "vi": "Giao Hàng Nhanh 2H",
       "en": "2H Fast Delivery",
       "ja": "2時間特急配達",
@@ -44,6 +49,7 @@
       "zh": "2小时极速送达"
     },
     "feat_delivery_desc": {
+      "type": "system",
       "vi": "Giao hoa hỏa tốc nội thành TP.HCM đảm bảo đúng hẹn.",
       "en": "Express flower delivery across HCMC on time, every time.",
       "ja": "ホーチミン市内全域へ時間厳守で確実にお届けします。",
@@ -51,6 +57,7 @@
       "zh": "胡志明市内全天候准时配送，使命必达。"
     },
     "feat_photo_title": {
+      "type": "system",
       "vi": "Chụp Hình Trước Giao",
       "en": "Photo Before Shipping",
       "ja": "発送前写真確認",
@@ -58,6 +65,7 @@
       "zh": "配送前实拍确认"
     },
     "feat_photo_desc": {
+      "type": "system",
       "vi": "Gửi ảnh sản phẩm thực tế cho khách hàng trước khi giao.",
       "en": "Real product photos sent to you before delivery dispatch.",
       "ja": "発送前にお客様へ実際の商品の完成写真をお送りします。",
@@ -65,11 +73,76 @@
       "zh": "鲜花出库配送前向客户发送实物实拍照片。"
     },
     "test_banner_slogan": {
+      "type": "user",
       "vi": "Nở Hoa Thả Bình - Sắc Hoa Yêu Thương",
       "en": "Nở Hoa Thả Bình - Blooms of Pure Love",
       "ja": "Nở Hoa Thả Bình - 愛の花びら",
       "ko": "Nở Hoa Thả Bình - 사랑의 꽃",
       "zh": "Nở Hoa Thả Bình - 爱的绽放"
+    },
+    "cat_all": {
+      "type": "system",
+      "vi": "Tất Cả",
+      "en": "All Categories",
+      "ja": "すべてのカテゴリー",
+      "ko": "전체 카테고리",
+      "zh": "全部鲜花分类"
+    },
+    "cat_bouquet": {
+      "type": "system",
+      "vi": "Bó Hoa Tươi",
+      "en": "Fresh Bouquets",
+      "ja": "花束",
+      "ko": "꽃다발",
+      "zh": "精美花束"
+    },
+    "cat_basket": {
+      "type": "system",
+      "vi": "Giỏ & Lẵng Hoa",
+      "en": "Flower Baskets",
+      "ja": "フラワーバスケット",
+      "ko": "꽃바구니",
+      "zh": "精美花篮"
+    },
+    "cat_stand": {
+      "type": "system",
+      "vi": "Kệ Hoa Khai Trương",
+      "en": "Grand Opening Stands",
+      "ja": "スタンド花",
+      "ko": "축하 화환",
+      "zh": "开业花架"
+    },
+    "cat_vase": {
+      "type": "user",
+      "vi": "Bình Cắm Hoa",
+      "en": "Flower Vases",
+      "ja": "花瓶アレンジ",
+      "ko": "화병 꽃꽂이",
+      "zh": "艺术插花瓶"
+    },
+    "cat_orchid": {
+      "type": "user",
+      "vi": "Lan Hồ Điệp",
+      "en": "Phalaenopsis Orchids",
+      "ja": "胡蝶蘭",
+      "ko": "호접란",
+      "zh": "高贵蝴蝶兰"
+    },
+    "cat_wedding": {
+      "type": "user",
+      "vi": "Hoa Cưới Cầm Tay",
+      "en": "Bridal Wedding Flowers",
+      "ja": "ウェディングブーケ",
+      "ko": "웨딩 부케",
+      "zh": "婚礼新娘手捧花"
+    },
+    "cat_event": {
+      "type": "user",
+      "vi": "Hoa Sự Kiện",
+      "en": "Event Flowers",
+      "ja": "イベントフラワー",
+      "ko": "이벤트 플라워",
+      "zh": "活动会议鲜花"
     }
   }
 }

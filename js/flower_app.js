@@ -259,6 +259,22 @@ export function populateCategoryDropdowns(categories) {
 }
 
 /**
+ * Lấy tên hiển thị danh mục theo ngôn ngữ hiện tại:
+ * - Nếu textId tồn tại và có bản dịch: trả về bản dịch theo ngôn ngữ hiện tại
+ * - Nếu không có textId: fallback về cat.name (không bao giờ set cat.name khi có textId)
+ */
+export function getCategoryDisplayName(cat) {
+    if (!cat) return "";
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    
+    if (cat.textId && trans && trans[lang] && trans[lang][cat.textId]) {
+        return trans[lang][cat.textId];
+    }
+    return cat.name || "";
+}
+
+/**
  * TỰ ĐỘNG TẠO TOÀN BỘ CÁC SECTION DANH MỤC & PRODUCT GRIDS TRÊN STOREFRONT
  * Thay thế hoàn toàn mã HTML tĩnh / hardcoded
  */
@@ -285,13 +301,15 @@ export function renderDynamicStorefrontSections(categories, products) {
             ? 'bg-pink-50/40 border-t border-pink-100' 
             : (isEven ? 'bg-white' : 'bg-gray-50');
 
+        const catDisplayName = getCategoryDisplayName(cat);
+
         // Section Danh mục Động
         html += `
             <section id="cat-${cat.id}" class="py-12 md:py-16 ${bgClass} scroll-mt-20">
                 <div class="container mx-auto max-w-7xl px-4">
                     <div class="text-center mb-8">
-                        <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3">
-                            ${cat.name}
+                        <h2 class="font-serif text-3xl md:text-4xl font-bold text-gray-900 inline-block relative pb-3" ${cat.textId ? `data-i18n="${cat.textId}"` : ''}>
+                            ${catDisplayName}
                             <div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-primary rounded"></div>
                         </h2>
                         ${cat.description ? `<p class="text-gray-500 mt-3 text-sm md:text-base max-w-2xl mx-auto">${cat.description}</p>` : ''}
@@ -804,12 +822,13 @@ export async function renderStorefrontCategories() {
             activeCats.forEach((cat) => {
                 const fallbackImg = "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?w=200";
                 const img = cat.image || fallbackImg;
+                const catDisplayName = getCategoryDisplayName(cat);
                 html += `
                     <div onclick="scrollToCategory('${cat.id}')" class="flex flex-col items-center group cursor-pointer w-24 md:w-32 transition transform hover:-translate-y-1">
                         <div class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-pink-100 group-hover:border-primary transition p-1 shadow-sm bg-white">
-                            <img src="${img}" alt="${cat.name}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" class="product-img w-full h-full object-cover rounded-full">
+                            <img src="${img}" alt="${catDisplayName}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" class="product-img w-full h-full object-cover rounded-full">
                         </div>
-                        <span class="mt-2.5 font-bold text-gray-800 group-hover:text-primary transition text-xs md:text-sm text-center line-clamp-1">${cat.name}</span>
+                        <span ${cat.textId ? `data-i18n="${cat.textId}"` : ''} class="mt-2.5 font-bold text-gray-800 group-hover:text-primary transition text-xs md:text-sm text-center line-clamp-1">${catDisplayName}</span>
                     </div>
                 `;
             });
@@ -820,8 +839,9 @@ export async function renderStorefrontCategories() {
         if (desktopDynamicNav) {
             let navHtml = '';
             activeCats.forEach((cat) => {
+                const catDisplayName = getCategoryDisplayName(cat);
                 navHtml += `
-                    <a href="#cat-${cat.id}" onclick="scrollToCategory('${cat.id}'); return false;" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">${cat.name}</a>
+                    <a href="#cat-${cat.id}" ${cat.textId ? `data-i18n="${cat.textId}"` : ''} onclick="scrollToCategory('${cat.id}'); return false;" class="hover:text-primary transition whitespace-nowrap text-sm font-bold text-gray-700 uppercase tracking-wide">${catDisplayName}</a>
                 `;
             });
             desktopDynamicNav.innerHTML = navHtml;
@@ -831,8 +851,9 @@ export async function renderStorefrontCategories() {
         if (mobileDynamicNav) {
             let mobHtml = '';
             activeCats.forEach((cat) => {
+                const catDisplayName = getCategoryDisplayName(cat);
                 mobHtml += `
-                    <li><a href="#cat-${cat.id}" onclick="scrollToCategory('${cat.id}'); if(typeof closeMenu==='function')closeMenu(); return false;" class="block">${cat.name}</a></li>
+                    <li><a href="#cat-${cat.id}" ${cat.textId ? `data-i18n="${cat.textId}"` : ''} onclick="scrollToCategory('${cat.id}'); if(typeof closeMenu==='function')closeMenu(); return false;" class="block">${catDisplayName}</a></li>
                 `;
             });
             mobileDynamicNav.innerHTML = mobHtml;
@@ -1069,6 +1090,7 @@ if (typeof window !== 'undefined') {
     window.renderStorefrontLoadError = renderStorefrontLoadError;
     window.retryLoadStorefrontProducts = retryLoadStorefrontProducts;
     window.renderStorefrontCategories = renderStorefrontCategories;
+    window.getCategoryDisplayName = getCategoryDisplayName;
     window.populateCategoryDropdowns = populateCategoryDropdowns;
     window.renderDynamicStorefrontSections = renderDynamicStorefrontSections;
     window.searchStorefrontProducts = searchStorefrontProducts;

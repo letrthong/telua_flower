@@ -268,6 +268,7 @@ class TestCatalogAndPromotions(unittest.TestCase):
         # 4. Kiểm tra từ điển hợp lệ
         valid_matrix = {
             "hotline": {
+                "type": "system",
                 "vi": "Hotline:",
                 "en": "Hotline:",
                 "ja": "ホットライン:",
@@ -277,6 +278,36 @@ class TestCatalogAndPromotions(unittest.TestCase):
         }
         ok, err = validate_translations_matrix(valid_matrix)
         self.assertTrue(ok)
+
+    def test_10_system_vs_user_translations_immutability_guard(self):
+        """Kiểm tra cơ chế phân loại system/user và bảo vệ chống xóa khóa hệ thống"""
+        from translation_service import update_translation_key, delete_translation_key, get_all_translations
+
+        # 1. Thêm một khóa bản dịch tùy chỉnh của người dùng (user key)
+        user_key = "promo_autumn_2026"
+        user_texts = {
+            "vi": "Chào Thu Rực Rỡ",
+            "en": "Welcome Autumn Season"
+        }
+        success, data, err = update_translation_key(user_key, user_texts)
+        self.assertTrue(success)
+        self.assertEqual(data.get("type"), "user", "Khóa mới thêm từ GUI/API phải tự động gán type='user'")
+
+        # 2. Thử xóa khóa hệ thống (type='system') -> Phải bị chặn tuyệt đối
+        del_sys_ok, del_sys_err = delete_translation_key("hotline")
+        self.assertFalse(del_sys_ok, "Tuyệt đối không được phép xóa khóa hệ thống")
+        self.assertIn("hệ thống", del_sys_err.lower())
+
+        del_site_ok, del_site_err = delete_translation_key("site_title")
+        self.assertFalse(del_site_ok, "Tuyệt đối không được phép xóa khóa site_title")
+
+        # 3. Xóa khóa người dùng tùy chỉnh (type='user') -> Phải thành công
+        del_user_ok, del_user_err = delete_translation_key(user_key)
+        self.assertTrue(del_user_ok, f"Phải xóa được khóa user tùy chỉnh: {del_user_err}")
+
+        # Xác thực khóa đã bị xóa khỏi từ điển
+        all_trans = get_all_translations(use_cache=False).get("translations", {})
+        self.assertNotIn(user_key, all_trans)
 
 
 if __name__ == "__main__":

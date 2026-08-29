@@ -58,10 +58,11 @@ from promotion_service import (
     delete_promotion,
     restore_promotion
 )
-from  translation_service import (
+from translation_service import (
     get_all_translations,
     batch_update_translations,
-    update_translation_key
+    update_translation_key,
+    delete_translation_key
 )
 from auth_decorator import require_auth, require_role, can_access_branch
 
@@ -619,6 +620,17 @@ def api_update_translations():
     if not success:
         return jsonify({"success": False, "message": err}), 400
     return jsonify({"success": True, "message": "Cập nhật từ điển đa ngôn ngữ thành công", "data": data}), 200
+
+
+@flower_connect_api.route("/admin/translations/<key>", methods=["DELETE"])
+@require_role(["super_admin", "branch_manager"])
+def api_delete_translation_key(key: str):
+    """Xóa 1 khóa bản dịch tùy chỉnh (chặn tuyệt đối xóa khóa hệ thống)."""
+    success, err = delete_translation_key(key)
+    if not success:
+        status_code = 403 if "hệ thống" in (err or "").lower() else 400
+        return jsonify({"success": False, "message": err}), status_code
+    return jsonify({"success": True, "message": f"Đã xóa khóa bản dịch '{key}' thành công!"}), 200
 
 
 # ==========================================

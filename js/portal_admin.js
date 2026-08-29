@@ -346,7 +346,10 @@ function renderCategoriesTable(categories) {
                 </td>
                 <td class="p-3">
                     <div class="font-bold text-gray-800 text-sm ${isDeleted ? 'line-through text-gray-400' : ''}">${cat.name}</div>
-                    <div class="text-[10px] text-gray-400 font-mono">Mã ID: <span class="text-primary font-semibold">${cat.id}</span></div>
+                    <div class="text-[10px] text-gray-400 font-mono flex items-center gap-1.5 flex-wrap">
+                        <span>ID: <span class="text-primary font-semibold">${cat.id}</span></span>
+                        ${cat.textId ? `<span class="bg-purple-50 text-purple-700 font-semibold px-1.5 py-0.2 rounded border border-purple-200">🌐 ${cat.textId}</span>` : ''}
+                    </div>
                 </td>
                 <td class="p-3">
                     <span class="text-xs text-gray-500 line-clamp-1 max-w-[180px]">${cat.description || "—"}</span>
@@ -410,6 +413,10 @@ export function openCategoryModal(isEdit = false) {
         form.reset();
         document.getElementById("editCategoryId").value = "";
         document.getElementById("catIdInput").disabled = false;
+        if (document.getElementById("catTextId")) document.getElementById("catTextId").value = "";
+        const customContainer = document.getElementById("catTextIdCustomContainer");
+        if (customContainer) customContainer.classList.add("hidden");
+        if (document.getElementById("catTextIdCustom")) document.getElementById("catTextIdCustom").value = "";
         document.getElementById("catOrder").value = allAdminCategories.length + 1;
         document.getElementById("catIsActive").checked = true;
         if (title) title.textContent = "Thêm Danh Mục Hoa Mới";
@@ -417,6 +424,21 @@ export function openCategoryModal(isEdit = false) {
 
     modal.style.display = "flex";
     modal.classList.remove("hidden");
+}
+
+export function onCategoryTextIdChange() {
+    const select = document.getElementById("catTextId");
+    const container = document.getElementById("catTextIdCustomContainer");
+    const customInput = document.getElementById("catTextIdCustom");
+    if (!select || !container) return;
+
+    if (select.value === "__custom__") {
+        container.classList.remove("hidden");
+        if (customInput) customInput.focus();
+    } else {
+        container.classList.add("hidden");
+        if (customInput) customInput.value = "";
+    }
 }
 
 export function closeCategoryModal() {
@@ -438,6 +460,29 @@ export function editCategory(catId) {
         idInput.disabled = true; // Không cho sửa ID khi update
     }
     document.getElementById("catName").value = cat.name || "";
+    
+    const textIdSelect = document.getElementById("catTextId");
+    const customContainer = document.getElementById("catTextIdCustomContainer");
+    const customInput = document.getElementById("catTextIdCustom");
+    const targetTextId = cat.textId || "";
+
+    if (textIdSelect) {
+        const exists = Array.from(textIdSelect.options).some(opt => opt.value === targetTextId);
+        if (exists) {
+            textIdSelect.value = targetTextId;
+            if (customContainer) customContainer.classList.add("hidden");
+            if (customInput) customInput.value = "";
+        } else if (targetTextId) {
+            textIdSelect.value = "__custom__";
+            if (customContainer) customContainer.classList.remove("hidden");
+            if (customInput) customInput.value = targetTextId;
+        } else {
+            textIdSelect.value = "";
+            if (customContainer) customContainer.classList.add("hidden");
+            if (customInput) customInput.value = "";
+        }
+    }
+
     document.getElementById("catImage").value = cat.image || "";
     document.getElementById("catIcon").value = cat.icon || "fa-solid fa-spa";
     document.getElementById("catOrder").value = cat.order || 1;
@@ -456,6 +501,13 @@ export async function handleCategorySubmit(event) {
     const editId = document.getElementById("editCategoryId").value;
     const catId = (document.getElementById("catIdInput").value || "").trim().toLowerCase().replace(/\s+/g, "_");
     const name = document.getElementById("catName").value.trim();
+    
+    const textIdSelect = document.getElementById("catTextId");
+    let textId = (textIdSelect?.value || "").trim();
+    if (textId === "__custom__") {
+        textId = (document.getElementById("catTextIdCustom")?.value || "").trim();
+    }
+
     const image = document.getElementById("catImage").value.trim();
     const icon = document.getElementById("catIcon").value.trim() || "fa-solid fa-spa";
     const order = parseInt(document.getElementById("catOrder").value, 10) || 1;
@@ -470,6 +522,7 @@ export async function handleCategorySubmit(event) {
     const payload = {
         id: editId || catId,
         name,
+        textId: textId || undefined,
         image,
         icon,
         order,
@@ -2313,6 +2366,31 @@ function loadSingleKeyIntoEditor(key) {
     if (badge) badge.textContent = key || "—";
 
     const data = (allAdminTranslations && allAdminTranslations[key]) || {};
+    const keyType = data.type || "system";
+
+    const typeBadge = document.getElementById("currentEditingKeyTypeBadge");
+    const btnDelete = document.getElementById("btnDeleteCurrentTransKey");
+
+    if (typeBadge) {
+        if (keyType === "user") {
+            typeBadge.textContent = "👤 user";
+            typeBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono bg-purple-50 text-purple-700 border-purple-200";
+        } else {
+            typeBadge.textContent = "🔒 system";
+            typeBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono bg-gray-100 text-gray-600 border-gray-200";
+        }
+    }
+
+    if (btnDelete) {
+        if (keyType === "user") {
+            btnDelete.classList.remove("hidden");
+            btnDelete.classList.add("flex");
+        } else {
+            btnDelete.classList.add("hidden");
+            btnDelete.classList.remove("flex");
+        }
+    }
+
     const setVal = (lang, val) => {
         const el = document.getElementById(`singleTransInput_${lang}`);
         if (el) el.value = val || "";
@@ -2328,6 +2406,16 @@ function loadSingleKeyIntoEditor(key) {
 function clearSingleKeyEditor() {
     const badge = document.getElementById("currentEditingKeyBadge");
     if (badge) badge.textContent = "—";
+    const typeBadge = document.getElementById("currentEditingKeyTypeBadge");
+    if (typeBadge) {
+        typeBadge.textContent = "—";
+        typeBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded-md border font-mono";
+    }
+    const btnDelete = document.getElementById("btnDeleteCurrentTransKey");
+    if (btnDelete) {
+        btnDelete.classList.add("hidden");
+        btnDelete.classList.remove("flex");
+    }
     ["vi", "en", "ja", "ko", "zh"].forEach(lang => {
         const el = document.getElementById(`singleTransInput_${lang}`);
         if (el) el.value = "";
@@ -2344,7 +2432,10 @@ export function syncSingleKeyInputToDictionary() {
         return el ? el.value : "";
     };
 
+    const existingType = allAdminTranslations[currentSelectedTransKey]?.type || "system";
+
     allAdminTranslations[currentSelectedTransKey] = {
+        type: existingType,
         vi: getVal("vi"),
         en: getVal("en"),
         ja: getVal("ja"),
@@ -2380,6 +2471,150 @@ export async function saveCurrentSingleTranslationKey() {
             renderTranslationsTable(allAdminTranslations);
         } else {
             notifyUser("Lỗi lưu bản dịch: " + (json.message || "Không xác định"), 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+export function openAddNewTranslationKeyModal() {
+    const modal = document.getElementById("addTranslationKeyModal");
+    const input = document.getElementById("newTransKeyInput");
+    const errBox = document.getElementById("addTransKeyError");
+    if (!modal) return;
+    if (errBox) errBox.classList.add("hidden");
+    if (input) {
+        input.value = "";
+        setTimeout(() => input.focus(), 100);
+    }
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+export function closeAddNewTranslationKeyModal() {
+    const modal = document.getElementById("addTranslationKeyModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export async function handleAddNewTranslationKeySubmit(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById("newTransKeyInput");
+    const errBox = document.getElementById("addTransKeyError");
+    const rawKey = (input ? input.value : "").trim().toLowerCase().replace(/\s+/g, "_");
+
+    if (!rawKey) {
+        if (errBox) {
+            errBox.textContent = "Vui lòng nhập mã Text ID!";
+            errBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    if (!/^[a-z0-9_]+$/.test(rawKey)) {
+        if (errBox) {
+            errBox.textContent = "Mã Text ID chỉ gồm chữ cái thường, số và dấu gạch dưới!";
+            errBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    if (allAdminTranslations && allAdminTranslations[rawKey]) {
+        if (errBox) {
+            errBox.textContent = `Mã Text ID "${rawKey}" đã tồn tại trong từ điển!`;
+            errBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    // Tự động gán type là 'user' và khởi tạo giá trị 5 ngôn ngữ bằng chính rawKey
+    allAdminTranslations[rawKey] = {
+        type: "user",
+        vi: rawKey,
+        en: rawKey,
+        ja: rawKey,
+        ko: rawKey,
+        zh: rawKey
+    };
+
+    closeAddNewTranslationKeyModal();
+    lockScreen(`Đang khởi tạo Text ID "${rawKey}"...`);
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/translations`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(allAdminTranslations)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            notifyUser(`Đã thêm Text ID "${rawKey}" thành công! Hãy nhập nội dung dịch cho các ngôn ngữ.`, 'success');
+            currentSelectedTransKey = rawKey;
+            populateTranslationKeyDropdown(allAdminTranslations);
+            const select = document.getElementById("selectTranslationKey");
+            if (select) select.value = rawKey;
+            onSelectTranslationKeyChange(rawKey);
+            renderTranslationsTable(allAdminTranslations);
+        } else {
+            notifyUser("Lỗi thêm khóa bản dịch: " + (json.message || "Không xác định"), 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+export async function deleteCurrentTranslationKey() {
+    if (!currentSelectedTransKey) return;
+    const currentData = allAdminTranslations[currentSelectedTransKey] || {};
+    const keyType = currentData.type || "system";
+
+    if (keyType === "system") {
+        notifyUser(`Khóa "${currentSelectedTransKey}" là khóa Hệ Thống, không thể xóa!`, 'error');
+        return;
+    }
+
+    const confirmFn = typeof showConfirmDialog === "function" ? showConfirmDialog : (window.showConfirmDialog || confirm);
+    const confirmed = await confirmFn({
+        title: "Xác nhận Xóa Text ID",
+        message: `Bạn có chắc chắn muốn xóa vĩnh viễn khóa bản dịch "${currentSelectedTransKey}" không?`,
+        detail: "Khóa này thuộc loại User và sẽ bị xóa khỏi toàn bộ từ điển 5 ngôn ngữ.",
+        confirmText: "Xóa Khóa",
+        cancelText: "Hủy bỏ",
+        type: "danger",
+        icon: "fa-solid fa-trash"
+    });
+    if (!confirmed) return;
+
+    lockScreen(`Đang xóa khóa bản dịch "${currentSelectedTransKey}"...`);
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/translations/${currentSelectedTransKey}`, {
+            method: "DELETE",
+            headers: {
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            }
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            delete allAdminTranslations[currentSelectedTransKey];
+            notifyUser(`Đã xóa khóa "${currentSelectedTransKey}" thành công!`, 'success');
+            currentSelectedTransKey = "";
+            populateTranslationKeyDropdown(allAdminTranslations);
+            renderTranslationsTable(allAdminTranslations);
+        } else {
+            notifyUser("Lỗi xóa khóa bản dịch: " + (json.message || "Không xác định"), 'error');
         }
     } catch (e) {
         notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
@@ -2759,6 +2994,10 @@ if (typeof window !== "undefined") {
     window.syncSingleKeyInputToDictionary = syncSingleKeyInputToDictionary;
     window.saveCurrentSingleTranslationKey = saveCurrentSingleTranslationKey;
     window.switchTransViewMode = switchTransViewMode;
+    window.openAddNewTranslationKeyModal = openAddNewTranslationKeyModal;
+    window.closeAddNewTranslationKeyModal = closeAddNewTranslationKeyModal;
+    window.handleAddNewTranslationKeySubmit = handleAddNewTranslationKeySubmit;
+    window.deleteCurrentTranslationKey = deleteCurrentTranslationKey;
 
     // Company Info
     window.loadAdminCompanyInfo = loadAdminCompanyInfo;
@@ -2778,6 +3017,7 @@ if (typeof window !== "undefined") {
     window.loadAdminCategories = loadAdminCategories;
     window.openCategoryModal = openCategoryModal;
     window.closeCategoryModal = closeCategoryModal;
+    window.onCategoryTextIdChange = onCategoryTextIdChange;
     window.editCategory = editCategory;
     window.handleCategorySubmit = handleCategorySubmit;
     window.toggleCategory = toggleCategory;
