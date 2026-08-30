@@ -8,10 +8,10 @@
   "salePrice": "1,500,000₫",
   "originalPrice": "1,500,000₫",
   "badge": "",
-  "image": "/flower/images/ke_hoa_04.jpg",
+  "image": "/api/flower/v1/images/ke_hoa_04.jpg",
   "gallery": [
-    "/flower/images/ke_hoa_04.webp",
-    "/flower/images/ke_hoa_04.webp"
+    "/api/flower/v1/images/ke_hoa_04.webp",
+    "/api/flower/v1/images/ke_hoa_04.webp"
   ],
   "description": "Kệ hoa tone màu đỏ hồng may mắn, gửi trao lời chúc khai trương hồng phát, làm ăn tấn tới.",
   "descTextId": null,

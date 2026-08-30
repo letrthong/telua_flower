@@ -7,7 +7,7 @@
   "salePrice": "920,000₫",
   "originalPrice": "920,000₫",
   "badge": "Siêu Phẩm",
-  "image": "/flower/images/test_bo_1787964457.webp",
+  "image": "/api/flower/v1/images/test_bo_1787964457.webp",
   "gallery": [],
   "description": "",
   "flowerComposition": "Hồng Ohara (15 cành), Cúc Tana, Lá Bạc",

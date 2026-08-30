@@ -7,10 +7,10 @@
   "salePrice": "2,500,000₫",
   "originalPrice": "2,650,000₫",
   "badge": "",
-  "image": "/flower/images/ke_hoa_01.webp",
+  "image": "/api/flower/v1/images/ke_hoa_01.webp",
   "gallery": [
-    "/flower/images/ke_hoa_01.webp",
-    "/flower/images/ke_hoa_01.webp"
+    "/api/flower/v1/images/ke_hoa_01.webp",
+    "/api/flower/v1/images/ke_hoa_01.webp"
   ],
   "description": "Kệ hoa khai trương 2 tầng hoành tráng tone màu đỏ vàng rực rỡ, biểu trưng cho sự thịnh vượng, tài lộc dồi dào.",
   "flowerComposition": "Hoa Đồng Tiền đỏ & vàng (30 bông), Hoa Hướng Dương (10 bông), Lan Vũ Nữ, Hồng Môn đỏ, Kèm Banner in chữ kim nhũ sang trọng",

@@ -7,10 +7,10 @@
   "salePrice": "1,700,000₫",
   "originalPrice": "1,700,000₫",
   "badge": "",
-  "image": "/flower/images/ke_hoa_03.webp",
+  "image": "/api/flower/v1/images/ke_hoa_03.webp",
   "gallery": [
-    "/flower/images/ke_hoa_03.webp",
-    "/flower/images/ke_hoa_03.webp"
+    "/api/flower/v1/images/ke_hoa_03.webp",
+    "/api/flower/v1/images/ke_hoa_03.webp"
   ],
   "description": "Kệ hoa thiết kế tinh tế với hoa Hướng Dương và Cát Tường xanh bơ, mang thông điệp phát triển vững bền theo năm tháng.",
   "flowerComposition": "Hoa Hướng Dương (12 bông), Cát Tường xanh bơ, Hồng Vàng Ánh Kim, Lá trầu bà Nam Mỹ, Kèm Banner thiết kế",

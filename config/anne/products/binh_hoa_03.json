@@ -7,10 +7,10 @@
   "salePrice": "350,000₫",
   "originalPrice": "390,000₫",
   "badge": "",
-  "image": "/flower/images/binh_hoa_03.webp",
+  "image": "/api/flower/v1/images/binh_hoa_03.webp",
   "gallery": [
-    "/flower/images/binh_hoa_03.webp",
-    "/flower/images/binh_hoa_03.webp"
+    "/api/flower/v1/images/binh_hoa_03.webp",
+    "/api/flower/v1/images/binh_hoa_03.webp"
   ],
   "description": "Bình thủy tinh trụ trong suốt độ tinh khiết cao, thích hợp cắm các loại hoa cành dài như Tulip, Hoa Hồng, Hoa Ly phong cách hiện đại.",
   "flowerComposition": "Thủy tinh cao cấp chịu lực, thành dày 3mm, chống trầy xước",

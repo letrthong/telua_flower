@@ -7,10 +7,10 @@
   "salePrice": "1,250,000₫",
   "originalPrice": "1,400,000₫",
   "badge": "Mới",
-  "image": "/flower/images/hoa_cuoi_02.webp",
+  "image": "/api/flower/v1/images/hoa_cuoi_02.webp",
   "gallery": [
-    "/flower/images/hoa_cuoi_02.webp",
-    "/flower/images/hoa_cuoi_02.webp"
+    "/api/flower/v1/images/hoa_cuoi_02.webp",
+    "/api/flower/v1/images/hoa_cuoi_02.webp"
   ],
   "description": "Bó hoa cưới cầm tay phối hoa hồng Ohara tone hồng pastel dịu dàng ngọt ngào, tặng kèm hoa cài áo chú rể đồng điệu.",
   "flowerComposition": "Hồng Ohara Pink (12 cành), Hoa Baby hồng phun màu tự nhiên, Lá chanh Ý, Tặng kèm 1 hoa cài áo chú rể",

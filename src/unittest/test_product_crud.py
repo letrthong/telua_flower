@@ -580,29 +580,29 @@ class TestProductCreateAndUpdate(unittest.TestCase):
 
 
     def test_17_get_image_endpoints(self):
-        """Kiểm thử API và route phục vụ file ảnh tĩnh tiền tố /flower/images/<file> và /api/flower/v1/images/<file>."""
+        """Kiểm thử API phục vụ file ảnh tĩnh tiền tố /api/flower/v1/images/<file> và các alias."""
         # 1. Gọi API lấy ảnh sản phẩm /api/flower/v1/images/products/bo_hoa_01.webp
         res = self.client.get("/api/flower/v1/images/products/bo_hoa_01.webp")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.content_type, "image/webp")
         self.assertIn("Cache-Control", res.headers)
 
-        # 2. Gọi route chuẩn tiền tố /flower/images/bo_hoa_1788048775.webp
-        res_flower = self.client.get("/flower/images/bo_hoa_1788048775.webp")
+        # 2. Gọi route chuẩn tiền tố /api/flower/v1/images/bo_hoa_01.webp
+        res_flower = self.client.get("/api/flower/v1/images/bo_hoa_01.webp")
         self.assertEqual(res_flower.status_code, 200)
         self.assertEqual(res_flower.content_type, "image/webp")
         self.assertIn("Cache-Control", res_flower.headers)
 
-        # 3. Gọi route tiền tố /flower/products/images/bo_hoa_01.webp
-        res_flower_sub = self.client.get("/flower/products/images/bo_hoa_01.webp")
+        # 3. Gọi route alias /api/flower/v1/products/images/bo_hoa_01.webp
+        res_flower_sub = self.client.get("/api/flower/v1/products/images/bo_hoa_01.webp")
         self.assertEqual(res_flower_sub.status_code, 200)
 
-        # 4. Gọi static route /images/products/bo_hoa_01.webp
-        res_static = self.client.get("/images/products/bo_hoa_01.webp")
-        self.assertEqual(res_static.status_code, 200)
+        # 4. Gọi route alias /api/flower/v1/flower/images/bo_hoa_01.webp
+        res_alias = self.client.get("/api/flower/v1/flower/images/bo_hoa_01.webp")
+        self.assertEqual(res_alias.status_code, 200)
 
         # 5. Thử lấy ảnh không tồn tại -> 404
-        res_404 = self.client.get("/flower/images/khong_ton_tai_123.jpg")
+        res_404 = self.client.get("/api/flower/v1/images/khong_ton_tai_123.jpg")
         self.assertEqual(res_404.status_code, 404)
 
 

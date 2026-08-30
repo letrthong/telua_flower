@@ -7,10 +7,10 @@
   "salePrice": "1,650,000₫",
   "originalPrice": "1,650,000₫",
   "badge": "Hot",
-  "image": "/flower/images/hoa_cuoi_01.jpg",
+  "image": "/api/flower/v1/images/hoa_cuoi_01.jpg",
   "gallery": [
-    "/flower/images/hoa_cuoi_01.webp",
-    "/flower/images/hoa_cuoi_01.webp"
+    "/api/flower/v1/images/hoa_cuoi_01.webp",
+    "/api/flower/v1/images/hoa_cuoi_01.webp"
   ],
   "description": "Bó hoa cưới tulip trắng Hà Lan nhập khẩu phối nơ lụa voan sang trọng, mang lại vẻ đẹp thuần khiết cho cô dâu ngày cưới.",
   "flowerComposition": "Hoa Tulip Trắng Hà Lan (15 cành), Hoa Baby trắng nhập khẩu, Lá bạc Silver Dollar, Nơ ruy băng lụa cao cấp",

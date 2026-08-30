@@ -7,10 +7,10 @@
   "salePrice": "850,000₫",
   "originalPrice": "950,000₫",
   "badge": "Mới",
-  "image": "/flower/images/bo_hoa_04.webp",
+  "image": "/api/flower/v1/images/bo_hoa_1788048775.webp",
   "gallery": [
-    "/flower/images/bo_hoa_04.webp",
-    "/flower/images/bo_hoa_04.webp"
+    "/api/flower/v1/images/bo_hoa_1788048775.webp",
+    "/api/flower/v1/images/bo_hoa_1788048775.webp"
   ],
   "description": "Bó hoa Lily Julibee cánh kép thơm ngát phối cùng hoa baby và giấy gói phong cách Hàn Quốc ngọt ngào.",
   "flowerComposition": "Lily Julibee cánh kép (6 cành lớn), Hoa Baby trắng, Cúc Tana, Lá Bạc Dollar",

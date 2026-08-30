@@ -8,10 +8,10 @@
   "salePrice": "850,000₫",
   "originalPrice": "850,000₫",
   "badge": "Bán Chạy",
-  "image": "/flower/images/prod_1788063491_5d75bb93.png",
+  "image": "/api/flower/v1/images/prod_1788063491_5d75bb93.png",
   "gallery": [
-    "/flower/images/bo_hoa_02.webp",
-    "/flower/images/bo_hoa_02.webp"
+    "/api/flower/v1/images/bo_hoa_02.webp",
+    "/api/flower/v1/images/bo_hoa_02.webp"
   ],
   "description": "Tone cam cháy rực rỡ mang đến nguồn năng lượng tích cực và sự ấm áp.",
   "descTextId": null,

@@ -7,7 +7,7 @@
   "salePrice": "1,800,000₫",
   "originalPrice": "1,800,000₫",
   "badge": "Mới",
-  "image": "/flower/images/bo_nang_cap_test_1787971952626.webp",
+  "image": "/api/flower/v1/images/bo_nang_cap_test_1787971952626.webp",
   "gallery": [],
   "description": "",
   "flowerComposition": "",

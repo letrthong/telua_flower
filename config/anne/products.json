@@ -9,7 +9,7 @@
     "salePrice": "1,500,000₫",
     "originalPrice": "1,500,000₫",
     "badge": "Mới",
-    "image": "/flower/images/test_b64_1788062614_1788062614_b2e5564f.jpg",
+    "image": "/api/flower/v1/images/test_b64_1788062614_1788062614_b2e5564f.jpg",
     "i18n": null,
     "stockByBranch": {
       "branch_q10": 10,
@@ -30,7 +30,7 @@
     "salePrice": "3,500,000₫",
     "originalPrice": "3,500,000₫",
     "badge": "Mới",
-    "image": "/flower/images/lan_test_1787964482799.jpg",
+    "image": "/api/flower/v1/images/lan_test_1787964482799.jpg",
     "i18n": null,
     "stockByBranch": {
       "branch_q10": 10,
@@ -50,7 +50,7 @@
     "salePrice": "880,000₫",
     "originalPrice": "920,000₫",
     "badge": "-4%",
-    "image": "/flower/images/gio_hoa_01.webp",
+    "image": "/api/flower/v1/images/gio_hoa_01.webp",
     "i18n": {
       "en": {
         "name": "Morning Sunshine Flower Basket"
@@ -84,7 +84,7 @@
     "salePrice": "420,000₫",
     "originalPrice": "420,000₫",
     "badge": "-7%",
-    "image": "/flower/images/bo_hoa_01.webp",
+    "image": "/api/flower/v1/images/bo_hoa_01.webp",
     "i18n": {
       "en": {
         "name": "Floating White Clouds Bouquet"
@@ -118,7 +118,7 @@
     "salePrice": "850,000₫",
     "originalPrice": "850,000₫",
     "badge": "Bán Chạy",
-    "image": "/flower/images/prod_1788063491_5d75bb93.png",
+    "image": "/api/flower/v1/images/prod_1788063491_5d75bb93.png",
     "i18n": {
       "en": {
         "name": "Warm Sunset Orange Bouquet"
@@ -151,7 +151,7 @@
     "salePrice": "1,980,000₫",
     "priceNumber": 1980000,
     "badge": "",
-    "image": "/flower/images/bo_hoa_03.webp",
+    "image": "/api/flower/v1/images/bo_hoa_03.webp",
     "i18n": {
       "en": {
         "name": "Dutch Tulip & Blue Star Mix Bouquet"
@@ -184,7 +184,7 @@
     "salePrice": "850,000₫",
     "priceNumber": 850000,
     "badge": "Mới",
-    "image": "/flower/images/bo_hoa_04.webp",
+    "image": "/api/flower/v1/images/bo_hoa_1788048775.webp",
     "i18n": {
       "en": {
         "name": "Sweet Double Lily Julibee Bouquet"
@@ -217,7 +217,7 @@
     "salePrice": "2,500,000₫",
     "priceNumber": 2500000,
     "badge": "",
-    "image": "/flower/images/ke_hoa_01.webp",
+    "image": "/api/flower/v1/images/ke_hoa_01.webp",
     "i18n": {
       "en": {
         "name": "Grand Opening Prosperity Flower Stand"
@@ -250,7 +250,7 @@
     "salePrice": "1,800,000₫",
     "priceNumber": 1800000,
     "badge": "Hot",
-    "image": "/flower/images/ke_hoa_02.webp",
+    "image": "/api/flower/v1/images/ke_hoa_02.webp",
     "i18n": {
       "en": {
         "name": "Ember Modern Congratulatory Flower Stand"
@@ -283,7 +283,7 @@
     "salePrice": "1,700,000₫",
     "priceNumber": 1700000,
     "badge": "",
-    "image": "/flower/images/ke_hoa_03.webp",
+    "image": "/api/flower/v1/images/ke_hoa_03.webp",
     "i18n": {
       "en": {
         "name": "Enduring Prosperity Grand Floral Stand"
@@ -317,7 +317,7 @@
     "salePrice": "1,500,000₫",
     "originalPrice": "1,500,000₫",
     "badge": "",
-    "image": "/flower/images/ke_hoa_04.jpg",
+    "image": "/api/flower/v1/images/ke_hoa_04.jpg",
     "i18n": {
       "en": {
         "name": "Fortune & Flourishing Red Grand Stand"
@@ -350,7 +350,7 @@
     "salePrice": "480,000₫",
     "priceNumber": 480000,
     "badge": "Hot",
-    "image": "/flower/images/binh_hoa_01.webp",
+    "image": "/api/flower/v1/images/binh_hoa_01.webp",
     "i18n": {
       "en": {
         "name": "Tranquil Amber Glass Flower Vase"
@@ -383,7 +383,7 @@
     "salePrice": "620,000₫",
     "priceNumber": 620000,
     "badge": "Mới",
-    "image": "/flower/images/binh_hoa_02.webp",
+    "image": "/api/flower/v1/images/binh_hoa_02.webp",
     "i18n": {
       "en": {
         "name": "Nordic Vintage Ceramic Flower Vase"
@@ -416,7 +416,7 @@
     "salePrice": "350,000₫",
     "priceNumber": 350000,
     "badge": "",
-    "image": "/flower/images/binh_hoa_03.webp",
+    "image": "/api/flower/v1/images/binh_hoa_03.webp",
     "i18n": {
       "en": {
         "name": "Clear Cylindrical Glass Flower Vase"
@@ -449,7 +449,7 @@
     "salePrice": "690,000₫",
     "originalPrice": "690,000₫",
     "badge": "Bán chạy",
-    "image": "/flower/images/binh_hoa_04.webp",
+    "image": "/api/flower/v1/images/binh_hoa_04.webp",
     "i18n": {
       "en": {
         "name": "Minimalist Ceramic Art Flower Vase"
@@ -482,7 +482,7 @@
     "salePrice": "3,500,000₫",
     "originalPrice": "3,500,000₫",
     "badge": "Độc Bản VIP",
-    "image": "/flower/images/lan_01.webp",
+    "image": "/api/flower/v1/images/lan_01.webp",
     "i18n": {
       "en": {
         "name": "Prosperity Phalaenopsis Orchid Pot (5 Stems)"
@@ -515,7 +515,7 @@
     "salePrice": "1,650,000₫",
     "originalPrice": "1,650,000₫",
     "badge": "Hot",
-    "image": "/flower/images/hoa_cuoi_01.webp",
+    "image": "/api/flower/v1/images/hoa_cuoi_01.webp",
     "i18n": {
       "en": {
         "name": "Pure White Tulip Bridal Wedding Bouquet"
@@ -548,7 +548,7 @@
     "salePrice": "1,250,000₫",
     "originalPrice": "1,400,000₫",
     "badge": "Mới",
-    "image": "/flower/images/hoa_cuoi_02.webp",
+    "image": "/api/flower/v1/images/hoa_cuoi_02.webp",
     "stockByBranch": {
       "branch_q10": 6,
       "branch_q1": 4,
