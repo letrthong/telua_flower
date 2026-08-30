@@ -23,7 +23,8 @@ from flower_config import (
     ROOT_DIR,
     FLOWER_CONFIG_DIR,
     PRODUCTS_DIR,
-    PRODUCT_IMAGES_DIR
+    PRODUCT_IMAGES_DIR,
+    FLOWER_IMAGE_URL_PREFIX
 )
 
 logger = logging.getLogger("flower_image")
@@ -135,7 +136,7 @@ def save_flower_uploaded_image(file_storage_or_data: Any, filename_prefix: str =
             with open(p_path, "wb") as f:
                 f.write(raw_bytes)
 
-            relative_url = f"/flower/images/{filename}"
+            relative_url = f"{FLOWER_IMAGE_URL_PREFIX}/{filename}"
             return True, relative_url, None
 
         # 2. Trường hợp Werkzeug FileStorage (Multipart Upload)
@@ -156,7 +157,7 @@ def save_flower_uploaded_image(file_storage_or_data: Any, filename_prefix: str =
             except Exception:
                 pass
 
-            relative_url = f"/flower/images/{filename}"
+            relative_url = f"{FLOWER_IMAGE_URL_PREFIX}/{filename}"
             return True, relative_url, None
 
         # 3. Trường hợp bytes thô
@@ -170,7 +171,7 @@ def save_flower_uploaded_image(file_storage_or_data: Any, filename_prefix: str =
             with open(p_path, "wb") as f:
                 f.write(file_storage_or_data)
 
-            relative_url = f"/flower/images/{filename}"
+            relative_url = f"{FLOWER_IMAGE_URL_PREFIX}/{filename}"
             return True, relative_url, None
 
 

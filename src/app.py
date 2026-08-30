@@ -86,6 +86,17 @@ def index(subpath=None):
         return send_file(index_path)
     abort(404, description="index.html not found")
 
+
+@app.route("/favicon.ico")
+@cross_origin()
+def favicon():
+    """Phục vụ favicon hoặc trả về icon SVG hoa tươi."""
+    file_path = resolve_static_file("favicon.ico")
+    if file_path:
+        return send_file(file_path)
+    svg_favicon = """<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"""
+    return svg_favicon, 200, {"Content-Type": "image/svg+xml"}
+
  
 
 

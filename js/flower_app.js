@@ -500,6 +500,21 @@ export function renderDynamicStorefrontSections(categories, products) {
 }
 
 /**
+ * Hiển thị thông báo khi không thể tải danh sách sản phẩm
+ */
+export function renderStorefrontLoadError(container) {
+    if (!container) return;
+    container.innerHTML = `
+        <div class="py-12 text-center text-gray-500">
+            <p class="text-sm font-medium" data-i18n="load_products_error">Không thể tải danh sách sản phẩm. Vui lòng kiểm tra lại kết nối mạng.</p>
+            <button type="button" onclick="retryLoadStorefrontProducts()" class="mt-4 px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-full transition shadow-sm">
+                Thử lại
+            </button>
+        </div>
+    `;
+}
+
+/**
  * Thử lại nạp sản phẩm cho trang chủ
  */
 export async function retryLoadStorefrontProducts() {

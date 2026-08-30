@@ -562,7 +562,7 @@ class TestProductCreateAndUpdate(unittest.TestCase):
         data = res.get_json()
         self.assertTrue(data.get("success"))
         img_url = data.get("data", {}).get("url", "")
-        self.assertTrue(img_url.startswith("/flower/images/"))
+        self.assertTrue(img_url.startswith(("/api/flower/v1/images/", "/flower/images/")))
         self.assertTrue(img_url.endswith(".jpg"))
 
         # 3. Upload qua payload Base64 -> chuyển đổi thành static URL
@@ -576,7 +576,7 @@ class TestProductCreateAndUpdate(unittest.TestCase):
         data_b64 = res_b64.get_json()
         self.assertTrue(data_b64.get("success"))
         img_b64_url = data_b64.get("data", {}).get("url", "")
-        self.assertTrue(img_b64_url.startswith("/flower/images/"))
+        self.assertTrue(img_b64_url.startswith(("/api/flower/v1/images/", "/flower/images/")))
 
 
     def test_17_get_image_endpoints(self):

@@ -17,6 +17,7 @@ from data_service import (
     get_branches,
     get_categories
 )
+from flower_config import FLOWER_IMAGE_URL_PREFIX
 from flower_image import save_flower_uploaded_image
 
 DEFAULT_VALID_CATEGORIES = ["bo_hoa", "ke_hoa", "binh_hoa", "gio_hoa", "lan_ho_diep", "hoa_cuoi"]
@@ -25,7 +26,7 @@ DEFAULT_VALID_CATEGORIES = ["bo_hoa", "ke_hoa", "binh_hoa", "gio_hoa", "lan_ho_d
 def _sanitize_product_image_field(img_val: Any, prefix: str = "prod") -> str:
     """Tự động chuyển đổi chuỗi Base64 thành file tĩnh nếu nhận được từ Client/Form."""
     if not img_val or not isinstance(img_val, str):
-        return f"/flower/images/{prefix}.webp"
+        return f"{FLOWER_IMAGE_URL_PREFIX}/{prefix}.webp"
     
     if img_val.startswith("data:image/") or ";base64," in img_val:
         success, relative_url, err = save_flower_uploaded_image(img_val, filename_prefix=prefix)
@@ -288,7 +289,7 @@ def create_or_update_product(
         i18n_data = product_data.get("i18n", {})
 
         # Xử lý làm sạch ảnh đại diện & gallery (Tự động chống Base64)
-        raw_image = product_data.get("image") or f"/flower/images/{new_id}.webp"
+        raw_image = product_data.get("image") or f"{FLOWER_IMAGE_URL_PREFIX}/{new_id}.webp"
         clean_image = _sanitize_product_image_field(raw_image, prefix=new_id)
 
         raw_gallery = product_data.get("gallery", [])

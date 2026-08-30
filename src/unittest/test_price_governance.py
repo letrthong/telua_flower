@@ -212,12 +212,12 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         
         created = res.get_json()["data"]
         self.assertEqual(created["id"], test_prod_id)
-        self.assertTrue(created["image"].startswith("/flower/images/"))
+        self.assertTrue(created["image"].startswith(("/api/flower/v1/images/", "/flower/images/")))
 
         # Kiểm tra tra cứu lại từ API
         res_get = self.client.get(f"/api/flower/v1/products/{test_prod_id}")
         self.assertEqual(res_get.status_code, 200)
-        self.assertTrue(res_get.get_json()["data"]["image"].startswith("/flower/images/"))
+        self.assertTrue(res_get.get_json()["data"]["image"].startswith(("/api/flower/v1/images/", "/flower/images/")))
 
         # Dọn dẹp
         delete_product(test_prod_id)

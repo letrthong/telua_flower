@@ -48,6 +48,10 @@ IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "images")
 PRODUCTS_IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "products", "images")
 PRODUCT_IMAGES_DIR = IMAGES_DIR
 
+# API URL Prefixes chuẩn hóa
+API_V1_PREFIX = "/api/flower/v1"
+FLOWER_IMAGE_URL_PREFIX = f"{API_V1_PREFIX}/images"
+
 os.makedirs(IMAGES_DIR, exist_ok=True)
 os.makedirs(PRODUCTS_IMAGES_DIR, exist_ok=True)
 

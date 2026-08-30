@@ -146,3 +146,67 @@ test('product modular i18n - validate embedded i18n resolution and fallback in p
     assert.strictEqual(frResolved.name, "Mây Trắng Bồng Bềnh");
     assert.strictEqual(frResolved.flowerComposition, detail.flowerComposition);
 });
+
+test('resolveImageUrl - chuẩn hóa và phân giải chính xác các định dạng URL ảnh', (t) => {
+    const API_BASE = "/api/flower/v1";
+    function resolveImageUrl(imagePath, fallback = 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500') {
+        if (!imagePath) return fallback;
+        const str = String(imagePath).trim();
+        if (!str) return fallback;
+        if (str.startsWith('http://') || str.startsWith('https://') || str.startsWith('data:image')) {
+            return str;
+        }
+        if (str.startsWith('/api/')) {
+            return str;
+        }
+        if (str.startsWith('/flower/images/')) {
+            const fname = str.replace('/flower/images/', '');
+            return `${API_BASE}/images/${fname}`;
+        }
+        if (str.startsWith('/images/')) {
+            const fname = str.replace('/images/', '');
+            return `${API_BASE}/images/${fname}`;
+        }
+        if (!str.startsWith('/')) {
+            return `${API_BASE}/images/${str}`;
+        }
+        return str;
+    }
+
+    // 1. URL upload chuẩn backend FLOWER_IMAGE_URL_PREFIX
+    assert.strictEqual(
+        resolveImageUrl("/api/flower/v1/images/prod_1788073870_c461328a.jpg"),
+        "/api/flower/v1/images/prod_1788073870_c461328a.jpg"
+    );
+
+    // 2. Tên file tương đối từ JSON
+    assert.strictEqual(
+        resolveImageUrl("bo_hoa_01.webp"),
+        "/api/flower/v1/images/bo_hoa_01.webp"
+    );
+
+    // 3. URL tương thích ngược /flower/images/
+    assert.strictEqual(
+        resolveImageUrl("/flower/images/hoa_cuoi_01.jpg"),
+        "/api/flower/v1/images/hoa_cuoi_01.jpg"
+    );
+
+    // 4. URL tương thích ngược /images/
+    assert.strictEqual(
+        resolveImageUrl("/images/lan_01.webp"),
+        "/api/flower/v1/images/lan_01.webp"
+    );
+
+    // 5. URL CDN tuyệt đối
+    const cdnUrl = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+    assert.strictEqual(resolveImageUrl(cdnUrl), cdnUrl);
+
+    // 6. Base64 Data URI
+    const b64 = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+    assert.strictEqual(resolveImageUrl(b64), b64);
+
+    // 7. Rỗng / null -> fallback
+    assert.ok(resolveImageUrl(null).startsWith("https://images.unsplash.com/"));
+    assert.ok(resolveImageUrl("").startsWith("https://images.unsplash.com/"));
+});
+

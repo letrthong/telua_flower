@@ -9,7 +9,7 @@
     "salePrice": "1,500,000₫",
     "originalPrice": "1,500,000₫",
     "badge": "Mới",
-    "image": "/api/flower/v1/images/test_b64_1788062614_1788062614_b2e5564f.jpg",
+    "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg",
     "i18n": null,
     "stockByBranch": {
       "branch_q10": 10,
@@ -18,7 +18,7 @@
     },
     "dailyQuota": 15,
     "isActive": true,
-    "updatedAt": "2026-08-30T11:03:34Z"
+    "updatedAt": "2026-08-30T07:51:05Z"
   },
   {
     "id": "lan_test_1787964482799",
@@ -145,13 +145,14 @@
   {
     "id": "bo_hoa_03",
     "name": "Tulip Mix Lam Tinh",
+    "nameTextId": null,
     "category": "bo_hoa",
     "priceLevelId": "price_lvl_03",
-    "originalPrice": "1,980,000₫",
-    "salePrice": "1,980,000₫",
     "priceNumber": 1980000,
+    "salePrice": "1,980,000₫",
+    "originalPrice": "1,980,000₫",
     "badge": "",
-    "image": "/api/flower/v1/images/bo_hoa_03.webp",
+    "image": "/api/flower/v1/images/prod_1788076301_8268887c.webp",
     "i18n": {
       "en": {
         "name": "Dutch Tulip & Blue Star Mix Bouquet"
@@ -173,7 +174,7 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-30T07:51:49Z"
   },
   {
     "id": "bo_hoa_04",
@@ -211,13 +212,14 @@
   {
     "id": "ke_hoa_01",
     "name": "Kệ Hoa Khai Trương Phát Lộc",
+    "nameTextId": null,
     "category": "ke_hoa",
     "priceLevelId": "price_lvl_03",
-    "originalPrice": "2,650,000₫",
-    "salePrice": "2,500,000₫",
     "priceNumber": 2500000,
+    "salePrice": "2,500,000₫",
+    "originalPrice": "2,500,000₫",
     "badge": "",
-    "image": "/api/flower/v1/images/ke_hoa_01.webp",
+    "image": "/api/flower/v1/images/prod_1788078004_2f08d803.jpg",
     "i18n": {
       "en": {
         "name": "Grand Opening Prosperity Flower Stand"
@@ -239,7 +241,7 @@
     },
     "dailyQuota": 8,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-30T08:20:26Z"
   },
   {
     "id": "ke_hoa_02",
@@ -277,13 +279,14 @@
   {
     "id": "ke_hoa_03",
     "name": "Kệ Hoa Niên Niên Đại Phát",
+    "nameTextId": null,
     "category": "ke_hoa",
     "priceLevelId": "price_lvl_03",
-    "originalPrice": "1,700,000₫",
-    "salePrice": "1,700,000₫",
     "priceNumber": 1700000,
+    "salePrice": "1,700,000₫",
+    "originalPrice": "1,700,000₫",
     "badge": "",
-    "image": "/api/flower/v1/images/ke_hoa_03.webp",
+    "image": "/api/flower/v1/images/prod_1788077628_cc7ae4c4.png",
     "i18n": {
       "en": {
         "name": "Enduring Prosperity Grand Floral Stand"
@@ -305,7 +308,7 @@
     },
     "dailyQuota": 8,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-30T08:13:49Z"
   },
   {
     "id": "ke_hoa_04",
@@ -377,13 +380,14 @@
   {
     "id": "binh_hoa_02",
     "name": "Bình Gốm Sứ Bắc Âu Phong Cách Vintage",
+    "nameTextId": null,
     "category": "binh_hoa",
     "priceLevelId": "price_lvl_02",
-    "originalPrice": "680,000₫",
-    "salePrice": "620,000₫",
     "priceNumber": 620000,
+    "salePrice": "620,000₫",
+    "originalPrice": "620,000₫",
     "badge": "Mới",
-    "image": "/api/flower/v1/images/binh_hoa_02.webp",
+    "image": "/api/flower/v1/images/prod_1788078148_beea506d.jpg",
     "i18n": {
       "en": {
         "name": "Nordic Vintage Ceramic Flower Vase"
@@ -405,18 +409,19 @@
     },
     "dailyQuota": 20,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-30T08:22:48Z"
   },
   {
     "id": "binh_hoa_03",
     "name": "Bình Thủy Tinh Trong Suốt Dáng Trụ",
+    "nameTextId": null,
     "category": "binh_hoa",
     "priceLevelId": "price_lvl_01",
-    "originalPrice": "390,000₫",
-    "salePrice": "350,000₫",
     "priceNumber": 350000,
+    "salePrice": "350,000₫",
+    "originalPrice": "350,000₫",
     "badge": "",
-    "image": "/api/flower/v1/images/binh_hoa_03.webp",
+    "image": "/api/flower/v1/images/prod_1788077639_9a057d6e.png",
     "i18n": {
       "en": {
         "name": "Clear Cylindrical Glass Flower Vase"
@@ -438,7 +443,7 @@
     },
     "dailyQuota": 50,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-30T08:14:02Z"
   },
   {
     "id": "binh_hoa_04",
@@ -509,13 +514,14 @@
   {
     "id": "hoa_cuoi_01",
     "name": "Bó Hoa Cưới Cầm Tay Tulip Trắng Tinh Khôi",
+    "nameTextId": null,
     "category": "hoa_cuoi",
     "priceLevelId": "price_lvl_03",
     "priceNumber": 1650000,
     "salePrice": "1,650,000₫",
     "originalPrice": "1,650,000₫",
     "badge": "Hot",
-    "image": "/api/flower/v1/images/hoa_cuoi_01.webp",
+    "image": "/api/flower/v1/images/hoa_cuoi_01.jpg",
     "i18n": {
       "en": {
         "name": "Pure White Tulip Bridal Wedding Bouquet"
@@ -537,18 +543,33 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-27T14:57:15Z"
+    "updatedAt": "2026-08-30T08:23:52Z"
   },
   {
     "id": "hoa_cuoi_02",
     "name": "Bó Hoa Cưới Ohara & Baby Hồng Dịu Dàng",
+    "nameTextId": null,
     "category": "hoa_cuoi",
     "priceLevelId": "price_lvl_03",
     "priceNumber": 1250000,
     "salePrice": "1,250,000₫",
-    "originalPrice": "1,400,000₫",
+    "originalPrice": "1,250,000₫",
     "badge": "Mới",
-    "image": "/api/flower/v1/images/hoa_cuoi_02.webp",
+    "image": "/api/flower/v1/images/prod_1788078419_2d628204.png",
+    "i18n": {
+      "en": {
+        "name": "Gentle Pink Ohara & Baby's Breath Bridal Bouquet"
+      },
+      "ja": {
+        "name": "優しいピンク オハラローズ＆かすみ草 ウェディングブーケ"
+      },
+      "ko": {
+        "name": "사랑스러운 핑크 오하라 & 안개꽃 웨딩 부케"
+      },
+      "zh": {
+        "name": "温柔粉境 欧哈拉粉玫瑰新娘手捧花"
+      }
+    },
     "stockByBranch": {
       "branch_q10": 6,
       "branch_q1": 4,
@@ -556,6 +577,6 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-24T17:20:00Z"
+    "updatedAt": "2026-08-30T08:27:10Z"
   }
 ]

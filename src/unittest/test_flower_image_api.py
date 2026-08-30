@@ -110,7 +110,7 @@ class TestFlowerImageAPI(unittest.TestCase):
         body = res.get_json()
         self.assertTrue(body.get("success"))
         img_url = body.get("data", {}).get("url", "")
-        self.assertTrue(img_url.startswith("/flower/images/"))
+        self.assertTrue(img_url.startswith(("/api/flower/v1/images/", "/flower/images/")))
 
     def test_09_upload_image_base64_success(self):
         """9. POST /api/flower/v1/admin/upload-image upload chuỗi Base64 Data URI."""
@@ -123,7 +123,7 @@ class TestFlowerImageAPI(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         body = res.get_json()
         self.assertTrue(body.get("success"))
-        self.assertTrue(body.get("data", {}).get("url", "").startswith("/flower/images/"))
+        self.assertTrue(body.get("data", {}).get("url", "").startswith(("/api/flower/v1/images/", "/flower/images/")))
 
     def test_10_upload_image_unauthorized(self):
         """10. POST /api/flower/v1/admin/upload-image không kèm Token -> 401 Unauthorized."""

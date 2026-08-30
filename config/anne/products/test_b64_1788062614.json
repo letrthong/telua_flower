@@ -8,7 +8,7 @@
   "salePrice": "1,500,000₫",
   "originalPrice": "1,500,000₫",
   "badge": "Mới",
-  "image": "/api/flower/v1/images/test_b64_1788062614_1788062614_b2e5564f.jpg",
+  "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg",
   "gallery": [
     "/api/flower/v1/images/test_b64_1788062614_1788062614_b2e5564f.jpg"
   ],
@@ -26,6 +26,5 @@
   },
   "dailyQuota": 15,
   "isActive": true,
-  "createdAt": "2026-08-30T11:03:34Z",
-  "updatedAt": "2026-08-30T11:03:34Z"
+  "updatedAt": "2026-08-30T07:51:05Z"
 }
