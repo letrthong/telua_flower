@@ -47,14 +47,26 @@ def get_index_file():
 def resolve_static_file(relative_path):
     """
     Tìm file tài nguyên tĩnh trong các thư mục của telua_flower
-    (dist, js, config, static hoặc thư mục gốc)
+    (dist, js, config, static, images hoặc thư mục gốc)
     """
-    subdirs = ["", "dist", "js", "config", "src/static"]
+    subdirs = [
+        "",
+        "dist",
+        "js",
+        "config",
+        "src/static",
+        "src/static/images/products",
+        "config/anne/products/images",
+        "config/anne/images",
+        "images",
+        "images/products"
+    ]
     for sub in subdirs:
         full_path = os.path.abspath(os.path.join(TELUA_ROOT, sub, relative_path))
         if os.path.isfile(full_path):
             return full_path
     return None
+
 
 
 # ==========================================
@@ -73,6 +85,28 @@ def index(subpath=None):
     if index_path:
         return send_file(index_path)
     abort(404, description="index.html not found")
+
+
+from flower_image import create_flower_image_response, find_flower_image_file
+
+
+# ==========================================
+# PHỤC VỤ HÌNH ẢNH HOA TƯƠI (/flower/images/...)
+# ==========================================
+
+@app.route("/flower/images/<path:filename>")
+@app.route("/flower/products/images/<path:filename>")
+@app.route("/flower/images/products/<path:filename>")
+@cross_origin()
+def serve_flower_image(filename):
+    """
+    Phục vụ và tải hình ảnh hoa tươi bắt đầu bằng tiền tố /flower/images/...
+    - Tích hợp từ module flower_image.py.
+    - Tìm kiếm ảnh trong các thư mục tĩnh cục bộ hoặc nạp từ GitHub CDN.
+    - Gắn HTTP Cache Header (Cache-Control: public, max-age=604800, immutable) giúp tải tức thì 0ms.
+    """
+    return create_flower_image_response(filename)
+
 
 
 @app.route("/<path:filename>")

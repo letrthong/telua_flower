@@ -6,7 +6,7 @@ Hỗ trợ url_prefix='/api/flower/v1' chuẩn hóa tương tự Lu Quan (/api/h
 import os
 import sys
 import logging
-from flask import Blueprint, jsonify, request, make_response
+from flask import Blueprint, jsonify, request, make_response, send_file
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -37,7 +37,9 @@ from   data_service import (
     move_category_order,
     get_user_orders,
     get_company_info,
-    save_company_info
+    save_company_info,
+    save_uploaded_image,
+    find_image_file
 )
 from order_service import (
     get_available_delivery_slots,
@@ -63,6 +65,11 @@ from translation_service import (
     batch_update_translations,
     update_translation_key,
     delete_translation_key
+)
+from flower_image import (
+    find_flower_image_file,
+    save_flower_uploaded_image,
+    create_flower_image_response
 )
 from auth_decorator import require_auth, require_role, can_access_branch
 
@@ -506,6 +513,67 @@ def api_delete_product(product_id):
     if not success:
         return jsonify({"success": False, "message": err_msg}), 400
     return jsonify({"success": True, "message": "Đã xóa sản phẩm thành công"}), 200
+
+
+@flower_connect_api.route("/admin/upload-image", methods=["POST"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_upload_image():
+    """
+    Tải ảnh hoa tươi lên máy chủ (Chống phình to Base64 trong JSON):
+    - Nhận file qua multipart/form-data ('file' hoặc 'image') hoặc payload JSON { "image": "data:image/..." }.
+    - Lưu file vào thư mục tĩnh static/images/products và trả về URL ảnh.
+    """
+    # 1. Kiểm tra file trong multipart/form-data
+    if "file" in request.files:
+        file_obj = request.files["file"]
+        success, img_url, err_msg = save_flower_uploaded_image(file_obj, filename_prefix="prod")
+        if not success:
+            return jsonify({"success": False, "message": err_msg}), 400
+        return jsonify({
+            "success": True,
+            "message": "Tải ảnh lên thành công",
+            "data": {"url": img_url}
+        }), 200
+
+    if "image" in request.files:
+        file_obj = request.files["image"]
+        success, img_url, err_msg = save_flower_uploaded_image(file_obj, filename_prefix="prod")
+        if not success:
+            return jsonify({"success": False, "message": err_msg}), 400
+        return jsonify({
+            "success": True,
+            "message": "Tải ảnh lên thành công",
+            "data": {"url": img_url}
+        }), 200
+
+    # 2. Kiểm tra chuỗi Base64 trong JSON body
+    payload = request.get_json(silent=True) or {}
+    b64_data = payload.get("image") or payload.get("data") or payload.get("base64")
+    if b64_data:
+        success, img_url, err_msg = save_flower_uploaded_image(b64_data, filename_prefix="prod")
+        if not success:
+            return jsonify({"success": False, "message": err_msg}), 400
+        return jsonify({
+            "success": True,
+            "message": "Tải ảnh lên thành công",
+            "data": {"url": img_url}
+        }), 200
+
+    return jsonify({"success": False, "message": "Vui lòng đính kèm tệp ảnh qua 'file'/'image' hoặc gửi chuỗi Base64 trong body"}), 400
+
+
+@flower_connect_api.route("/images/<path:filename>", methods=["GET"])
+@flower_connect_api.route("/images/products/<path:filename>", methods=["GET"])
+@flower_connect_api.route("/products/images/<path:filename>", methods=["GET"])
+def api_get_product_image(filename):
+    """
+    API lấy file ảnh tĩnh trực tiếp (/api/flower/v1/images/<filename>):
+    - Tìm file ảnh trong các thư mục ảnh tĩnh (static, products/images, anne/images...).
+    - Gắn HTTP Cache Header (Cache-Control: public, max-age=604800, immutable) để trình duyệt lưu Disk Cache 0ms.
+    """
+    return create_flower_image_response(filename)
+
+
 
 
 # ==========================================

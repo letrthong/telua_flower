@@ -207,8 +207,6 @@
   {
     "id": "cat_test_event",
     "name": "Hoa Sự Kiện Test",
-    "textId": "cat_event",
-    "descTextId": "cat_desc_event",
     "slug": "cat-test-event",
     "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
     "icon": "fa-solid fa-spa",
@@ -217,8 +215,8 @@
     "isActive": false,
     "isDeleted": true,
     "description": "",
-    "createdAt": "2026-08-29T05:12:35Z",
-    "updatedAt": "2026-08-29T05:12:35Z",
-    "deletedAt": "2026-08-29T05:12:35Z"
+    "createdAt": "2026-08-30T03:46:09Z",
+    "updatedAt": "2026-08-30T03:46:09Z",
+    "deletedAt": "2026-08-30T03:46:09Z"
   }
 ]

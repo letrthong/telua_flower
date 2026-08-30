@@ -44,6 +44,8 @@ FLOWER_CONFIG_DIR = _detect_config_dir()
 FLOWER_ORDERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "orders")
 PRODUCTS_DIR = os.path.join(FLOWER_CONFIG_DIR, "products")
 USERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "users")
+PRODUCT_IMAGES_DIR = os.path.join(SRC_DIR, "static", "images", "products")
+os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
 
 # File paths chuẩn hóa
 USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "staff_users.json") if os.path.exists(os.path.join(FLOWER_CONFIG_DIR, "staff_users.json")) else os.path.join(FLOWER_CONFIG_DIR, "users.json")

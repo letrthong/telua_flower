@@ -7,6 +7,17 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 import sys
 
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flower_config import (
@@ -20,7 +31,8 @@ from flower_config import (
     PROMOTIONS_FILE_PATH,
     TRANSLATIONS_FILE_PATH,
     WASTAGE_REPORTS_FILE_PATH,
-    COMPANY_INFO_FILE_PATH
+    COMPANY_INFO_FILE_PATH,
+    PRODUCT_IMAGES_DIR
 )
 
 CONFIG_DIR = FLOWER_CONFIG_DIR
@@ -930,6 +942,136 @@ def save_products(products: List[Dict[str, Any]]) -> bool:
     return success
 
 
+import base64
+import uuid
+
+def save_uploaded_image(file_storage_or_data: Any, filename_prefix: str = "prod") -> Tuple[bool, Optional[str], Optional[str]]:
+    """
+    Xử lý lưu file ảnh tĩnh tải lên từ Admin CMS (Chống phình to Base64 trong JSON):
+    - Hỗ trợ cả Werkzeug FileStorage (Multipart Form) và chuỗi Base64.
+    - Lưu file nhị phân vào thư mục tĩnh: src/static/images/products/<filename>.
+    - Trả về đường dẫn tĩnh: /static/images/products/<filename> để lưu vào JSON.
+    """
+    if not file_storage_or_data:
+        return False, None, "Dữ liệu tệp ảnh không được để trống"
+
+    try:
+        os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
+        unique_suffix = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
+
+        # 1. Trường hợp chuỗi Base64 (data:image/...;base64,...)
+        if isinstance(file_storage_or_data, str):
+            data_str = file_storage_or_data.strip()
+            ext = ".jpg"
+            if data_str.startswith("data:image/"):
+                header, b64_content = data_str.split(";base64,", 1)
+                if "webp" in header: ext = ".webp"
+                elif "png" in header: ext = ".png"
+                elif "gif" in header: ext = ".gif"
+                raw_bytes = base64.b64decode(b64_content)
+            else:
+                raw_bytes = base64.b64decode(data_str)
+
+            filename = f"{filename_prefix}_{unique_suffix}{ext}"
+            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
+            with open(file_path, "wb") as f:
+                f.write(raw_bytes)
+
+            relative_url = f"/static/images/products/{filename}"
+            return True, relative_url, None
+
+        # 2. Trường hợp Werkzeug FileStorage (Multipart Upload)
+        if hasattr(file_storage_or_data, "filename") and hasattr(file_storage_or_data, "save"):
+            orig_name = file_storage_or_data.filename or "image.jpg"
+            ext = os.path.splitext(orig_name)[1].lower()
+            if not ext or ext not in [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]:
+                ext = ".jpg"
+
+            filename = f"{filename_prefix}_{unique_suffix}{ext}"
+            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
+            file_storage_or_data.save(file_path)
+
+            relative_url = f"/static/images/products/{filename}"
+            return True, relative_url, None
+
+        # 3. Trường hợp bytes thô
+        if isinstance(file_storage_or_data, (bytes, bytearray)):
+            filename = f"{filename_prefix}_{unique_suffix}.jpg"
+            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
+            with open(file_path, "wb") as f:
+                f.write(file_storage_or_data)
+
+            relative_url = f"/static/images/products/{filename}"
+            return True, relative_url, None
+
+        return False, None, f"Kiểu dữ liệu tệp ảnh không được hỗ trợ: {type(file_storage_or_data)}"
+
+    except Exception as e:
+        print(f"[IMAGE_UPLOAD_ERROR] Lỗi khi lưu ảnh sản phẩm: {e}")
+        return False, None, f"Lỗi máy chủ khi lưu ảnh: {str(e)}"
+
+
+import urllib.request
+
+def find_image_file(filename: str, auto_remote_fetch: bool = True) -> Optional[str]:
+    """
+    Tìm và tải file ảnh hoa tươi theo thứ tự ưu tiên:
+    1. src/static/images/products/<filename>
+    2. config/anne/products/images/<filename>
+    3. config/anne/images/<filename>
+    4. d:/code/telua_public_marketing/config/anne/products/images/<filename>
+    5. images/products/<filename>
+    6. Nếu chưa có trên đĩa -> Tự động nạp từ GitHub CDN và lưu vào cache cục bộ.
+    """
+    if not filename or ".." in filename:
+        return None
+
+    # Tách basename nếu truyền kèm URL hoặc subpath
+    clean_name = os.path.basename(filename)
+
+    candidates = [
+        os.path.join(PRODUCT_IMAGES_DIR, clean_name),
+        os.path.join(CONFIG_DIR, "products", "images", clean_name),
+        os.path.join(CONFIG_DIR, "images", clean_name),
+        os.path.join(r"d:\code\telua_public_marketing\config\anne\products\images", clean_name),
+        os.path.join(r"d:\code\telua_public_marketing\images\products", clean_name),
+        os.path.join(os.path.dirname(CONFIG_DIR), "..", "images", "products", clean_name),
+        os.path.join(os.path.dirname(CONFIG_DIR), "..", "config", "anne", "products", "images", clean_name),
+        os.path.join(os.path.dirname(CONFIG_DIR), "..", "config", "anne", "images", clean_name),
+        os.path.join(os.path.dirname(PRODUCT_IMAGES_DIR), clean_name),
+        os.path.join(os.path.dirname(os.path.dirname(PRODUCT_IMAGES_DIR)), "images", "products", clean_name)
+    ]
+
+    for path in candidates:
+        abs_path = os.path.abspath(path)
+        if os.path.isfile(abs_path):
+            return abs_path
+
+    # Tự động tải từ Remote GitHub và lưu vào cache tĩnh nếu chưa có
+    if auto_remote_fetch:
+        remote_sources = [
+            f"https://raw.githubusercontent.com/letrthong/telua_public_marketing/main/config/anne/products/images/{clean_name}",
+            f"https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/{clean_name}"
+        ]
+        target_save = os.path.join(PRODUCT_IMAGES_DIR, clean_name)
+        for r_url in remote_sources:
+            try:
+                req = urllib.request.Request(r_url, headers={'User-Agent': 'FlowerConnect/1.0'})
+                with urllib.request.urlopen(req, timeout=4) as resp:
+                    if resp.status == 200:
+                        content = resp.read()
+                        os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
+                        with open(target_save, "wb") as f:
+                            f.write(content)
+                        return target_save
+            except Exception:
+                continue
+
+    return None
+
+
+
+
 
 # 5. Khuyến Mãi & Voucher (Promotions & Archival History)
 def get_promotions_history() -> List[Dict[str, Any]]:
@@ -1148,15 +1290,19 @@ def validate_translations_matrix(translations: Any) -> Tuple[bool, Optional[str]
     if not isinstance(translations, dict):
         return False, "Dữ liệu bản dịch đa ngôn ngữ phải là một Dictionary"
 
-    if len(translations) == 0:
+    # Nếu truyền vào dạng envelope { "version": ..., "translations": { ... } }
+    target_dict = translations.get("translations") if isinstance(translations.get("translations"), dict) else translations
+
+    if len(target_dict) == 0:
         return False, "Từ điển bản dịch không được rỗng"
 
-    for k, lang_map in translations.items():
+    for k, lang_map in target_dict.items():
         if not isinstance(k, str) or not k.strip():
             return False, f"Khóa bản dịch '{k}' không hợp lệ (phải là chuỗi ký tự)"
 
         if not isinstance(lang_map, dict):
             return False, f"Bản dịch cho khóa '{k}' phải là Dictionary ánh xạ ngôn ngữ"
+
 
         # Bắt buộc phải có ngôn ngữ gốc tiếng Việt
         if "vi" not in lang_map or not isinstance(lang_map["vi"], str):

@@ -265,27 +265,37 @@ Lưu trữ danh sách các danh mục hoa tươi, ngày tạo (`createdAt`), ng�
 ---
 
 ### 🌸 5. `config/products.json` - Danh Mục Sản Phẩm Tóm Tắt (Summary Catalog - Siêu Nhẹ & Tốc Độ Cao)
-Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ sản phẩm ngoài Grid và Bảng danh mục mà không làm nặng trang:
+Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ sản phẩm ngoài Grid và Bảng danh mục mà không làm nặng trang.
+> [!IMPORTANT]
+> **Quy chuẩn Zero-Base64:** Trường `"image"` chỉ chứa chuỗi URL tĩnh (Đường dẫn tiền tố `/flower/images/<file>.webp` hoặc CDN). Tuyệt đối không lưu chuỗi `data:image/...;base64,...` vào JSON để đảm bảo dung lượng file cho 1.000 sản phẩm chỉ từ **200 KB – 350 KB**.
+
 ```json
 [
   {
-    "id": "bo_hoa_01",
-    "name": "Mây Trắng Bồng Bềnh",
+    "id": "bo_hoa_1788048775",
+    "name": "Bó Hoa Hồng & Hoa Ly Trắng Thanh Lịch",
+    "nameTextId": "prod_name_bo_hoa_1788048775",
     "category": "bo_hoa",
-    "priceLevelId": "price_lvl_01",
-    "originalPrice": "450,000₫",
-    "salePrice": "420,000₫",
-    "priceNumber": 420000,
-    "badge": "-7%",
-    "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
+    "priceLevelId": "price_lvl_02",
+    "originalPrice": "920,000₫",
+    "salePrice": "850,000₫",
+    "priceNumber": 850000,
+    "badge": "Mẫu Mới",
+    "image": "/flower/images/bo_hoa_1788048775.webp",
+    "i18n": {
+      "en": { "name": "Elegant White Rose & Lily Bouquet" },
+      "ja": { "name": "エレガント ホワイトローズ＆リリーブーケ" },
+      "ko": { "name": "우아한 화이트 장미 & 백합 꽃다발" },
+      "zh": { "name": "优雅白玫瑰与百合艺术花束" }
+    },
     "stockByBranch": {
-      "branch_q10": 12,
-      "branch_q1": 6,
-      "branch_thao_dien": 4
+      "branch_q10": 10,
+      "branch_q1": 5,
+      "branch_thao_dien": 5
     },
     "dailyQuota": 20,
     "isActive": true,
-    "updatedAt": "2026-08-22T07:00:00Z"
+    "updatedAt": "2026-08-30T01:30:00Z"
   }
 ]
 ```
@@ -293,26 +303,38 @@ Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ s
 ---
 
 ### 🔍 5b. `config/products/{product_id}.json` - Chi Tiết Đầy Đủ Từng Sản Phẩm (On-Demand Lazy Load)
-File chi tiết riêng biệt được nạp qua API `GET /api/products/<id>` khi người dùng nhấp vào xem chi tiết hoặc khi Admin mở form sửa:
+File chi tiết riêng biệt được nạp qua API `GET /api/flower/v1/products/<id>` khi người dùng nhấp vào xem chi tiết hoặc khi Admin mở form sửa:
+> [!IMPORTANT]
+> **Quy chuẩn Zero-Base64:** Các trường `"image"` và mảng `"gallery": [...]` chỉ lưu URL tĩnh đến file `.webp`/`.jpg` (vd: `/flower/images/<file>.webp`).
+
 ```json
 {
-  "id": "bo_hoa_01",
-  "name": "Mây Trắng Bồng Bềnh",
+  "id": "bo_hoa_1788048775",
+  "name": "Bó Hoa Hồng & Hoa Ly Trắng Thanh Lịch",
+  "nameTextId": "prod_name_bo_hoa_1788048775",
   "category": "bo_hoa",
-  "priceLevelId": "price_lvl_01",
-  "originalPrice": "450,000₫",
-  "salePrice": "420,000₫",
-  "priceNumber": 420000,
-  "badge": "-7%",
-  "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
+  "priceLevelId": "price_lvl_02",
+  "originalPrice": "920,000₫",
+  "salePrice": "850,000₫",
+  "priceNumber": 850000,
+  "badge": "Mẫu Mới",
+  "image": "/flower/images/bo_hoa_1788048775.webp",
   "gallery": [
-    "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=800",
-    "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=800"
+    "/flower/images/bo_hoa_1788048775.webp"
   ],
+
   "description": "Bó hoa tone trắng dịu êm kết hợp hoa sao xanh thanh lịch.",
   "flowerComposition": "Hồng trắng Ohara (10 cành), Cúc Tana, Hoa Sao Xanh, Lá Bạc Dollar",
   "dimension": "Cao 50cm x Rộng 40cm",
   "careTips": "Cắt gốc 45 độ, phun sương nhẹ cánh hoa mỗi sáng.",
+  "i18n": {
+    "en": {
+      "name": "Floating White Clouds Bouquet",
+      "flowerComposition": "White Ohara Roses (10 stems), Tweedia, Tana Daisies, Silver Dollar Eucalyptus",
+      "description": "A pure white bouquet accented with sky blue tweedia, conveying serene elegance and gentle care.",
+      "careTips": "Trim stems at 45 degrees, lightly mist petals every morning."
+    }
+  },
   "stockByBranch": {
     "branch_q10": 12,
     "branch_q1": 6,

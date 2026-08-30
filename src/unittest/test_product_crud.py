@@ -542,6 +542,72 @@ class TestProductCreateAndUpdate(unittest.TestCase):
         self.assertTrue(data.get("success"))
         self.assertTrue(any(p.get("id") == prod_id for p in data.get("data", [])))
 
+    def test_16_upload_image_endpoint_and_zero_base64(self):
+        """Kiểm thử API upload ảnh sản phẩm /admin/upload-image trả về static URL (Zero-Base64 standard)."""
+        import io
+        fake_img_content = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00\xff\xdb\x00C\x00"
+
+        # 1. Thử gọi không có token -> 401
+        res_unauth = self.client.post("/api/flower/v1/admin/upload-image")
+        self.assertEqual(res_unauth.status_code, 401)
+
+        # 2. Upload file ảnh hợp lệ qua multipart form-data
+        res = self.client.post(
+            "/api/flower/v1/admin/upload-image",
+            headers={"Authorization": f"Bearer {self.admin_token}"},
+            data={"file": (io.BytesIO(fake_img_content), "test_flower.jpg")},
+            content_type="multipart/form-data"
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data.get("success"))
+        img_url = data.get("data", {}).get("url", "")
+        self.assertTrue(img_url.startswith("/flower/images/"))
+        self.assertTrue(img_url.endswith(".jpg"))
+
+        # 3. Upload qua payload Base64 -> chuyển đổi thành static URL
+        sample_b64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA="
+        res_b64 = self.client.post(
+            "/api/flower/v1/admin/upload-image",
+            headers={"Authorization": f"Bearer {self.admin_token}"},
+            json={"image": sample_b64}
+        )
+        self.assertEqual(res_b64.status_code, 200)
+        data_b64 = res_b64.get_json()
+        self.assertTrue(data_b64.get("success"))
+        img_b64_url = data_b64.get("data", {}).get("url", "")
+        self.assertTrue(img_b64_url.startswith("/flower/images/"))
+
+
+    def test_17_get_image_endpoints(self):
+        """Kiểm thử API và route phục vụ file ảnh tĩnh tiền tố /flower/images/<file> và /api/flower/v1/images/<file>."""
+        # 1. Gọi API lấy ảnh sản phẩm /api/flower/v1/images/products/bo_hoa_01.webp
+        res = self.client.get("/api/flower/v1/images/products/bo_hoa_01.webp")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.content_type, "image/webp")
+        self.assertIn("Cache-Control", res.headers)
+
+        # 2. Gọi route chuẩn tiền tố /flower/images/bo_hoa_1788048775.webp
+        res_flower = self.client.get("/flower/images/bo_hoa_1788048775.webp")
+        self.assertEqual(res_flower.status_code, 200)
+        self.assertEqual(res_flower.content_type, "image/webp")
+        self.assertIn("Cache-Control", res_flower.headers)
+
+        # 3. Gọi route tiền tố /flower/products/images/bo_hoa_01.webp
+        res_flower_sub = self.client.get("/flower/products/images/bo_hoa_01.webp")
+        self.assertEqual(res_flower_sub.status_code, 200)
+
+        # 4. Gọi static route /images/products/bo_hoa_01.webp
+        res_static = self.client.get("/images/products/bo_hoa_01.webp")
+        self.assertEqual(res_static.status_code, 200)
+
+        # 5. Thử lấy ảnh không tồn tại -> 404
+        res_404 = self.client.get("/flower/images/khong_ton_tai_123.jpg")
+        self.assertEqual(res_404.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
