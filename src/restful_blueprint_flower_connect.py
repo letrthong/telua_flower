@@ -563,22 +563,23 @@ def api_upload_image():
 
 
 # ==========================================
-# PHỤC VỤ HÌNH ẢNH HOA TƯƠI (/flower/images/...)
-# https://nohoathabinh.com//flower/images/binh_hoa_01.webp
+# REST API PHỤC VỤ HÌNH ẢNH HOA TƯƠI (/api/flower/v1/images/...)
 # ==========================================
 
-@flower_connect_api.route("/flower/images/<path:filename>", methods=["GET"])
-@flower_connect_api.route("/flower/products/images/<path:filename>", methods=["GET"])
-@flower_connect_api.route("/flower/images/products/<path:filename>", methods=["GET"])
 @flower_connect_api.route("/images/<path:filename>", methods=["GET"])
 @flower_connect_api.route("/images/products/<path:filename>", methods=["GET"])
 @flower_connect_api.route("/products/images/<path:filename>", methods=["GET"])
+@flower_connect_api.route("/flower/images/<path:filename>", methods=["GET"])
+@flower_connect_api.route("/flower/products/images/<path:filename>", methods=["GET"])
+@flower_connect_api.route("/flower/images/products/<path:filename>", methods=["GET"])
 def serve_flower_image(filename):
     """
-    Phục vụ và tải hình ảnh hoa tươi bắt đầu bằng tiền tố /flower/images/..., /images/..., /products/images/...
-    - Tích hợp từ module flower_image.py.
-    - Tìm kiếm ảnh trong config/anne/images, config/anne/products/images hoặc nạp từ GitHub CDN.
-    - Gắn HTTP Cache Header (Cache-Control: public, max-age=604800, immutable) giúp tải tức thì 0ms.
+    Phục vụ và tải hình ảnh hoa tươi qua REST API:
+    - /api/flower/v1/images/<filename>
+    - /api/flower/v1/images/products/<filename>
+    - /api/flower/v1/products/images/<filename>
+    - /api/flower/v1/flower/images/<filename>
+    - Tích hợp từ module flower_image.py (tìm kiếm đa tầng, tự động nạp GitHub CDN, gắn Cache-Control).
     """
     return create_flower_image_response(filename)
 

@@ -87,7 +87,7 @@ def index(subpath=None):
     abort(404, description="index.html not found")
 
  
- 
+
 
 @app.route("/<path:filename>")
 @cross_origin()
