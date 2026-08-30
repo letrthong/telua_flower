@@ -39,9 +39,8 @@ def find_flower_image_file(filename: str, auto_remote_fetch: bool = True) -> Opt
     1. config/anne/images/<filename>
     2. config/anne/products/images/<filename>
     3. config/anne/images/products/<filename>
-    4. d:/code/telua_public_marketing/config/anne/products/images/<filename>
-    5. src/static/images/products/<filename>
-    6. Nếu chưa có trên đĩa và auto_remote_fetch=True: Tự động nạp từ GitHub CDN và lưu vào config/anne/images.
+    4. src/static/images/products/<filename>
+    5. Nếu chưa có trên đĩa và auto_remote_fetch=True: Tự động nạp từ GitHub CDN và lưu vào config/anne/images.
     """
     if not filename or ".." in filename:
         return None
@@ -54,8 +53,6 @@ def find_flower_image_file(filename: str, auto_remote_fetch: bool = True) -> Opt
         os.path.join(FLOWER_CONFIG_DIR, "products", "images", clean_name),
         os.path.join(FLOWER_CONFIG_DIR, "images", "products", clean_name),
         os.path.join(PRODUCT_IMAGES_DIR, clean_name),
-        os.path.join(r"d:\code\telua_public_marketing\config\anne\products\images", clean_name),
-        os.path.join(r"d:\code\telua_public_marketing\images\products", clean_name),
         os.path.join(ROOT_DIR, "config", "anne", "images", clean_name),
         os.path.join(ROOT_DIR, "config", "anne", "products", "images", clean_name),
         os.path.join(ROOT_DIR, "src", "static", "images", "products", clean_name),
