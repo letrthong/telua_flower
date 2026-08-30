@@ -54,10 +54,19 @@
 | `PUT` | `/api/admin/products/<id>` | Admin, Manager | Cập nhật thông tin, giá bán, hình ảnh |
 | `DELETE`| `/api/admin/products/<id>` | Admin, Manager | Ẩn hoặc xóa sản phẩm |
 
+---
+
+### 🖼️ 3. Nhóm Phục Vụ & Quản Lý Hình Ảnh (`/api/flower/v1/images` & `/api/flower/v1/admin/upload-image`)
+
+| Method | Endpoint | Quyền hạn | Mô tả |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/flower/v1/images/<path:filename>` | Public | Phục vụ file ảnh tĩnh hoa tươi kèm HTTP Cache-Control Header `max-age=604800, immutable` (Nạp 0ms) |
+| `GET` | `/api/flower/v1/images/products/<path:filename>` | Public | Alias phục vụ ảnh trong thư mục con `products/images/` |
+| `POST` | `/api/flower/v1/admin/upload-image` | Staff, Manager, Admin | Upload file ảnh nhị phân (Multipart Form-Data) hoặc chuỗi Base64 -> Tự động tối ưu và lưu vào thư mục tĩnh |
 
 ---
 
-### ⏰ 3. Nhóm Khung Giờ & Đặt Hàng (`/api/orders`, `/api/user/orders`, `/api/delivery`)
+### ⏰ 4. Nhóm Khung Giờ & Đặt Hàng (`/api/orders`, `/api/user/orders`, `/api/delivery`)
 
 | Method | Endpoint | Quyền hạn | Mô tả |
 | :--- | :--- | :---: | :--- |

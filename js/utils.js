@@ -18,6 +18,34 @@ export function removeVietnameseTones(str) {
         .trim();
 }
 
+/**
+ * Chuẩn hóa và lấy đường dẫn URL ảnh hoa tươi (hỗ trợ RESTful API, đường dẫn tĩnh, CDN và fallback)
+ */
+export function resolveImageUrl(imagePath, fallback = 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500') {
+    if (!imagePath) return fallback;
+    const str = String(imagePath).trim();
+    if (!str) return fallback;
+    if (str.startsWith('http://') || str.startsWith('https://') || str.startsWith('data:image')) {
+        return str;
+    }
+    // Nếu là đường dẫn /api/ hoặc /images/ đã có sẵn
+    if (str.startsWith('/api/')) {
+        return str;
+    }
+    if (str.startsWith('/flower/images/')) {
+        const fname = str.replace('/flower/images/', '');
+        return `${API_BASE}/images/${fname}`;
+    }
+    if (str.startsWith('/images/')) {
+        const fname = str.replace('/images/', '');
+        return `${API_BASE}/images/${fname}`;
+    }
+    if (!str.startsWith('/')) {
+        return `${API_BASE}/images/${str}`;
+    }
+    return str;
+}
+
 // Tối ưu hóa Lazy Loading cho hình ảnh toàn trang
 function initLazyLoadingImages() {
     const lazyImages = document.querySelectorAll('img[loading="lazy"]');
@@ -470,6 +498,7 @@ if (typeof window !== "undefined") {
     window.openStoreMap = openStoreMap;
     window.copyStoreAddress = copyStoreAddress;
     window.selectShowroomBranch = selectShowroomBranch;
+    window.resolveImageUrl = resolveImageUrl;
     window.loadAndRenderStorefrontBranches = loadAndRenderStorefrontBranches;
     window.removeVietnameseTones = removeVietnameseTones;
 }

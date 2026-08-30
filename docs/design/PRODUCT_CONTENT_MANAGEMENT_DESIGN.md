@@ -399,11 +399,10 @@ Mỗi danh mục hoa trong hệ thống hỗ trợ cả **Mã Dịch Tên (`text
 ### 8.2. Tiêu Chuẩn Lưu Trữ Không Base64 (Zero-Base64 Standard):
 Toàn bộ các tệp JSON (`products.json`, `products/{id}.json`, `categories.json`) **NGHIÊM CẤM** lưu chuỗi Base64 thô và **BẮT BUỘC chỉ lưu đường dẫn URL tĩnh** (kích thước chỉ ~30 - 60 bytes/sản phẩm):
 
-| Loại lưu trữ | Cấu trúc URL hợp lệ | Ví dụ |
-| :--- | :--- | :--- |
-| **Chuẩn Tiền Tố Flower (Khuyến nghị)** | `/flower/images/<filename>.webp` | `/flower/images/bo_hoa_1788048775.webp` |
+| **Chuẩn Tiền Tố Flower (Tĩnh)** | `/flower/images/<filename>.webp` | `/flower/images/bo_hoa_1788048775.webp` |
 | **Cấu trúc Thư mục Con** | `/flower/products/images/<filename>.webp` | `/flower/products/images/bo_hoa_01.webp` |
-| **RESTful API v1** | `/api/flower/v1/images/products/<filename>.webp` | `/api/flower/v1/images/products/bo_hoa_01.webp` |
+| **RESTful API v1 (Chuẩn Endpoint)** | `/api/flower/v1/images/<filename>.webp` | `/api/flower/v1/images/bo_hoa_01.webp` |
+| **RESTful API v1 (Thư mục con)** | `/api/flower/v1/images/products/<filename>.webp` | `/api/flower/v1/images/products/bo_hoa_01.webp` |
 | **GitHub CDN (Kho ảnh tĩnh)** | `https://raw.githubusercontent.com/...` | `https://raw.githubusercontent.com/letrthong/telua_public_marketing/main/config/anne/products/images/bo_hoa_01.webp` |
 
 ### 8.3. Sơ Đồ Đường Dẫn Vật Lý & Môi Trường Hoạt Động (Docker vs Local):
