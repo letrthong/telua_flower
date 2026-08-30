@@ -7,10 +7,10 @@
   "salePrice": "3,500,000₫",
   "originalPrice": "3,500,000₫",
   "badge": "Độc Bản VIP",
-  "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/moth_orchid.jpg",
+  "image": "/flower/images/lan_01.webp",
   "gallery": [
-    "https://images.unsplash.com/photo-1567696911980-2eed69a46042?w=800",
-    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/moth_orchid.jpg"
+    "/flower/images/lan_01.webp",
+    "/flower/images/lan_01.webp"
   ],
   "description": "Chậu lan hồ điệp loại A 5 cành hoa đều đẹp, thế cắm phong thủy mang lại tài lộc và vượng khí.",
   "flowerComposition": "Lan hồ điệp vàng hoàng gia (5 ngồng hoa loại 1), Chậu sứ cao cấp dát chỉ vàng",

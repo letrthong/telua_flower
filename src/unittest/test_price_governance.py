@@ -192,7 +192,7 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         delete_product(created_id)
 
     def test_08_create_product_with_base64_image(self):
-        """Kiểm tra thêm mẫu hoa lưu ảnh định dạng chuỗi Base64 Data URI"""
+        """Kiểm tra thêm mẫu hoa gửi ảnh Base64 -> Tự động chuyển đổi sang URL tĩnh /flower/images/... (Zero-Base64 Architecture)"""
         mock_base64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA="
         test_prod_id = f"test_b64_{int(time.time())}"
         
@@ -212,15 +212,16 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         
         created = res.get_json()["data"]
         self.assertEqual(created["id"], test_prod_id)
-        self.assertTrue(created["image"].startswith("data:image/jpeg;base64,"))
+        self.assertTrue(created["image"].startswith("/flower/images/"))
 
         # Kiểm tra tra cứu lại từ API
         res_get = self.client.get(f"/api/flower/v1/products/{test_prod_id}")
         self.assertEqual(res_get.status_code, 200)
-        self.assertEqual(res_get.get_json()["data"]["image"], mock_base64)
+        self.assertTrue(res_get.get_json()["data"]["image"].startswith("/flower/images/"))
 
         # Dọn dẹp
         delete_product(test_prod_id)
+
 
     def test_09_http_etag_304_cache_translations_and_branches(self):
         """Kiểm tra phản hồi HTTP ETag và mã 304 Not Modified khi dữ liệu không thay đổi"""

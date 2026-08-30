@@ -7,10 +7,10 @@
   "salePrice": "350,000₫",
   "originalPrice": "390,000₫",
   "badge": "",
-  "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/B%C3%ACnh%20Th%E1%BB%A7y%20Tinh%20Trong%20Su%E1%BB%91t%20D%C3%A1ng%20Tr%E1%BB%A5.webp",
+  "image": "/flower/images/binh_hoa_03.webp",
   "gallery": [
-    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/B%C3%ACnh%20Th%E1%BB%A7y%20Tinh%20Trong%20Su%E1%BB%91t%20D%C3%A1ng%20Tr%E1%BB%A5.webp",
-    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_ho_phach.png"
+    "/flower/images/binh_hoa_03.webp",
+    "/flower/images/binh_hoa_03.webp"
   ],
   "description": "Bình thủy tinh trụ trong suốt độ tinh khiết cao, thích hợp cắm các loại hoa cành dài như Tulip, Hoa Hồng, Hoa Ly phong cách hiện đại.",
   "flowerComposition": "Thủy tinh cao cấp chịu lực, thành dày 3mm, chống trầy xước",

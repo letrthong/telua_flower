@@ -1862,33 +1862,62 @@ export async function handleImageFileUpload(event) {
     const inputStr = document.getElementById("prodImage");
     const statusLabel = document.getElementById("imageStatusLabel");
     const sizeInfo = document.getElementById("imageSizeInfo");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     if (statusLabel) {
-        statusLabel.textContent = "⏳ Đang nén & chuyển Base64...";
+        statusLabel.textContent = "⏳ Đang tải ảnh lên máy chủ...";
         statusLabel.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md inline-block";
     }
 
     try {
-        const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
-        
-        if (inputStr) inputStr.value = base64String;
-        if (previewImg) previewImg.src = base64String;
+        // 1. Tải trực tiếp file ảnh lên API /admin/upload-image
+        const formData = new FormData();
+        formData.append("file", file);
 
-        // Tính kích thước Base64 theo KB
-        const sizeInKB = ((base64String.length * 3) / 4 / 1024).toFixed(1);
+        const res = await fetch(`${API_BASE}/admin/upload-image`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            },
+            body: formData
+        });
 
-        if (statusLabel) {
-            statusLabel.textContent = "🟢 Base64 Đã Sẵn Sàng";
-            statusLabel.className = "text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block";
-        }
-        if (sizeInfo) {
-            sizeInfo.textContent = `Dung lượng nén: ~${sizeInKB} KB (${file.name})`;
+        const json = await res.json();
+        if (res.ok && json.success && json.data?.url) {
+            const uploadedUrl = json.data.url;
+            if (inputStr) inputStr.value = uploadedUrl;
+            if (previewImg) previewImg.src = uploadedUrl;
+
+            if (statusLabel) {
+                statusLabel.textContent = "🟢 Đã Lưu Vào Thư Mục Tĩnh";
+                statusLabel.className = "text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block";
+            }
+            if (sizeInfo) {
+                sizeInfo.textContent = `URL: ${uploadedUrl} (${(file.size / 1024).toFixed(1)} KB)`;
+            }
+            notifyUser(`Tải ảnh "${file.name}" lên thành công!`, "success");
+        } else {
+            // Fallback: Nén Base64 (phía backend sẽ tự động chuyển sang file vật lý khi submit)
+            const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+            if (inputStr) inputStr.value = base64String;
+            if (previewImg) previewImg.src = base64String;
+            if (statusLabel) {
+                statusLabel.textContent = "🟡 Ảnh Base64 Tạm";
+                statusLabel.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md inline-block";
+            }
         }
     } catch (err) {
-        alert("Lỗi xử lý ảnh: " + err.message);
-        if (statusLabel) {
-            statusLabel.textContent = "❌ Lỗi chuyển đổi";
-            statusLabel.className = "text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md inline-block";
+        // Fallback nén Base64
+        try {
+            const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+            if (inputStr) inputStr.value = base64String;
+            if (previewImg) previewImg.src = base64String;
+            if (statusLabel) {
+                statusLabel.textContent = "🟡 Ảnh Base64 Tạm";
+                statusLabel.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md inline-block";
+            }
+        } catch (e2) {
+            alert("Lỗi xử lý ảnh: " + err.message);
         }
     }
 }
@@ -1957,18 +1986,41 @@ export async function handleGalleryFileUpload(event) {
     const file = event.target?.files?.[0];
     if (!file) return;
 
-    lockScreen(`Đang xử lý và nén ảnh phụ: ${file.name}...`);
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen(`Đang tải ảnh phụ lên máy chủ: ${file.name}...`);
     try {
-        const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
-        addProductGalleryImage(base64String);
-        notifyUser(`Đã thêm ảnh "${file.name}" vào Gallery!`, "success");
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${API_BASE}/admin/upload-image`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success && json.data?.url) {
+            addProductGalleryImage(json.data.url);
+            notifyUser(`Đã thêm ảnh "${file.name}" vào Gallery!`, "success");
+        } else {
+            const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+            addProductGalleryImage(base64String);
+            notifyUser(`Đã thêm ảnh "${file.name}" vào Gallery!`, "success");
+        }
     } catch (err) {
-        alert("Lỗi xử lý ảnh gallery: " + err.message);
+        try {
+            const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+            addProductGalleryImage(base64String);
+            notifyUser(`Đã thêm ảnh "${file.name}" vào Gallery!`, "success");
+        } catch (e2) {
+            alert("Lỗi xử lý ảnh gallery: " + err.message);
+        }
     } finally {
         unlockScreen();
         if (event.target) event.target.value = "";
     }
 }
+
 
 export function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");

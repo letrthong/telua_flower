@@ -945,70 +945,21 @@ def save_products(products: List[Dict[str, Any]]) -> bool:
 import base64
 import uuid
 
-def save_uploaded_image(file_storage_or_data: Any, filename_prefix: str = "prod") -> Tuple[bool, Optional[str], Optional[str]]:
+def save_uploaded_product_image(file_storage_or_data: Any, filename_prefix: str = "prod") -> Tuple[bool, Optional[str], Optional[str]]:
     """
-    Xử lý lưu file ảnh tĩnh tải lên từ Admin CMS (Chống phình to Base64 trong JSON):
-    - Hỗ trợ cả Werkzeug FileStorage (Multipart Form) và chuỗi Base64.
-    - Lưu file nhị phân vào thư mục tĩnh: src/static/images/products/<filename>.
-    - Trả về đường dẫn tĩnh: /static/images/products/<filename> để lưu vào JSON.
+    Xử lý lưu file ảnh tĩnh tải lên từ Admin CMS:
+    Lưu trực tiếp vào config/anne/images/<filename> và trả về URL /flower/images/<filename>.
     """
-    if not file_storage_or_data:
-        return False, None, "Dữ liệu tệp ảnh không được để trống"
-
     try:
-        os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
-        unique_suffix = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
-
-        # 1. Trường hợp chuỗi Base64 (data:image/...;base64,...)
-        if isinstance(file_storage_or_data, str):
-            data_str = file_storage_or_data.strip()
-            ext = ".jpg"
-            if data_str.startswith("data:image/"):
-                header, b64_content = data_str.split(";base64,", 1)
-                if "webp" in header: ext = ".webp"
-                elif "png" in header: ext = ".png"
-                elif "gif" in header: ext = ".gif"
-                raw_bytes = base64.b64decode(b64_content)
-            else:
-                raw_bytes = base64.b64decode(data_str)
-
-            filename = f"{filename_prefix}_{unique_suffix}{ext}"
-            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
-            with open(file_path, "wb") as f:
-                f.write(raw_bytes)
-
-            relative_url = f"/static/images/products/{filename}"
-            return True, relative_url, None
-
-        # 2. Trường hợp Werkzeug FileStorage (Multipart Upload)
-        if hasattr(file_storage_or_data, "filename") and hasattr(file_storage_or_data, "save"):
-            orig_name = file_storage_or_data.filename or "image.jpg"
-            ext = os.path.splitext(orig_name)[1].lower()
-            if not ext or ext not in [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]:
-                ext = ".jpg"
-
-            filename = f"{filename_prefix}_{unique_suffix}{ext}"
-            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
-            file_storage_or_data.save(file_path)
-
-            relative_url = f"/static/images/products/{filename}"
-            return True, relative_url, None
-
-        # 3. Trường hợp bytes thô
-        if isinstance(file_storage_or_data, (bytes, bytearray)):
-            filename = f"{filename_prefix}_{unique_suffix}.jpg"
-            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
-            with open(file_path, "wb") as f:
-                f.write(file_storage_or_data)
-
-            relative_url = f"/static/images/products/{filename}"
-            return True, relative_url, None
-
-        return False, None, f"Kiểu dữ liệu tệp ảnh không được hỗ trợ: {type(file_storage_or_data)}"
-
+        from flower_image import save_flower_uploaded_image
+        return save_flower_uploaded_image(file_storage_or_data, filename_prefix=filename_prefix)
     except Exception as e:
         print(f"[IMAGE_UPLOAD_ERROR] Lỗi khi lưu ảnh sản phẩm: {e}")
         return False, None, f"Lỗi máy chủ khi lưu ảnh: {str(e)}"
+
+# Alias tương thích ngược
+save_uploaded_image = save_uploaded_product_image
+
 
 
 import urllib.request
@@ -1016,33 +967,30 @@ import urllib.request
 def find_image_file(filename: str, auto_remote_fetch: bool = True) -> Optional[str]:
     """
     Tìm và tải file ảnh hoa tươi theo thứ tự ưu tiên:
-    1. src/static/images/products/<filename>
+    1. config/anne/images/<filename>
     2. config/anne/products/images/<filename>
-    3. config/anne/images/<filename>
-    4. d:/code/telua_public_marketing/config/anne/products/images/<filename>
-    5. images/products/<filename>
-    6. Nếu chưa có trên đĩa -> Tự động nạp từ GitHub CDN và lưu vào cache cục bộ.
+    3. d:/code/telua_public_marketing/config/anne/products/images/<filename>
+    4. src/static/images/products/<filename>
     """
+    try:
+        from flower_image import find_flower_image_file
+        return find_flower_image_file(filename, auto_remote_fetch=auto_remote_fetch)
+    except Exception:
+        pass
+
     if not filename or ".." in filename:
         return None
 
-    # Tách basename nếu truyền kèm URL hoặc subpath
     clean_name = os.path.basename(filename)
-
     candidates = [
-        os.path.join(PRODUCT_IMAGES_DIR, clean_name),
-        os.path.join(CONFIG_DIR, "products", "images", clean_name),
         os.path.join(CONFIG_DIR, "images", clean_name),
+        os.path.join(CONFIG_DIR, "products", "images", clean_name),
+        os.path.join(PRODUCT_IMAGES_DIR, clean_name),
         os.path.join(r"d:\code\telua_public_marketing\config\anne\products\images", clean_name),
-        os.path.join(r"d:\code\telua_public_marketing\images\products", clean_name),
-        os.path.join(os.path.dirname(CONFIG_DIR), "..", "images", "products", clean_name),
-        os.path.join(os.path.dirname(CONFIG_DIR), "..", "config", "anne", "products", "images", clean_name),
-        os.path.join(os.path.dirname(CONFIG_DIR), "..", "config", "anne", "images", clean_name),
-        os.path.join(os.path.dirname(PRODUCT_IMAGES_DIR), clean_name),
-        os.path.join(os.path.dirname(os.path.dirname(PRODUCT_IMAGES_DIR)), "images", "products", clean_name)
     ]
 
     for path in candidates:
+
         abs_path = os.path.abspath(path)
         if os.path.isfile(abs_path):
             return abs_path

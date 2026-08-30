@@ -17,8 +17,23 @@ from data_service import (
     get_branches,
     get_categories
 )
+from flower_image import save_flower_uploaded_image
 
 DEFAULT_VALID_CATEGORIES = ["bo_hoa", "ke_hoa", "binh_hoa", "gio_hoa", "lan_ho_diep", "hoa_cuoi"]
+
+
+def _sanitize_product_image_field(img_val: Any, prefix: str = "prod") -> str:
+    """Tự động chuyển đổi chuỗi Base64 thành file tĩnh nếu nhận được từ Client/Form."""
+    if not img_val or not isinstance(img_val, str):
+        return f"/flower/images/{prefix}.webp"
+    
+    if img_val.startswith("data:image/") or ";base64," in img_val:
+        success, relative_url, err = save_flower_uploaded_image(img_val, filename_prefix=prefix)
+        if success and relative_url:
+            return relative_url
+            
+    return img_val
+
 
 
 def get_valid_category_ids() -> List[str]:
@@ -193,9 +208,20 @@ def create_or_update_product(
         name_text_id = product_data.get("nameTextId") or product_data.get("textId") or old_detail.get("nameTextId", "")
         comp_text_id = product_data.get("compTextId") or product_data.get("compositionTextId") or old_detail.get("compTextId", "")
         desc_text_id = product_data.get("descTextId") or product_data.get("descriptionTextId") or old_detail.get("descTextId", "")
-
-        # Khối đa ngôn ngữ i18n
         i18n_data = product_data.get("i18n") or old_detail.get("i18n", {})
+
+        # Xử lý làm sạch ảnh đại diện & gallery (Tự động chống Base64)
+        raw_image = product_data.get("image") or old_detail.get("image", "")
+
+        clean_image = _sanitize_product_image_field(raw_image, prefix=product_id)
+
+        raw_gallery = product_data.get("gallery") if "gallery" in product_data and isinstance(product_data.get("gallery"), list) else old_detail.get("gallery", [])
+        clean_gallery = []
+        if isinstance(raw_gallery, list):
+            for g_idx, g_item in enumerate(raw_gallery):
+                clean_gallery.append(_sanitize_product_image_field(g_item, prefix=f"{product_id}_gal_{g_idx}"))
+        else:
+            clean_gallery = [clean_image]
 
         # 1. Chi tiết đầy đủ
         full_detail = {
@@ -208,8 +234,8 @@ def create_or_update_product(
             "salePrice": formatted_sale_price,
             "originalPrice": formatted_orig_price,
             "badge": product_data.get("badge") or old_detail.get("badge", ""),
-            "image": product_data.get("image") or old_detail.get("image", ""),
-            "gallery": product_data.get("gallery") if "gallery" in product_data and isinstance(product_data.get("gallery"), list) else old_detail.get("gallery", []),
+            "image": clean_image,
+            "gallery": clean_gallery,
             "description": product_data.get("description") if "description" in product_data else old_detail.get("description", ""),
             "descTextId": desc_text_id or None,
             "flowerComposition": product_data.get("flowerComposition") or old_detail.get("flowerComposition", ""),
@@ -260,8 +286,21 @@ def create_or_update_product(
         comp_text_id = product_data.get("compTextId") or product_data.get("compositionTextId") or ""
         desc_text_id = product_data.get("descTextId") or product_data.get("descriptionTextId") or ""
         i18n_data = product_data.get("i18n", {})
-        
+
+        # Xử lý làm sạch ảnh đại diện & gallery (Tự động chống Base64)
+        raw_image = product_data.get("image") or f"/flower/images/{new_id}.webp"
+        clean_image = _sanitize_product_image_field(raw_image, prefix=new_id)
+
+        raw_gallery = product_data.get("gallery", [])
+        clean_gallery = []
+        if isinstance(raw_gallery, list) and raw_gallery:
+            for g_idx, g_item in enumerate(raw_gallery):
+                clean_gallery.append(_sanitize_product_image_field(g_item, prefix=f"{new_id}_gal_{g_idx}"))
+        else:
+            clean_gallery = [clean_image]
+
         # 1. Chi tiết đầy đủ
+
         full_detail = {
             "id": new_id,
             "name": name,
@@ -272,8 +311,8 @@ def create_or_update_product(
             "salePrice": formatted_sale_price,
             "originalPrice": formatted_orig_price,
             "badge": product_data.get("badge", "Mới"),
-            "image": product_data.get("image") or "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500",
-            "gallery": product_data.get("gallery", []),
+            "image": clean_image,
+            "gallery": clean_gallery,
             "description": product_data.get("description", ""),
             "descTextId": desc_text_id or None,
             "flowerComposition": product_data.get("flowerComposition", ""),

@@ -1,0 +1,31 @@
+{
+  "id": "test_b64_1788062614",
+  "name": "Bình Hoa Gốm Nghệ Thuật Base64",
+  "nameTextId": null,
+  "category": "binh_hoa",
+  "priceLevelId": "price_lvl_03",
+  "priceNumber": 1500000,
+  "salePrice": "1,500,000₫",
+  "originalPrice": "1,500,000₫",
+  "badge": "Mới",
+  "image": "/flower/images/test_b64_1788062614_1788062614_b2e5564f.jpg",
+  "gallery": [
+    "/flower/images/test_b64_1788062614_1788062614_b2e5564f.jpg"
+  ],
+  "description": "",
+  "descTextId": null,
+  "flowerComposition": "Hoa Tulip & Cẩm Tú Cầu",
+  "compTextId": null,
+  "dimension": "",
+  "careTips": "Để nơi thoáng mát, phun sương mỗi ngày",
+  "i18n": null,
+  "stockByBranch": {
+    "branch_q10": 10,
+    "branch_q1": 5,
+    "branch_thao_dien": 5
+  },
+  "dailyQuota": 15,
+  "isActive": true,
+  "createdAt": "2026-08-30T11:03:34Z",
+  "updatedAt": "2026-08-30T11:03:34Z"
+}

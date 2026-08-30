@@ -19,7 +19,7 @@ config/anne/
 ├── branches.json              # Danh sách showroom, chi nhánh & tọa độ
 ├── staff_users.json          # Tài khoản nhân sự nội bộ (admin, manager, florist, sales)
 ├── customers.json            # Hồ sơ khách hàng & tích điểm loyalty
-├── products.json             # Danh mục sản phẩm hoa tươi & bình hoa
+├── products.json             # Danh mục sản phẩm tóm tắt (Zero-Base64)
 ├── categories.json           # Danh mục phân loại hoa
 ├── price_levels.json         # Phân tầng mức giá & Price Guardrails
 ├── promotions.json           # Mã giảm giá Voucher & chiến dịch khuyến mãi
@@ -27,9 +27,12 @@ config/anne/
 ├── wastage_reports.json      # Báo cáo hủy hoa dập/héo hỏng
 ├── infoCompany.json          # Thông tin thương hiệu, hotline, địa chỉ showroom
 ├── cache_version.json        # Timestamp đồng bộ cache giữa các workers
+├── images/                   # Kho ảnh tĩnh vật lý (.webp / .jpg) - Docker: /app/config/anne/images
+├── products/                 # File JSON chi tiết của từng sản phẩm riêng lẻ ({id}.json)
+│   └── images/               # Kho ảnh phụ sản phẩm đồng bộ - Docker: /app/config/anne/products/images
 ├── orders/                   # Dữ liệu đơn hàng phân mảnh theo tháng (YYYY-MM.json)
-├── products/                 # File JSON chi tiết của từng sản phẩm riêng lẻ
 └── users/                    # Dữ liệu khách hàng/nhân sự mở rộng
+
 ```
 
 ```mermaid

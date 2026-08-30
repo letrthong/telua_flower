@@ -103,18 +103,22 @@ graph TD
 
 1. **Quy tắc Zero-Base64 trong JSON Catalog**:
    * Tuyệt đối không lưu chuỗi `data:image/jpeg;base64,...` vào `products.json` hoặc `products/{id}.json`.
-   * Toàn bộ ảnh được lưu dưới dạng URL tĩnh (`.webp`/`.jpg`) trỏ về GitHub CDN (`telua_public_image`) hoặc thư mục tĩnh của máy chủ.
+   * Toàn bộ ảnh được lưu dưới dạng URL tĩnh (`/flower/images/<file>.webp`) trỏ về thư mục tĩnh cấu hình:
+     * **Docker Linux:** `/app/config/anne/images` (và `/app/config/anne/products/images`)
+     * **Local Windows:** `D:\wmshare\telua_flower\config\anne\images`
    * Giảm dung lượng `products.json` cho 1.000 sản phẩm từ **~100 MB** xuống còn **~250 KB** (tiết kiệm 99.7% băng thông và 98% RAM).
 2. **Thuộc tính tải ảnh tối ưu (Native Lazy Loading & Async Decoding)**:
    * Toàn bộ ảnh mẫu hoa đều được cấu hình:
      ```html
-     <img src="..." loading="lazy" decoding="async" onload="this.classList.add('loaded')" ...>
+     <img src="/flower/images/bo_hoa_01.webp" loading="lazy" decoding="async" onload="this.classList.add('loaded')" ...>
      ```
 3. **Tận dụng HTTP Disk Cache của Trình duyệt**:
-   * File ảnh tĩnh được trình duyệt lưu vào Disk Cache (HTTP 304 Not Modified). Khi khách hàng quay lại trang web, 100% hình ảnh nạp từ bộ nhớ đệm máy khách (0 KB network transfer).
+   * File ảnh tĩnh được cấu hình HTTP Header `Cache-Control: public, max-age=604800, immutable`.
+   * Trình duyệt lưu vào Disk Cache (HTTP 304 Not Modified). Khi khách hàng quay lại trang web, 100% hình ảnh nạp từ bộ nhớ đệm máy khách (0ms, 0 KB network transfer).
 4. **Giải phóng RAM trình duyệt**:
    * Ảnh chỉ được tải về bộ nhớ khi người dùng cuộn đến gần khu vực hiển thị (Viewport).
    * Ngăn chặn việc tải hàng nghìn ảnh cùng một lúc gây nghẽn băng thông và tràn RAM trên thiết bị di động.
+
 
 ---
 

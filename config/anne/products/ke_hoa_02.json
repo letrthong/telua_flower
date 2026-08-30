@@ -7,10 +7,10 @@
   "salePrice": "1,800,000₫",
   "originalPrice": "1,800,000₫",
   "badge": "Hot",
-  "image": "https://images.unsplash.com/photo-1507290439931-a861b5a38200?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+  "image": "/flower/images/ke_hoa_02.webp",
   "gallery": [
-    "https://images.unsplash.com/photo-1507290439931-a861b5a38200?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1591886960571-74d43a9d4166?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    "/flower/images/ke_hoa_02.webp",
+    "/flower/images/ke_hoa_02.webp"
   ],
   "description": "Kệ hoa phong cách hiện đại tone cam đất pastel phối hoa hồng ngoại và cúc mẫu đơn, thích hợp cho sự kiện ra mắt thương hiệu.",
   "flowerComposition": "Hoa Hồng Cam Spirit (20 cành), Cúc Mẫu Đơn cam, Hoa Đồng Tiền nhí, Lá Bạch Đàn, Kèm Banner chúc mừng cao cấp",

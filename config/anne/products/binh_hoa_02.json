@@ -7,10 +7,10 @@
   "salePrice": "620,000₫",
   "originalPrice": "680,000₫",
   "badge": "Mới",
-  "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_g%E1%BB%91m_s%E1%BB%A9.jpg",
+  "image": "/flower/images/binh_hoa_02.webp",
   "gallery": [
-    "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/binh_g%E1%BB%91m_s%E1%BB%A9.jpg",
-    "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=800"
+    "/flower/images/binh_hoa_02.webp",
+    "/flower/images/binh_hoa_02.webp"
   ],
   "description": "Bình gốm thủ công tráng men mờ theo phong cách Scandinavian Bắc Âu, tôn vinh nghệ thuật cắm hoa 'Thả Bình' tối giản.",
   "flowerComposition": "Chất liệu Gốm Bát Tràng tráng men cao cấp, bề mặt phủ nhám mịn tinh xảo",

@@ -406,9 +406,49 @@ Toàn bộ các tệp JSON (`products.json`, `products/{id}.json`, `categories.j
 | **RESTful API v1** | `/api/flower/v1/images/products/<filename>.webp` | `/api/flower/v1/images/products/bo_hoa_01.webp` |
 | **GitHub CDN (Kho ảnh tĩnh)** | `https://raw.githubusercontent.com/...` | `https://raw.githubusercontent.com/letrthong/telua_public_marketing/main/config/anne/products/images/bo_hoa_01.webp` |
 
-### 8.3. Module Chuyên Trách `flower_image.py` & Quy Trình Upload Ảnh:
+### 8.3. Sơ Đồ Đường Dẫn Vật Lý & Môi Trường Hoạt Động (Docker vs Local):
 
-Hệ thống cung cấp module riêng biệt [`src/flower_image.py`](file:///d:/wmshare/telua_flower/src/flower_image.py) phụ trách nạp ảnh, cache đĩa và xử lý upload:
+Để đảm bảo khả năng tương thích tuyệt đối giữa môi trường phát triển (Local Windows) và môi trường vận hành máy chủ đóng gói (Docker Container Linux), hệ thống chuẩn hóa đường dẫn lưu trữ vật lý như sau:
+
+| Môi Trường | Thư Mục Ảnh Chính (Upload & Cache) | Thư Mục Sản Phẩm Phụ (Sync) | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| 🐳 **Docker Linux (`/app`)** | `/app/config/anne/images` | `/app/config/anne/products/images` | **Single Source of Truth** trong Container, gắn volume mount persistent |
+| 💻 **Local Windows (`telua_flower`)** | `D:\wmshare\telua_flower\config\anne\images` | `D:\wmshare\telua_flower\config\anne\products\images` | Thư mục dữ liệu phát triển cục bộ |
+| 📦 **Marketing Repository** | `D:\code\telua_public_marketing\config\anne\products\images` | — | Thư mục đồng bộ Git CDN |
+
+> [!IMPORTANT]
+> **Quy Tắc Quản Lý File:** Thư mục `src/static/images` trước đây đã được di chuyển và dọn dẹp hoàn toàn sang `config/anne/images` để tránh phân tán dữ liệu và đảm bảo toàn bộ tệp tĩnh nằm trọn vẹn trong cấu hình nhánh hoa `config/anne/`.
+
+---
+
+### 8.4. Chi Tiết API Endpoints & Quy Trình Tải Lên (Upload) / Tải Về (Load):
+
+#### A. Quy Trình Tải Lên (Upload Image):
+- **API Endpoint:** `POST /api/flower/v1/admin/upload-image`
+- **Quyền hạn (RBAC):** `super_admin`, `branch_manager`, `florist`
+- **Định dạng hỗ trợ:** Multipart Form-Data (tệp binary `.webp`, `.jpg`, `.png`) hoặc chuỗi Base64 Data URI.
+- **Xử lý phía Server:**
+  1. Ghi file trực tiếp vào `/app/config/anne/images/<filename>`.
+  2. Tạo bản sao đồng bộ tại `/app/config/anne/products/images/<filename>`.
+  3. Trả về đường dẫn chuẩn hóa: `"/flower/images/<filename>"`.
+
+#### B. Quy Trình Tải Về & Phục Vụ Ảnh (Serve / Load Image):
+- **Các Route phục vụ công khai:**
+  - `GET /flower/images/<path:filename>`
+  - `GET /flower/products/images/<path:filename>`
+  - `GET /flower/images/products/<path:filename>`
+  - `GET /api/flower/v1/images/<path:filename>`
+  - `GET /api/flower/v1/images/products/<path:filename>`
+- **Thứ tự ưu tiên tìm kiếm (Lookup Priority):**
+  1. `/app/config/anne/images/<filename>` (hoặc `config/anne/images/<filename>`)
+  2. `/app/config/anne/products/images/<filename>`
+  3. `/app/config/anne/images/products/<filename>`
+  4. Nếu chưa có trên đĩa cứng $\rightarrow$ Tự động fetch từ GitHub CDN và ghi vào `/app/config/anne/images/<filename>`.
+- **HTTP Cache Header:** `Cache-Control: public, max-age=604800, immutable` (Trình duyệt nạp tức thì trong 0ms từ Disk Cache).
+
+---
+
+### 8.5. Sơ Đồ Tuần Tự (Sequence Diagram):
 
 ```mermaid
 sequenceDiagram
@@ -417,21 +457,21 @@ sequenceDiagram
     participant UI as Giao diện Admin Portal
     participant API as API Server (/api/flower/v1/admin/upload-image)
     participant Module as Module flower_image.py
-    participant Disk as Thư mục Static đệm (src/static/images/products)
+    participant Disk as Thư mục ảnh (/app/config/anne/images)
     participant JSON as products/{id}.json & products.json
 
     Admin->>UI: Chọn tệp ảnh từ thiết bị (JPG / PNG)
     UI->>UI: Nén ảnh phía Client -> Chuyển sang WebP (< 50KB)
     UI->>API: Gửi file WebP (Multipart / Form-Data hoặc Base64 payload)
     API->>Module: save_flower_uploaded_image()
-    Module->>Disk: Lưu file vật lý tĩnh (.webp / .jpg)
+    Module->>Disk: Lưu file vật lý vào /app/config/anne/images/
     Module-->>API: Trả về URL chuẩn: "/flower/images/bo_hoa_1788048775.webp"
     API-->>UI: Trả về URL thành công
     Admin->>UI: Nhập thông tin & Bấm "Lưu Sản Phẩm"
     UI->>JSON: Lưu thông tin kèm URL ảnh (chỉ tốn ~35 bytes)
 ```
 
-### 8.4. Tối Ưu Hiệu Năng Phía Frontend Khi Có 1.000+ Mẫu Hoa:
+### 8.6. Tối Ưu Hiệu Năng Phía Frontend Khi Có 1.000+ Mẫu Hoa:
 1. **Thuộc tính Native Lazy Loading:** Toàn bộ thẻ `<img>` hiển thị hoa trên Grid Storefront sử dụng tiền tố `/flower/images/...` và có thuộc tính `loading="lazy"`:
    ```html
    <img src="/flower/images/bo_hoa_1788048775.webp" loading="lazy" decoding="async" alt="Bó Hoa Hồng & Hoa Ly Trắng" class="w-full h-full object-cover">
@@ -439,3 +479,4 @@ sequenceDiagram
 2. **Cơ chế Fallback & Tự động lưu Cache:** Nếu ảnh chưa có trên đĩa cứng máy chủ, `flower_image.py` tự động nạp từ GitHub CDN và ghi vào cache đĩa để phục vụ các lần tiếp theo trong **0ms**.
 3. **Phân trang API (Server-side Pagination):** Hỗ trợ `GET /api/flower/v1/products?page=1&limit=24` để chỉ truyền tải ~5 KB JSON mỗi lần nạp.
 4. **Kết quả đo lường:** Dung lượng `products.json` của 1.000 sản phẩm giảm từ **~100 MB** xuống còn **~250 KB** (giảm 99.7%), thời gian phản hồi trang dưới **0.2 giây**.
+
