@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { translations, langLabels, langShortCodes } from '../translations.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { langLabels, langShortCodes, transformRawTranslations } from '../i18n.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const translationsPath = path.resolve(__dirname, '../../config/anne/translations.json');
+const rawTranslationsJson = JSON.parse(fs.readFileSync(translationsPath, 'utf8'));
+const translations = transformRawTranslations(rawTranslationsJson.translations || rawTranslationsJson);
 
 test('i18n - supported languages exist', (t) => {
     const langs = Object.keys(translations);

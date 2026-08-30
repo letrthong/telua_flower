@@ -1,7 +1,6 @@
 import { API_BASE } from './utils.js';
 import { getProducts, getProductById, getCategories } from './products.js';
-import { translations } from './translations.js';
-import { setLanguage } from './i18n.js';
+import { translations, setLanguage, fetchAndSyncTranslations } from './i18n.js';
 import { addToCart } from './checkout.js';
 
 // Cache sản phẩm toàn cục cho Storefront

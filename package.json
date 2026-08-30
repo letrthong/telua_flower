@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "python scripts/build_bundle.py",
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test js/unittest/*.js"

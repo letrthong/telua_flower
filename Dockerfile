@@ -24,6 +24,9 @@ COPY . .
 # Invalidate cache - change this date to force rebuild
 ARG CACHEBUST=1
 
+# Build consolidated JS bundle từ các modules
+RUN python scripts/build_bundle.py
+
 # Build frontend
 RUN npm run build
 

@@ -1,5 +1,110 @@
-// Quản lý chuyển đổi ngôn ngữ và Web Cache (localStorage)
+// Quản lý chuyển đổi ngôn ngữ và Web Cache (localStorage) kết hợp RESTful API ETag
+import { API_BASE } from './utils.js';
+
+export const langLabels = {
+    vi: "🇻🇳 Tiếng Việt",
+    en: "🇬🇧 English",
+    ja: "🇯🇵 日本語",
+    ko: "🇰🇷 한국어",
+    zh: "🇨🇳 中文"
+};
+
+export const langShortCodes = {
+    vi: "VI",
+    en: "EN",
+    ja: "JA",
+    ko: "KO",
+    zh: "ZH"
+};
+
+const TRANSLATIONS_STORAGE_KEY = 'telua_translations_cache_v2';
+const TRANSLATIONS_ETAG_KEY = 'telua_translations_etag_v2';
+
 let currentLang = 'vi';
+export let translations = { vi: {}, en: {}, ja: {}, ko: {}, zh: {} };
+
+/**
+ * Chuyển đổi dữ liệu ma trận từ Backend API sang định dạng theo từng mã ngôn ngữ
+ */
+export function transformRawTranslations(rawTranslations) {
+    const result = { vi: {}, en: {}, ja: {}, ko: {}, zh: {} };
+    if (!rawTranslations || typeof rawTranslations !== 'object') return result;
+
+    for (const [key, val] of Object.entries(rawTranslations)) {
+        if (!val || typeof val !== 'object') continue;
+        ['vi', 'en', 'ja', 'ko', 'zh'].forEach(lang => {
+            if (val[lang]) {
+                result[lang][key] = val[lang];
+            }
+        });
+    }
+    return result;
+}
+
+// 1. Tải tức thì từ LocalStorage Cache (0ms - Instant Boot)
+try {
+    if (typeof localStorage !== 'undefined') {
+        const cached = localStorage.getItem(TRANSLATIONS_STORAGE_KEY);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && typeof parsed === 'object' && Object.keys(parsed.vi || {}).length > 0) {
+                translations = parsed;
+            }
+        }
+    }
+} catch (e) {
+    console.warn("Lỗi đọc cache từ điển:", e);
+}
+
+/**
+ * Đồng bộ từ điển đa ngôn ngữ từ API Backend có hỗ trợ HTTP ETag (304 Cache)
+ */
+export async function fetchAndSyncTranslations() {
+    try {
+        const headers = {};
+        let storedEtag = null;
+        if (typeof localStorage !== 'undefined') {
+            storedEtag = localStorage.getItem(TRANSLATIONS_ETAG_KEY);
+            if (storedEtag && Object.keys(translations.vi || {}).length > 0) {
+                headers['If-None-Match'] = storedEtag;
+            }
+        }
+
+        const res = await fetch(`${API_BASE}/translations?_t=${Date.now()}`, { headers });
+        
+        // Nếu 304 Not Modified -> Giữ nguyên cache
+        if (res.status === 304) {
+            return translations;
+        }
+
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+                const raw = json.data.translations || json.data;
+                const newTrans = transformRawTranslations(raw);
+                translations = newTrans;
+                if (typeof window !== 'undefined') window.translations = translations;
+
+                const etag = res.headers.get('ETag');
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(TRANSLATIONS_STORAGE_KEY, JSON.stringify(translations));
+                        if (etag) localStorage.setItem(TRANSLATIONS_ETAG_KEY, etag);
+                    } catch (e) {
+                        console.warn("Storage write error:", e);
+                    }
+                }
+
+                // Cập nhật lại giao diện sau khi nạp từ điển mới
+                const activeLang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : currentLang;
+                setLanguage(activeLang);
+            }
+        }
+    } catch (err) {
+        console.warn("Không thể kết nối API từ điển đa ngôn ngữ:", err);
+    }
+    return translations;
+}
 
 export function setLanguage(lang) {
     const trans = (typeof window !== 'undefined' && window.translations) ? window.translations : (typeof translations !== 'undefined' ? translations : {});
@@ -86,7 +191,16 @@ export function setLanguage(lang) {
     }
 }
 
+// Khởi chạy đồng bộ ngay khi load module
 if (typeof window !== 'undefined') {
     window.currentLang = currentLang;
+    window.translations = translations;
+    window.langLabels = langLabels;
+    window.langShortCodes = langShortCodes;
     window.setLanguage = setLanguage;
+    window.fetchAndSyncTranslations = fetchAndSyncTranslations;
+    window.transformRawTranslations = transformRawTranslations;
+
+    // Tự động gọi API đồng bộ trong nền
+    fetchAndSyncTranslations();
 }

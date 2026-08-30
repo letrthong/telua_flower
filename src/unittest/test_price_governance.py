@@ -130,7 +130,7 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         """Kiểm tra tạo voucher và gạt công tắc Bật/Tắt (ON/OFF)"""
         promo_data = {
             "title": "Mừng Khai Trương Chi Nhánh Thảo Điền",
-            "code": f"THAODIEN{int(time.time()) % 1000}",
+            "code": f"TD{int(time.time() * 1000) % 1000000}",
             "discountType": "percentage",
             "discountValue": 20,
             "maxDiscountAmount": 200000,
