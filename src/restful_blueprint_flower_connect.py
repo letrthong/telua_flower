@@ -562,16 +562,25 @@ def api_upload_image():
     return jsonify({"success": False, "message": "Vui lòng đính kèm tệp ảnh qua 'file'/'image' hoặc gửi chuỗi Base64 trong body"}), 400
 
 
+# ==========================================
+# PHỤC VỤ HÌNH ẢNH HOA TƯƠI (/flower/images/...)
+# ==========================================
+
+@flower_connect_api.route("/flower/images/<path:filename>", methods=["GET"])
+@flower_connect_api.route("/flower/products/images/<path:filename>", methods=["GET"])
+@flower_connect_api.route("/flower/images/products/<path:filename>", methods=["GET"])
 @flower_connect_api.route("/images/<path:filename>", methods=["GET"])
 @flower_connect_api.route("/images/products/<path:filename>", methods=["GET"])
 @flower_connect_api.route("/products/images/<path:filename>", methods=["GET"])
-def api_get_product_image(filename):
+def serve_flower_image(filename):
     """
-    API lấy file ảnh tĩnh trực tiếp (/api/flower/v1/images/<filename>):
-    - Tìm file ảnh trong các thư mục ảnh tĩnh (static, products/images, anne/images...).
-    - Gắn HTTP Cache Header (Cache-Control: public, max-age=604800, immutable) để trình duyệt lưu Disk Cache 0ms.
+    Phục vụ và tải hình ảnh hoa tươi bắt đầu bằng tiền tố /flower/images/..., /images/..., /products/images/...
+    - Tích hợp từ module flower_image.py.
+    - Tìm kiếm ảnh trong config/anne/images, config/anne/products/images hoặc nạp từ GitHub CDN.
+    - Gắn HTTP Cache Header (Cache-Control: public, max-age=604800, immutable) giúp tải tức thì 0ms.
     """
     return create_flower_image_response(filename)
+
 
 
 
