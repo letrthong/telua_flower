@@ -564,6 +564,7 @@ def api_upload_image():
 
 # ==========================================
 # REST API PHỤC VỤ HÌNH ẢNH HOA TƯƠI (/api/flower/v1/images/...)
+# https://nohoathabinh.com/api/flower/v1/images/bo_hoa_01.webp
 # ==========================================
 
 @flower_connect_api.route("/images/<path:filename>", methods=["GET"])
