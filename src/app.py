@@ -97,15 +97,19 @@ from flower_image import create_flower_image_response, find_flower_image_file
 @app.route("/flower/images/<path:filename>")
 @app.route("/flower/products/images/<path:filename>")
 @app.route("/flower/images/products/<path:filename>")
+@app.route("/images/<path:filename>")
+@app.route("/images/products/<path:filename>")
+@app.route("/products/images/<path:filename>")
 @cross_origin()
 def serve_flower_image(filename):
     """
-    Phục vụ và tải hình ảnh hoa tươi bắt đầu bằng tiền tố /flower/images/...
+    Phục vụ và tải hình ảnh hoa tươi bắt đầu bằng tiền tố /flower/images/..., /images/..., /products/images/...
     - Tích hợp từ module flower_image.py.
-    - Tìm kiếm ảnh trong các thư mục tĩnh cục bộ hoặc nạp từ GitHub CDN.
+    - Tìm kiếm ảnh trong config/anne/images, config/anne/products/images hoặc nạp từ GitHub CDN.
     - Gắn HTTP Cache Header (Cache-Control: public, max-age=604800, immutable) giúp tải tức thì 0ms.
     """
     return create_flower_image_response(filename)
+
 
 
 
