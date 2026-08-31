@@ -61,9 +61,42 @@ function initLazyLoadingImages() {
             markLoaded();
         } else {
             img.addEventListener('load', markLoaded, { once: true });
-            img.addEventListener('error', markLoaded, { once: true });
+            img.addEventListener('error', () => {
+                markLoaded();
+                handleImageErrorFallback(img);
+            }, { once: true });
         }
     });
+}
+
+/**
+ * Fallback xử lý ảnh lỗi trực tiếp từ Client (chuyển sang GitHub CDN hoặc Unsplash 0ms mà không làm đơ máy chủ)
+ */
+export function handleImageErrorFallback(imgEl) {
+    if (!imgEl) return;
+    imgEl.classList.add('loaded');
+    if (imgEl.parentElement && imgEl.parentElement.classList.contains('img-skeleton')) {
+        imgEl.parentElement.classList.remove('img-skeleton');
+    }
+    const currentSrc = imgEl.src || "";
+    const cleanName = currentSrc.split("/").pop().split("?")[0];
+
+    // Tầng 1: Thử nạp từ GitHub CDN
+    if (!imgEl.dataset.cdnTried && cleanName && !currentSrc.includes("githubusercontent")) {
+        imgEl.dataset.cdnTried = "1";
+        imgEl.src = `https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/${cleanName}`;
+        return;
+    }
+
+    // Tầng 2: Fallback ảnh Unsplash chuẩn
+    if (!imgEl.dataset.fallbackTried) {
+        imgEl.dataset.fallbackTried = "1";
+        imgEl.src = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+    }
+}
+
+if (typeof window !== "undefined") {
+    window.handleImageErrorFallback = handleImageErrorFallback;
 }
 
 // Hiển thị thông báo Toast ở góc trái dưới màn hình (Tự động đóng sau 5 giây)

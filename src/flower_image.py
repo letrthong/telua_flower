@@ -13,7 +13,6 @@ import time
 import uuid
 import base64
 import logging
-import urllib.request
 from typing import Any, Optional, Tuple
 from flask import send_file, make_response, abort, jsonify
 
@@ -33,14 +32,14 @@ logger = logging.getLogger("flower_image")
 os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
 
 
-def find_flower_image_file(filename: str, auto_remote_fetch: bool = True) -> Optional[str]:
+def find_flower_image_file(filename: str, auto_remote_fetch: bool = False) -> Optional[str]:
     """
-    Tìm và tải file ảnh hoa tươi theo thứ tự ưu tiên:
+    Tìm file ảnh hoa tươi cục bộ theo thứ tự ưu tiên (0ms disk lookup):
     1. config/anne/images/<filename>
     2. config/anne/products/images/<filename>
     3. config/anne/images/products/<filename>
     4. src/static/images/products/<filename>
-    5. Nếu chưa có trên đĩa và auto_remote_fetch=True: Tự động nạp từ GitHub CDN và lưu vào config/anne/images.
+    5. src/static/images/<filename>
     """
     if not filename or ".." in filename:
         return None
@@ -63,32 +62,6 @@ def find_flower_image_file(filename: str, auto_remote_fetch: bool = True) -> Opt
         abs_path = os.path.abspath(path)
         if os.path.isfile(abs_path):
             return abs_path
-
-    # Tự động tải từ Remote GitHub và lưu vào cache tĩnh nếu chưa có
-    if auto_remote_fetch:
-        remote_sources = [
-            f"https://raw.githubusercontent.com/letrthong/telua_public_marketing/main/config/anne/products/images/{clean_name}",
-            f"https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/{clean_name}"
-        ]
-        target_save = os.path.join(FLOWER_CONFIG_DIR, "images", clean_name)
-        for r_url in remote_sources:
-            try:
-                req = urllib.request.Request(r_url, headers={'User-Agent': 'FlowerConnect/1.0'})
-                with urllib.request.urlopen(req, timeout=4) as resp:
-                    if resp.status == 200:
-                        content = resp.read()
-                        os.makedirs(os.path.dirname(target_save), exist_ok=True)
-                        with open(target_save, "wb") as f:
-                            f.write(content)
-                        # Đồng bộ sang config/anne/products/images nếu có
-                        p_save = os.path.join(FLOWER_CONFIG_DIR, "products", "images", clean_name)
-                        os.makedirs(os.path.dirname(p_save), exist_ok=True)
-                        with open(p_save, "wb") as f:
-                            f.write(content)
-                        logger.info(f"Đã fetch và lưu ảnh từ GitHub CDN vào config/anne/images: {clean_name}")
-                        return target_save
-            except Exception:
-                continue
 
     return None
 

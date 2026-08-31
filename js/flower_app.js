@@ -138,7 +138,7 @@ export function renderProducts(products, containerId) {
             <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100">
                 ${badgeHtml}
                 <div onclick="openProductQuickDetail('${prodId}')" class="relative h-48 md:h-64 overflow-hidden cursor-pointer">
-                    <img src="${prodImg}" alt="${prodDisplayName}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="this.classList.add('loaded')" class="product-img w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <img src="${prodImg}" alt="${prodDisplayName}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="handleImageErrorFallback(this)" class="product-img w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     
                     <!-- Nút Thêm vào giỏ hàng (Hiển thị khi hover) -->
                     <div class="absolute inset-0 bg-black/30 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4" onclick="event.stopPropagation()">
@@ -159,10 +159,134 @@ export function renderProducts(products, containerId) {
     container.innerHTML = html;
 }
 
+let currentOpenDetailProductId = null;
+
 /**
- * Mở Modal Xem Chi Tiết Sản Phẩm (Lazy Load on-demand từ /api/products/<id>)
+ * Đổ dữ liệu sản phẩm vào Modal Chi Tiết Nhanh
+ */
+export function populateProductDetailModalContent(prod, currentAppLang, productId) {
+    const modal = document.getElementById("productQuickDetailModal");
+    const spinner = document.getElementById("detailLoadingSpinner");
+    const body = document.getElementById("detailContentBody");
+    if (!modal || !prod) return;
+
+    const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "420000").replace(/[^\d]/g, ''), 10) || 420000;
+    const prodDisplayName = getProductName(prod);
+    const prodCompText = getProductComposition(prod);
+    const prodDescText = getProductDescription(prod);
+    const prodCareTipsText = getProductCareTips(prod);
+    const safeName = (prodDisplayName || prod.name || "").replace(/'/g, "\\'");
+    const prodImg = prod.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[currentAppLang]) ? trans[currentAppLang] : {};
+
+    // Cập nhật lại toàn bộ nhãn tĩnh đa ngôn ngữ trong modal
+    modal.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+            el.innerHTML = dict[key];
+        }
+    });
+
+    // Điền thông tin vào modal
+    const nameEl = document.getElementById("detailProdName");
+    if (nameEl) {
+        nameEl.textContent = prodDisplayName;
+        if (prod.nameTextId) nameEl.setAttribute("data-i18n", prod.nameTextId);
+        else nameEl.removeAttribute("data-i18n");
+    }
+
+    const badgeEl = document.getElementById("detailBadge");
+    if (badgeEl) badgeEl.textContent = prod.badge || dict.prod_badge_new || "Mẫu Mới";
+
+    const salePriceEl = document.getElementById("detailSalePrice");
+    if (salePriceEl) salePriceEl.textContent = prod.salePrice || `${numericPrice.toLocaleString()}₫`;
+
+    const origPriceEl = document.getElementById("detailOrigPrice");
+    if (origPriceEl) origPriceEl.textContent = prod.originalPrice && prod.originalPrice !== prod.salePrice ? prod.originalPrice : "";
+
+    const catLabelEl = document.getElementById("detailCategoryLabel");
+    if (catLabelEl) {
+        const catObj = (activeStorefrontCategories || []).find(c => c && c.id === prod.category);
+        catLabelEl.textContent = catObj ? getCategoryDisplayName(catObj).toUpperCase() : (prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP");
+    }
+
+    const descEl = document.getElementById("detailDescription");
+    if (descEl) {
+        descEl.textContent = prodDescText || dict.prod_desc_fallback || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
+        if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
+        else descEl.removeAttribute("data-i18n");
+    }
+
+    const compEl = document.getElementById("detailComposition");
+    if (compEl) {
+        compEl.textContent = prodCompText || dict.prod_comp_fallback || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
+        if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
+        else compEl.removeAttribute("data-i18n");
+    }
+
+    const dimEl = document.getElementById("detailDimension");
+    if (dimEl) dimEl.textContent = prod.dimension || dict.prod_dim_standard || "Kích thước tiêu chuẩn";
+
+    const careEl = document.getElementById("detailCareTips");
+    if (careEl) careEl.textContent = prodCareTipsText || dict.prod_care_default || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
+
+    const mainImgEl = document.getElementById("detailMainImg");
+    if (mainImgEl) {
+        if (mainImgEl.parentElement) mainImgEl.parentElement.classList.add('img-skeleton');
+        mainImgEl.classList.remove('loaded');
+        mainImgEl.src = prodImg;
+        mainImgEl.alt = prodDisplayName;
+    }
+
+    // Gallery thumbnails (với Lazy loading và Skeleton preview)
+    const galleryContainer = document.getElementById("detailGalleryThumbnails");
+    if (galleryContainer) {
+        const galleryList = Array.isArray(prod.gallery) && prod.gallery.length > 0 ? prod.gallery : [prodImg];
+        let galHtml = '';
+        galleryList.forEach(imgUrl => {
+            galHtml += `
+                <div onclick="const mImg=document.getElementById('detailMainImg'); if(mImg){mImg.parentElement?.classList.add('img-skeleton'); mImg.classList.remove('loaded'); mImg.src='${imgUrl}';}" class="w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-primary flex-shrink-0 transition img-skeleton">
+                    <img src="${imgUrl}" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement?.classList.remove('img-skeleton');" onerror="handleImageErrorFallback(this)" class="w-full h-full object-cover">
+                </div>
+            `;
+        });
+        galleryContainer.innerHTML = galHtml;
+    }
+
+    // Tồn kho tại showroom
+    const stockContainer = document.getElementById("detailStockGrid");
+    if (stockContainer) {
+        const stock = prod.stockByBranch || { "branch_q10": 10, "branch_q1": 5, "branch_thao_dien": 4 };
+        let stockHtml = `
+            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.10: <b class="text-primary">${stock.branch_q10 ?? 0}</b></span>
+            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.1: <b class="text-primary">${stock.branch_q1 ?? 0}</b></span>
+            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Thảo Điền: <b class="text-primary">${stock.branch_thao_dien ?? 0}</b></span>
+        `;
+        stockContainer.innerHTML = stockHtml;
+    }
+
+    // Gắn sự kiện nút Thêm Giỏ Hàng
+    const btnAdd = document.getElementById("btnQuickAddToCart");
+    if (btnAdd) {
+        btnAdd.onclick = () => {
+            if (typeof addToCart === "function") {
+                addToCart(prod.id || productId, safeName, numericPrice, prodImg);
+            }
+            closeProductQuickDetail();
+        };
+    }
+
+    if (spinner) spinner.classList.add("hidden");
+    if (body) body.classList.remove("hidden");
+}
+
+/**
+ * Mở Modal Xem Chi Tiết Sản Phẩm (Mở tức thì 0ms qua Optimistic Cache + Lazy Load on-demand)
  */
 export async function openProductQuickDetail(productId) {
+    currentOpenDetailProductId = productId;
     const modal = document.getElementById("productQuickDetailModal");
     const spinner = document.getElementById("detailLoadingSpinner");
     const body = document.getElementById("detailContentBody");
@@ -171,137 +295,37 @@ export async function openProductQuickDetail(productId) {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
-    // Reset spinner loading state mỗi lần mở
-    if (spinner) {
-        spinner.innerHTML = `
-            <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
-            <span class="text-xs text-gray-400 font-medium">Đang tải chi tiết & album ảnh...</span>
-        `;
-        spinner.classList.remove("hidden");
-    }
-    if (body) body.classList.add("hidden");
-
-    // Nạp chi tiết sản phẩm qua hàm getProductById (gọi API /api/products/<id>?lang=... hoặc cache)
     const currentAppLang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
-    let prod = await getProductById(productId, currentAppLang);
 
-    if (!prod && Array.isArray(allStorefrontProducts) && allStorefrontProducts.length > 0) {
-        prod = allStorefrontProducts.find(p => p && (p.id === productId || p.name === productId));
+    // 1. Optimistic Render: Kiểm tra cache RAM có sẵn từ danh mục sản phẩm
+    let cachedProd = null;
+    if (Array.isArray(allStorefrontProducts) && allStorefrontProducts.length > 0) {
+        cachedProd = allStorefrontProducts.find(p => p && (p.id === productId || p.name === productId));
     }
 
-    if (prod) {
-        const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "420000").replace(/[^\d]/g, ''), 10) || 420000;
-        const prodDisplayName = getProductName(prod);
-        const prodCompText = getProductComposition(prod);
-        const prodDescText = getProductDescription(prod);
-        const prodCareTipsText = getProductCareTips(prod);
-        const safeName = (prodDisplayName || prod.name || "").replace(/'/g, "\\'");
-        const prodImg = prod.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
-
-        const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
-        const dict = (trans && trans[currentAppLang]) ? trans[currentAppLang] : {};
-
-        // Cập nhật lại toàn bộ nhãn tĩnh đa ngôn ngữ trong modal
-        modal.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (dict[key]) {
-                el.innerHTML = dict[key];
-            }
-        });
-
-        // Điền thông tin vào modal
-        const nameEl = document.getElementById("detailProdName");
-        if (nameEl) {
-            nameEl.textContent = prodDisplayName;
-            if (prod.nameTextId) nameEl.setAttribute("data-i18n", prod.nameTextId);
-            else nameEl.removeAttribute("data-i18n");
-        }
-
-        const badgeEl = document.getElementById("detailBadge");
-        if (badgeEl) badgeEl.textContent = prod.badge || dict.prod_badge_new || "Mẫu Mới";
-
-        const salePriceEl = document.getElementById("detailSalePrice");
-        if (salePriceEl) salePriceEl.textContent = prod.salePrice || `${numericPrice.toLocaleString()}₫`;
-
-        const origPriceEl = document.getElementById("detailOrigPrice");
-        if (origPriceEl) origPriceEl.textContent = prod.originalPrice && prod.originalPrice !== prod.salePrice ? prod.originalPrice : "";
-
-        const catLabelEl = document.getElementById("detailCategoryLabel");
-        if (catLabelEl) {
-            const catObj = (activeStorefrontCategories || []).find(c => c && c.id === prod.category);
-            catLabelEl.textContent = catObj ? getCategoryDisplayName(catObj).toUpperCase() : (prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP");
-        }
-
-        const descEl = document.getElementById("detailDescription");
-        if (descEl) {
-            descEl.textContent = prodDescText || dict.prod_desc_fallback || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
-            if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
-            else descEl.removeAttribute("data-i18n");
-        }
-
-        const compEl = document.getElementById("detailComposition");
-        if (compEl) {
-            compEl.textContent = prodCompText || dict.prod_comp_fallback || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
-            if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
-            else compEl.removeAttribute("data-i18n");
-        }
-
-        const dimEl = document.getElementById("detailDimension");
-        if (dimEl) dimEl.textContent = prod.dimension || dict.prod_dim_standard || "Kích thước tiêu chuẩn";
-
-        const careEl = document.getElementById("detailCareTips");
-        if (careEl) careEl.textContent = prodCareTipsText || dict.prod_care_default || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
-
-        const mainImgEl = document.getElementById("detailMainImg");
-        if (mainImgEl) {
-            mainImgEl.src = prodImg;
-            mainImgEl.alt = prodDisplayName;
-        }
-
-        // Gallery thumbnails
-        const galleryContainer = document.getElementById("detailGalleryThumbnails");
-        if (galleryContainer) {
-            const galleryList = Array.isArray(prod.gallery) && prod.gallery.length > 0 ? prod.gallery : [prodImg];
-            let galHtml = '';
-            galleryList.forEach(imgUrl => {
-                galHtml += `
-                    <div onclick="document.getElementById('detailMainImg').src='${imgUrl}'" class="w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-primary flex-shrink-0 transition">
-                        <img src="${imgUrl}" class="w-full h-full object-cover">
-                    </div>
-                `;
-            });
-            galleryContainer.innerHTML = galHtml;
-        }
-
-        // Tồn kho tại showroom
-        const stockContainer = document.getElementById("detailStockGrid");
-        if (stockContainer) {
-            const stock = prod.stockByBranch || { "branch_q10": 10, "branch_q1": 5, "branch_thao_dien": 4 };
-            let stockHtml = `
-                <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.10: <b class="text-primary">${stock.branch_q10 ?? 0}</b></span>
-                <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.1: <b class="text-primary">${stock.branch_q1 ?? 0}</b></span>
-                <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Thảo Điền: <b class="text-primary">${stock.branch_thao_dien ?? 0}</b></span>
-            `;
-            stockContainer.innerHTML = stockHtml;
-        }
-
-        // Gắn sự kiện nút Thêm Giỏ Hàng
-        const btnAdd = document.getElementById("btnQuickAddToCart");
-        if (btnAdd) {
-            btnAdd.onclick = () => {
-                if (typeof addToCart === "function") {
-                    addToCart(prod.id || productId, safeName, numericPrice, prodImg);
-                }
-                closeProductQuickDetail();
-            };
-        }
-
-        if (spinner) spinner.classList.add("hidden");
-        if (body) body.classList.remove("hidden");
+    if (cachedProd) {
+        // Hiển thị ngay lập tức 0ms không để khách hàng phải chờ spinner
+        populateProductDetailModalContent(cachedProd, currentAppLang, productId);
     } else {
-        closeProductQuickDetail();
+        if (spinner) {
+            spinner.innerHTML = `
+                <i class="fa-solid fa-spinner fa-spin text-primary text-3xl"></i>
+                <span class="text-xs text-gray-400 font-medium">Đang tải chi tiết & album ảnh...</span>
+            `;
+            spinner.classList.remove("hidden");
+        }
+        if (body) body.classList.add("hidden");
     }
 
+    // 2. Tải thêm chi tiết đầy đủ ngầm qua API (album gallery, thành phần chi tiết, tồn kho)
+    try {
+        const fullProd = await getProductById(productId, currentAppLang);
+        if (fullProd && currentOpenDetailProductId === productId) {
+            populateProductDetailModalContent(fullProd, currentAppLang, productId);
+        }
+    } catch (err) {
+        console.warn("Lỗi đồng bộ chi tiết sản phẩm:", err);
+    }
 }
 
 export function closeProductQuickDetail() {

@@ -2053,8 +2053,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
                     <!-- Gallery / Image -->
                     <div class="space-y-2">
-                        <div class="rounded-xl overflow-hidden border border-gray-200 aspect-square bg-gray-50 shadow-inner">
-                            <img id="detailMainImg" src="" alt="Hoa tươi" class="w-full h-full object-cover">
+                        <div class="rounded-xl overflow-hidden border border-gray-200 aspect-square bg-gray-50 shadow-inner img-skeleton">
+                            <img id="detailMainImg" src="" alt="Hoa tươi" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement?.classList.remove('img-skeleton');" class="w-full h-full object-cover">
                         </div>
                         <div id="detailGalleryThumbnails" class="flex gap-2 overflow-x-auto py-1">
                             <!-- Render thumbnails gallery -->
