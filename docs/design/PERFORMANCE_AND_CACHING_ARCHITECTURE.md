@@ -107,15 +107,18 @@ graph TD
      * **Docker Linux:** `/app/config/anne/images` (và `/app/config/anne/products/images`)
      * **Local Windows:** `D:\wmshare\telua_flower\config\anne\images`
    * Giảm dung lượng `products.json` cho 1.000 sản phẩm từ **~100 MB** xuống còn **~250 KB** (tiết kiệm 99.7% băng thông và 98% RAM).
-2. **Thuộc tính tải ảnh tối ưu (Native Lazy Loading & Async Decoding)**:
+2. **Thuộc tính tải ảnh tối ưu (Native Lazy Loading, Async Decoding & Skeleton Shimmer)**:
    * Toàn bộ ảnh mẫu hoa đều được cấu hình:
      ```html
-     <img src="/flower/images/bo_hoa_01.webp" loading="lazy" decoding="async" onload="this.classList.add('loaded')" ...>
+     <img src="/flower/images/bo_hoa_01.webp" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="handleImageErrorFallback(this)" class="...">
      ```
-3. **Tận dụng HTTP Disk Cache của Trình duyệt**:
+3. **Cơ Chế Phục Vụ Ảnh Cục Bộ 0ms & Client-Side Direct CDN Fallback**:
+   * **Backend:** Tìm kiếm ảnh trên đĩa cứng cục bộ 0ms, không thực hiện request HTTP từ xa chặn luồng (Zero-blocking).
+   * **Client Fallback:** Nếu ảnh bị thiếu trên máy chủ, trình duyệt kích hoạt `handleImageErrorFallback()` kết nối trực tiếp đến GitHub CDN (`raw.githubusercontent.com`) mà không tiêu tốn băng thông hay tài nguyên của máy chủ.
+4. **Tận dụng HTTP Disk Cache của Trình duyệt**:
    * File ảnh tĩnh được cấu hình HTTP Header `Cache-Control: public, max-age=604800, immutable`.
    * Trình duyệt lưu vào Disk Cache (HTTP 304 Not Modified). Khi khách hàng quay lại trang web, 100% hình ảnh nạp từ bộ nhớ đệm máy khách (0ms, 0 KB network transfer).
-4. **Giải phóng RAM trình duyệt**:
+5. **Giải phóng RAM trình duyệt**:
    * Ảnh chỉ được tải về bộ nhớ khi người dùng cuộn đến gần khu vực hiển thị (Viewport).
    * Ngăn chặn việc tải hàng nghìn ảnh cùng một lúc gây nghẽn băng thông và tràn RAM trên thiết bị di động.
 
