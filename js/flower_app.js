@@ -93,6 +93,37 @@ export function getProductCareTips(prod) {
 }
 
 /**
+ * Lấy nhãn nổi bật (Badge) sản phẩm tự động dịch theo ngôn ngữ hiện tại
+ */
+export function getProductBadge(prod) {
+    if (!prod || !prod.badge) return "";
+    const rawBadge = (prod.badge || "").trim();
+    if (!rawBadge) return "";
+
+    const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[lang]) ? trans[lang] : {};
+
+    const lower = rawBadge.toLowerCase();
+    if (lower === "mới" || lower === "moi" || lower === "new") {
+        return dict.badge_new || (lang === "en" ? "New" : (lang === "ja" ? "新着" : (lang === "ko" ? "신상품" : (lang === "zh" ? "新品" : "Mới"))));
+    }
+    if (lower === "bán chạy" || lower === "ban chay" || lower === "best seller") {
+        return dict.badge_best_seller || (lang === "en" ? "Best Seller" : (lang === "ja" ? "人気" : (lang === "ko" ? "베스트" : (lang === "zh" ? "畅销" : "Bán chạy"))));
+    }
+    if (lower === "hot") {
+        return dict.badge_hot || (lang === "en" ? "Hot" : (lang === "ja" ? "おすすめ" : (lang === "ko" ? "인기" : (lang === "zh" ? "热门" : "Hot"))));
+    }
+    if (lower === "mẫu mới" || lower === "mau moi" || lower === "new arrival") {
+        return dict.badge_model_new || (lang === "en" ? "New Arrival" : (lang === "ja" ? "新着アイテム" : (lang === "ko" ? "신규 디자인" : (lang === "zh" ? "最新款式" : "Mẫu Mới"))));
+    }
+    if (lower.includes("độc bản") || lower.includes("vip") || lower.includes("exclusive")) {
+        return dict.badge_vip || (lang === "en" ? "VIP Exclusive" : (lang === "ja" ? "VIP限定" : (lang === "ko" ? "VIP 독점" : (lang === "zh" ? "VIP尊享" : rawBadge))));
+    }
+    return rawBadge;
+}
+
+/**
  * 1. Hàm Render sản phẩm HTML (Tối ưu Lazy Loading & i18n)
  */
 export function renderProducts(products, containerId) {
@@ -119,8 +150,9 @@ export function renderProducts(products, containerId) {
         const salePrice = product.salePrice || `${(product.priceNumber || 420000).toLocaleString()}₫`;
         const hasDiscount = origPrice !== salePrice;
 
-        const badgeHtml = product.badge
-            ? `<span class="absolute top-2 left-2 bg-accent text-white text-xs font-bold px-2 py-1 rounded shadow-sm z-10">${product.badge}</span>`
+        const displayBadge = getProductBadge(product);
+        const badgeHtml = displayBadge
+            ? `<span class="absolute top-2 left-2 bg-accent text-white text-xs font-bold px-2 py-1 rounded shadow-sm z-10">${displayBadge}</span>`
             : '';
         const priceHtml = hasDiscount
             ? `<span class="text-gray-400 line-through text-xs md:text-sm mr-2">${origPrice}</span>
@@ -198,7 +230,7 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
     }
 
     const badgeEl = document.getElementById("detailBadge");
-    if (badgeEl) badgeEl.textContent = prod.badge || dict.prod_badge_new || "Mẫu Mới";
+    if (badgeEl) badgeEl.textContent = getProductBadge(prod) || dict.badge_model_new || dict.prod_badge_new || "Mẫu Mới";
 
     const salePriceEl = document.getElementById("detailSalePrice");
     if (salePriceEl) salePriceEl.textContent = prod.salePrice || `${numericPrice.toLocaleString()}₫`;
@@ -716,7 +748,7 @@ export function renderLiveSearchResults(matchedProds = [], rawQuery = '') {
                         <h4 class="text-xs md:text-sm font-bold text-gray-800 truncate group-hover:text-primary transition">${prod.name}</h4>
                         <div class="flex items-center gap-2 mt-0.5">
                             <span class="text-xs md:text-sm font-bold text-primary">${priceFmt}</span>
-                            ${prod.badge ? `<span class="text-[9px] bg-pink-100 text-pink-700 px-1.5 py-0.2 rounded font-semibold">${prod.badge}</span>` : ''}
+                            ${prod.badge ? `<span class="text-[9px] bg-pink-100 text-pink-700 px-1.5 py-0.2 rounded font-semibold">${getProductBadge(prod)}</span>` : ''}
                         </div>
                     </div>
                     <button type="button" onclick="event.stopPropagation(); addToCart('${prod.id}'); closeLiveSearchResults();" 
@@ -1216,6 +1248,7 @@ if (typeof window !== 'undefined') {
     window.getCategoryDisplayName = getCategoryDisplayName;
     window.getCategoryDescription = getCategoryDescription;
     window.getProductName = getProductName;
+    window.getProductBadge = getProductBadge;
     window.getProductComposition = getProductComposition;
     window.getProductDescription = getProductDescription;
     window.getProductCareTips = getProductCareTips;

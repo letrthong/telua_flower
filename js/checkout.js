@@ -196,11 +196,14 @@ export function renderCartDrawer() {
 
     let html = "";
     items.forEach((item) => {
+        const itemDisplayName = (typeof window !== "undefined" && typeof window.getProductName === "function")
+            ? window.getProductName(item)
+            : (item.name || "Hoa tươi");
         html += `
             <div class="flex items-center gap-3 p-3 bg-pink-50/40 rounded-xl border border-pink-100">
-                <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white shadow-sm">
+                <img src="${item.image}" alt="${itemDisplayName}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white shadow-sm">
                 <div class="flex-1 min-w-0">
-                    <h4 class="text-xs font-bold text-gray-800 truncate">${item.name}</h4>
+                    <h4 class="text-xs font-bold text-gray-800 truncate">${itemDisplayName}</h4>
                     <p class="text-xs font-bold text-primary mt-0.5">${formatVND(item.price)}</p>
                     <div class="flex items-center gap-2 mt-2">
                         <button onclick="updateCartQuantity('${item.productId}', -1)" class="w-6 h-6 rounded-full bg-white text-gray-600 border border-gray-200 flex items-center justify-center text-xs hover:bg-pink-50">-</button>

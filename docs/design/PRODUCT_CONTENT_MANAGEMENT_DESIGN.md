@@ -479,3 +479,30 @@ sequenceDiagram
 3. **Phân trang API (Server-side Pagination):** Hỗ trợ `GET /api/flower/v1/products?page=1&limit=24` để chỉ truyền tải ~5 KB JSON mỗi lần nạp.
 4. **Kết quả đo lường:** Dung lượng `products.json` của 1.000 sản phẩm giảm từ **~100 MB** xuống còn **~250 KB** (giảm 99.7%), thời gian phản hồi trang dưới **0.2 giây**.
 
+---
+
+### 8.7. Chính Sách Thay Thế Ảnh & Công Cụ Dọn Dẹp Ảnh Rác (Image Replacement & Cleanup Policy):
+
+#### A. Tại sao hệ thống KHÔNG tự động xóa file ảnh cũ khi đổi ảnh mới?
+1. **Bảo toàn Lịch sử Đơn hàng & Phiếu in (`orders_YYYY_MM.json`):**
+   - Đơn hàng đã đặt trong quá khứ lưu thông tin sản phẩm và link ảnh tại thời điểm mua. Nếu xóa ảnh cũ, khi khách hàng hoặc nhân viên mở lại lịch sử đơn hàng hoặc in lại phiếu K80/A5 sẽ bị lỗi vỡ hình (404 Not Found).
+2. **Cơ chế Cache Busting & Immutable HTTP Caching:**
+   - Trình duyệt lưu cache ảnh với `Cache-Control: immutable`. Khi đổi ảnh, file mới được cấp tên độc nhất kèm timestamp + hash (`prod_{timestamp}_{uuid}.jpg`). Tên file mới giúp trình duyệt tải ảnh mới tức thì mà không bị kẹt cache cũ.
+3. **An toàn khi thao tác Admin (Draft / Cancel):**
+   - Khi nhân viên tải ảnh lên thử nghiệm nhưng bấm "Hủy" hoặc chưa bấm "Lưu", ảnh cũ của sản phẩm vẫn được bảo toàn nguyên vẹn.
+
+#### B. Công cụ Dọn dẹp Định kỳ (`scripts/cleanup_unused_images.py`):
+Khi cần dọn dẹp dung lượng đĩa và loại bỏ các ảnh rác/ảnh mồ côi (không còn được tham chiếu trong bất kỳ sản phẩm, danh mục, banner hay đơn hàng nào), quản trị viên sử dụng script tự động:
+
+```bash
+# 1. Chế độ xem trước an toàn (Dry-Run Preview - không xóa file)
+python scripts/cleanup_unused_images.py --path .
+
+# 2. Xóa kèm sao lưu dự phòng sang thư mục backup (Khuyên dùng)
+python scripts/cleanup_unused_images.py --path . --delete --backup-dir ./backup_images
+
+# 3. Xóa vĩnh viễn
+python scripts/cleanup_unused_images.py --path . --delete
+```
+
+
