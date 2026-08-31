@@ -38,8 +38,6 @@ def find_flower_image_file(filename: str, auto_remote_fetch: bool = False) -> Op
     1. config/anne/images/<filename>
     2. config/anne/products/images/<filename>
     3. config/anne/images/products/<filename>
-    4. src/static/images/products/<filename>
-    5. src/static/images/<filename>
     """
     if not filename or ".." in filename:
         return None
@@ -54,8 +52,6 @@ def find_flower_image_file(filename: str, auto_remote_fetch: bool = False) -> Op
         os.path.join(PRODUCT_IMAGES_DIR, clean_name),
         os.path.join(ROOT_DIR, "config", "anne", "images", clean_name),
         os.path.join(ROOT_DIR, "config", "anne", "products", "images", clean_name),
-        os.path.join(ROOT_DIR, "src", "static", "images", "products", clean_name),
-        os.path.join(ROOT_DIR, "src", "static", "images", clean_name)
     ]
 
     for path in candidates:
