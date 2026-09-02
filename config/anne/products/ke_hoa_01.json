@@ -1,0 +1,56 @@
+{
+  "id": "ke_hoa_01",
+  "name": "Kệ Hoa Khai Trương Phát Lộc",
+  "nameTextId": null,
+  "category": "ke_hoa",
+  "priceLevelId": "price_lvl_03",
+  "priceNumber": 2500000,
+  "salePrice": "2,500,000₫",
+  "originalPrice": "2,500,000₫",
+  "badge": "",
+  "image": "/api/flower/v1/images/prod_1788078004_2f08d803.jpg",
+  "gallery": [
+    "/api/flower/v1/images/ke_hoa_01.webp",
+    "/api/flower/v1/images/ke_hoa_01.webp"
+  ],
+  "description": "Kệ hoa khai trương 2 tầng hoành tráng tone màu đỏ vàng rực rỡ, biểu trưng cho sự thịnh vượng, tài lộc dồi dào.",
+  "descTextId": null,
+  "flowerComposition": "Hoa Đồng Tiền đỏ & vàng (30 bông), Hoa Hướng Dương (10 bông), Lan Vũ Nữ, Hồng Môn đỏ, Kèm Banner in chữ kim nhũ sang trọng",
+  "compTextId": null,
+  "dimension": "Cao 180cm x Rộng 80cm (Kệ 2 tầng)",
+  "careTips": "Châm 500ml nước vào xốp cắm hoa mỗi sáng để hoa tươi lâu 3-5 ngày.",
+  "i18n": {
+    "en": {
+      "careTips": "Pour 500ml of water into the floral foam each morning to maintain freshness for 3-5 days.",
+      "description": "Grand 2-tier opening flower stand in radiant red and gold, symbolizing massive prosperity, flourishing fortune, and success.",
+      "flowerComposition": "Red & Yellow Gerberas (30 stems), Sunflowers (10 stems), Dancing-Lady Orchids, Red Anthuriums, Includes Gold Foil Lettering Banner",
+      "name": "Grand Opening Prosperity Flower Stand"
+    },
+    "ja": {
+      "careTips": "毎朝吸水スポンジに約500mlの水を補給してください（3〜5日間美しさが持続します）。",
+      "description": "赤と金を基調とした華やかな2段仕立ての開店祝いスタンド花。千客万来と商売繁盛を心より祈念します。",
+      "flowerComposition": "赤・黄ガーベラ（30本）、ひまわり（10本）、オンシジューム、アンスリウム、高級ゴールド名札リボン付き",
+      "name": "開店祝・繁栄祈願 2段スタンド花"
+    },
+    "ko": {
+      "careTips": "매일 아침 오아시스에 물 500ml를 충분히 보충해 주시면 3~5일간 신선함이 유지됩니다.",
+      "description": "화려한 붉은색과 황금빛이 어우러진 2단 축하 화환으로 사업 번창과 무궁한 발전을 기원합니다.",
+      "flowerComposition": "레드 & 옐로우 거베라 (30송이), 해바라기 (10송이), 온시디움 난, 안스리움, 고급 금박 축하 리본 포함",
+      "name": "개업 축하 대박 기원 2단 축하 화환"
+    },
+    "zh": {
+      "careTips": "每天早晨向花篮底座的花泥注入500毫升水，可保持3至5天花期艳丽。",
+      "description": "隆重喜庆的双层开业庆典花篮，红金色调交相辉映，寓意财源广进、大展宏图、生意兴隆。",
+      "flowerComposition": "红黄太阳花（30支）、向日葵（10支）、文心兰、红掌、附赠烫金贺词条幅",
+      "name": "开业大吉 招财进宝双层花篮"
+    }
+  },
+  "stockByBranch": {
+    "branch_q10": 4,
+    "branch_q1": 2,
+    "branch_thao_dien": 2
+  },
+  "dailyQuota": 8,
+  "isActive": true,
+  "updatedAt": "2026-08-30T08:20:26Z"
+}

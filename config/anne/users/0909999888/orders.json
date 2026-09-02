@@ -1,0 +1,2877 @@
+[
+  {
+    "id": "ord_1788321044_71bb8d",
+    "orderCode": "NHTB-260902-JNUO",
+    "createdAt": "2026-09-02T10:50:44Z",
+    "orderDate": "2026-09-02T10:50:44Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-JNUO",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260902-JNUO6304311F",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260902-JNUO&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACk0lEQVR4nO1b227lMAhkUP//l2fFNWmfnEqtQ9c8pImDdAwaYAwpKIuiq4pyNFdEl7T+d80PEcQdQYgYXGFXW6X4mgnHWKRbNT/cV+FEpEsJ0J3pvmS8HWORbtUU0j1W17ijO5H3t5xikW7HZ4oHucd3uhYW7zLNIn2PJiKJwuPbgh6/+et/B5/0WytDjkd+qk7CWRbpdn8i72nedICmC61ACYZZpFs1cePz4Tw6TuPPT/+6/kVNOASNHCXxdL4Ua5lK5fClJ/HOYp5X3ixe30l1jEW6W5OeMQOl7rt+CEaPyLDb9zlFE8E1aWD0QA/qaY52nJLv2OeUeGcGdtYfB2dlAAcnMcki3aqJpkZ34hQrUeHhNGr3PnWIplg0e1z3ab0ofb8Wi/xzfl8SXK25ZJ55zZd9M8YifQE+5bpGGUq8Xo0nHnwuCYIfBUq/4PJ+dpIxFulWTbHU2N3OWLnan/kspjbFIt2qiWZK1fyogu/tkdP//GY/GXWOz3ZISRw/bW2KRbpfk3VkT/JUY444i5KwtRfscxA+JUZwxePhDk284vB5eaiJbCjVNK7GSIZPifh/xT5H1Hep81Gfh3rQkdyTp74vCmq8HiW+ynom1ZyBjLJIt2qKAzIpZh+OEqW3ETwPPtf7dRKcqL+28doUwLxGnlMs0q2a6O5nSDL7jvdcxOGfT/Ap3f2MQu/N5JjNSfl6ikW6VVM+pcrOmLUS/ElO/nyiyWiJ5PTdE0B7+erZ7d/nkHiX7oL0+SgJUw895eTP59/XyTV7z29Doi3KeJhikb5FExHZPXsPYIp9JWJz+Nfs8/34pN/6jNg7IcWgusWMkz+/Ud/ZnyP3Sam79Tz1fUlw/l9mQXRFyeVorsh6vP8DdPBuB004HEMAAAAASUVORK5CYII="
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:50:44Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788320827_5b81a2",
+    "orderCode": "NHTB-260902-A1JL",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "orderDate": "2026-09-02T10:47:07Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-A1JL",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260902-A1JL6304D86D",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260902-A1JL&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACgElEQVR4nO1a0XLkMAhDzP7/L3NjBCQ30wdnXwitud7W3ejBaGQj48BkM3QXKAe5E7qF+utIsRSoidWHmNkark+G2ZSMtBX5cSZFBCLwgQFisPyQfDolI23nU0BNyiJwfdhi1vV5PZUpGWk/nwyK0el00S6FktFRGelb+DRQiiHS/9mUMRlpP5/GsVMJsdInt1R7wzx1ZH23H/4xTn3fi0/pbwWixq/azt/X0ykZabs+jZwGg2FA3YLSg4ob0ikZaSsSlzqxijvLPP+46VS656lzkFjEVfWhofciz8UOENE+z0FIuEHy/1zypc0wTed8tBnwFe5BFtPIX6veOJiSkXYjEZ0PrnADvCTFTroYZdVvn+cYfUroskqSK5Rcpm6PPp/4eUublF/efJQdvySPkJbSTPoiSLIkz+3znINE1fZY27HSF8vm3ZGzfz5BWvRAkr86LfkmCrL7gnnOqEcIRZY7IovVAAWfTslIW5Fw/q6jZnlPdpVvTVBtnafOQcKPmGx9ulGKU2ddecC31vZ5TurXGQ/xLlhK1K/juAEYJmWk7UjkhVzoMVzTUmy0l3D2zwdIi36S/3g1d0XmzonTD9FtJOJKOLsg1yCIlixWUzLS9vs4rEHeZ7pWr72Tce7fdwN5GApN0n6mFS1HKqcfshfIdlJ1mIrXmwe19nnqwPsjif3ybulrBxiTkbYiP7f2/HKadPbX+Yjd5v556sT366QO6+zRr+/NYae+f/V+HfI9u6xIfmzCqe/yBRLkLtsg/lW80iDHz3+DNO6heVTi2I6fl4fr3XwYRDqLXPC5+NE/Tx2CRN5sXDeaaT3jPWUJcqdkpG/xn78kIz3IjZiC/Ad7kmlA071RRAAAAABJRU5ErkJggg=="
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:47:07Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788317222_84e077",
+    "orderCode": "NHTB-260902-Y71W",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "orderDate": "2026-09-02T09:47:02Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T09:47:02Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190981_006ed0",
+    "orderCode": "NHTB-260831-YO1E",
+    "createdAt": "2026-08-31T22:43:01Z",
+    "orderDate": "2026-08-31T22:43:01Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:43:01Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190787_2b2c78",
+    "orderCode": "NHTB-260831-909K",
+    "createdAt": "2026-08-31T22:39:47Z",
+    "orderDate": "2026-08-31T22:39:47Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:39:47Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190503_678b87",
+    "orderCode": "NHTB-260831-S9RC",
+    "createdAt": "2026-08-31T22:35:03Z",
+    "orderDate": "2026-08-31T22:35:03Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:35:03Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788186211_05b9ae",
+    "orderCode": "NHTB-260831-TZSY",
+    "createdAt": "2026-08-31T21:23:31Z",
+    "orderDate": "2026-08-31T21:23:31Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T21:23:31Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788155265_2ace80",
+    "orderCode": "NHTB-260831-MTTR",
+    "createdAt": "2026-08-31T12:47:45Z",
+    "orderDate": "2026-08-31T12:47:45Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T12:47:45Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788155057_360cbd",
+    "orderCode": "NHTB-260831-7GA1",
+    "createdAt": "2026-08-31T12:44:17Z",
+    "orderDate": "2026-08-31T12:44:17Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T12:44:17Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788084450_733ac2",
+    "orderCode": "NHTB-260830-OYJN",
+    "createdAt": "2026-08-30T17:07:30Z",
+    "orderDate": "2026-08-30T17:07:30Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T17:07:30Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788084230_6345c1",
+    "orderCode": "NHTB-260830-2HWD",
+    "createdAt": "2026-08-30T17:03:50Z",
+    "orderDate": "2026-08-30T17:03:50Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T17:03:50Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788084123_221e83",
+    "orderCode": "NHTB-260830-L526",
+    "createdAt": "2026-08-30T17:02:03Z",
+    "orderDate": "2026-08-30T17:02:03Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T17:02:03Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788083870_9e1b70",
+    "orderCode": "NHTB-260830-13S4",
+    "createdAt": "2026-08-30T16:57:50Z",
+    "orderDate": "2026-08-30T16:57:50Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T16:57:50Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788077877_4a356d",
+    "orderCode": "NHTB-260830-NQU2",
+    "createdAt": "2026-08-30T15:17:57Z",
+    "orderDate": "2026-08-30T15:17:57Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T15:17:57Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788070575_e2cbf0",
+    "orderCode": "NHTB-260830-EZAC",
+    "createdAt": "2026-08-30T13:16:15Z",
+    "orderDate": "2026-08-30T13:16:15Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/flower/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T13:16:15Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788062746_7a602a",
+    "orderCode": "NHTB-260830-S1FW",
+    "createdAt": "2026-08-30T11:05:46Z",
+    "orderDate": "2026-08-30T11:05:46Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/flower/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T11:05:46Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788062612_3e5fbb",
+    "orderCode": "NHTB-260830-WDA8",
+    "createdAt": "2026-08-30T11:03:32Z",
+    "orderDate": "2026-08-30T11:03:32Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/flower/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T11:03:32Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788061570_819e96",
+    "orderCode": "NHTB-260830-RQSO",
+    "createdAt": "2026-08-30T10:46:10Z",
+    "orderDate": "2026-08-30T10:46:10Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T10:46:10Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788061446_c5e067",
+    "orderCode": "NHTB-260830-2GT1",
+    "createdAt": "2026-08-30T10:44:06Z",
+    "orderDate": "2026-08-30T10:44:06Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T10:44:06Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788061377_cacd5b",
+    "orderCode": "NHTB-260830-UEBL",
+    "createdAt": "2026-08-30T10:42:57Z",
+    "orderDate": "2026-08-30T10:42:57Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T10:42:57Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787972903_438340",
+    "orderCode": "NHTB-260829-NNOJ",
+    "createdAt": "2026-08-29T10:08:23Z",
+    "orderDate": "2026-08-29T10:08:23Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T10:08:23Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787972070_7d99f7",
+    "orderCode": "NHTB-260829-KDV3",
+    "createdAt": "2026-08-29T09:54:30Z",
+    "orderDate": "2026-08-29T09:54:30Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:54:30Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787971750_d74100",
+    "orderCode": "NHTB-260829-UQG3",
+    "createdAt": "2026-08-29T09:49:10Z",
+    "orderDate": "2026-08-29T09:49:10Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:49:10Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787971404_5e0ad5",
+    "orderCode": "NHTB-260829-JZW9",
+    "createdAt": "2026-08-29T09:43:24Z",
+    "orderDate": "2026-08-29T09:43:24Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:43:24Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787970071_960dc5",
+    "orderCode": "NHTB-260829-JU2R",
+    "createdAt": "2026-08-29T09:21:11Z",
+    "orderDate": "2026-08-29T09:21:11Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:21:11Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787969981_1350ac",
+    "orderCode": "NHTB-260829-F15D",
+    "createdAt": "2026-08-29T09:19:41Z",
+    "orderDate": "2026-08-29T09:19:41Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:19:41Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787969860_e03d2d",
+    "orderCode": "NHTB-260829-7URH",
+    "createdAt": "2026-08-29T09:17:40Z",
+    "orderDate": "2026-08-29T09:17:40Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:17:40Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787969699_e768f5",
+    "orderCode": "NHTB-260829-2H59",
+    "createdAt": "2026-08-29T09:14:59Z",
+    "orderDate": "2026-08-29T09:14:59Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-29",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:14:59Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787964455_1430c4",
+    "orderCode": "NHTB-260829-IPDW",
+    "createdAt": "2026-08-29T07:47:35Z",
+    "orderDate": "2026-08-29T07:47:35Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-29",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T07:47:35Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787932861_75f4fe",
+    "orderCode": "NHTB-260828-MGWY",
+    "createdAt": "2026-08-28T23:01:01Z",
+    "orderDate": "2026-08-28T23:01:01Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-28",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-28T23:01:01Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787412029_9f7954",
+    "orderCode": "NHTB-260822-UM1Z",
+    "createdAt": "2026-08-22T15:20:29Z",
+    "orderDate": "2026-08-22T15:20:29Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-22",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-22T15:20:29Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787412356_c69c3c",
+    "orderCode": "NHTB-260822-3FN1",
+    "createdAt": "2026-08-22T15:25:56Z",
+    "orderDate": "2026-08-22T15:25:56Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-22",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-22T15:25:56Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787473138_13a0ac",
+    "orderCode": "NHTB-260823-FNQI",
+    "createdAt": "2026-08-23T08:18:58Z",
+    "orderDate": "2026-08-23T08:18:58Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:18:58Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787473769_61fbf5",
+    "orderCode": "NHTB-260823-O8ZS",
+    "createdAt": "2026-08-23T08:29:29Z",
+    "orderDate": "2026-08-23T08:29:29Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:29:29Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787474085_ade744",
+    "orderCode": "NHTB-260823-X29A",
+    "createdAt": "2026-08-23T08:34:45Z",
+    "orderDate": "2026-08-23T08:34:45Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:34:45Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787474547_ff2e79",
+    "orderCode": "NHTB-260823-Y55C",
+    "createdAt": "2026-08-23T08:42:27Z",
+    "orderDate": "2026-08-23T08:42:27Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:42:27Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787475283_f91f3d",
+    "orderCode": "NHTB-260823-HXHI",
+    "createdAt": "2026-08-23T08:54:43Z",
+    "orderDate": "2026-08-23T08:54:43Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:54:43Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478455_0dcd3f",
+    "orderCode": "NHTB-260823-R3QP",
+    "createdAt": "2026-08-23T09:47:35Z",
+    "orderDate": "2026-08-23T09:47:35Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:47:35Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478541_d8ec12",
+    "orderCode": "NHTB-260823-YIDS",
+    "createdAt": "2026-08-23T09:49:01Z",
+    "orderDate": "2026-08-23T09:49:01Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:49:01Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478624_42572e",
+    "orderCode": "NHTB-260823-GSLP",
+    "createdAt": "2026-08-23T09:50:24Z",
+    "orderDate": "2026-08-23T09:50:24Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:50:24Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478758_ef038c",
+    "orderCode": "NHTB-260823-K2AY",
+    "createdAt": "2026-08-23T09:52:38Z",
+    "orderDate": "2026-08-23T09:52:38Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:52:38Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478858_ac67cc",
+    "orderCode": "NHTB-260823-JA4F",
+    "createdAt": "2026-08-23T09:54:18Z",
+    "orderDate": "2026-08-23T09:54:18Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:54:18Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787479106_1cfe51",
+    "orderCode": "NHTB-260823-PVN0",
+    "createdAt": "2026-08-23T09:58:26Z",
+    "orderDate": "2026-08-23T09:58:26Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Người Yêu Cũ",
+      "phone": "0909999888",
+      "email": "",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "14:00 - 16:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:58:26Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0909999888"
+      }
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "id": "bo_nang_cap_test_1787971952626",
+  "name": "Bó Hoa Standard Nâng Cấp Luxury",
+  "category": "bo_hoa",
+  "priceLevelId": "price_lvl_03",
+  "priceNumber": 1800000,
+  "salePrice": "1,800,000₫",
+  "originalPrice": "1,800,000₫",
+  "badge": "Mới",
+  "image": "/api/flower/v1/images/bo_nang_cap_test_1787971952626.webp",
+  "gallery": [],
+  "description": "",
+  "flowerComposition": "",
+  "dimension": "",
+  "careTips": "Để nơi thoáng mát, phun sương mỗi ngày",
+  "stockByBranch": {
+    "branch_q10": 10,
+    "branch_q1": 5,
+    "branch_thao_dien": 5
+  },
+  "dailyQuota": 15,
+  "isActive": true,
+  "updatedAt": "2026-08-29T09:52:32Z"
+}

@@ -1,0 +1,56 @@
+{
+  "id": "binh_hoa_02",
+  "name": "Bình Gốm Sứ Bắc Âu Phong Cách Vintage",
+  "nameTextId": null,
+  "category": "binh_hoa",
+  "priceLevelId": "price_lvl_02",
+  "priceNumber": 620000,
+  "salePrice": "620,000₫",
+  "originalPrice": "620,000₫",
+  "badge": "Mới",
+  "image": "/api/flower/v1/images/prod_1788078148_beea506d.jpg",
+  "gallery": [
+    "/api/flower/v1/images/binh_hoa_02.webp",
+    "/api/flower/v1/images/binh_hoa_02.webp"
+  ],
+  "description": "Bình gốm thủ công tráng men mờ theo phong cách Scandinavian Bắc Âu, tôn vinh nghệ thuật cắm hoa 'Thả Bình' tối giản.",
+  "descTextId": null,
+  "flowerComposition": "Chất liệu Gốm Bát Tràng tráng men cao cấp, bề mặt phủ nhám mịn tinh xảo",
+  "compTextId": null,
+  "dimension": "Cao 28cm x Đường kính miệng 12cm x Đáy 15cm",
+  "careTips": "Vệ sinh bằng nước ấm và khăn mềm, tránh va đập mạnh hoặc cọ rửa bằng búi kim loại.",
+  "i18n": {
+    "en": {
+      "careTips": "Clean with warm water and a soft cloth, avoid heavy impacts or abrasive scrubbers.",
+      "description": "Handmade Scandinavian matte glazed ceramic vase, celebrating minimalist effortless floral styling.",
+      "flowerComposition": "Premium Bat Trang Glazed Ceramic, Fine Matte Textured Finish",
+      "name": "Nordic Vintage Ceramic Flower Vase"
+    },
+    "ja": {
+      "careTips": "ぬるま湯と柔らかい布でお手入れしてください。強い衝撃や金属たわしのご使用はお控えください。",
+      "description": "北欧スカンジナビアン風の手作り陶器花瓶。ミニマルなフラワーアレンジメントを優雅に引き立てます。",
+      "flowerComposition": "高級バッチャン焼きマット釉薬陶器、上質な梨地仕上げ",
+      "name": "北欧ヴィンテージ調 セラミック花瓶"
+    },
+    "ko": {
+      "careTips": "미온수와 부드러운 천으로 세척해 주시고, 강한 충격이나 철수세미 사용을 피하세요.",
+      "description": "북유럽 스칸디나비안 감성의 수제 세라믹 화병으로 감각적인 미니멀 플라워 연출에 제격입니다.",
+      "flowerComposition": "프리미엄 밧짱 도자기 매트 유약, 고급스러운 질감 마감",
+      "name": "노르딕 빈티지 세라믹 플라워 화병"
+    },
+    "zh": {
+      "careTips": "用温水及软布擦洗，避免剧烈碰撞或使用钢丝球清洁。",
+      "description": "手工拉胚北欧极简风磨砂陶瓷花瓶，专为自由插花与现代家居空间设计。",
+      "flowerComposition": "优质钵场高档施釉陶瓷、细腻磨砂质感表面",
+      "name": "北欧复古风 哑光陶瓷花瓶"
+    }
+  },
+  "stockByBranch": {
+    "branch_q10": 10,
+    "branch_q1": 6,
+    "branch_thao_dien": 5
+  },
+  "dailyQuota": 20,
+  "isActive": true,
+  "updatedAt": "2026-08-30T08:22:48Z"
+}

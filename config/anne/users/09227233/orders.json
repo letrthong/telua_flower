@@ -1,0 +1,69 @@
+[
+  {
+    "id": "ord_1788317242_e234db",
+    "orderCode": "NHTB-260902-MK9J",
+    "createdAt": "2026-09-02T09:47:22Z",
+    "orderDate": "2026-09-02T09:47:22Z",
+    "branchId": "branch_q1",
+    "customerId": "cust_1788317233",
+    "status": "pending",
+    "cardMessage": "Bí mật tình yêu",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "123456",
+      "phone": "09227233",
+      "email": "cust_b@test.com",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Người Nhận Bí Mật",
+      "phone": "0988777666",
+      "address": "123 Nguyễn Trãi, Quận 1",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Bí mật tình yêu",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T09:47:22Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "09227233"
+      }
+    ]
+  }
+]

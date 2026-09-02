@@ -1,0 +1,3049 @@
+[
+  {
+    "id": "ord_1788321044_1a6d95",
+    "orderCode": "NHTB-260902-PMVW",
+    "createdAt": "2026-09-02T10:50:44Z",
+    "orderDate": "2026-09-02T10:50:44Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-PMVW",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454067140005802VN62250821NHTB NHTB-260902-PMVW6304849D",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=714000&addInfo=NHTB%20NHTB-260902-PMVW&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAAChUlEQVR4nO1ay27EMAgEtP//y1PBgJMcKmVPmNa02ji7c4ART9sKeSn2FigH+UbsFeq/Iz8iyhUUvvaHr0Q0vwnBGIusFfkJrpw9J1DghMYqmFXB+nWKRdbOp2hw6hzWi1N74xLteto8pDqJ7p3plqr+v5+e+/snxZ3QmRSNYCetl0yxyPr5BNfq3hm+yZiPr6R+nWKRtSIF5YP45Y8CTLHIWpGf5X/RMvHNPZTfXoTKFIus3T+RLBaF/IRLPMUBxz9fid6q0L07ig40m/xZFlk3Uhen3h55rLNnymDXbJva9RyFVMB5DeZw881sms589FJ0jei14Kh5i3pwMcUia0eCVYcR7tEe9SdTACLgsYOek+o7WN5Z1nORFR8s/lMsslakJHvPpikZvi8wxSLrRoJh7kx6kK8GCc+O1Lr1nIPU6pa4hcyseY30ElxvoOccJK46vmbOfEX0UZvoOSN/ov4iUeaImfGPrEknf37Tf4KL6j3jnd2o5m9jLLJupEbTSfri1IgFPQdO8GhpAz1H7deBpKVH5riZ4xF0kkXWjdQo8NWC1tlcEMutEjnzkXyFVJ7DhfD8PbJmNp569kPsGySeR2+ZS/Noc11n6NdzSv6USp4e9XleTDe9To+kW08bgtQahnIiyokz2ayHnPs2L0Vzb341nZlI6wbTWo+xyFqRep1urj6ptpNZliSjf4pFtsv9OslEyuJejqp1ZDzFItvmfh0e9xar0Zf8nGKRbXW/Dkyj4Zwe+Pls19PmIZWlPBjkw4kF79ptpOf+/lly2wjhHTtPpcgLy1Mssl3u14EjUex/kMPHXr216mkT79fh2lFeO8yIj3Me933/+UcssoN8IVOQPwwjfRG+riRfAAAAAElFTkSuQmCC"
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:50:44Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788320827_8837f1",
+    "orderCode": "NHTB-260902-9D8W",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "orderDate": "2026-09-02T10:47:07Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-9D8W",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454067140005802VN62250821NHTB NHTB-260902-9D8W6304A45B",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=714000&addInfo=NHTB%20NHTB-260902-9D8W&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAAChklEQVR4nO1ay47DMAgE1P//5VnBgJNIPbg5bExrVmoTG3UN4jFgFDJJNssom3OGbIrr1zkFZaAQHG/8RqwFAV0kskc5X6FJEVERhSogSh1C4YtSu10kssf1KXrRKVTginTCsdtFIntenyQ3R3f5oc14bSeRrcKpdHR1G02z1P/7799kn4jHcnmPnB473VbjQxY4p7XM73jzR9r5fY70FCI9XlZSz7zUUCJ7lFMcYx5qQzwTfHIdtNFtn3NkzOsVJT0ZwaMmgVItAgucs42/a6LMkZN8zR8vQNQePac14dShQWrPIygDaIJ51EcXiWwNTi3vJkZyl1dV9QgQm6ucswH+1LJKt1B6+AgDrEF3/T5NyCSeiTzSfeZ3JnYhw87vn+ElnFGSq7QUi42X5DO8pBk1XX/KMj6DaQAnED49fs4+9ilHO3l85d6A+Ns+5whOfBh9kRFA8122PmdJRyEUTaVcTPzJIl4YDbpIZI9yvqr/Hi3PLIeyF1Kq1AXOaU04ZcTKcvlLl+7I9ugika1Rb+rRT3YK5w98L7nVRSJ7lFPCANNOeXv0pm2HbZ8fcQLZ/8jLuLrwPPfybPYn5dc54X2PqN+rHvKVMMu4jxdd45xdODXhEpsf2axjU2lcgMgC52ySjzS6S4U+T3lp4E/4YheJbIF5BtA+meXp+2GW6eriC10kslXuNzWh0xi5SRClVHgXiWyB+ug8qnSaC2HNJPBbujYS2ULzdRKhtBQcwROVn7pIZGvN10m6PQsjGq/u+HmHExE03bvjxl2vsw526zd/el4RTOsEUJXhoQRNXSSyVebr5PDtMQ3K3K7b3+/Oz8vRCKkuPfZ9h92ar/sOiWxzTlAXzj+pRX7xP/cHaQAAAABJRU5ErkJggg=="
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:47:07Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788317222_f9eafc",
+    "orderCode": "NHTB-260902-4L9N",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "orderDate": "2026-09-02T09:47:02Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T09:47:02Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190982_68f740",
+    "orderCode": "NHTB-260831-UH3P",
+    "createdAt": "2026-08-31T22:43:02Z",
+    "orderDate": "2026-08-31T22:43:02Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:43:02Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190787_71bf2f",
+    "orderCode": "NHTB-260831-A4CZ",
+    "createdAt": "2026-08-31T22:39:47Z",
+    "orderDate": "2026-08-31T22:39:47Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:39:47Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190503_81eb9b",
+    "orderCode": "NHTB-260831-TS7Q",
+    "createdAt": "2026-08-31T22:35:03Z",
+    "orderDate": "2026-08-31T22:35:03Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:35:03Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788186211_bd834e",
+    "orderCode": "NHTB-260831-Q6DY",
+    "createdAt": "2026-08-31T21:23:31Z",
+    "orderDate": "2026-08-31T21:23:31Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T21:23:31Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788155265_eecfd1",
+    "orderCode": "NHTB-260831-52WY",
+    "createdAt": "2026-08-31T12:47:45Z",
+    "orderDate": "2026-08-31T12:47:45Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T12:47:45Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788155057_69478f",
+    "orderCode": "NHTB-260831-M4ON",
+    "createdAt": "2026-08-31T12:44:17Z",
+    "orderDate": "2026-08-31T12:44:17Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T12:44:17Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788084450_9f03c1",
+    "orderCode": "NHTB-260830-O64Y",
+    "createdAt": "2026-08-30T17:07:30Z",
+    "orderDate": "2026-08-30T17:07:30Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T17:07:30Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788084230_d09f17",
+    "orderCode": "NHTB-260830-IQ82",
+    "createdAt": "2026-08-30T17:03:50Z",
+    "orderDate": "2026-08-30T17:03:50Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T17:03:50Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788084123_071a12",
+    "orderCode": "NHTB-260830-H7XJ",
+    "createdAt": "2026-08-30T17:02:03Z",
+    "orderDate": "2026-08-30T17:02:03Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T17:02:03Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788083870_ee9b43",
+    "orderCode": "NHTB-260830-VEAA",
+    "createdAt": "2026-08-30T16:57:50Z",
+    "orderDate": "2026-08-30T16:57:50Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T16:57:50Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788077877_772eea",
+    "orderCode": "NHTB-260830-FWIE",
+    "createdAt": "2026-08-30T15:17:57Z",
+    "orderDate": "2026-08-30T15:17:57Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T15:17:57Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788070576_3f9d61",
+    "orderCode": "NHTB-260830-N4F7",
+    "createdAt": "2026-08-30T13:16:16Z",
+    "orderDate": "2026-08-30T13:16:16Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/flower/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T13:16:16Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788062746_e21be8",
+    "orderCode": "NHTB-260830-QGQI",
+    "createdAt": "2026-08-30T11:05:46Z",
+    "orderDate": "2026-08-30T11:05:46Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/flower/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T11:05:46Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788062613_9fbe39",
+    "orderCode": "NHTB-260830-VCX0",
+    "createdAt": "2026-08-30T11:03:33Z",
+    "orderDate": "2026-08-30T11:03:33Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/flower/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T11:03:33Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788061570_78e2ab",
+    "orderCode": "NHTB-260830-I1KR",
+    "createdAt": "2026-08-30T10:46:10Z",
+    "orderDate": "2026-08-30T10:46:10Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T10:46:10Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788061446_5a02f5",
+    "orderCode": "NHTB-260830-79DK",
+    "createdAt": "2026-08-30T10:44:06Z",
+    "orderDate": "2026-08-30T10:44:06Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T10:44:06Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788061377_4f96bf",
+    "orderCode": "NHTB-260830-D06D",
+    "createdAt": "2026-08-30T10:42:57Z",
+    "orderDate": "2026-08-30T10:42:57Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-01",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-30T10:42:57Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787972904_ad8111",
+    "orderCode": "NHTB-260829-UOEY",
+    "createdAt": "2026-08-29T10:08:24Z",
+    "orderDate": "2026-08-29T10:08:24Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T10:08:24Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787972071_a1ca5a",
+    "orderCode": "NHTB-260829-HRWR",
+    "createdAt": "2026-08-29T09:54:31Z",
+    "orderDate": "2026-08-29T09:54:31Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:54:31Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787971751_3476e6",
+    "orderCode": "NHTB-260829-CBD6",
+    "createdAt": "2026-08-29T09:49:11Z",
+    "orderDate": "2026-08-29T09:49:11Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:49:11Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787971404_571bcf",
+    "orderCode": "NHTB-260829-BB5T",
+    "createdAt": "2026-08-29T09:43:24Z",
+    "orderDate": "2026-08-29T09:43:24Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:43:24Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787970071_b8795d",
+    "orderCode": "NHTB-260829-FMUF",
+    "createdAt": "2026-08-29T09:21:11Z",
+    "orderDate": "2026-08-29T09:21:11Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:21:11Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787969981_415130",
+    "orderCode": "NHTB-260829-F2SI",
+    "createdAt": "2026-08-29T09:19:41Z",
+    "orderDate": "2026-08-29T09:19:41Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:19:41Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787969860_7a9b13",
+    "orderCode": "NHTB-260829-SGM5",
+    "createdAt": "2026-08-29T09:17:40Z",
+    "orderDate": "2026-08-29T09:17:40Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-31",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:17:40Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787969699_534ce6",
+    "orderCode": "NHTB-260829-ZTAR",
+    "createdAt": "2026-08-29T09:14:59Z",
+    "orderDate": "2026-08-29T09:14:59Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-29",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T09:14:59Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787964456_4abbd6",
+    "orderCode": "NHTB-260829-VVA9",
+    "createdAt": "2026-08-29T07:47:36Z",
+    "orderDate": "2026-08-29T07:47:36Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-29",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-29T07:47:36Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787932861_dab16c",
+    "orderCode": "NHTB-260828-4JPK",
+    "createdAt": "2026-08-28T23:01:01Z",
+    "orderDate": "2026-08-28T23:01:01Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-28",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-28T23:01:01Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787412030_8675de",
+    "orderCode": "NHTB-260822-QQ6S",
+    "createdAt": "2026-08-22T15:20:30Z",
+    "orderDate": "2026-08-22T15:20:30Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-22",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-22T15:20:30Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787412357_490541",
+    "orderCode": "NHTB-260822-STJ1",
+    "createdAt": "2026-08-22T15:25:57Z",
+    "orderDate": "2026-08-22T15:25:57Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-22",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-22T15:25:57Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787473138_16c003",
+    "orderCode": "NHTB-260823-Z833",
+    "createdAt": "2026-08-23T08:18:58Z",
+    "orderDate": "2026-08-23T08:18:58Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:18:58Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787473769_107f6e",
+    "orderCode": "NHTB-260823-EVM2",
+    "createdAt": "2026-08-23T08:29:29Z",
+    "orderDate": "2026-08-23T08:29:29Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:29:29Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787474086_00e615",
+    "orderCode": "NHTB-260823-R5Q8",
+    "createdAt": "2026-08-23T08:34:46Z",
+    "orderDate": "2026-08-23T08:34:46Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:34:46Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787474548_8b76c1",
+    "orderCode": "NHTB-260823-5ENC",
+    "createdAt": "2026-08-23T08:42:28Z",
+    "orderDate": "2026-08-23T08:42:28Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:42:28Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787475283_b20a51",
+    "orderCode": "NHTB-260823-ZZ9X",
+    "createdAt": "2026-08-23T08:54:43Z",
+    "orderDate": "2026-08-23T08:54:43Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T08:54:43Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478455_9967e2",
+    "orderCode": "NHTB-260823-8TD2",
+    "createdAt": "2026-08-23T09:47:35Z",
+    "orderDate": "2026-08-23T09:47:35Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:47:35Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478541_efb1ae",
+    "orderCode": "NHTB-260823-FGEL",
+    "createdAt": "2026-08-23T09:49:01Z",
+    "orderDate": "2026-08-23T09:49:01Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:49:01Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478624_6d789e",
+    "orderCode": "NHTB-260823-BOV3",
+    "createdAt": "2026-08-23T09:50:24Z",
+    "orderDate": "2026-08-23T09:50:24Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:50:24Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478758_2ad1ff",
+    "orderCode": "NHTB-260823-XTH3",
+    "createdAt": "2026-08-23T09:52:38Z",
+    "orderDate": "2026-08-23T09:52:38Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:52:38Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787478858_465390",
+    "orderCode": "NHTB-260823-3J9Z",
+    "createdAt": "2026-08-23T09:54:18Z",
+    "orderDate": "2026-08-23T09:54:18Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:54:18Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  },
+  {
+    "id": "ord_1787479106_318d6e",
+    "orderCode": "NHTB-260823-R4NU",
+    "createdAt": "2026-08-23T09:58:26Z",
+    "orderDate": "2026-08-23T09:58:26Z",
+    "branchId": "branch_q1",
+    "customerId": null,
+    "status": "pending",
+    "sender": {
+      "name": "Test Voucher",
+      "realName": "Test Voucher",
+      "phone": "0911000222",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-08-23",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 126000,
+      "totalAmount": 714000,
+      "appliedVoucher": {
+        "code": "PHUNU15",
+        "title": "Mừng Ngày Phụ Nữ Việt Nam 20/10",
+        "discountAmount": 126000
+      }
+    },
+    "totalAmount": 714000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-23T09:58:26Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0911000222"
+      }
+    ]
+  }
+]
