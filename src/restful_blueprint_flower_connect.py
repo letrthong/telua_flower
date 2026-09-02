@@ -6,6 +6,7 @@ Hỗ trợ url_prefix='/api/flower/v1' chuẩn hóa tương tự Lu Quan (/api/h
 import os
 import sys
 import logging
+from datetime import datetime
 from flask import Blueprint, jsonify, request, make_response, send_file
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -38,8 +39,13 @@ from   data_service import (
     get_user_orders,
     get_company_info,
     save_company_info,
+    get_payment_config,
+    save_payment_config,
+    get_addon_config,
+    save_addon_config,
     save_uploaded_image,
-    find_image_file
+    find_image_file,
+    update_order_status
 )
 from order_service import (
     get_available_delivery_slots,
@@ -72,6 +78,13 @@ from translation_service import (
     batch_update_translations,
     update_translation_key,
     delete_translation_key
+)
+from addon_service import (
+    list_all_addons,
+    toggle_addon,
+    create_or_update_addon,
+    delete_addon,
+    restore_addon
 )
 from flower_image import (
     find_flower_image_file,
@@ -379,6 +392,132 @@ def api_admin_orders():
     }), 200
 
 
+@flower_connect_api.route("/admin/orders/<order_id>/status", methods=["PUT"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_update_order_status(order_id):
+    """
+    Cập nhật trạng thái đơn hàng (phân quyền chi nhánh).
+    Body: { "status": "confirmed" | "arranging" | "shipping" | "delivered" | "cancelled" }
+    """
+    payload = request.get_json(silent=True) or {}
+    new_status = (payload.get("status") or "").strip().lower()
+
+    valid_statuses = ["pending", "confirmed", "arranging", "shipping", "delivered", "ready_for_pickup", "completed", "cancelled", "returned"]
+    if new_status not in valid_statuses:
+        return jsonify({"success": False, "message": "Trạng thái đơn hàng không hợp lệ"}), 400
+
+    order = get_order_by_id(order_id)
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    # Phân quyền chi nhánh: nhân viên chỉ được cập nhật đơn của chi nhánh mình
+    current_user = request.current_user
+    if not can_access_branch(current_user, order.get("branchId") or order.get("assignedBranchId") or ""):
+        return jsonify({"success": False, "message": "Bạn không có quyền cập nhật đơn hàng của chi nhánh này"}), 403
+
+    updated = update_order_status(
+        order_id,
+        new_status,
+        **{
+            "history": (order.get("history") or []) + [{
+                "status": new_status,
+                "updatedAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "note": f"Cập nhật trạng thái bởi {current_user.get('role', 'staff')}",
+                "updatedBy": current_user.get("userId") or current_user.get("phone") or "staff"
+            }]
+        }
+    )
+
+    if not updated:
+        return jsonify({"success": False, "message": "Không thể cập nhật đơn hàng"}), 500
+
+    return jsonify({"success": True, "message": "Cập nhật trạng thái đơn hàng thành công", "data": updated}), 200
+
+
+
+@flower_connect_api.route("/admin/orders/<order_id>/payment", methods=["PUT"])
+@require_role(["super_admin", "branch_manager", "sales_consultant", "florist"])
+def api_update_order_payment(order_id):
+    """
+    Xác nhận / cập nhật trạng thái THANH TOÁN của đơn hàng (tách khỏi trạng thái giao hàng).
+    Body: { "paymentStatus": "paid" | "unpaid" | "refunded", "transactionId"?: str, "note"?: str }
+
+    Quy tắc nghiệp vụ (xem docs/design/PAYMENT_CANCELLATION_RETURN_DESIGN.md mục 1B):
+    - Chỉ áp dụng cho thanh toán TIỀN MẶT (COD/POS). Đơn thanh toán online (vietqr/thẻ/ví)
+      do backend/webhook tự xác nhận, nhân viên KHÔNG được chỉnh tay -> 409.
+    - Nhận tại chỗ (fulfillmentType=pickup): xác nhận 'paid' ngay lập tức.
+    - Giao hàng (fulfillmentType=delivery): chỉ 'paid' sau khi order.status ∈ {delivered, completed}.
+    - Phân lập chi nhánh: nhân viên chỉ thao tác đơn của chi nhánh mình.
+    """
+    payload = request.get_json(silent=True) or {}
+    new_pay_status = (payload.get("paymentStatus") or "").strip().lower()
+
+    valid_pay_statuses = ["paid", "unpaid", "refunded"]
+    if new_pay_status not in valid_pay_statuses:
+        return jsonify({"success": False, "message": "Trạng thái thanh toán không hợp lệ"}), 400
+
+    order = get_order_by_id(order_id)
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    # Phân quyền chi nhánh
+    current_user = request.current_user
+    order_branch = order.get("branchId") or order.get("assignedBranchId") or ""
+    if not can_access_branch(current_user, order_branch):
+        return jsonify({"success": False, "message": "Bạn không có quyền cập nhật đơn hàng của chi nhánh này"}), 403
+
+    payment = order.get("payment") or {}
+    method = (payment.get("method") or "").strip().lower()
+
+    # Đơn thanh toán online do hệ thống tự xác nhận, không cho chỉnh tay
+    online_methods = ["vietqr", "card", "visa", "mastercard", "jcb", "momo", "zalopay"]
+    if method in online_methods:
+        return jsonify({
+            "success": False,
+            "message": "Đơn thanh toán online do hệ thống tự động xác nhận, không thể chỉnh tay"
+        }), 409
+
+    # Khi xác nhận 'paid' cho đơn giao hàng: bắt buộc đã giao thành công
+    if new_pay_status == "paid":
+        fulfillment_type = ((order.get("delivery") or {}).get("fulfillmentType") or "delivery").strip().lower()
+        order_status = (order.get("status") or "").strip().lower()
+        if fulfillment_type == "delivery" and order_status not in ["delivered", "completed"]:
+            return jsonify({
+                "success": False,
+                "message": "Chỉ xác nhận thanh toán tiền mặt sau khi giao hàng thành công"
+            }), 400
+
+    # Xây dựng object payment cập nhật (giữ nguyên order.status)
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    payment_update = {"status": new_pay_status}
+    if new_pay_status == "paid":
+        payment_update["paidAt"] = now_iso
+        txn_id = (payload.get("transactionId") or "").strip()
+        if txn_id:
+            payment_update["transactionId"] = txn_id
+    elif new_pay_status in ["unpaid", "refunded"]:
+        payment_update["paidAt"] = None
+
+    note = (payload.get("note") or "").strip() or f"Cập nhật thanh toán -> {new_pay_status}"
+    updated = update_order_status(
+        order_id,
+        order.get("status"),
+        payment=payment_update,
+        history=(order.get("history") or []) + [{
+            "status": order.get("status"),
+            "paymentStatus": new_pay_status,
+            "updatedAt": now_iso,
+            "note": note,
+            "updatedBy": current_user.get("userId") or current_user.get("phone") or "staff"
+        }]
+    )
+
+    if not updated:
+        return jsonify({"success": False, "message": "Không thể cập nhật thanh toán đơn hàng"}), 500
+
+    return jsonify({"success": True, "message": "Cập nhật trạng thái thanh toán thành công", "data": updated}), 200
+
+
 
 # ==========================================
 # CÁC API DANH MỤC HOA TƯƠI (CATEGORIES MANAGEMENT)
@@ -570,11 +709,16 @@ def api_upload_image():
     Tải ảnh hoa tươi lên máy chủ (Chống phình to Base64 trong JSON):
     - Nhận file qua multipart/form-data ('file' hoặc 'image') hoặc payload JSON { "image": "data:image/..." }.
     - Lưu file vào thư mục tĩnh static/images/products và trả về URL ảnh.
+    - Hỗ trợ tiền tố tên file tùy chọn qua 'prefix' (vd: 'addon'), mặc định 'prod'.
     """
+    # Chuẩn hóa tiền tố tên file (chỉ cho phép chữ, số và gạch dưới)
+    raw_prefix = (request.form.get("prefix") or request.args.get("prefix") or "prod").strip()
+    safe_prefix = "".join(c for c in raw_prefix if c.isalnum() or c == "_") or "prod"
+
     # 1. Kiểm tra file trong multipart/form-data
     if "file" in request.files:
         file_obj = request.files["file"]
-        success, img_url, err_msg = save_flower_uploaded_image(file_obj, filename_prefix="prod")
+        success, img_url, err_msg = save_flower_uploaded_image(file_obj, filename_prefix=safe_prefix)
         if not success:
             return jsonify({"success": False, "message": err_msg}), 400
         return jsonify({
@@ -585,7 +729,7 @@ def api_upload_image():
 
     if "image" in request.files:
         file_obj = request.files["image"]
-        success, img_url, err_msg = save_flower_uploaded_image(file_obj, filename_prefix="prod")
+        success, img_url, err_msg = save_flower_uploaded_image(file_obj, filename_prefix=safe_prefix)
         if not success:
             return jsonify({"success": False, "message": err_msg}), 400
         return jsonify({
@@ -598,7 +742,9 @@ def api_upload_image():
     payload = request.get_json(silent=True) or {}
     b64_data = payload.get("image") or payload.get("data") or payload.get("base64")
     if b64_data:
-        success, img_url, err_msg = save_flower_uploaded_image(b64_data, filename_prefix="prod")
+        json_prefix = (payload.get("prefix") or safe_prefix).strip()
+        json_prefix = "".join(c for c in json_prefix if c.isalnum() or c == "_") or "prod"
+        success, img_url, err_msg = save_flower_uploaded_image(b64_data, filename_prefix=json_prefix)
         if not success:
             return jsonify({"success": False, "message": err_msg}), 400
         return jsonify({
@@ -697,6 +843,79 @@ def api_restore_promotion(promo_id):
     if not success:
         return jsonify({"success": False, "message": err}), 400
     return jsonify({"success": True, "message": "Khôi phục voucher thành công", "data": restored_promo}), 200
+
+
+# ==========================================
+# CÁC API ADD-ONS (SẢN PHẨM KÈM THEO - BÌNH HOA, SOCOLA, GẤU BÔNG, BÁNH KEM...)
+# ==========================================
+
+@flower_connect_api.route("/addons", methods=["GET"])
+def api_get_public_addons():
+    """Lấy danh sách Add-Ons đang BẬT hiển thị cho khách hàng (chỉ mục isActive=True)."""
+    return _build_cached_file_response(
+        "addons.json",
+        lambda: [a for a in list_all_addons(active_only=True) if isinstance(a, dict)],
+        max_age=60
+    )
+
+
+@flower_connect_api.route("/admin/addons", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_addons():
+    """Lấy toàn bộ danh sách Add-Ons (kể cả đã xóa mềm) cho Admin quản lý."""
+    return jsonify({"success": True, "data": list_all_addons()}), 200
+
+
+@flower_connect_api.route("/admin/addons", methods=["POST"])
+@require_role(["super_admin", "branch_manager"])
+def api_create_addon():
+    """Tạo mới một Add-On."""
+    payload = request.get_json(silent=True) or {}
+    success, new_addon, err = create_or_update_addon(payload)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Tạo Add-On thành công", "data": new_addon}), 201
+
+
+@flower_connect_api.route("/admin/addons/<addon_id>", methods=["PUT"])
+@require_role(["super_admin", "branch_manager"])
+def api_update_addon(addon_id):
+    """Cập nhật thông tin một Add-On."""
+    payload = request.get_json(silent=True) or {}
+    success, updated_addon, err = create_or_update_addon(payload, addon_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Cập nhật Add-On thành công", "data": updated_addon}), 200
+
+
+@flower_connect_api.route("/admin/addons/<addon_id>/toggle", methods=["PUT", "PATCH"])
+@require_role(["super_admin", "branch_manager"])
+def api_toggle_addon(addon_id):
+    """Gạt công tắc Bật/Tắt (ON/OFF) hiển thị Add-On."""
+    success, updated_addon, err = toggle_addon(addon_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Đã cập nhật trạng thái Add-On", "data": updated_addon}), 200
+
+
+@flower_connect_api.route("/admin/addons/<addon_id>", methods=["DELETE"])
+@require_role(["super_admin", "branch_manager"])
+def api_delete_addon(addon_id):
+    """Xóa mềm (Soft Delete) một Add-On."""
+    success, err = delete_addon(addon_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Đã chuyển Add-On sang trạng thái Đã Xóa (Soft Deleted)"}), 200
+
+
+@flower_connect_api.route("/admin/addons/<addon_id>/restore", methods=["PATCH"])
+@require_role(["super_admin", "branch_manager"])
+def api_restore_addon(addon_id):
+    """Khôi phục Add-On đã xóa mềm."""
+    success, restored_addon, err = restore_addon(addon_id)
+    if not success:
+        return jsonify({"success": False, "message": err}), 400
+    return jsonify({"success": True, "message": "Khôi phục Add-On thành công", "data": restored_addon}), 200
 
 
 
@@ -946,6 +1165,76 @@ def api_update_admin_company_info():
         "success": True,
         "message": "Đã cập nhật thông tin doanh nghiệp thành công!",
         "data": updated_info
+    }), 200
+
+
+@flower_connect_api.route("/payment-config", methods=["GET"])
+def api_get_public_payment_config():
+    """Lấy danh sách phương thức thanh toán đang được bật cho Storefront (hỗ trợ ETag & Cache-Control)."""
+    return _build_cached_file_response("paymentConfig.json", lambda: get_payment_config(use_cache=True), max_age=60)
+
+
+@flower_connect_api.route("/admin/payment-config", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_payment_config():
+    """Lấy đầy đủ cấu hình phương thức thanh toán (bật/tắt, nhãn, mô tả) cho Cổng Quản Trị."""
+    return jsonify({
+        "success": True,
+        "data": get_payment_config(use_cache=False)
+    }), 200
+
+
+@flower_connect_api.route("/admin/payment-config", methods=["PUT", "POST"])
+@require_role(["super_admin"])
+def api_update_admin_payment_config():
+    """Bật/tắt phương thức thanh toán (online VietQR / tiền mặt). Phải còn ít nhất 1 phương thức bật."""
+    data = request.get_json(silent=True) or {}
+    success, updated, err = save_payment_config(data)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể lưu cấu hình thanh toán"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã cập nhật cấu hình phương thức thanh toán thành công!",
+        "data": updated
+    }), 200
+
+
+@flower_connect_api.route("/addon-config", methods=["GET"])
+def api_get_public_addon_config():
+    """Lấy cấu hình hiển thị khu vực Sản Phẩm Kèm Theo cho Storefront (ETag & Cache-Control)."""
+    return _build_cached_file_response("addonConfig.json", lambda: get_addon_config(use_cache=True), max_age=60)
+
+
+@flower_connect_api.route("/admin/addon-config", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_addon_config():
+    """Lấy đầy đủ cấu hình hiển thị add-on cho Cổng Quản Trị."""
+    return jsonify({
+        "success": True,
+        "data": get_addon_config(use_cache=False)
+    }), 200
+
+
+@flower_connect_api.route("/admin/addon-config", methods=["PUT", "POST"])
+@require_role(["super_admin"])
+def api_update_admin_addon_config():
+    """Bật/tắt hiển thị khu vực Sản Phẩm Kèm Theo trên GUI."""
+    data = request.get_json(silent=True) or {}
+    success, updated, err = save_addon_config(data)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể lưu cấu hình add-on"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã cập nhật cấu hình hiển thị Sản Phẩm Kèm Theo thành công!",
+        "data": updated
     }), 200
 
 

@@ -60,6 +60,15 @@
             display: none;
         }
 
+        /* Ẩn thanh cuộn ngang cho danh sách add-ons */
+        .no-scrollbar {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
         /* Hiệu ứng Lazy Loading & Skeleton Loader cho hình ảnh */
         img[loading="lazy"] {
             opacity: 0;
@@ -832,6 +841,32 @@
                     </div>
                 </div>
 
+                <!-- 1b. PHƯƠNG THỨC NHẬN HÀNG (GIAO HÀNG / NHẬN TẠI CỬA HÀNG) -->
+                <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
+                        <i class="fa-solid fa-boxes-stacked text-primary mr-1.5"></i> <span data-i18n="checkout_sec_fulfillment">Phương Thức Nhận Hàng</span>
+                    </span>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center p-3 border border-pink-200 bg-pink-50/50 rounded-xl cursor-pointer font-bold text-gray-800">
+                            <input type="radio" name="fulfillmentType" value="delivery" checked onchange="onFulfillmentTypeChange()" class="text-primary mr-2">
+                            <span data-i18n="checkout_fulfill_delivery">🚚 Giao hàng tận nơi</span>
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-xl cursor-pointer font-semibold text-gray-700 hover:bg-gray-50">
+                            <input type="radio" name="fulfillmentType" value="pickup" onchange="onFulfillmentTypeChange()" class="text-primary mr-2">
+                            <span data-i18n="checkout_fulfill_pickup">🏬 Nhận tại cửa hàng</span>
+                        </label>
+                    </div>
+
+                    <!-- Chọn cửa hàng (chỉ hiện khi chọn pickup) -->
+                    <div id="pickupBranchSection" class="hidden">
+                        <label class="block text-[11px] font-bold text-gray-600 mb-1" data-i18n="checkout_lbl_pickup_branch">Chọn cửa hàng nhận hoa *</label>
+                        <select id="checkoutPickupBranch" class="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-primary transition">
+                            <option value="">Đang tải danh sách cửa hàng...</option>
+                        </select>
+                        <p class="text-[10px] text-gray-400 mt-1" data-i18n="checkout_pickup_hint">Bạn sẽ nhận hoa trực tiếp tại cửa hàng đã chọn. Không cần nhập địa chỉ giao hàng.</p>
+                    </div>
+                </div>
+
                 <!-- 2. THÔNG TIN NGƯỜI NHẬN & CHỈ DẪN ĐỊA CHỈ -->
                 <div class="space-y-3">
                     <span class="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center">
@@ -1051,6 +1086,192 @@
         </div>
     </div>
 
+    <!-- ================= CUSTOMER DASHBOARD MODAL (ĐƠN HÀNG CỦA TÔI) ================= -->
+    <div id="customerPortalModal" onclick="if (event.target === this) closeCustomerPortalModal();" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-2 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 h-[90vh] max-h-[90vh] flex flex-col animate-fadeIn relative">
+            <!-- Top Header -->
+            <div class="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-pink-100 text-primary flex items-center justify-center text-base shadow-inner">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif text-lg font-bold text-gray-800">Đơn Hàng Của Tôi</h3>
+                        <p class="text-xs text-gray-500">Theo dõi lịch sử mua hàng & trạng thái đơn</p>
+                    </div>
+                </div>
+                <button onclick="closeCustomerPortalModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-200 flex-shrink-0">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Tổng đơn hàng</p>
+                        <p id="custTotalOrders" class="text-xl font-bold text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Đang xử lý</p>
+                        <p id="custActiveOrders" class="text-xl font-bold text-amber-600 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Đã giao</p>
+                        <p id="custDeliveredOrders" class="text-xl font-bold text-emerald-600 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Tổng chi tiêu</p>
+                        <p id="custTotalSpent" class="text-xl font-bold text-primary mt-1">0₫</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+                <div id="customerOrdersList" class="space-y-4">
+                    <!-- Orders rendered dynamically -->
+                </div>
+                <div id="customerOrdersEmpty" class="hidden text-center py-16">
+                    <i class="fa-solid fa-box-open text-5xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 font-semibold">Bạn chưa có đơn hàng nào</p>
+                    <p class="text-xs text-gray-400 mt-1">Hãy đặt hoa để bắt đầu trải nghiệm!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= ORDER DASHBOARD MODAL (NỘI BỘ - BẢNG ĐIỀU KHIỂN ĐƠN HÀNG) ================= -->
+    <div id="orderDashboardModal" onclick="if (event.target === this) closeOrderDashboardModal();" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-2 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden border border-emerald-100 h-[90vh] max-h-[90vh] flex flex-col animate-fadeIn relative">
+            <!-- Top Header -->
+            <div class="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-base shadow-inner">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif text-lg font-bold text-gray-800">Bảng Điều Khiển Đơn Hàng</h3>
+                        <p id="orderDashboardScope" class="text-xs text-gray-500">Tổng quan & theo dõi đơn hàng</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="loadDashboardOrders()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 flex items-center justify-center transition" title="Làm mới">
+                        <i class="fa-solid fa-rotate-right text-sm"></i>
+                    </button>
+                    <button onclick="closeOrderDashboardModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-200 flex-shrink-0">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Tổng đơn hàng</p>
+                        <p id="dashTotalOrders" class="text-xl font-bold text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Đang xử lý</p>
+                        <p id="dashActiveOrders" class="text-xl font-bold text-amber-600 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Hoàn thành</p>
+                        <p id="dashCompletedOrders" class="text-xl font-bold text-emerald-600 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Doanh thu</p>
+                        <p id="dashTotalRevenue" class="text-xl font-bold text-primary mt-1">0₫</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+                <div id="orderDashboardList" class="space-y-4">
+                    <!-- Orders rendered dynamically -->
+                </div>
+                <div id="orderDashboardEmpty" class="hidden text-center py-16">
+                    <i class="fa-solid fa-inbox text-5xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 font-semibold">Chưa có đơn hàng nào</p>
+                    <p class="text-xs text-gray-400 mt-1">Các đơn hàng mới sẽ hiển thị tại đây.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STAFF PORTAL MODAL (SALES & FLORIST - ĐƠN HÀNG CHI NHÁNH) ================= -->
+    <div id="staffPortalModal" onclick="if (event.target === this) closeStaffPortalModal();" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-2 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 h-[90vh] max-h-[90vh] flex flex-col animate-fadeIn relative">
+            <!-- Top Header -->
+            <div class="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-pink-100 text-primary flex items-center justify-center text-base shadow-inner">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                    <div>
+                        <h3 id="staffPortalTitle" class="font-serif text-lg font-bold text-gray-800">Đơn Hàng Chi Nhánh</h3>
+                        <p id="staffPortalSubtitle" class="text-xs text-gray-500">Tiếp nhận & xử lý đơn hàng của chi nhánh</p>
+                    </div>
+                </div>
+                <button onclick="closeStaffPortalModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="px-6 py-4 bg-gray-50/70 border-b border-gray-200 flex-shrink-0">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Tổng đơn</p>
+                        <p id="staffTotalOrders" class="text-xl font-bold text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Chờ xử lý</p>
+                        <p id="staffPendingOrders" class="text-xl font-bold text-amber-600 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Đang cắm</p>
+                        <p id="staffArrangingOrders" class="text-xl font-bold text-purple-600 mt-1">0</p>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-3 shadow-2xs">
+                        <p class="text-[10px] font-semibold text-gray-500 uppercase">Đang giao</p>
+                        <p id="staffShippingOrders" class="text-xl font-bold text-cyan-600 mt-1">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="px-6 py-3 bg-white border-b border-gray-200 flex flex-wrap items-center gap-2 flex-shrink-0">
+                <select id="staffFilterStatus" onchange="loadStaffOrders()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="pending">⏳ Chờ xác nhận</option>
+                    <option value="confirmed">✅ Đã xác nhận</option>
+                    <option value="arranging">🌸 Đang cắm hoa</option>
+                    <option value="shipping">🚚 Đang vận chuyển</option>
+                    <option value="delivered">🎉 Giao thành công</option>
+                    <option value="cancelled">❌ Đã hủy</option>
+                </select>
+                <div class="relative flex-1 min-w-[180px]">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                    <input type="text" id="staffSearchInput" oninput="loadStaffOrders()" placeholder="Mã đơn, SĐT, tên khách..." class="pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary w-full">
+                </div>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+                <div id="staffOrdersList" class="space-y-4">
+                    <!-- Orders rendered dynamically -->
+                </div>
+                <div id="staffOrdersEmpty" class="hidden text-center py-16">
+                    <i class="fa-solid fa-box-open text-5xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 font-semibold">Không có đơn hàng nào</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= ADMIN PORTAL SPA MODAL (CMS & PRICE GOVERNANCE) ================= -->
     <div id="adminPortalModal" onclick="if (event.target === this) closeAdminPortalModal();" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-2 sm:p-4" style="display: none;">
         <div class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 h-[92vh] max-h-[92vh] flex flex-col animate-fadeIn relative">
@@ -1078,7 +1299,10 @@
 
             <!-- Tab Navigation Bar (Nghiệp vụ Bán hàng & Vận hành) -->
             <div class="flex border-b border-gray-200 bg-gray-50/70 px-6 space-x-4 sm:space-x-6 flex-shrink-0 overflow-x-auto">
-                <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0">
+                <button onclick="switchAdminTab('orders')" id="tabBtnOrders" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-box-open mr-1.5 text-base"></i> Đơn Hàng
+                </button>
+                <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-spa mr-1.5 text-base"></i> Mẫu Hoa & Bảng Giá
                 </button>
                 <button onclick="switchAdminTab('categories')" id="tabBtnCategories" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
@@ -1096,10 +1320,74 @@
                 <button onclick="switchAdminTab('promotions')" id="tabBtnPromotions" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-ticket-simple mr-1.5 text-base"></i> Khuyến Mãi & Voucher
                 </button>
+                <button onclick="switchAdminTab('addons')" id="tabBtnAddons" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-gift mr-1.5 text-base text-pink-600"></i> Sản Phẩm Kèm Theo
+                </button>
             </div>
 
             <!-- Modal Body (Scrollable) -->
             <div class="p-6 overflow-y-auto flex-1 space-y-6 bg-gray-50/50">
+                <!-- ================= TAB 0: ĐƠN HÀNG ================= -->
+                <section id="tabContentOrders" class="space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800">Quản Lý Đơn Hàng & Điều Phối</h4>
+                            <p class="text-[11px] text-gray-500">Theo dõi & xử lý đơn hàng theo chi nhánh • Phân quyền tự động theo vai trò</p>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+                            <select id="filterOrderTimeframe" onchange="loadAdminOrders()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="today">Hôm nay</option>
+                                <option value="this_week">Tuần này</option>
+                                <option value="this_month" selected>Tháng này</option>
+                                <option value="last_month">Tháng trước</option>
+                                <option value="all">Toàn thời gian</option>
+                            </select>
+                            <select id="filterOrderStatus" onchange="loadAdminOrders()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="all">Tất cả trạng thái</option>
+                                <option value="pending">⏳ Chờ xác nhận</option>
+                                <option value="confirmed">✅ Đã xác nhận</option>
+                                <option value="arranging">🌸 Đang cắm hoa</option>
+                                <option value="shipping">🚚 Đang vận chuyển</option>
+                                <option value="delivered">🎉 Giao thành công</option>
+                                <option value="cancelled">❌ Đã hủy</option>
+                            </select>
+                            <select id="filterOrderPayment" onchange="loadAdminOrders()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="all">Mọi thanh toán</option>
+                                <option value="paid">💳 Đã thanh toán</option>
+                                <option value="unpaid">⏳ Chưa thanh toán</option>
+                            </select>
+                            <div class="relative w-full sm:w-48">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                                <input type="text" id="searchOrderInput" oninput="loadAdminOrders()" placeholder="Mã đơn, SĐT, tên khách..." class="pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary w-full">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Mã đơn</th>
+                                        <th class="p-3">Khách hàng</th>
+                                        <th class="p-3">Người nhận</th>
+                                        <th class="p-3">Chi nhánh</th>
+                                        <th class="p-3">Người xử lý</th>
+                                        <th class="p-3">Tổng tiền</th>
+                                        <th class="p-3">Thanh toán</th>
+                                        <th class="p-3">Trạng thái</th>
+                                        <th class="p-3 text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminOrdersTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <tr><td colspan="9" class="p-6 text-center text-gray-400">Đang tải đơn hàng...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- ================= TAB 1: SẢN PHẨM ================= -->
                 <section id="tabContentProducts" class="space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
@@ -1345,6 +1633,41 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- ================= TAB: SẢN PHẨM KÈM THEO (ADD-ONS) ================= -->
+                <section id="tabContentAddons" class="space-y-4 hidden">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 shadow-2xs">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-800">Quản Lý Sản Phẩm Kèm Theo (Add-Ons)</h4>
+                            <p class="text-[11px] text-gray-500">Thêm, sửa, Bật/Tắt và Xóa mềm các sản phẩm kèm theo hiển thị khi khách xem chi tiết hoa</p>
+                        </div>
+                        <button onclick="openAddonModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
+                            <i class="fa-solid fa-plus mr-1"></i> Thêm Sản Phẩm Kèm Theo
+                        </button>
+                    </div>
+
+                    <!-- Add-Ons Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Sản Phẩm Kèm Theo</th>
+                                        <th class="p-3">Danh Mục</th>
+                                        <th class="p-3">Giá Bán</th>
+                                        <th class="p-3">Thứ Tự</th>
+                                        <th class="p-3">Trạng Thái</th>
+                                        <th class="p-3">Ngày Tạo</th>
+                                        <th class="p-3 text-center">Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="addonsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <!-- Render qua JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
     </div>
@@ -1381,6 +1704,12 @@
                 </button>
                 <button onclick="switchSystemConfigTab('translations')" id="tabSysBtnTranslations" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-language mr-1.5 text-base text-purple-600"></i> Biên Dịch Đa Ngôn Ngữ
+                </button>
+                <button onclick="switchSystemConfigTab('payment')" id="tabSysBtnPayment" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-credit-card mr-1.5 text-base text-emerald-600"></i> Phương Thức Thanh Toán
+                </button>
+                <button onclick="switchSystemConfigTab('addonvis')" id="tabSysBtnAddonVis" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-gift mr-1.5 text-base text-amber-600"></i> Sản Phẩm Kèm Theo
                 </button>
             </div>
 
@@ -1730,6 +2059,80 @@
                             </table>
                         </div>
                     </div>
+                </section>
+
+                <!-- ================= TAB 3: PHƯƠNG THỨC THANH TOÁN ================= -->
+                <section id="tabSysContentPayment" class="space-y-5 hidden">
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner border border-emerald-100">
+                                <i class="fa-solid fa-credit-card"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-gray-800">Cấu Hình Phương Thức Thanh Toán</h4>
+                                    <span id="paymentConfigStatus" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Sẵn sàng
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500">Bật/tắt phương thức khách được chọn khi thanh toán. Phải bật ít nhất 1 phương thức.</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="savePaymentConfig()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center flex-shrink-0">
+                            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Cấu Hình
+                        </button>
+                    </div>
+
+                    <!-- Danh sách phương thức (render động từ paymentConfig.json) -->
+                    <div id="paymentMethodsList" class="space-y-3">
+                        <div class="text-center py-10 text-gray-400 text-xs">
+                            <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
+                            <p>Đang tải cấu hình thanh toán...</p>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-gray-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Nguồn dữ liệu: <code class="font-mono">config/anne/paymentConfig.json</code>. Đơn online do hệ thống tự xác nhận; tiền mặt do nhân viên xác nhận.
+                    </p>
+                </section>
+
+                <!-- ===== TAB: HIỂN THỊ SẢN PHẨM KÈM THEO (ADD-ON) ===== -->
+                <section id="tabSysContentAddonVis" class="space-y-5 hidden">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div>
+                            <h4 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                                <i class="fa-solid fa-gift text-amber-600"></i> Sản Phẩm Kèm Theo (Add-on)
+                                <span id="addonConfigStatus" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Đang tải…</span>
+                            </h4>
+                            <p class="text-xs text-gray-500 mt-0.5">Bật/tắt hiển thị khu vực chọn sản phẩm kèm theo trên trang chi tiết sản phẩm.</p>
+                        </div>
+                        <button onclick="saveAddonConfig()" class="bg-primary hover:bg-primaryHover text-white text-sm font-bold px-4 py-2 rounded-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình
+                        </button>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-gift text-lg"></i>
+                            </div>
+                            <div>
+                                <div id="addonVisLabel" class="text-sm font-bold text-gray-800">Sản Phẩm Kèm Theo (Add-on)</div>
+                                <div id="addonVisDescription" class="text-xs text-gray-500 mt-0.5 max-w-md"></div>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                            <input type="checkbox" id="addonVisToggle" class="sr-only peer">
+                            <div class="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
+                    <p class="text-[11px] text-gray-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Nguồn dữ liệu: <code class="font-mono">config/anne/addonConfig.json</code>. Khi tắt, khu vực add-on sẽ ẩn hoàn toàn trên giao diện khách hàng.
+                    </p>
                 </section>
             </div>
         </div>
@@ -2094,15 +2497,26 @@
                                 <span id="detailCareTips" class="text-gray-600 line-clamp-2">—</span>
                             </div>
                         </div>
-
-                        <!-- Stock at Showrooms -->
-                        <div class="pt-2 border-t border-gray-100">
-                            <span class="font-bold text-gray-700 block text-[11px] mb-1.5"><i class="fa-solid fa-store text-primary mr-1"></i> <span data-i18n="prod_detail_stock_title">Tồn kho tại Showroom:</span></span>
-                            <div id="detailStockGrid" class="flex flex-wrap gap-2">
-                                <!-- Render stock tags -->
-                            </div>
-                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ================= ADD-ONS (SẢN PHẨM KÈM THEO) ================= -->
+            <!-- Nằm cố định dưới cùng, ngay trên nút Thêm Vào Giỏ Hàng -->
+            <div id="addonsSection" class="hidden px-5 sm:px-6 py-3 border-t border-gray-100 bg-white">
+                <div class="mb-2">
+                    <span class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-gift text-accent mr-1.5"></i> <span data-i18n="addons_title">Select Add-Ons To Make It Extra Special</span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="addonPrevBtn" onclick="scrollAddons(-1)" class="w-7 h-7 flex-shrink-0 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-100" title="Xem trước">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <div id="addonsList" class="flex gap-2 overflow-x-auto pb-1 scroll-smooth no-scrollbar flex-1">
+                        <!-- Render add-ons dynamically (mỗi add-on là 1 cột cố định) -->
+                    </div>
+                    <button type="button" id="addonNextBtn" onclick="scrollAddons(1)" class="w-7 h-7 flex-shrink-0 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center transition disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-100" title="Xem tiếp">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
                 </div>
             </div>
 
@@ -2406,6 +2820,94 @@
                 <div class="flex justify-end gap-3 pt-3 border-t border-gray-100">
                     <button type="button" onclick="closePromoModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
                     <button type="submit" id="btnSavePromo" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Voucher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL THÊM / SỬA SẢN PHẨM KÈM THEO (ADD-ONS) ================= -->
+    <div id="addonModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[220] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-pink-100 max-h-[92vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-pink-50/50 border-b border-gray-100 flex justify-between items-center">
+                <h3 id="addonModalTitle" class="font-bold text-base text-gray-800">Thêm Sản Phẩm Kèm Theo Mới</h3>
+                <button onclick="closeAddonModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="addonForm" onsubmit="handleAddonSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="editAddonId">
+                <div id="addonModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Tiếng Anh *</label>
+                        <input type="text" id="addonName" placeholder="VD: Cute Teddy Bear" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Tên Tiếng Việt *</label>
+                        <input type="text" id="addonNameVi" placeholder="VD: Gấu Bông Đáng Yêu" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Danh Mục</label>
+                        <select id="addonCategory" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                            <option value="gift">Quà Tặng (Gift)</option>
+                            <option value="vase">Bình Hoa (Vase)</option>
+                            <option value="cake">Bánh Kem (Cake)</option>
+                            <option value="decoration">Trang Trí (Decoration)</option>
+                            <option value="other">Khác (Other)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Giá Bán (₫) *</label>
+                        <input type="number" id="addonPrice" placeholder="VD: 180000" min="0" step="1000" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                </div>
+
+                <div class="p-3.5 bg-gray-50/80 rounded-2xl border border-gray-200/80 space-y-2.5">
+                    <label class="block text-xs font-bold text-gray-800">📸 Ảnh Sản Phẩm Kèm Theo</label>
+                    <div class="flex items-center gap-3">
+                        <div class="w-16 h-16 rounded-xl border border-gray-200 overflow-hidden bg-white flex-shrink-0 relative group shadow-2xs">
+                            <img id="addonImagePreview" src="https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=200" alt="Preview" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 space-y-1.5">
+                            <input type="text" id="addonImage" oninput="document.getElementById('addonImagePreview').src = this.value" placeholder="https://... hoặc tải từ máy" class="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary font-mono">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <label class="cursor-pointer px-2.5 py-1 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-lg text-[11px] font-bold transition flex items-center gap-1 shadow-2xs">
+                                    <i class="fa-solid fa-cloud-arrow-up text-primary"></i> Chọn Tệp Từ Máy
+                                    <input type="file" id="addonImageFileInput" accept="image/*" onchange="handleAddonImageFileUpload(event)" class="hidden">
+                                </label>
+                                <span id="addonImageStatusLabel" class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">URL Web</span>
+                                <span id="addonImageSizeInfo" class="text-[10px] text-gray-400"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả</label>
+                    <textarea id="addonDescription" rows="2" placeholder="Mô tả ngắn về sản phẩm kèm theo..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white resize-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Thứ Tự Hiển Thị</label>
+                        <input type="number" id="addonSortOrder" value="1" min="1" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white">
+                    </div>
+                    <div class="flex items-end">
+                        <div class="flex items-center space-x-2 bg-pink-50/50 p-3 rounded-xl border border-pink-100 w-full">
+                            <input type="checkbox" id="addonIsActive" checked class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                            <label for="addonIsActive" class="text-xs font-bold text-gray-800 cursor-pointer">🟢 Hiển thị cho khách hàng</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                    <button type="button" onclick="closeAddonModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                    <button type="submit" id="btnSaveAddon" class="px-5 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition">Lưu Sản Phẩm Kèm Theo</button>
                 </div>
             </form>
         </div>

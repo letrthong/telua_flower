@@ -1223,6 +1223,131 @@ def restore_promotion(promo_id_or_code: str) -> Tuple[bool, Optional[Dict[str, A
     return True, restored_item, None
 
 
+# ==========================================
+# 5b. QUẢN LÝ ADD-ONS (SẢN PHẨM KÈM THEO - BÌNH HOA, SOCOLA, GẤU BÔNG, BÁNH KEM...)
+# Cấu trúc: config/anne/addons.json
+# ==========================================
+
+def get_addons(active_only: bool = False) -> List[Dict[str, Any]]:
+    """Lấy danh sách Add-Ons (sản phẩm kèm theo). active_only=True chỉ lấy mục đang bật."""
+    addons = _normalize_list_of_dicts(read_json_cached(get_config_path("addons.json"), default=[]))
+    if active_only:
+        return [a for a in addons if isinstance(a, dict) and a.get("isActive") is not False and a.get("status") != "deleted" and not a.get("isDeleted")]
+    return addons
+
+
+def get_addon_by_id(addon_id: str) -> Optional[Dict[str, Any]]:
+    for a in get_addons():
+        if a.get("id") == addon_id:
+            return a
+    return None
+
+
+def save_addons(addons: List[Dict[str, Any]]) -> bool:
+    return write_json(get_config_path("addons.json"), addons)
+
+
+def create_or_update_addon(
+    addon_data: Dict[str, Any],
+    addon_id: Optional[str] = None
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """Tạo mới hoặc cập nhật một Add-On."""
+    name = (addon_data.get("name") or "").strip()
+    if not name:
+        return False, None, "Vui lòng nhập tên Add-On"
+
+    addons = read_json(get_config_path("addons.json"), default=[])
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    is_active = bool(addon_data.get("isActive", True))
+    status = addon_data.get("status") or ("active" if is_active else "inactive")
+
+    if addon_id:
+        for i, a in enumerate(addons):
+            if a.get("id") == addon_id:
+                addons[i]["name"] = name
+                addons[i]["nameVi"] = addon_data.get("nameVi", a.get("nameVi", ""))
+                addons[i]["category"] = addon_data.get("category", a.get("category", "gift"))
+                addons[i]["price"] = int(addon_data.get("price") or a.get("price") or 0)
+                addons[i]["image"] = addon_data.get("image", a.get("image", ""))
+                addons[i]["description"] = addon_data.get("description", a.get("description", ""))
+                addons[i]["sortOrder"] = int(addon_data.get("sortOrder") or a.get("sortOrder") or 0)
+                addons[i]["isActive"] = is_active
+                addons[i]["status"] = status
+                addons[i]["isDeleted"] = False
+                addons[i]["deletedAt"] = None
+                addons[i]["updatedAt"] = now_iso
+                save_addons(addons)
+                return True, addons[i], None
+        return False, None, f"Không tìm thấy Add-On '{addon_id}'"
+    else:
+        new_id = addon_data.get("id") or f"addon_{int(time.time()) % 100000}"
+        new_addon = {
+            "id": new_id,
+            "name": name,
+            "nameVi": addon_data.get("nameVi", ""),
+            "category": addon_data.get("category", "gift"),
+            "price": int(addon_data.get("price") or 0),
+            "image": addon_data.get("image", ""),
+            "description": addon_data.get("description", ""),
+            "sortOrder": int(addon_data.get("sortOrder") or 0),
+            "status": status,
+            "isActive": is_active,
+            "isDeleted": False,
+            "createdAt": now_iso,
+            "updatedAt": now_iso
+        }
+        addons.insert(0, new_addon)
+        save_addons(addons)
+        return True, new_addon, None
+
+
+def toggle_addon_active(addon_id: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """Bật/Tắt (ON/OFF) hiển thị một Add-On."""
+    addons = read_json(get_config_path("addons.json"), default=[])
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for i, a in enumerate(addons):
+        if a.get("id") == addon_id:
+            new_active = not a.get("isActive", True)
+            addons[i]["isActive"] = new_active
+            addons[i]["status"] = "active" if new_active else "inactive"
+            addons[i]["updatedAt"] = now_iso
+            save_addons(addons)
+            return True, addons[i], None
+    return False, None, f"Không tìm thấy Add-On '{addon_id}'"
+
+
+def delete_addon(addon_id: str) -> Tuple[bool, Optional[str]]:
+    """Xóa mềm (Soft Delete) một Add-On."""
+    addons = read_json(get_config_path("addons.json"), default=[])
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for i, a in enumerate(addons):
+        if a.get("id") == addon_id:
+            addons[i]["status"] = "deleted"
+            addons[i]["isDeleted"] = True
+            addons[i]["isActive"] = False
+            addons[i]["deletedAt"] = now_iso
+            addons[i]["updatedAt"] = now_iso
+            save_addons(addons)
+            return True, None
+    return False, f"Không tìm thấy Add-On '{addon_id}'"
+
+
+def restore_addon(addon_id: str) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """Khôi phục một Add-On đã xóa mềm."""
+    addons = read_json(get_config_path("addons.json"), default=[])
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    for i, a in enumerate(addons):
+        if a.get("id") == addon_id:
+            addons[i]["status"] = "active"
+            addons[i]["isDeleted"] = False
+            addons[i]["isActive"] = True
+            addons[i]["deletedAt"] = None
+            addons[i]["updatedAt"] = now_iso
+            save_addons(addons)
+            return True, addons[i], None
+    return False, None, f"Không tìm thấy Add-On '{addon_id}'"
+
+
 
 # 6. Biên Dịch Đa Ngôn Ngữ (Translations i18n) - Hỗ trợ cache RAM theo mtime file
 SUPPORTED_LANGUAGES = ("vi", "en", "ja", "ko", "zh")
@@ -1703,6 +1828,146 @@ def save_company_info(info_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[st
     if success:
         return True, updated, None
     return False, None, "Không thể ghi file cấu hình infoCompany.json"
+
+
+# ==========================================
+# CẤU HÌNH PHƯƠNG THỨC THANH TOÁN (paymentConfig.json)
+# ==========================================
+
+DEFAULT_PAYMENT_CONFIG: Dict[str, Any] = {
+    "methods": {
+        "online": {
+            "code": "vietqr",
+            "label": "Thanh toán Online (VietQR)",
+            "description": "Chuyển khoản tự động qua mã QR chuẩn Napas 247 EMVCo. Hệ thống/backend tự động xác nhận khi nhận được tiền; nhân viên không cần thao tác thu tiền.",
+            "enabled": True
+        },
+        "cash": {
+            "code": "cash",
+            "label": "Tiền mặt (COD / Tại quầy)",
+            "description": "Thanh toán tiền mặt khi nhận hàng (COD) hoặc trực tiếp tại cửa hàng (pickup). Nhân viên xác nhận trạng thái đã thanh toán sau khi thu tiền.",
+            "enabled": True
+        }
+    },
+    "updatedAt": "2026-09-02T00:00:00Z"
+}
+
+
+def get_payment_config(use_cache: bool = True) -> Dict[str, Any]:
+    """
+    Đọc cấu hình bật/tắt phương thức thanh toán từ paymentConfig.json (có RAM cache mtime).
+    Tự động khởi tạo dữ liệu mặc định (2 phương thức: online + cash) nếu file chưa tồn tại.
+    """
+    filepath = get_config_path("paymentConfig.json")
+    if not os.path.exists(filepath):
+        write_json(filepath, DEFAULT_PAYMENT_CONFIG)
+        return dict(DEFAULT_PAYMENT_CONFIG)
+
+    data = read_json_cached(filepath, default={}) if use_cache else read_json(filepath, default={})
+    if not isinstance(data, dict) or not data.get("methods"):
+        data = dict(DEFAULT_PAYMENT_CONFIG)
+        write_json(filepath, data)
+        return data
+
+    # Đảm bảo tồn tại đầy đủ 2 phương thức mặc định với các trường mô tả
+    methods = data.get("methods") or {}
+    for key, default_method in DEFAULT_PAYMENT_CONFIG["methods"].items():
+        if key not in methods or not isinstance(methods[key], dict):
+            methods[key] = dict(default_method)
+        else:
+            for field, val in default_method.items():
+                if field not in methods[key] or methods[key][field] is None:
+                    methods[key][field] = val
+    data["methods"] = methods
+    return data
+
+
+def save_payment_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Lưu cấu hình phương thức thanh toán. Chỉ cập nhật cờ 'enabled' của từng phương thức,
+    giữ nguyên nhãn (label), mô tả (description) và mã (code) từ cấu hình hiện tại.
+    Ràng buộc: phải còn ít nhất 1 phương thức được bật.
+    """
+    if not isinstance(config_dict, dict):
+        return False, None, "Dữ liệu cấu hình thanh toán không hợp lệ"
+
+    current = get_payment_config(use_cache=False)
+    incoming_methods = config_dict.get("methods") or {}
+
+    merged_methods = current.get("methods") or {}
+    for key, method in merged_methods.items():
+        incoming = incoming_methods.get(key)
+        if isinstance(incoming, dict) and "enabled" in incoming:
+            method["enabled"] = bool(incoming["enabled"])
+
+    if not any(m.get("enabled") for m in merged_methods.values()):
+        return False, None, "Phải bật ít nhất một phương thức thanh toán"
+
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    updated = {"methods": merged_methods, "updatedAt": now_iso}
+
+    filepath = get_config_path("paymentConfig.json")
+    success = write_json(filepath, updated)
+    if success:
+        return True, updated, None
+    return False, None, "Không thể ghi file cấu hình paymentConfig.json"
+
+
+# ==========================================
+# CẤU HÌNH HIỂN THỊ SẢN PHẨM KÈM THEO / ADD-ON (addonConfig.json)
+# ==========================================
+
+DEFAULT_ADDON_CONFIG: Dict[str, Any] = {
+    "showAddons": True,
+    "label": "Sản Phẩm Kèm Theo (Add-on)",
+    "description": "Hiển thị khu vực 'Chọn Sản Phẩm Kèm Theo Để Thêm Phần Đặc Biệt' trên trang chi tiết sản phẩm để khách hàng thêm bình, chocolate, gấu bông, bánh, bóng bay... vào đơn hoa.",
+    "updatedAt": "2026-09-02T00:00:00Z"
+}
+
+
+def get_addon_config(use_cache: bool = True) -> Dict[str, Any]:
+    """
+    Đọc cấu hình bật/tắt hiển thị khu vực Sản Phẩm Kèm Theo (add-on) trên GUI.
+    Tự khởi tạo mặc định (showAddons=True) nếu file chưa tồn tại.
+    """
+    filepath = get_config_path("addonConfig.json")
+    if not os.path.exists(filepath):
+        write_json(filepath, DEFAULT_ADDON_CONFIG)
+        return dict(DEFAULT_ADDON_CONFIG)
+
+    data = read_json_cached(filepath, default={}) if use_cache else read_json(filepath, default={})
+    if not isinstance(data, dict) or "showAddons" not in data:
+        data = dict(DEFAULT_ADDON_CONFIG)
+        write_json(filepath, data)
+        return data
+
+    for k, v in DEFAULT_ADDON_CONFIG.items():
+        if k not in data or data[k] is None:
+            data[k] = v
+    data["showAddons"] = bool(data.get("showAddons", True))
+    return data
+
+
+def save_addon_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Lưu cấu hình hiển thị add-on. Chỉ cập nhật cờ 'showAddons', giữ nguyên label/description.
+    """
+    if not isinstance(config_dict, dict):
+        return False, None, "Dữ liệu cấu hình add-on không hợp lệ"
+
+    current = get_addon_config(use_cache=False)
+    if "showAddons" in config_dict:
+        current["showAddons"] = bool(config_dict["showAddons"])
+
+    current["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    filepath = get_config_path("addonConfig.json")
+    success = write_json(filepath, current)
+    if success:
+        return True, current, None
+    return False, None, "Không thể ghi file cấu hình addonConfig.json"
+
+
 
 
 

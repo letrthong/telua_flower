@@ -102,7 +102,12 @@ function handleImageErrorFallback(imgEl) {
     // Tầng 2: Fallback ảnh Unsplash chuẩn
     if (!imgEl.dataset.fallbackTried) {
         imgEl.dataset.fallbackTried = "1";
-        imgEl.src = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+        // Nếu là ảnh add-on (sản phẩm kèm theo), dùng placeholder trung tính thay vì ảnh hoa
+        if (imgEl.closest && imgEl.closest("#addonsList")) {
+            imgEl.src = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=200";
+        } else {
+            imgEl.src = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+        }
     }
 }
 
@@ -902,12 +907,12 @@ function saveCartItems(items) {
 /**
  * Thêm sản phẩm vào giỏ hàng
  */
-function addToCart(productId, name, priceNumber, image, category = "bo_hoa") {
+function addToCart(productId, name, priceNumber, image, category = "bo_hoa", quantity = 1) {
     let items = getCartItems();
     const existingIndex = items.findIndex((i) => i.productId === productId);
 
     if (existingIndex > -1) {
-        items[existingIndex].quantity += 1;
+        items[existingIndex].quantity += quantity;
     } else {
         items.push({
             productId: productId || `prod_${Date.now()}`,
@@ -915,7 +920,7 @@ function addToCart(productId, name, priceNumber, image, category = "bo_hoa") {
             price: parseInt(priceNumber, 10) || 420000,
             image: image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=400",
             category: category,
-            quantity: 1
+            quantity: quantity
         });
     }
 
@@ -1097,9 +1102,37 @@ let currentAppliedVoucher = null;
 
 /**
  * Mở Modal Đặt Hàng Thông Minh (Checkout Modal)
+ *
+ * Chính sách đăng nhập: Khách KHÔNG bắt buộc đăng nhập khi vào giỏ hàng.
+ * Chỉ khi nhấp nút "Thanh toán" (Checkout) và chưa đăng nhập, hệ thống
+ * sẽ mở modal đăng nhập trước. Sau khi đăng nhập thành công, tự động
+ * quay lại mở modal checkout (giữ nguyên giỏ hàng & thông tin đã nhập).
  */
 function openCheckoutModal() {
     toggleCartDrawer(false);
+
+    // Kiểm tra đăng nhập: nếu chưa đăng nhập -> yêu cầu đăng nhập trước
+    if (typeof isLoggedIn === "function" && !isLoggedIn()) {
+        // Lưu intent để sau khi đăng nhập sẽ quay lại mở checkout
+        if (typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem("telua_pending_checkout", "1");
+        }
+        if (typeof openAuthModal === "function") {
+            openAuthModal("login");
+        } else {
+            alert("Vui lòng đăng nhập để thanh toán!");
+        }
+        return;
+    }
+
+    // Đã đăng nhập -> mở modal checkout bình thường
+    openCheckoutModalAfterAuth();
+}
+
+/**
+ * Mở Modal Checkout (chỉ gọi sau khi đã xác thực đăng nhập)
+ */
+function openCheckoutModalAfterAuth() {
     const modal = document.getElementById("checkoutModal");
     if (!modal) return;
 
@@ -1138,6 +1171,70 @@ function openCheckoutModal() {
 
     // 3. Cập nhật bảng tổng kết tài chính
     updateOrderSummary();
+
+    // 4. Khởi tạo phương thức nhận hàng (mặc định delivery)
+    onFulfillmentTypeChange();
+}
+
+/**
+ * Xử lý khi khách đổi phương thức nhận hàng (Giao hàng / Nhận tại cửa hàng)
+ */
+function onFulfillmentTypeChange() {
+    const selected = document.querySelector("input[name='fulfillmentType']:checked");
+    const isPickup = selected && selected.value === "pickup";
+
+    const pickupSection = document.getElementById("pickupBranchSection");
+    const addressInput = document.getElementById("checkoutRecipientAddress");
+    const deliveryNotesInput = document.getElementById("checkoutDeliveryNotes");
+
+    if (pickupSection) pickupSection.classList.toggle("hidden", !isPickup);
+
+    // Khi pickup: không cần địa chỉ giao & ghi chú giao
+    if (addressInput) addressInput.required = !isPickup;
+    if (deliveryNotesInput) deliveryNotesInput.disabled = isPickup;
+
+    if (isPickup) {
+        loadPickupBranches();
+    }
+
+    // Cập nhật lại phí ship (pickup = miễn phí ship)
+    updateOrderSummary();
+}
+
+/**
+ * Tải danh sách cửa hàng để khách chọn nơi nhận hoa (pickup)
+ */
+async function loadPickupBranches() {
+    const select = document.getElementById("checkoutPickupBranch");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">Đang tải danh sách cửa hàng...</option>`;
+
+    try {
+        const res = await fetch(`${API_BASE}/branches`);
+        const json = await res.json();
+
+        let branches = [];
+        if (json.success && Array.isArray(json.data)) {
+            branches = json.data;
+        } else if (Array.isArray(json)) {
+            branches = json;
+        }
+
+        const activeBranches = branches.filter(b => b && b.isActive !== false);
+
+        if (activeBranches.length === 0) {
+            select.innerHTML = `<option value="">Không có cửa hàng khả dụng</option>`;
+            return;
+        }
+
+        select.innerHTML = `<option value="">-- Chọn cửa hàng nhận hoa --</option>` +
+            activeBranches.map(b => `
+                <option value="${b.id}">${b.name || b.id}${b.address ? " • " + b.address : ""}</option>
+            `).join("");
+    } catch (e) {
+        select.innerHTML = `<option value="">Lỗi tải cửa hàng: ${e.message}</option>`;
+    }
 }
 
 /**
@@ -1309,8 +1406,14 @@ function updateOrderSummary() {
     const isExpressCheckbox = document.getElementById("checkoutIsExpress2H");
     const isExpress = isExpressCheckbox ? isExpressCheckbox.checked : false;
 
+    // Pickup (nhận tại cửa hàng) -> miễn phí vận chuyển
+    const fulfillmentSelected = document.querySelector("input[name='fulfillmentType']:checked");
+    const isPickup = fulfillmentSelected && fulfillmentSelected.value === "pickup";
+
     let shippingFee = 0;
-    if (isExpress) {
+    if (isPickup) {
+        shippingFee = 0;
+    } else if (isExpress) {
         shippingFee = 50000;
     } else if (subtotal < 500000 && subtotal > 0) {
         shippingFee = 35000;
@@ -1376,12 +1479,34 @@ async function handleCheckoutSubmit(event) {
     const ribbonBanner = document.getElementById("checkoutRibbonBanner")?.value.trim() || "";
     const paymentMethod = document.querySelector("input[name='paymentMethod']:checked")?.value || "vietqr";
 
+    // Phương thức nhận hàng (delivery / pickup)
+    const fulfillmentSelected = document.querySelector("input[name='fulfillmentType']:checked");
+    const fulfillmentType = fulfillmentSelected ? fulfillmentSelected.value : "delivery";
+    const pickupBranchId = document.getElementById("checkoutPickupBranch")?.value || "";
+
     const submitBtn = document.getElementById("btnSubmitOrder");
     const errorBox = document.getElementById("checkoutErrorMsg");
 
-    if (!senderPhone || !recipientName || !recipientPhone || !recipientAddress) {
+    // Validation theo phương thức nhận hàng
+    if (!senderPhone || !recipientName || !recipientPhone) {
         if (errorBox) {
             errorBox.textContent = "Vui lòng điền đầy đủ số điện thoại người gửi và thông tin người nhận";
+            errorBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    if (fulfillmentType === "pickup") {
+        if (!pickupBranchId) {
+            if (errorBox) {
+                errorBox.textContent = "Vui lòng chọn cửa hàng nhận hoa";
+                errorBox.classList.remove("hidden");
+            }
+            return;
+        }
+    } else if (!recipientAddress) {
+        if (errorBox) {
+            errorBox.textContent = "Vui lòng nhập địa chỉ giao hoa";
             errorBox.classList.remove("hidden");
         }
         return;
@@ -1409,8 +1534,11 @@ async function handleCheckoutSubmit(event) {
         delivery: {
             deliveryDate: deliveryDate,
             timeSlot: isExpress2H ? "Giao Hỏa Tốc 2H" : timeSlot,
-            isExpress2H: isExpress2H
+            isExpress2H: isExpress2H,
+            fulfillmentType: fulfillmentType
         },
+        fulfillmentType: fulfillmentType,
+        branchId: fulfillmentType === "pickup" ? pickupBranchId : "",
         customization: {
             cardMessage: cardMessage,
             ribbonBanner: ribbonBanner
@@ -1485,6 +1613,7 @@ if (typeof window !== "undefined") {
         updateCartBadge,
         toggleCartDrawer,
         openCheckoutModal,
+        openCheckoutModalAfterAuth,
         closeCheckoutModal,
         onDeliveryDateChange,
         toggleExpress2H,
@@ -1499,12 +1628,15 @@ if (typeof window !== "undefined") {
     window.toggleCart = () => toggleCartDrawer();
     window.toggleCartDrawer = toggleCartDrawer;
     window.openCheckoutModal = openCheckoutModal;
+    window.openCheckoutModalAfterAuth = openCheckoutModalAfterAuth;
     window.closeCheckoutModal = closeCheckoutModal;
     window.onDeliveryDateChange = onDeliveryDateChange;
     window.toggleExpress2H = toggleExpress2H;
     window.handleApplyVoucher = handleApplyVoucher;
     window.updateOrderSummary = updateOrderSummary;
     window.handleCheckoutSubmit = handleCheckoutSubmit;
+    window.onFulfillmentTypeChange = onFulfillmentTypeChange;
+    window.loadPickupBranches = loadPickupBranches;
 
     document.addEventListener("DOMContentLoaded", () => {
         updateCartBadge();
@@ -1887,6 +2019,17 @@ async function handleLoginSubmit(event) {
         closeAuthModal();
         updateAuthUI();
 
+        // Nếu trước đó user đang cố thanh toán (nhấp nút Checkout) thì quay lại mở checkout
+        let pendingCheckout = false;
+        if (typeof sessionStorage !== "undefined") {
+            pendingCheckout = sessionStorage.getItem("telua_pending_checkout") === "1";
+            sessionStorage.removeItem("telua_pending_checkout");
+        }
+        if (pendingCheckout && typeof openCheckoutModalAfterAuth === "function") {
+            openCheckoutModalAfterAuth();
+            return;
+        }
+
         // Không tự động chuyển hướng / bật CMS, giữ admin ở trang chủ và chỉ hiển thị khi click
         if (typeof showToast === "function") {
             showToast(`Chào mừng ${result.user.fullName || "bạn"} (${result.user.role}) đã đăng nhập thành công!`);
@@ -1993,6 +2136,14 @@ function updateAuthUI() {
         const roleName = roleNameMap[user.role] || "Thành viên";
         const isAdminOrManager = user.role === "super_admin" || user.role === "branch_manager";
         const isFlorist = user.role === "florist";
+        const isSales = user.role === "sales_consultant";
+
+        const isInternalRole = isAdminOrManager || isFlorist || isSales;
+        const orderDashboardBtn = isInternalRole ? `
+                    <button onclick="openOrderDashboardModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                        <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                    </button>
+        ` : '';
 
         let portalActionBtn = "";
         if (isAdminOrManager) {
@@ -2001,6 +2152,7 @@ function updateAuthUI() {
                     <button onclick="openAdminPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                         <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
                     </button>
+                    ${orderDashboardBtn}
                     ${user.role === 'super_admin' ? `
                     <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
@@ -2010,18 +2162,33 @@ function updateAuthUI() {
             `;
         } else if (isFlorist) {
             portalActionBtn = `
-                <div class="p-1.5 border-b border-gray-100">
-                    <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal();" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-sm">
+                <div class="p-1.5 border-b border-gray-100 space-y-1.5">
+                    <button onclick="openStaffPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-sm">
                         <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
                     </button>
+                    ${orderDashboardBtn}
+                </div>
+            `;
+        } else if (isSales) {
+            portalActionBtn = `
+                <div class="p-1.5 border-b border-gray-100 space-y-1.5">
+                    <button onclick="openStaffPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-400 hover:opacity-95 transition rounded-lg shadow-sm">
+                        <i class="fa-solid fa-headset mr-2"></i> Tiếp Nhận Đơn Hàng
+                    </button>
+                    ${orderDashboardBtn}
                 </div>
             `;
         } else {
             // Customer (Khách hàng thân thiết)
             portalActionBtn = `
-                <div class="px-4 py-2 text-xs text-gray-700 flex justify-between items-center border-b border-gray-50">
-                    <span>Điểm tích lũy:</span>
-                    <span class="font-bold text-accent">50 điểm ⭐</span>
+                <div class="p-1.5 border-b border-gray-100 space-y-1.5">
+                    <button onclick="openCustomerPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
+                        <i class="fa-solid fa-box-open mr-2"></i> Đơn Hàng Của Tôi
+                    </button>
+                    <div class="px-3 py-2 text-xs text-gray-700 flex justify-between items-center bg-pink-50/50 rounded-lg">
+                        <span>Điểm tích lũy:</span>
+                        <span class="font-bold text-accent">50 điểm ⭐</span>
+                    </div>
                 </div>
             `;
         }
@@ -2076,6 +2243,9 @@ function updateAuthUI() {
                             <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                                 <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
                             </button>
+                            <button onclick="openOrderDashboardModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                                <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                            </button>
                             ${user.role === 'super_admin' ? `
                             <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                                 <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
@@ -2083,10 +2253,27 @@ function updateAuthUI() {
                             ` : ''}
                         </div>
                     ` : isFlorist ? `
-                        <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-xs">
-                            <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
-                        </button>
+                        <div class="space-y-2">
+                            <button onclick="openStaffPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-xs">
+                                <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
+                            </button>
+                            <button onclick="openOrderDashboardModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-lg border border-emerald-200">
+                                <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                            </button>
+                        </div>
+                    ` : isSales ? `
+                        <div class="space-y-2">
+                            <button onclick="openStaffPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-400 hover:opacity-95 transition rounded-lg shadow-xs">
+                                <i class="fa-solid fa-headset mr-2"></i> Tiếp Nhận Đơn Hàng
+                            </button>
+                            <button onclick="openOrderDashboardModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-lg border border-emerald-200">
+                                <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                            </button>
+                        </div>
                     ` : `
+                        <button onclick="openCustomerPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
+                            <i class="fa-solid fa-box-open mr-2"></i> Đơn Hàng Của Tôi
+                        </button>
                         <div class="flex items-center justify-between px-3 py-1.5 bg-white/80 rounded-lg border border-pink-100 text-xs">
                             <span class="text-gray-600 font-medium">Điểm tích lũy:</span>
                             <span class="font-bold text-accent">50 ⭐</span>
@@ -2187,6 +2374,720 @@ if (typeof window !== "undefined") {
 
 
 // ==========================================================================
+// MODULE: customer_portal.js
+// ==========================================================================
+/**
+ * Phân hệ Dashboard Khách Hàng (Customer Portal - Đơn Hàng Của Tôi)
+ * Hiển thị lịch sử đơn hàng đã mua, trạng thái đơn & tổng chi tiêu.
+ * Dữ liệu lấy từ API: GET /api/user/orders (yêu cầu JWT role: customer)
+ */
+
+// Bản đồ trạng thái đơn hàng -> nhãn & màu hiển thị
+const ORDER_STATUS_META = {
+    pending:        { label: "Chờ xác nhận",   color: "bg-amber-100 text-amber-700 border-amber-200",   icon: "fa-clock" },
+    confirmed:      { label: "Đã xác nhận",    color: "bg-blue-100 text-blue-700 border-blue-200",       icon: "fa-check" },
+    arranging:      { label: "Đang cắm hoa",   color: "bg-purple-100 text-purple-700 border-purple-200", icon: "fa-scissors" },
+    shipping:       { label: "Đang vận chuyển", color: "bg-cyan-100 text-cyan-700 border-cyan-200",      icon: "fa-truck" },
+    delivered:      { label: "Giao thành công", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    ready_for_pickup: { label: "Sẵn sàng nhận", color: "bg-teal-100 text-teal-700 border-teal-200",      icon: "fa-store" },
+    completed:      { label: "Hoàn thành",     color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    cancelled:      { label: "Đã hủy",         color: "bg-red-100 text-red-700 border-red-200",          icon: "fa-ban" },
+    returned:       { label: "Trả hàng",       color: "bg-orange-100 text-orange-700 border-orange-200", icon: "fa-rotate-left" }
+};
+
+const PAYMENT_STATUS_META = {
+    unpaid:   { label: "Chưa thanh toán", color: "bg-gray-100 text-gray-600 border-gray-200",   icon: "fa-credit-card" },
+    paid:     { label: "Đã thanh toán",   color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    refunded: { label: "Đã hoàn tiền",    color: "bg-blue-100 text-blue-700 border-blue-200",   icon: "fa-rotate-left" },
+    failed:   { label: "Thanh toán lỗi",  color: "bg-red-100 text-red-700 border-red-200",      icon: "fa-circle-xmark" }
+};
+
+function formatVND(amount) {
+    const n = Number(amount) || 0;
+    return n.toLocaleString("vi-VN") + "₫";
+}
+
+function formatDate(isoStr) {
+    if (!isoStr) return "";
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function getStatusMeta(status, map) {
+    return map[status] || { label: status || "Không xác định", color: "bg-gray-100 text-gray-600 border-gray-200", icon: "fa-circle-question" };
+}
+
+/**
+ * Mở Dashboard Đơn Hàng Của Tôi (chỉ dành cho khách hàng đã đăng nhập)
+ */
+function openCustomerPortalModal() {
+    const user = (typeof getCurrentUser === "function")
+        ? getCurrentUser()
+        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+
+    if (!user) {
+        if (typeof openAuthModal === "function") openAuthModal("login");
+        else if (typeof window !== "undefined" && typeof window.openAuthModal === "function") window.openAuthModal("login");
+        return;
+    }
+
+    const modal = document.getElementById("customerPortalModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    loadCustomerOrders();
+}
+
+function closeCustomerPortalModal() {
+    const modal = document.getElementById("customerPortalModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+/**
+ * Tải danh sách đơn hàng của khách hàng đang đăng nhập
+ */
+async function loadCustomerOrders() {
+    const listEl = document.getElementById("customerOrdersList");
+    const emptyEl = document.getElementById("customerOrdersEmpty");
+    if (!listEl) return;
+
+    // Reset UI
+    listEl.innerHTML = `
+        <div class="text-center py-12">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl text-primary"></i>
+            <p class="text-sm text-gray-500 mt-3">Đang tải đơn hàng...</p>
+        </div>
+    `;
+    if (emptyEl) emptyEl.classList.add("hidden");
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/user/orders`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không tải được đơn hàng");
+        }
+
+        const orders = Array.isArray(json.data) ? json.data : [];
+        renderCustomerOrders(orders);
+    } catch (e) {
+        listEl.innerHTML = `
+            <div class="text-center py-12 bg-white rounded-xl border border-red-100">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                <p class="text-sm font-semibold text-gray-700">Không thể tải đơn hàng</p>
+                <p class="text-xs text-gray-400 mt-1">${e.message}</p>
+                <button onclick="loadCustomerOrders()" class="mt-4 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:opacity-90 transition">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Thử lại
+                </button>
+            </div>
+        `;
+    }
+}
+
+function renderCustomerOrders(orders) {
+    const listEl = document.getElementById("customerOrdersList");
+    const emptyEl = document.getElementById("customerOrdersEmpty");
+    if (!listEl) return;
+
+    // Cập nhật thẻ tóm tắt
+    const totalOrders = orders.length;
+    const activeOrders = orders.filter(o => ["pending", "confirmed", "arranging", "shipping", "ready_for_pickup"].includes(o.status)).length;
+    const deliveredOrders = orders.filter(o => ["delivered", "completed"].includes(o.status)).length;
+    const totalSpent = orders.reduce((sum, o) => sum + (Number(o.totalAmount) || Number(o.financials?.totalAmount) || 0), 0);
+
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    setText("custTotalOrders", String(totalOrders));
+    setText("custActiveOrders", String(activeOrders));
+    setText("custDeliveredOrders", String(deliveredOrders));
+    setText("custTotalSpent", formatVND(totalSpent));
+
+    if (orders.length === 0) {
+        listEl.innerHTML = "";
+        if (emptyEl) emptyEl.classList.remove("hidden");
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add("hidden");
+
+    listEl.innerHTML = orders.map(order => {
+        const statusMeta = getStatusMeta(order.status, ORDER_STATUS_META);
+        const payMeta = getStatusMeta(order.payment?.status, PAYMENT_STATUS_META);
+        const total = Number(order.totalAmount) || Number(order.financials?.totalAmount) || 0;
+        const items = Array.isArray(order.items) ? order.items : [];
+        const itemSummary = items.slice(0, 2).map(it => `${it.productName || it.name || "Sản phẩm"} x${it.quantity || 1}`).join(", ")
+            + (items.length > 2 ? ` +${items.length - 2} món khác` : "");
+
+        return `
+            <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <span class="font-mono text-xs font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                        <span class="text-[11px] text-gray-400">${formatDate(order.createdAt || order.orderDate)}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${statusMeta.color}">
+                            <i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${payMeta.color}">
+                            <i class="fa-solid ${payMeta.icon}"></i> ${payMeta.label}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-xs text-gray-600 truncate">${itemSummary || "Không có sản phẩm"}</p>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                            <i class="fa-solid fa-location-dot mr-1"></i>${order.recipient?.name || ""}${order.recipient?.address ? " • " + order.recipient.address : ""}
+                        </p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-sm font-bold text-gray-800">${formatVND(total)}</p>
+                        <p class="text-[10px] text-gray-400">${order.payment?.method === "vietqr" ? "VietQR" : (order.payment?.method || "Thanh toán")}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+// Global binding
+if (typeof window !== "undefined") {
+    window.openCustomerPortalModal = openCustomerPortalModal;
+    window.closeCustomerPortalModal = closeCustomerPortalModal;
+    window.loadCustomerOrders = loadCustomerOrders;
+}
+
+
+// ==========================================================================
+// MODULE: staff_portal.js
+// ==========================================================================
+/**
+ * Phân hệ Cổng Nhân Viên Chi Nhánh (Staff Portal - Sales & Florist)
+ * - sales_consultant: Tiếp nhận & xem đơn hàng của chi nhánh.
+ * - florist: Xem đơn cần cắm & cập nhật trạng thái cắm hoa.
+ * Dữ liệu lấy từ API: GET /api/branch/<branch_id>/orders (phân quyền chi nhánh).
+ */
+
+const STAFF_ORDER_STATUS_META = {
+    pending:        { label: "Chờ xác nhận",   color: "bg-amber-100 text-amber-700 border-amber-200",   icon: "fa-clock" },
+    confirmed:      { label: "Đã xác nhận",    color: "bg-blue-100 text-blue-700 border-blue-200",       icon: "fa-check" },
+    arranging:      { label: "Đang cắm hoa",   color: "bg-purple-100 text-purple-700 border-purple-200", icon: "fa-scissors" },
+    shipping:       { label: "Đang vận chuyển", color: "bg-cyan-100 text-cyan-700 border-cyan-200",      icon: "fa-truck" },
+    delivered:      { label: "Giao thành công", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    ready_for_pickup: { label: "Sẵn sàng nhận", color: "bg-teal-100 text-teal-700 border-teal-200",      icon: "fa-store" },
+    completed:      { label: "Hoàn thành",     color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    cancelled:      { label: "Đã hủy",         color: "bg-red-100 text-red-700 border-red-200",          icon: "fa-ban" },
+    returned:       { label: "Trả hàng",       color: "bg-orange-100 text-orange-700 border-orange-200", icon: "fa-rotate-left" }
+};
+
+const STAFF_PAYMENT_STATUS_META = {
+    unpaid:   { label: "Chưa thanh toán", color: "bg-gray-100 text-gray-600 border-gray-200",   icon: "fa-credit-card" },
+    paid:     { label: "Đã thanh toán",   color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    refunded: { label: "Đã hoàn tiền",    color: "bg-blue-100 text-blue-700 border-blue-200",   icon: "fa-rotate-left" },
+    failed:   { label: "Thanh toán lỗi",  color: "bg-red-100 text-red-700 border-red-200",      icon: "fa-circle-xmark" }
+};
+
+function staffFormatVND(amount) {
+    const n = Number(amount) || 0;
+    return n.toLocaleString("vi-VN") + "₫";
+}
+
+function staffFormatDate(isoStr) {
+    if (!isoStr) return "";
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function staffGetStatusMeta(status, map) {
+    return map[status] || { label: status || "Không xác định", color: "bg-gray-100 text-gray-600 border-gray-200", icon: "fa-circle-question" };
+}
+
+/**
+ * Mở Cổng Nhân Viên Chi Nhánh (Sales / Florist)
+ */
+function openStaffPortalModal() {
+    const user = (typeof getCurrentUser === "function")
+        ? getCurrentUser()
+        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+
+    if (!user || !["sales_consultant", "florist"].includes(user.role)) {
+        alert("Vui lòng đăng nhập bằng tài khoản Nhân viên chi nhánh để truy cập!");
+        if (typeof openAuthModal === "function") openAuthModal("login");
+        else if (typeof window !== "undefined" && typeof window.openAuthModal === "function") window.openAuthModal("login");
+        return;
+    }
+
+    const modal = document.getElementById("staffPortalModal");
+    if (!modal) return;
+
+    // Cập nhật tiêu đề theo vai trò
+    const titleEl = document.getElementById("staffPortalTitle");
+    const subtitleEl = document.getElementById("staffPortalSubtitle");
+    if (titleEl) {
+        titleEl.textContent = user.role === "florist" ? "Đơn Hàng Cần Cắm" : "Tiếp Nhận Đơn Hàng";
+    }
+    if (subtitleEl) {
+        subtitleEl.textContent = user.role === "florist"
+            ? "Danh sách đơn hoa cần cắm trong ca"
+            : "Danh sách đơn mới & đang xử lý của chi nhánh";
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    loadStaffOrders();
+}
+
+function closeStaffPortalModal() {
+    const modal = document.getElementById("staffPortalModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+/**
+ * Tải danh sách đơn hàng của chi nhánh (phân quyền tự động theo user.branchId)
+ */
+async function loadStaffOrders() {
+    const user = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+    const listEl = document.getElementById("staffOrdersList");
+    const emptyEl = document.getElementById("staffOrdersEmpty");
+    if (!listEl || !user) return;
+
+    const branchId = user.branchId;
+    if (!branchId) {
+        listEl.innerHTML = `<div class="text-center py-12 text-gray-400">Tài khoản chưa gắn chi nhánh</div>`;
+        return;
+    }
+
+    const statusEl = document.getElementById("staffFilterStatus");
+    const searchEl = document.getElementById("staffSearchInput");
+    const status = statusEl ? statusEl.value : "all";
+    const search = searchEl ? searchEl.value.trim() : "";
+
+    listEl.innerHTML = `
+        <div class="text-center py-12">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl text-primary"></i>
+            <p class="text-sm text-gray-500 mt-3">Đang tải đơn hàng...</p>
+        </div>
+    `;
+    if (emptyEl) emptyEl.classList.add("hidden");
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/branch/${branchId}/orders`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không tải được đơn hàng");
+        }
+
+        let orders = Array.isArray(json.data) ? json.data : [];
+
+        // Lọc theo trạng thái
+        if (status && status !== "all") {
+            orders = orders.filter(o => o.status === status);
+        }
+
+        // Lọc theo từ khóa
+        if (search) {
+            const s = search.toLowerCase();
+            orders = orders.filter(o => {
+                const code = (o.orderCode || o.id || "").toLowerCase();
+                const senderPhone = (o.sender?.phone || "").toLowerCase();
+                const senderName = (o.sender?.name || "").toLowerCase();
+                const recipientName = (o.recipient?.name || "").toLowerCase();
+                return code.includes(s) || senderPhone.includes(s) || senderName.includes(s) || recipientName.includes(s);
+            });
+        }
+
+        renderStaffOrders(orders, user.role);
+    } catch (e) {
+        listEl.innerHTML = `
+            <div class="text-center py-12 bg-white rounded-xl border border-red-100">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                <p class="text-sm font-semibold text-gray-700">Không thể tải đơn hàng</p>
+                <p class="text-xs text-gray-400 mt-1">${e.message}</p>
+                <button onclick="loadStaffOrders()" class="mt-4 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:opacity-90 transition">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Thử lại
+                </button>
+            </div>
+        `;
+    }
+}
+
+function renderStaffOrders(orders, role) {
+    const listEl = document.getElementById("staffOrdersList");
+    const emptyEl = document.getElementById("staffOrdersEmpty");
+    if (!listEl) return;
+
+    // Cập nhật thẻ tóm tắt
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    setText("staffTotalOrders", String(orders.length));
+    setText("staffPendingOrders", String(orders.filter(o => ["pending", "confirmed"].includes(o.status)).length));
+    setText("staffArrangingOrders", String(orders.filter(o => o.status === "arranging").length));
+    setText("staffShippingOrders", String(orders.filter(o => o.status === "shipping").length));
+
+    if (orders.length === 0) {
+        listEl.innerHTML = "";
+        if (emptyEl) emptyEl.classList.remove("hidden");
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add("hidden");
+
+    const isFlorist = role === "florist";
+
+    listEl.innerHTML = orders.map(order => {
+        const statusMeta = staffGetStatusMeta(order.status, STAFF_ORDER_STATUS_META);
+        const payMeta = staffGetStatusMeta(order.payment?.status, STAFF_PAYMENT_STATUS_META);
+        const total = Number(order.totalAmount) || Number(order.financials?.totalAmount) || 0;
+        const items = Array.isArray(order.items) ? order.items : [];
+        const itemSummary = items.slice(0, 2).map(it => `${it.productName || it.name || "Sản phẩm"} x${it.quantity || 1}`).join(", ")
+            + (items.length > 2 ? ` +${items.length - 2} món khác` : "");
+
+        // Nút hành động theo vai trò
+        let actionBtn = "";
+        if (isFlorist) {
+            if (order.status === "confirmed") {
+                actionBtn = `<button onclick="updateStaffOrderStatus('${order.id}', 'arranging')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded-lg transition">
+                    <i class="fa-solid fa-scissors mr-1"></i> Bắt đầu cắm
+                </button>`;
+            } else if (order.status === "arranging") {
+                actionBtn = `<button onclick="updateStaffOrderStatus('${order.id}', 'shipping')" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-[10px] font-bold rounded-lg transition">
+                    <i class="fa-solid fa-truck mr-1"></i> Đã cắm xong
+                </button>`;
+            }
+        } else {
+            // Sales consultant
+            if (order.status === "pending") {
+                actionBtn = `<button onclick="updateStaffOrderStatus('${order.id}', 'confirmed')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-lg transition">
+                    <i class="fa-solid fa-check mr-1"></i> Xác nhận
+                </button>`;
+            }
+        }
+
+        return `
+            <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <span class="font-mono text-xs font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                        <span class="text-[11px] text-gray-400">${staffFormatDate(order.createdAt || order.orderDate)}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${statusMeta.color}">
+                            <i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${payMeta.color}">
+                            <i class="fa-solid ${payMeta.icon}"></i> ${payMeta.label}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs text-gray-600 truncate">${itemSummary || "Không có sản phẩm"}</p>
+                        <p class="text-[11px] text-gray-400 mt-1">
+                            <i class="fa-solid fa-user mr-1"></i>${order.recipient?.name || ""} • ${order.recipient?.phone || ""}
+                        </p>
+                        <p class="text-[11px] text-gray-400 mt-0.5">
+                            <i class="fa-solid fa-location-dot mr-1"></i>${order.recipient?.address || "Nhận tại cửa hàng"}
+                        </p>
+                        ${order.delivery?.fulfillmentType === "pickup" ? `<p class="text-[10px] text-teal-600 font-bold mt-0.5"><i class="fa-solid fa-store mr-1"></i>Nhận tại cửa hàng</p>` : ""}
+                    </div>
+                    <div class="text-right flex-shrink-0 flex flex-col items-end gap-2">
+                        <p class="text-sm font-bold text-gray-800">${staffFormatVND(total)}</p>
+                        ${actionBtn}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+/**
+ * Cập nhật trạng thái đơn hàng (dùng cho sales xác nhận, florist cắm hoa)
+ */
+async function updateStaffOrderStatus(orderId, newStatus) {
+    if (!orderId || !newStatus) return;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+            if (typeof showToast === "function") showToast("Đã cập nhật trạng thái đơn hàng!", 'success');
+            loadStaffOrders();
+        } else {
+            if (typeof showToast === "function") showToast(json.message || "Lỗi cập nhật trạng thái", 'error');
+            else alert(json.message || "Lỗi cập nhật trạng thái");
+        }
+    } catch (e) {
+        if (typeof showToast === "function") showToast("Lỗi kết nối: " + e.message, 'error');
+        else alert("Lỗi kết nối: " + e.message);
+    }
+}
+
+// Global binding
+if (typeof window !== "undefined") {
+    window.openStaffPortalModal = openStaffPortalModal;
+    window.closeStaffPortalModal = closeStaffPortalModal;
+    window.loadStaffOrders = loadStaffOrders;
+    window.updateStaffOrderStatus = updateStaffOrderStatus;
+}
+
+
+// ==========================================================================
+// MODULE: order_dashboard.js
+// ==========================================================================
+/**
+ * Phân hệ Bảng Điều Khiển Đơn Hàng (Order Dashboard - Nội bộ)
+ * Dành cho các vai trò nội bộ: super_admin, branch_manager, florist, sales_consultant.
+ * Hiển thị tổng quan đơn hàng (thẻ thống kê) + danh sách đơn read-only, tương tự Dashboard khách hàng.
+ * Phạm vi dữ liệu:
+ *   - super_admin       : Toàn chuỗi (tất cả chi nhánh)
+ *   - branch_manager    : Đơn của chi nhánh mình (backend tự ép theo branchId)
+ *   - florist / sales   : Đơn của chi nhánh mình (truyền branchId để giới hạn)
+ * Nguồn dữ liệu: GET /api/flower/v1/admin/orders?timeframe=all[&branchId=...]
+ */
+
+const DASH_ORDER_STATUS_META = {
+    pending:          { label: "Chờ xác nhận",    color: "bg-amber-100 text-amber-700 border-amber-200",     icon: "fa-clock" },
+    confirmed:        { label: "Đã xác nhận",     color: "bg-blue-100 text-blue-700 border-blue-200",        icon: "fa-check" },
+    arranging:        { label: "Đang cắm hoa",    color: "bg-purple-100 text-purple-700 border-purple-200",  icon: "fa-scissors" },
+    shipping:         { label: "Đang vận chuyển", color: "bg-cyan-100 text-cyan-700 border-cyan-200",        icon: "fa-truck" },
+    delivered:        { label: "Giao thành công", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    ready_for_pickup: { label: "Sẵn sàng nhận",   color: "bg-teal-100 text-teal-700 border-teal-200",        icon: "fa-store" },
+    completed:        { label: "Hoàn thành",      color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    cancelled:        { label: "Đã hủy",          color: "bg-red-100 text-red-700 border-red-200",           icon: "fa-ban" },
+    returned:         { label: "Trả hàng",        color: "bg-orange-100 text-orange-700 border-orange-200",  icon: "fa-rotate-left" }
+};
+
+const DASH_PAYMENT_STATUS_META = {
+    unpaid:   { label: "Chưa thanh toán", color: "bg-gray-100 text-gray-600 border-gray-200",       icon: "fa-credit-card" },
+    paid:     { label: "Đã thanh toán",   color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    refunded: { label: "Đã hoàn tiền",    color: "bg-blue-100 text-blue-700 border-blue-200",        icon: "fa-rotate-left" },
+    failed:   { label: "Thanh toán lỗi",  color: "bg-red-100 text-red-700 border-red-200",           icon: "fa-circle-xmark" }
+};
+
+const INTERNAL_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant"];
+
+function dashFormatVND(amount) {
+    const n = Number(amount) || 0;
+    return n.toLocaleString("vi-VN") + "₫";
+}
+
+function dashFormatDate(isoStr) {
+    if (!isoStr) return "";
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function dashGetStatusMeta(status, map) {
+    return map[status] || { label: status || "Không xác định", color: "bg-gray-100 text-gray-600 border-gray-200", icon: "fa-circle-question" };
+}
+
+function dashGetCurrentUser() {
+    if (typeof getCurrentUser === "function") return getCurrentUser();
+    if (typeof window !== "undefined" && typeof window.getCurrentUser === "function") return window.getCurrentUser();
+    return null;
+}
+
+/**
+ * Mở Bảng Điều Khiển Đơn Hàng (chỉ dành cho vai trò nội bộ đã đăng nhập)
+ */
+function openOrderDashboardModal() {
+    const user = dashGetCurrentUser();
+    if (!user) {
+        if (typeof openAuthModal === "function") openAuthModal("login");
+        else if (typeof window !== "undefined" && typeof window.openAuthModal === "function") window.openAuthModal("login");
+        return;
+    }
+    if (!INTERNAL_ROLES.includes(user.role)) {
+        alert("Bạn không có quyền truy cập Bảng Điều Khiển Đơn Hàng.");
+        return;
+    }
+
+    const modal = document.getElementById("orderDashboardModal");
+    if (!modal) return;
+
+    // Cập nhật phụ đề phạm vi dữ liệu
+    const subtitle = document.getElementById("orderDashboardScope");
+    if (subtitle) {
+        subtitle.textContent = user.role === "super_admin"
+            ? "Phạm vi: Toàn chuỗi cửa hàng"
+            : `Phạm vi: Chi nhánh ${user.branchName || user.branchId || "của bạn"}`;
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    loadDashboardOrders();
+}
+
+function closeOrderDashboardModal() {
+    const modal = document.getElementById("orderDashboardModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+/**
+ * Tải danh sách đơn hàng theo phạm vi phân quyền của vai trò hiện tại
+ */
+async function loadDashboardOrders() {
+    const listEl = document.getElementById("orderDashboardList");
+    const emptyEl = document.getElementById("orderDashboardEmpty");
+    if (!listEl) return;
+
+    listEl.innerHTML = `
+        <div class="text-center py-12">
+            <i class="fa-solid fa-circle-notch fa-spin text-3xl text-primary"></i>
+            <p class="text-sm text-gray-500 mt-3">Đang tải đơn hàng...</p>
+        </div>
+    `;
+    if (emptyEl) emptyEl.classList.add("hidden");
+
+    const user = dashGetCurrentUser() || {};
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    let url = `${API_BASE}/admin/orders?timeframe=all`;
+    // Florist/Sales: giới hạn theo chi nhánh của họ (branch_manager backend tự ép, super_admin xem toàn chuỗi)
+    if (user.role !== "super_admin" && user.branchId) {
+        url += `&branchId=${encodeURIComponent(user.branchId)}`;
+    }
+
+    try {
+        const res = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không tải được đơn hàng");
+        }
+        // /admin/orders trả về { data: { orders: [...] } }
+        const data = json.data || {};
+        const orders = Array.isArray(data.orders) ? data.orders : (Array.isArray(data) ? data : []);
+        renderDashboardOrders(orders);
+    } catch (e) {
+        listEl.innerHTML = `
+            <div class="text-center py-12 bg-white rounded-xl border border-red-100">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                <p class="text-sm font-semibold text-gray-700">Không thể tải đơn hàng</p>
+                <p class="text-xs text-gray-400 mt-1">${e.message}</p>
+                <button onclick="loadDashboardOrders()" class="mt-4 px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:opacity-90 transition">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Thử lại
+                </button>
+            </div>
+        `;
+    }
+}
+
+function renderDashboardOrders(orders) {
+    const listEl = document.getElementById("orderDashboardList");
+    const emptyEl = document.getElementById("orderDashboardEmpty");
+    if (!listEl) return;
+
+    const getTotal = (o) => Number(o.totalAmount) || Number(o.financials?.totalAmount) || 0;
+    const activeStatuses = ["pending", "confirmed", "arranging", "shipping", "ready_for_pickup"];
+    const doneStatuses = ["delivered", "completed"];
+
+    const totalOrders = orders.length;
+    const activeOrders = orders.filter(o => activeStatuses.includes(o.status)).length;
+    const completedOrders = orders.filter(o => doneStatuses.includes(o.status)).length;
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.status === "cancelled" ? 0 : getTotal(o)), 0);
+
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    };
+    setText("dashTotalOrders", String(totalOrders));
+    setText("dashActiveOrders", String(activeOrders));
+    setText("dashCompletedOrders", String(completedOrders));
+    setText("dashTotalRevenue", dashFormatVND(totalRevenue));
+
+    if (orders.length === 0) {
+        listEl.innerHTML = "";
+        if (emptyEl) emptyEl.classList.remove("hidden");
+        return;
+    }
+    if (emptyEl) emptyEl.classList.add("hidden");
+
+    listEl.innerHTML = orders.map(order => {
+        const statusMeta = dashGetStatusMeta(order.status, DASH_ORDER_STATUS_META);
+        const payMeta = dashGetStatusMeta(order.payment?.status, DASH_PAYMENT_STATUS_META);
+        const total = getTotal(order);
+        const items = Array.isArray(order.items) ? order.items : [];
+        const itemSummary = items.slice(0, 2).map(it => `${it.productName || it.name || "Sản phẩm"} x${it.quantity || 1}`).join(", ")
+            + (items.length > 2 ? ` +${items.length - 2} món khác` : "");
+        const customerName = order.recipient?.name || order.sender?.name || "Khách lẻ";
+        const branchLabel = order.assignedBranchId || order.branchId || "";
+
+        return `
+            <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+                <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-3">
+                        <span class="font-mono text-xs font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                        <span class="text-[11px] text-gray-400">${dashFormatDate(order.createdAt || order.orderDate)}</span>
+                        ${branchLabel ? `<span class="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><i class="fa-solid fa-store mr-1"></i>${branchLabel}</span>` : ""}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${statusMeta.color}">
+                            <i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-bold ${payMeta.color}">
+                            <i class="fa-solid ${payMeta.icon}"></i> ${payMeta.label}
+                        </span>
+                    </div>
+                </div>
+                <div class="px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold text-gray-700 truncate"><i class="fa-solid fa-user mr-1 text-gray-400"></i>${customerName}</p>
+                        <p class="text-xs text-gray-600 truncate mt-1">${itemSummary || "Không có sản phẩm"}</p>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-sm font-bold text-gray-800">${dashFormatVND(total)}</p>
+                        <p class="text-[10px] text-gray-400">${order.payment?.method === "vietqr" ? "VietQR" : (order.payment?.method || "Thanh toán")}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+// Global binding (bundle chạy trong IIFE, gán ra window để HTML inline onclick gọi được)
+if (typeof window !== "undefined") {
+    window.openOrderDashboardModal = openOrderDashboardModal;
+    window.closeOrderDashboardModal = closeOrderDashboardModal;
+    window.loadDashboardOrders = loadDashboardOrders;
+}
+
+
+// ==========================================================================
 // MODULE: portal_admin.js
 // ==========================================================================
 function lockScreen(msg) {
@@ -2223,6 +3124,7 @@ const PRICE_LEVEL_CONFIG = {
 let allAdminCategories = [];
 let allAdminProducts = [];
 let allAdminPromotions = [];
+let allAdminAddons = [];
 let allAdminTranslations = {};
 let allAdminUsers = [];
 let allAdminBranches = [];
@@ -2354,30 +3256,47 @@ function closeSystemConfigModal() {
 }
 
 function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
+    const btnPayment = document.getElementById("tabSysBtnPayment");
+    const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
     const contentCompany = document.getElementById("tabSysContentCompany");
     const contentTranslations = document.getElementById("tabSysContentTranslations");
+    const contentPayment = document.getElementById("tabSysContentPayment");
+    const contentAddonVis = document.getElementById("tabSysContentAddonVis");
 
-    console.group(`%c⚙️ [SYSTEM_CONFIG] Đang mở tab cấu hình: "${tabName === 'company' ? 'Thông Tin Doanh Nghiệp' : 'Biên Dịch Đa Ngôn Ngữ'}"`, "color: #7b1fa2; font-weight: bold; font-size: 12px;");
+    const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
+    const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+
+    // Ẩn toàn bộ, reset trạng thái nút
+    if (btnCompany) btnCompany.className = idleCls;
+    if (btnTranslations) btnTranslations.className = idleCls;
+    if (btnPayment) btnPayment.className = idleCls;
+    if (btnAddonVis) btnAddonVis.className = idleCls;
+    if (contentCompany) contentCompany.classList.add("hidden");
+    if (contentTranslations) contentTranslations.classList.add("hidden");
+    if (contentPayment) contentPayment.classList.add("hidden");
+    if (contentAddonVis) contentAddonVis.classList.add("hidden");
 
     if (tabName === "company") {
-        if (btnCompany) btnCompany.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
-        if (btnTranslations) btnTranslations.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+        if (btnCompany) btnCompany.className = activeCls;
         if (contentCompany) contentCompany.classList.remove("hidden");
-        if (contentTranslations) contentTranslations.classList.add("hidden");
         loadAdminCompanyInfo();
+    } else if (tabName === "payment") {
+        if (btnPayment) btnPayment.className = activeCls;
+        if (contentPayment) contentPayment.classList.remove("hidden");
+        loadAdminPaymentConfig();
+    } else if (tabName === "addonvis") {
+        if (btnAddonVis) btnAddonVis.className = activeCls;
+        if (contentAddonVis) contentAddonVis.classList.remove("hidden");
+        loadAdminAddonConfig();
     } else {
-        if (btnCompany) btnCompany.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
-        if (btnTranslations) btnTranslations.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
-        if (contentCompany) contentCompany.classList.add("hidden");
+        if (btnTranslations) btnTranslations.className = activeCls;
         if (contentTranslations) contentTranslations.classList.remove("hidden");
         loadAdminTranslations();
     }
-
-    console.groupEnd();
 }
 
 function checkAdminAccess() {
@@ -2401,19 +3320,21 @@ function switchAdminTab(tabName) {
     if (tabName === "users") tabName = "staff";
 
     const tabTitles = {
+        orders: "Đơn Hàng",
         products: "Mẫu Hoa & Bảng Giá",
         categories: "Danh Mục Hoa",
         staff: "Nhân Sự Nội Bộ",
         customers: "Khách Hàng & CRM",
         branches: "Chuỗi Showroom",
-        promotions: "Khuyến Mãi & Voucher"
+        promotions: "Khuyến Mãi & Voucher",
+        addons: "Sản Phẩm Kèm Theo"
     };
 
     console.group(`%c🖥️ [GUI_VIEW] Đang hiển thị Tab: "${tabTitles[tabName] || tabName}" (#tabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)})`, "color: #0288d1; font-weight: bold; font-size: 12px;");
     console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
     console.log("📂 Tab Identifier:", tabName);
 
-    const tabs = ["products", "categories", "staff", "customers", "branches", "promotions"];
+    const tabs = ["orders", "products", "categories", "staff", "customers", "branches", "promotions", "addons"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -2433,11 +3354,13 @@ function switchAdminTab(tabName) {
     });
 
     console.log(`  🚀 Bắt đầu nạp/đồng bộ dữ liệu phân hệ: ${tabTitles[tabName] || tabName}`);
+    if (tabName === "orders") loadAdminOrders();
     if (tabName === "categories") loadAdminCategories();
     if (tabName === "staff") loadAdminUsers();
     if (tabName === "customers") loadAdminCustomers();
     if (tabName === "branches") loadAdminBranches();
     if (tabName === "promotions") loadAdminPromotions();
+    if (tabName === "addons") loadAdminAddons();
 
     console.groupEnd();
 }
@@ -4910,6 +5833,389 @@ async function restorePromo(promoId, promoCode) {
 }
 
 // ==========================================
+// QUẢN LÝ SẢN PHẨM KÈM THEO (ADD-ONS CMS)
+// ==========================================
+async function loadAdminAddons() {
+    const tbody = document.getElementById("addonsTableBody");
+    if (!tbody) return;
+
+    if (!allAdminAddons || allAdminAddons.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải dữ liệu sản phẩm kèm theo...</td></tr>`;
+    }
+
+    try {
+        const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+        const res = await fetch(`${API_BASE}/admin/addons`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+            allAdminAddons = json.data;
+            renderAddonsTable(allAdminAddons);
+        } else if (!allAdminAddons || allAdminAddons.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-red-500 font-bold">${json.message || "Không thể tải danh sách sản phẩm kèm theo"}</td></tr>`;
+        }
+    } catch (e) {
+        if (!allAdminAddons || allAdminAddons.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        }
+    }
+}
+
+function renderAddonsTable(addons) {
+    const tbody = document.getElementById("addonsTableBody");
+    if (!tbody) return;
+
+    if (!Array.isArray(addons) || addons.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+                            <i class="fa-solid fa-gift"></i>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">Chưa có sản phẩm kèm theo nào</p>
+                        <p class="text-xs text-gray-400 mt-1">Bấm nút "Thêm Sản Phẩm Kèm Theo" để tạo add-on cho khách hàng.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    let html = "";
+    addons.forEach((a) => {
+        const isDeleted = a.status === "deleted" || a.isDeleted === true;
+        const isActive = !isDeleted && a.isActive !== false;
+
+        let statusBadge = "";
+        if (isDeleted) {
+            statusBadge = `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-200">🔴 Đã Xóa Mềm</span>`;
+        } else if (isActive) {
+            statusBadge = `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-green-200">🟢 Đang Hiển Thị</span>`;
+        } else {
+            statusBadge = `<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-full border border-gray-200">⚪ Đã Ẩn</span>`;
+        }
+
+        const priceStr = (a.price || 0).toLocaleString("vi-VN") + "₫";
+        const createdDate = a.createdAt ? a.createdAt.replace("T", " ").replace("Z", "") : "—";
+        const rowBg = isDeleted ? "bg-red-50/20 opacity-75" : "hover:bg-pink-50/20";
+
+        html += `
+            <tr class="${rowBg} transition border-b border-gray-100">
+                <td class="p-3">
+                    <div class="flex items-center space-x-2.5">
+                        <img src="${a.image || ''}" alt="${a.name || ''}" onerror="this.style.display='none'" class="w-10 h-10 rounded-lg object-cover border border-gray-200 flex-shrink-0">
+                        <div>
+                            <div class="font-bold text-gray-800 text-xs ${isDeleted ? 'line-through text-gray-400' : ''}">${a.nameVi || a.name || ''}</div>
+                            <div class="text-[10px] text-gray-400 font-mono">${a.id}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-3 text-[11px] text-gray-600 capitalize">${a.category || '—'}</td>
+                <td class="p-3 font-extrabold text-primary text-sm">${priceStr}</td>
+                <td class="p-3 text-[11px] text-gray-600">${a.sortOrder || 0}</td>
+                <td class="p-3">${statusBadge}</td>
+                <td class="p-3 text-[10px] text-gray-500 font-mono">${createdDate}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center space-x-1.5">
+                        ${!isDeleted ? `
+                            <button onclick="editAddon('${a.id}')" title="Chỉnh sửa add-on" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="toggleAddon('${a.id}')" title="${isActive ? 'Ẩn add-on' : 'Hiển thị add-on'}" class="px-2.5 py-1 ${isActive ? 'bg-amber-50 hover:bg-amber-100 text-amber-700' : 'bg-green-50 hover:bg-green-100 text-green-700'} rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid ${isActive ? 'fa-eye-slash' : 'fa-eye'} mr-1"></i> ${isActive ? 'Ẩn' : 'Hiện'}
+                            </button>
+                            <button onclick="deleteAddon('${a.id}', '${(a.nameVi || a.name || '').replace(/'/g, "\\'")}')" title="Xóa mềm add-on" class="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        ` : `
+                            <button onclick="restoreAddon('${a.id}')" title="Khôi phục add-on đã xóa mềm" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition shadow-xs flex items-center">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> Khôi Phục
+                            </button>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+}
+
+function openAddonModal(isEdit = false) {
+    const modal = document.getElementById("addonModal");
+    const title = document.getElementById("addonModalTitle");
+    const err = document.getElementById("addonModalError");
+    if (!modal) return;
+
+    if (err) {
+        err.textContent = "";
+        err.classList.add("hidden");
+    }
+
+    if (!isEdit) {
+        title.textContent = "Thêm Sản Phẩm Kèm Theo Mới";
+        document.getElementById("editAddonId").value = "";
+        document.getElementById("addonName").value = "";
+        document.getElementById("addonNameVi").value = "";
+        document.getElementById("addonCategory").value = "gift";
+        document.getElementById("addonPrice").value = "";
+        document.getElementById("addonImage").value = "";
+        document.getElementById("addonDescription").value = "";
+        document.getElementById("addonSortOrder").value = "1";
+        document.getElementById("addonIsActive").checked = true;
+        const prevNew = document.getElementById("addonImagePreview");
+        if (prevNew) prevNew.src = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=200";
+        const statusNew = document.getElementById("addonImageStatusLabel");
+        if (statusNew) {
+            statusNew.textContent = "URL Web";
+            statusNew.className = "text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md";
+        }
+        const sizeNew = document.getElementById("addonImageSizeInfo");
+        if (sizeNew) sizeNew.textContent = "";
+    } else {
+        title.textContent = "Chỉnh Sửa Sản Phẩm Kèm Theo";
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+function closeAddonModal() {
+    const modal = document.getElementById("addonModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+function editAddon(addonId) {
+    const addon = (allAdminAddons || []).find((a) => a.id === addonId);
+    if (!addon) return alert("Không tìm thấy dữ liệu add-on");
+
+    openAddonModal(true);
+
+    document.getElementById("editAddonId").value = addon.id;
+    document.getElementById("addonName").value = addon.name || "";
+    document.getElementById("addonNameVi").value = addon.nameVi || "";
+    document.getElementById("addonCategory").value = addon.category || "gift";
+    document.getElementById("addonPrice").value = addon.price || "";
+    document.getElementById("addonImage").value = addon.image || "";
+    document.getElementById("addonDescription").value = addon.description || "";
+    document.getElementById("addonSortOrder").value = addon.sortOrder || 1;
+    document.getElementById("addonIsActive").checked = addon.isActive !== false;
+    const prevEdit = document.getElementById("addonImagePreview");
+    if (prevEdit) prevEdit.src = addon.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=200";
+    const statusEdit = document.getElementById("addonImageStatusLabel");
+    if (statusEdit) {
+        statusEdit.textContent = addon.image ? "URL Web" : "Chưa có ảnh";
+        statusEdit.className = "text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md";
+    }
+    const sizeEdit = document.getElementById("addonImageSizeInfo");
+    if (sizeEdit) sizeEdit.textContent = "";
+}
+
+async function handleAddonSubmit(event) {
+    event.preventDefault();
+    const btn = document.getElementById("btnSaveAddon");
+    const err = document.getElementById("addonModalError");
+    const editId = document.getElementById("editAddonId").value.trim();
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    const payload = {
+        name: document.getElementById("addonName").value.trim(),
+        nameVi: document.getElementById("addonNameVi").value.trim(),
+        category: document.getElementById("addonCategory").value,
+        price: parseInt(document.getElementById("addonPrice").value, 10) || 0,
+        image: document.getElementById("addonImage").value.trim(),
+        description: document.getElementById("addonDescription").value.trim(),
+        sortOrder: parseInt(document.getElementById("addonSortOrder").value, 10) || 1,
+        isActive: document.getElementById("addonIsActive").checked
+    };
+
+    if (btn) btn.disabled = true;
+    lockScreen(editId ? "Đang cập nhật add-on..." : "Đang tạo add-on mới...");
+    try {
+        const url = editId ? `${API_BASE}/admin/addons/${editId}` : `${API_BASE}/admin/addons`;
+        const method = editId ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            closeAddonModal();
+            await loadAdminAddons();
+            notifyUser(editId ? "Đã cập nhật add-on thành công!" : "Đã tạo add-on mới thành công!", 'success');
+        } else {
+            const msg = json.message || "Lỗi lưu add-on";
+            if (err) {
+                err.textContent = "❌ " + msg;
+                err.classList.remove("hidden");
+            }
+            notifyUser(`Lỗi lưu add-on: ${msg}`, 'error');
+        }
+    } catch (e) {
+        if (err) {
+            err.textContent = "❌ Lỗi kết nối: " + e.message;
+            err.classList.remove("hidden");
+        }
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        if (btn) btn.disabled = false;
+        unlockScreen();
+    }
+}
+
+/**
+ * Tải ảnh Add-On lên máy chủ (lưu vào thư mục ảnh giống sản phẩm hoa).
+ * Dự phòng: nén Base64 khi không gọi được API upload.
+ */
+async function handleAddonImageFileUpload(event) {
+    const file = event.target?.files?.[0];
+    if (!file) return;
+
+    const previewImg = document.getElementById("addonImagePreview");
+    const inputStr = document.getElementById("addonImage");
+    const statusLabel = document.getElementById("addonImageStatusLabel");
+    const sizeInfo = document.getElementById("addonImageSizeInfo");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    if (statusLabel) {
+        statusLabel.textContent = "⏳ Đang tải ảnh lên máy chủ...";
+        statusLabel.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md inline-block";
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("prefix", "addon");
+
+        const res = await fetch(`${API_BASE}/admin/upload-image`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success && json.data?.url) {
+            const uploadedUrl = json.data.url;
+            if (inputStr) inputStr.value = uploadedUrl;
+            if (previewImg) previewImg.src = uploadedUrl;
+            if (statusLabel) {
+                statusLabel.textContent = "🟢 Đã Lưu Vào Thư Mục Tĩnh";
+                statusLabel.className = "text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-md inline-block";
+            }
+            if (sizeInfo) sizeInfo.textContent = `URL: ${uploadedUrl} (${(file.size / 1024).toFixed(1)} KB)`;
+            notifyUser(`Tải ảnh "${file.name}" lên thành công!`, "success");
+        } else {
+            const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+            if (inputStr) inputStr.value = base64String;
+            if (previewImg) previewImg.src = base64String;
+            if (statusLabel) {
+                statusLabel.textContent = "🟡 Ảnh Base64 Tạm";
+                statusLabel.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md inline-block";
+            }
+        }
+    } catch (err) {
+        try {
+            const base64String = await compressAndConvertToBase64(file, 800, 800, 0.82);
+            if (inputStr) inputStr.value = base64String;
+            if (previewImg) previewImg.src = base64String;
+            if (statusLabel) {
+                statusLabel.textContent = "🟡 Ảnh Base64 Tạm";
+                statusLabel.className = "text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md inline-block";
+            }
+        } catch (e2) {
+            alert("Lỗi xử lý ảnh: " + err.message);
+        }
+    }
+}
+
+async function toggleAddon(addonId) {
+    lockScreen("Đang cập nhật trạng thái...");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/addons/${addonId}/toggle`, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            await loadAdminAddons();
+            notifyUser("Đã cập nhật trạng thái hiển thị add-on thành công!", 'success');
+        } else {
+            notifyUser("Lỗi: " + (json.message || "Lỗi cập nhật trạng thái add-on"), 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+async function deleteAddon(addonId, addonName) {
+    const isConfirmed = await (typeof showConfirmDialog === 'function' ? showConfirmDialog : window.showConfirmDialog)({
+        title: "Xác nhận Xóa Add-On",
+        message: `Bạn có chắc chắn muốn xóa sản phẩm kèm theo "${addonName}" không?`,
+        detail: "Dữ liệu add-on sẽ được chuyển sang trạng thái 'Đã xóa mềm' (Soft Deleted) và lưu trong hệ thống.",
+        confirmText: "Xóa add-on",
+        cancelText: "Hủy bỏ",
+        type: "danger",
+        icon: "fa-solid fa-trash"
+    });
+    if (!isConfirmed) return;
+
+    lockScreen("Đang xóa add-on...");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/addons/${addonId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            await loadAdminAddons();
+            notifyUser("Đã chuyển add-on sang trạng thái Đã Xóa thành công!", 'success');
+        } else {
+            notifyUser("Không thể xóa add-on: " + (json.message || ""), 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+async function restoreAddon(addonId) {
+    lockScreen("Đang khôi phục add-on...");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/addons/${addonId}/restore`, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+            await loadAdminAddons();
+            notifyUser(`Đã khôi phục add-on thành công!`, 'success');
+        } else {
+            notifyUser(json.message || "Lỗi khôi phục add-on", 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+// ==========================================
 // BIÊN DỊCH ĐA NGÔN NGỮ ĐỘNG (Single Key Selector & Matrix View)
 // ==========================================
 
@@ -5412,6 +6718,210 @@ const DEFAULT_STATIC_COMPANY_INFO = {
 
 let adminCompanyInfo = { ...DEFAULT_STATIC_COMPANY_INFO };
 
+// ==========================================
+// CẤU HÌNH PHƯƠNG THỨC THANH TOÁN (paymentConfig.json)
+// ==========================================
+
+let adminPaymentConfig = { methods: {} };
+
+async function loadAdminPaymentConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const listEl = document.getElementById("paymentMethodsList");
+    const badge = document.getElementById("paymentConfigStatus");
+    if (!listEl) return;
+
+    listEl.innerHTML = `
+        <div class="text-center py-10 text-gray-400 text-xs">
+            <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
+            <p>Đang tải cấu hình thanh toán...</p>
+        </div>`;
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/payment-config?_t=${Date.now()}`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success || !json.data) {
+            throw new Error(json.message || "Không tải được cấu hình");
+        }
+        adminPaymentConfig = json.data;
+        renderPaymentMethods(adminPaymentConfig);
+        if (badge) {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+            badge.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Đã nạp • ${new Date().toLocaleTimeString()}`;
+        }
+    } catch (e) {
+        listEl.innerHTML = `
+            <div class="text-center py-8 bg-white rounded-xl border border-red-100">
+                <i class="fa-solid fa-triangle-exclamation text-xl text-red-400 mb-2"></i>
+                <p class="text-xs font-semibold text-gray-700">Không thể tải cấu hình thanh toán</p>
+                <p class="text-[11px] text-gray-400 mt-1">${e.message}</p>
+            </div>`;
+        if (badge) {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi tải`;
+        }
+    }
+}
+
+function renderPaymentMethods(config) {
+    const listEl = document.getElementById("paymentMethodsList");
+    if (!listEl) return;
+    const methods = (config && config.methods) || {};
+    const keys = Object.keys(methods);
+    if (keys.length === 0) {
+        listEl.innerHTML = `<p class="text-center text-xs text-gray-400 py-8">Chưa có phương thức thanh toán nào.</p>`;
+        return;
+    }
+
+    const iconMap = { online: "fa-qrcode", cash: "fa-money-bill-wave" };
+    listEl.innerHTML = keys.map((key) => {
+        const m = methods[key] || {};
+        const enabled = !!m.enabled;
+        const icon = iconMap[key] || "fa-credit-card";
+        return `
+            <div class="bg-white rounded-2xl border ${enabled ? "border-emerald-200" : "border-gray-200"} shadow-2xs p-4 flex items-start justify-between gap-4 transition">
+                <div class="flex items-start gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl ${enabled ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-400"} flex items-center justify-center text-lg flex-shrink-0">
+                        <i class="fa-solid ${icon}"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h5 class="text-sm font-bold text-gray-800">${m.label || key}</h5>
+                            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 border border-gray-200">${m.code || key}</span>
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-1 leading-relaxed">${m.description || ""}</p>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
+                    <input type="checkbox" class="sr-only peer payment-method-toggle" data-method-key="${key}" ${enabled ? "checked" : ""} onchange="onPaymentMethodToggle()">
+                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                </label>
+            </div>`;
+    }).join("");
+}
+
+function onPaymentMethodToggle() {
+    // Đồng bộ trạng thái checkbox vào state cục bộ (chưa lưu tới khi bấm Lưu Cấu Hình)
+    const toggles = document.querySelectorAll(".payment-method-toggle");
+    toggles.forEach((el) => {
+        const key = el.getAttribute("data-method-key");
+        if (key && adminPaymentConfig.methods && adminPaymentConfig.methods[key]) {
+            adminPaymentConfig.methods[key].enabled = el.checked;
+        }
+    });
+}
+
+async function savePaymentConfig() {
+    onPaymentMethodToggle();
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    const methods = adminPaymentConfig.methods || {};
+    const anyEnabled = Object.values(methods).some((m) => m && m.enabled);
+    if (!anyEnabled) {
+        notifyUser("Phải bật ít nhất một phương thức thanh toán!", "warning");
+        return;
+    }
+
+    const payload = { methods: {} };
+    Object.keys(methods).forEach((key) => {
+        payload.methods[key] = { enabled: !!methods[key].enabled };
+    });
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/payment-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể lưu cấu hình");
+        }
+        adminPaymentConfig = json.data;
+        renderPaymentMethods(adminPaymentConfig);
+        notifyUser("Đã lưu cấu hình phương thức thanh toán thành công!", "success");
+    } catch (e) {
+        notifyUser("Lỗi lưu cấu hình thanh toán: " + e.message, "error");
+    }
+}
+
+// ==========================================
+// CẤU HÌNH HIỂN THỊ SẢN PHẨM KÈM THEO (ADD-ON)
+// ==========================================
+let adminAddonConfig = { showAddons: true };
+
+async function loadAdminAddonConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const statusEl = document.getElementById("addonConfigStatus");
+    if (statusEl) {
+        statusEl.textContent = "Đang tải…";
+        statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500";
+    }
+    try {
+        const res = await fetch(`${API_BASE}/admin/addon-config`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Không thể tải cấu hình");
+        adminAddonConfig = json.data || { showAddons: true };
+    } catch (e) {
+        adminAddonConfig = { showAddons: true };
+        console.warn("[ADDON-CONFIG] load lỗi:", e.message);
+    }
+    renderAddonConfig(adminAddonConfig);
+}
+
+function renderAddonConfig(config) {
+    const toggle = document.getElementById("addonVisToggle");
+    const labelEl = document.getElementById("addonVisLabel");
+    const descEl = document.getElementById("addonVisDescription");
+    const statusEl = document.getElementById("addonConfigStatus");
+    const enabled = !!(config && config.showAddons);
+
+    if (toggle) toggle.checked = enabled;
+    if (labelEl && config && config.label) labelEl.textContent = config.label;
+    if (descEl && config && config.description) descEl.textContent = config.description;
+    if (statusEl) {
+        statusEl.textContent = enabled ? "Đang hiển thị" : "Đang ẩn";
+        statusEl.className = enabled
+            ? "text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700"
+            : "text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600";
+    }
+}
+
+async function saveAddonConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const toggle = document.getElementById("addonVisToggle");
+    const payload = { showAddons: toggle ? !!toggle.checked : true };
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/addon-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Không thể lưu cấu hình");
+        adminAddonConfig = json.data;
+        renderAddonConfig(adminAddonConfig);
+        notifyUser(
+            adminAddonConfig.showAddons
+                ? "Đã BẬT hiển thị khu vực Sản Phẩm Kèm Theo trên giao diện khách hàng."
+                : "Đã TẮT hiển thị khu vực Sản Phẩm Kèm Theo trên giao diện khách hàng.",
+            "success"
+        );
+    } catch (e) {
+        notifyUser("Lỗi lưu cấu hình add-on: " + e.message, "error");
+    }
+}
+
 async function loadAdminCompanyInfo() {
     bindLiveCompanyInfoInputs();
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -5629,6 +7139,166 @@ async function handleCompanyInfoSubmit(event) {
     }
 }
 
+// ==========================================
+// QUẢN LÝ ĐƠN HÀNG (ORDERS MANAGEMENT)
+// ==========================================
+
+const ADMIN_ORDER_STATUS_META = {
+    pending:        { label: "Chờ xác nhận",   color: "bg-amber-100 text-amber-700 border-amber-200",   icon: "fa-clock" },
+    confirmed:      { label: "Đã xác nhận",    color: "bg-blue-100 text-blue-700 border-blue-200",       icon: "fa-check" },
+    arranging:      { label: "Đang cắm hoa",   color: "bg-purple-100 text-purple-700 border-purple-200", icon: "fa-scissors" },
+    shipping:       { label: "Đang vận chuyển", color: "bg-cyan-100 text-cyan-700 border-cyan-200",      icon: "fa-truck" },
+    delivered:      { label: "Giao thành công", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    ready_for_pickup: { label: "Sẵn sàng nhận", color: "bg-teal-100 text-teal-700 border-teal-200",      icon: "fa-store" },
+    completed:      { label: "Hoàn thành",     color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    cancelled:      { label: "Đã hủy",         color: "bg-red-100 text-red-700 border-red-200",          icon: "fa-ban" },
+    returned:       { label: "Trả hàng",       color: "bg-orange-100 text-orange-700 border-orange-200", icon: "fa-rotate-left" }
+};
+
+const ADMIN_PAYMENT_STATUS_META = {
+    unpaid:   { label: "Chưa thanh toán", color: "bg-gray-100 text-gray-600 border-gray-200",   icon: "fa-credit-card" },
+    paid:     { label: "Đã thanh toán",   color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    refunded: { label: "Đã hoàn tiền",    color: "bg-blue-100 text-blue-700 border-blue-200",   icon: "fa-rotate-left" },
+    failed:   { label: "Thanh toán lỗi",  color: "bg-red-100 text-red-700 border-red-200",      icon: "fa-circle-xmark" }
+};
+
+function adminFormatVND(amount) {
+    const n = Number(amount) || 0;
+    return n.toLocaleString("vi-VN") + "₫";
+}
+
+function adminFormatDate(isoStr) {
+    if (!isoStr) return "";
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function adminGetStatusMeta(status, map) {
+    return map[status] || { label: status || "Không xác định", color: "bg-gray-100 text-gray-600 border-gray-200", icon: "fa-circle-question" };
+}
+
+async function loadAdminOrders() {
+    const tbody = document.getElementById("adminOrdersTableBody");
+    if (!tbody) return;
+
+    const timeframeEl = document.getElementById("filterOrderTimeframe");
+    const statusEl = document.getElementById("filterOrderStatus");
+    const paymentEl = document.getElementById("filterOrderPayment");
+    const searchEl = document.getElementById("searchOrderInput");
+
+    const timeframe = timeframeEl ? timeframeEl.value : "this_month";
+    const status = statusEl ? statusEl.value : "all";
+    const paymentStatus = paymentEl ? paymentEl.value : "all";
+    const search = searchEl ? searchEl.value.trim() : "";
+
+    tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-400">Đang tải đơn hàng...</td></tr>`;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        let url = `${API_BASE}/admin/orders?timeframe=${encodeURIComponent(timeframe)}&status=${encodeURIComponent(status)}&paymentStatus=${encodeURIComponent(paymentStatus)}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+
+        const res = await fetch(url, { headers: { "Authorization": `Bearer ${token}` } });
+        const json = await res.json();
+
+        if (json.success && json.data) {
+            const orders = Array.isArray(json.data.orders) ? json.data.orders : [];
+            renderAdminOrdersTable(orders);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải đơn hàng"}</td></tr>`;
+        }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+    }
+}
+
+function renderAdminOrdersTable(orders) {
+    const tbody = document.getElementById("adminOrdersTableBody");
+    if (!tbody) return;
+
+    if (orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-400">Không có đơn hàng nào phù hợp</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = orders.map(order => {
+        const statusMeta = adminGetStatusMeta(order.status, ADMIN_ORDER_STATUS_META);
+        const payMeta = adminGetStatusMeta(order.payment?.status, ADMIN_PAYMENT_STATUS_META);
+        const total = Number(order.totalAmount) || Number(order.financials?.totalAmount) || 0;
+        const sender = order.sender || {};
+        const recipient = order.recipient || {};
+        const branchId = order.branchId || order.assignedBranchId || "";
+        const assignedTo = order.assignedTo || "—";
+
+        return `
+            <tr class="hover:bg-pink-50/30 transition">
+                <td class="p-3">
+                    <span class="font-mono text-[11px] font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                    <div class="text-[10px] text-gray-400">${adminFormatDate(order.createdAt || order.orderDate)}</div>
+                </td>
+                <td class="p-3">
+                    <div class="text-xs font-bold text-gray-800">${sender.name || "—"}</div>
+                    <div class="text-[10px] text-gray-400">${sender.phone || ""}</div>
+                </td>
+                <td class="p-3">
+                    <div class="text-xs text-gray-700">${recipient.name || "—"}</div>
+                    <div class="text-[10px] text-gray-400 truncate max-w-[140px]">${recipient.address || ""}</div>
+                </td>
+                <td class="p-3"><span class="text-[11px] font-semibold text-gray-600">${branchId}</span></td>
+                <td class="p-3"><span class="text-[11px] text-gray-600">${assignedTo}</span></td>
+                <td class="p-3 font-bold text-gray-800">${adminFormatVND(total)}</td>
+                <td class="p-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${payMeta.color}">
+                        <i class="fa-solid ${payMeta.icon}"></i> ${payMeta.label}
+                    </span>
+                </td>
+                <td class="p-3">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${statusMeta.color}">
+                        <i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}
+                    </span>
+                </td>
+                <td class="p-3 text-center">
+                    <select onchange="updateAdminOrderStatus('${order.id}', this.value)" class="px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-semibold focus:outline-none focus:border-primary">
+                        <option value="">Cập nhật...</option>
+                        <option value="confirmed">✅ Xác nhận</option>
+                        <option value="arranging">🌸 Đang cắm</option>
+                        <option value="shipping">🚚 Vận chuyển</option>
+                        <option value="delivered">🎉 Giao xong</option>
+                        <option value="cancelled">❌ Hủy</option>
+                    </select>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+async function updateAdminOrderStatus(orderId, newStatus) {
+    if (!orderId || !newStatus) return;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders/${orderId}/status`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+            notifyUser("Đã cập nhật trạng thái đơn hàng!", 'success');
+            loadAdminOrders();
+        } else {
+            notifyUser(json.message || "Lỗi cập nhật trạng thái", 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
+    }
+}
+
 // Global binding
 if (typeof window !== "undefined") {
     window.openAdminPortalModal = openAdminPortalModal;
@@ -5637,6 +7307,11 @@ if (typeof window !== "undefined") {
     window.openSystemConfigModal = openSystemConfigModal;
     window.closeSystemConfigModal = closeSystemConfigModal;
     window.switchSystemConfigTab = switchSystemConfigTab;
+    window.loadAdminPaymentConfig = loadAdminPaymentConfig;
+    window.onPaymentMethodToggle = onPaymentMethodToggle;
+    window.savePaymentConfig = savePaymentConfig;
+    window.loadAdminAddonConfig = loadAdminAddonConfig;
+    window.saveAddonConfig = saveAddonConfig;
     window.loadAdminProducts = loadAdminProducts;
     window.openProductModal = openProductModal;
     window.closeProductModal = closeProductModal;
@@ -5684,6 +7359,17 @@ if (typeof window !== "undefined") {
     window.deletePromo = deletePromo;
     window.restorePromo = restorePromo;
 
+    // Add-Ons (Sản Phẩm Kèm Theo)
+    window.loadAdminAddons = loadAdminAddons;
+    window.openAddonModal = openAddonModal;
+    window.closeAddonModal = closeAddonModal;
+    window.editAddon = editAddon;
+    window.handleAddonSubmit = handleAddonSubmit;
+    window.handleAddonImageFileUpload = handleAddonImageFileUpload;
+    window.toggleAddon = toggleAddon;
+    window.deleteAddon = deleteAddon;
+    window.restoreAddon = restoreAddon;
+
     // Categories
     window.loadAdminCategories = loadAdminCategories;
     window.openCategoryModal = openCategoryModal;
@@ -5719,6 +7405,10 @@ if (typeof window !== "undefined") {
     window.toggleBranch = toggleBranch;
     window.populateBranchDropdowns = populateBranchDropdowns;
     window.notifyUser = notifyUser;
+
+    // Orders
+    window.loadAdminOrders = loadAdminOrders;
+    window.updateAdminOrderStatus = updateAdminOrderStatus;
 }
 
 
@@ -6009,24 +7699,23 @@ function populateProductDetailModalContent(prod, currentAppLang, productId) {
         galleryContainer.innerHTML = galHtml;
     }
 
-    // Tồn kho tại showroom
-    const stockContainer = document.getElementById("detailStockGrid");
-    if (stockContainer) {
-        const stock = prod.stockByBranch || { "branch_q10": 10, "branch_q1": 5, "branch_thao_dien": 4 };
-        let stockHtml = `
-            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.10: <b class="text-primary">${stock.branch_q10 ?? 0}</b></span>
-            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.1: <b class="text-primary">${stock.branch_q1 ?? 0}</b></span>
-            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Thảo Điền: <b class="text-primary">${stock.branch_thao_dien ?? 0}</b></span>
-        `;
-        stockContainer.innerHTML = stockHtml;
-    }
+    // Render Add-Ons (sản phẩm kèm theo) trong modal
+    renderAddonsInModal(currentAppLang);
 
-    // Gắn sự kiện nút Thêm Giỏ Hàng
+    // Gắn sự kiện nút Thêm Giỏ Hàng (kèm các add-on đã chọn)
     const btnAdd = document.getElementById("btnQuickAddToCart");
     if (btnAdd) {
         btnAdd.onclick = () => {
             if (typeof addToCart === "function") {
                 addToCart(prod.id || productId, safeName, numericPrice, prodImg);
+                // Thêm từng add-on đã chọn vào giỏ hàng
+                const selected = getSelectedAddons();
+                selected.forEach(addon => {
+                    if (typeof addToCart === "function") {
+                        addToCart(addon.id, getAddonName(addon, currentAppLang), addon.price, addon.image, "addon");
+                    }
+                });
+                clearSelectedAddons();
             }
             closeProductQuickDetail();
         };
@@ -6034,6 +7723,257 @@ function populateProductDetailModalContent(prod, currentAppLang, productId) {
 
     if (spinner) spinner.classList.add("hidden");
     if (body) body.classList.remove("hidden");
+}
+
+// ================= ADD-ONS (SẢN PHẨM KÈM THEO) =================
+let cachedAddons = null;
+let cachedAddonVisible = null; // null = chưa tải; true/false = cấu hình showAddons
+let selectedAddons = new Map(); // addonId -> { addon, quantity }
+
+/**
+ * Kiểm tra cấu hình bật/tắt hiển thị khu vực add-on (config/anne/addonConfig.json).
+ * Mặc định hiển thị nếu lỗi tải cấu hình.
+ */
+async function isAddonSectionEnabled(forceRefresh = false) {
+    if (cachedAddonVisible !== null && !forceRefresh) return cachedAddonVisible;
+    try {
+        const res = await fetch(`${API_BASE}/addon-config`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        const cfg = (data && data.data) ? data.data : data;
+        cachedAddonVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
+    } catch (err) {
+        console.warn("[ADDONS] Lỗi tải addon-config, mặc định hiển thị:", err);
+        cachedAddonVisible = true;
+    }
+    return cachedAddonVisible;
+}
+
+/**
+ * Lấy danh sách add-ons đang hoạt động từ API (có cache)
+ */
+async function loadAddons(forceRefresh = false) {
+    console.debug("[ADDONS] loadAddons() gọi, forceRefresh =", forceRefresh, "| cachedAddons =", cachedAddons);
+    if (cachedAddons && !forceRefresh) {
+        console.debug("[ADDONS] Dùng cache:", cachedAddons.length, "add-ons");
+        return cachedAddons;
+    }
+    try {
+        console.debug("[ADDONS] Fetch:", `${API_BASE}/addons`);
+        const res = await fetch(`${API_BASE}/addons`);
+        console.debug("[ADDONS] HTTP status:", res.status);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        // Endpoint trả về { success, data: [...] }
+        cachedAddons = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
+        console.debug("[ADDONS] Đã parse:", cachedAddons.length, "add-ons");
+        cachedAddons.forEach(a => console.debug("[ADDONS]   -", a.id, "| image:", a.image));
+    } catch (err) {
+        console.warn("[ADDONS] Lỗi tải add-ons:", err);
+        cachedAddons = cachedAddons || [];
+    }
+    return cachedAddons;
+}
+
+/**
+ * Lấy tên hiển thị add-on theo ngôn ngữ hiện tại
+ */
+function getAddonName(addon, lang) {
+    if (!addon) return "";
+    if (lang === "vi" && addon.nameVi) return addon.nameVi;
+    return addon.name || addon.nameVi || "";
+}
+
+/**
+ * Render danh sách add-ons vào #addonsList trong modal chi tiết sản phẩm
+ */
+async function renderAddonsInModal(currentAppLang) {
+    const section = document.getElementById("addonsSection");
+    const list = document.getElementById("addonsList");
+    console.debug("[ADDONS] renderAddonsInModal() | section =", !!section, "| list =", !!list);
+    if (!section || !list) return;
+
+    // Kiểm tra cấu hình bật/tắt hiển thị add-on trước
+    const enabled = await isAddonSectionEnabled();
+    if (!enabled) {
+        console.debug("[ADDONS] showAddons=false -> ẩn section theo cấu hình");
+        section.classList.add("hidden");
+        list.innerHTML = "";
+        return;
+    }
+
+    const addons = await loadAddons();
+    console.debug("[ADDONS] Số add-ons nhận được:", Array.isArray(addons) ? addons.length : "KHÔNG PHẢI MẢNG");
+    if (!Array.isArray(addons) || addons.length === 0) {
+        console.debug("[ADDONS] Không có add-ons -> ẩn section");
+        section.classList.add("hidden");
+        list.innerHTML = "";
+        return;
+    }
+
+    section.classList.remove("hidden");
+    let html = "";
+    addons.forEach(addon => {
+        const sel = selectedAddons.get(addon.id);
+        const qty = sel ? sel.quantity : 0;
+        const isSelected = qty > 0;
+        const name = getAddonName(addon, currentAppLang);
+        const price = (Number(addon.price) || 0).toLocaleString("vi-VN");
+        const img = addon.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=200";
+        html += `
+            <div data-addon-id="${addon.id}"
+                 class="addon-card relative border-2 rounded-xl overflow-hidden cursor-pointer transition select-none flex-shrink-0 w-28 ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50'}">
+                <div class="relative" onclick="toggleAddonSelection('${addon.id}')">
+                    <img src="${img}" alt="${name}" loading="lazy" decoding="async"
+                         onload="this.classList.add('loaded')"
+                         onerror="handleImageErrorFallback(this)"
+                         class="w-full h-20 object-cover">
+                    <div class="addon-check absolute top-1.5 right-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-gray-300 text-transparent'}">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <div class="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2">${name}</div>
+                    <div class="text-[11px] font-bold text-accent mt-0.5">${price}₫</div>
+                    <div class="addon-qty-control mt-1.5 flex items-center justify-between ${isSelected ? '' : 'hidden'}">
+                        <button type="button" onclick="event.stopPropagation(); changeAddonQty('${addon.id}', -1)" class="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm flex items-center justify-center transition">−</button>
+                        <span class="addon-qty text-xs font-bold text-gray-800">${qty}</span>
+                        <button type="button" onclick="event.stopPropagation(); changeAddonQty('${addon.id}', 1)" class="w-6 h-6 rounded-full bg-primary hover:bg-primaryHover text-white font-bold text-sm flex items-center justify-center transition">+</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    list.innerHTML = html;
+    console.debug("[ADDONS] Đã render", addons.length, "thẻ add-on vào #addonsList");
+    console.debug("[ADDONS] #addonsList innerHTML dài:", list.innerHTML.length, "ký tự");
+    console.debug("[ADDONS] #addonsSection class:", section.className);
+
+    // Cập nhật trạng thái bật/tắt nút prev/next theo độ tràn khung
+    list.onscroll = updateAddonNavButtons;
+    requestAnimationFrame(updateAddonNavButtons);
+    setTimeout(updateAddonNavButtons, 120);
+}
+
+/**
+ * Bật/tắt nút prev/next: chỉ bật khi danh sách add-on tràn khung (nhiều sản phẩm).
+ */
+function updateAddonNavButtons() {
+    const list = document.getElementById("addonsList");
+    const prevBtn = document.getElementById("addonPrevBtn");
+    const nextBtn = document.getElementById("addonNextBtn");
+    if (!list) return;
+    const hasOverflow = list.scrollWidth > list.clientWidth + 4;
+    const atStart = list.scrollLeft <= 2;
+    const atEnd = list.scrollLeft + list.clientWidth >= list.scrollWidth - 2;
+    if (prevBtn) prevBtn.disabled = !hasOverflow || atStart;
+    if (nextBtn) nextBtn.disabled = !hasOverflow || atEnd;
+}
+
+/**
+ * Cuộn ngang danh sách add-ons (prev/next)
+ */
+function scrollAddons(direction) {
+    const list = document.getElementById("addonsList");
+    if (!list) return;
+    const cardWidth = 112 + 8; // w-28 (112px) + gap-2 (8px)
+    list.scrollBy({ left: direction * cardWidth * 2, behavior: "smooth" });
+    setTimeout(updateAddonNavButtons, 350);
+}
+
+/**
+ * Chọn / bỏ chọn một add-on (bấm vào thẻ)
+ */
+function toggleAddonSelection(addonId) {
+    const addon = (cachedAddons || []).find(a => a && a.id === addonId);
+    if (!addon) return;
+    if (selectedAddons.has(addonId)) {
+        selectedAddons.delete(addonId);
+    } else {
+        selectedAddons.set(addonId, { addon, quantity: 1 });
+    }
+    updateAddonCardUI(addonId);
+}
+
+/**
+ * Tăng / giảm số lượng add-on
+ */
+function changeAddonQty(addonId, delta) {
+    const addon = (cachedAddons || []).find(a => a && a.id === addonId);
+    if (!addon) return;
+    const sel = selectedAddons.get(addonId);
+    const newQty = (sel ? sel.quantity : 0) + delta;
+    if (newQty <= 0) {
+        selectedAddons.delete(addonId);
+    } else {
+        selectedAddons.set(addonId, { addon, quantity: newQty });
+    }
+    updateAddonCardUI(addonId);
+}
+
+/**
+ * Cập nhật giao diện của một thẻ add-on theo trạng thái chọn hiện tại
+ */
+function updateAddonCardUI(addonId) {
+    const card = document.querySelector(`[data-addon-id="${addonId}"]`);
+    if (!card) return;
+    const sel = selectedAddons.get(addonId);
+    const isSelected = !!sel && sel.quantity > 0;
+    const qty = sel ? sel.quantity : 0;
+
+    card.classList.toggle("border-primary", isSelected);
+    card.classList.toggle("bg-primary/5", isSelected);
+    card.classList.toggle("border-gray-200", !isSelected);
+    card.classList.toggle("hover:border-primary/50", !isSelected);
+
+    const check = card.querySelector(".addon-check");
+    if (check) {
+        check.classList.toggle("bg-primary", isSelected);
+        check.classList.toggle("border-primary", isSelected);
+        check.classList.toggle("text-white", isSelected);
+        check.classList.toggle("bg-white", !isSelected);
+        check.classList.toggle("border-gray-300", !isSelected);
+        check.classList.toggle("text-transparent", !isSelected);
+    }
+
+    const qtyControl = card.querySelector(".addon-qty-control");
+    const qtyEl = card.querySelector(".addon-qty");
+    if (qtyControl) qtyControl.classList.toggle("hidden", !isSelected);
+    if (qtyEl) qtyEl.textContent = qty;
+}
+
+/**
+ * Lấy danh sách add-ons đã chọn (mỗi add-on lặp theo số lượng)
+ */
+function getSelectedAddons() {
+    const result = [];
+    selectedAddons.forEach(({ addon, quantity }) => {
+        for (let i = 0; i < quantity; i++) {
+            result.push(addon);
+        }
+    });
+    return result;
+}
+
+/**
+ * Xóa toàn bộ add-ons đã chọn (sau khi thêm vào giỏ)
+ */
+function clearSelectedAddons() {
+    selectedAddons.clear();
+    const list = document.getElementById("addonsList");
+    if (list) {
+        list.querySelectorAll(".addon-card").forEach(card => {
+            card.classList.remove("border-primary", "bg-primary/5");
+            card.classList.add("border-gray-200", "hover:border-primary/50");
+            const check = card.querySelector(".addon-check");
+            if (check) {
+                check.classList.remove("bg-primary", "border-primary", "text-white");
+                check.classList.add("bg-white", "border-gray-300", "text-transparent");
+            }
+            const qtyControl = card.querySelector(".addon-qty-control");
+            if (qtyControl) qtyControl.classList.add("hidden");
+        });
+    }
 }
 
 /**
@@ -6987,6 +8927,10 @@ if (typeof window !== 'undefined') {
     window.initMobileMenu = initMobileMenu;
     window.openProductQuickDetail = openProductQuickDetail;
     window.closeProductQuickDetail = closeProductQuickDetail;
+    window.loadAddons = loadAddons;
+    window.toggleAddonSelection = toggleAddonSelection;
+    window.changeAddonQty = changeAddonQty;
+    window.scrollAddons = scrollAddons;
     window.applyStorefrontCompanyInfo = applyStorefrontCompanyInfo;
     window.loadStorefrontCompanyInfo = loadStorefrontCompanyInfo;
 

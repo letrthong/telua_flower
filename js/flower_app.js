@@ -287,24 +287,23 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
         galleryContainer.innerHTML = galHtml;
     }
 
-    // Tồn kho tại showroom
-    const stockContainer = document.getElementById("detailStockGrid");
-    if (stockContainer) {
-        const stock = prod.stockByBranch || { "branch_q10": 10, "branch_q1": 5, "branch_thao_dien": 4 };
-        let stockHtml = `
-            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.10: <b class="text-primary">${stock.branch_q10 ?? 0}</b></span>
-            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Q.1: <b class="text-primary">${stock.branch_q1 ?? 0}</b></span>
-            <span class="bg-gray-100 px-2.5 py-1 rounded-lg text-gray-700 font-medium text-[11px]">Thảo Điền: <b class="text-primary">${stock.branch_thao_dien ?? 0}</b></span>
-        `;
-        stockContainer.innerHTML = stockHtml;
-    }
+    // Render Add-Ons (sản phẩm kèm theo) trong modal
+    renderAddonsInModal(currentAppLang);
 
-    // Gắn sự kiện nút Thêm Giỏ Hàng
+    // Gắn sự kiện nút Thêm Giỏ Hàng (kèm các add-on đã chọn)
     const btnAdd = document.getElementById("btnQuickAddToCart");
     if (btnAdd) {
         btnAdd.onclick = () => {
             if (typeof addToCart === "function") {
                 addToCart(prod.id || productId, safeName, numericPrice, prodImg);
+                // Thêm từng add-on đã chọn vào giỏ hàng
+                const selected = getSelectedAddons();
+                selected.forEach(addon => {
+                    if (typeof addToCart === "function") {
+                        addToCart(addon.id, getAddonName(addon, currentAppLang), addon.price, addon.image, "addon");
+                    }
+                });
+                clearSelectedAddons();
             }
             closeProductQuickDetail();
         };
@@ -312,6 +311,257 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
 
     if (spinner) spinner.classList.add("hidden");
     if (body) body.classList.remove("hidden");
+}
+
+// ================= ADD-ONS (SẢN PHẨM KÈM THEO) =================
+let cachedAddons = null;
+let cachedAddonVisible = null; // null = chưa tải; true/false = cấu hình showAddons
+let selectedAddons = new Map(); // addonId -> { addon, quantity }
+
+/**
+ * Kiểm tra cấu hình bật/tắt hiển thị khu vực add-on (config/anne/addonConfig.json).
+ * Mặc định hiển thị nếu lỗi tải cấu hình.
+ */
+export async function isAddonSectionEnabled(forceRefresh = false) {
+    if (cachedAddonVisible !== null && !forceRefresh) return cachedAddonVisible;
+    try {
+        const res = await fetch(`${API_BASE}/addon-config`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        const cfg = (data && data.data) ? data.data : data;
+        cachedAddonVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
+    } catch (err) {
+        console.warn("[ADDONS] Lỗi tải addon-config, mặc định hiển thị:", err);
+        cachedAddonVisible = true;
+    }
+    return cachedAddonVisible;
+}
+
+/**
+ * Lấy danh sách add-ons đang hoạt động từ API (có cache)
+ */
+export async function loadAddons(forceRefresh = false) {
+    console.debug("[ADDONS] loadAddons() gọi, forceRefresh =", forceRefresh, "| cachedAddons =", cachedAddons);
+    if (cachedAddons && !forceRefresh) {
+        console.debug("[ADDONS] Dùng cache:", cachedAddons.length, "add-ons");
+        return cachedAddons;
+    }
+    try {
+        console.debug("[ADDONS] Fetch:", `${API_BASE}/addons`);
+        const res = await fetch(`${API_BASE}/addons`);
+        console.debug("[ADDONS] HTTP status:", res.status);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        // Endpoint trả về { success, data: [...] }
+        cachedAddons = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
+        console.debug("[ADDONS] Đã parse:", cachedAddons.length, "add-ons");
+        cachedAddons.forEach(a => console.debug("[ADDONS]   -", a.id, "| image:", a.image));
+    } catch (err) {
+        console.warn("[ADDONS] Lỗi tải add-ons:", err);
+        cachedAddons = cachedAddons || [];
+    }
+    return cachedAddons;
+}
+
+/**
+ * Lấy tên hiển thị add-on theo ngôn ngữ hiện tại
+ */
+function getAddonName(addon, lang) {
+    if (!addon) return "";
+    if (lang === "vi" && addon.nameVi) return addon.nameVi;
+    return addon.name || addon.nameVi || "";
+}
+
+/**
+ * Render danh sách add-ons vào #addonsList trong modal chi tiết sản phẩm
+ */
+async function renderAddonsInModal(currentAppLang) {
+    const section = document.getElementById("addonsSection");
+    const list = document.getElementById("addonsList");
+    console.debug("[ADDONS] renderAddonsInModal() | section =", !!section, "| list =", !!list);
+    if (!section || !list) return;
+
+    // Kiểm tra cấu hình bật/tắt hiển thị add-on trước
+    const enabled = await isAddonSectionEnabled();
+    if (!enabled) {
+        console.debug("[ADDONS] showAddons=false -> ẩn section theo cấu hình");
+        section.classList.add("hidden");
+        list.innerHTML = "";
+        return;
+    }
+
+    const addons = await loadAddons();
+    console.debug("[ADDONS] Số add-ons nhận được:", Array.isArray(addons) ? addons.length : "KHÔNG PHẢI MẢNG");
+    if (!Array.isArray(addons) || addons.length === 0) {
+        console.debug("[ADDONS] Không có add-ons -> ẩn section");
+        section.classList.add("hidden");
+        list.innerHTML = "";
+        return;
+    }
+
+    section.classList.remove("hidden");
+    let html = "";
+    addons.forEach(addon => {
+        const sel = selectedAddons.get(addon.id);
+        const qty = sel ? sel.quantity : 0;
+        const isSelected = qty > 0;
+        const name = getAddonName(addon, currentAppLang);
+        const price = (Number(addon.price) || 0).toLocaleString("vi-VN");
+        const img = addon.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=200";
+        html += `
+            <div data-addon-id="${addon.id}"
+                 class="addon-card relative border-2 rounded-xl overflow-hidden cursor-pointer transition select-none flex-shrink-0 w-28 ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50'}">
+                <div class="relative" onclick="toggleAddonSelection('${addon.id}')">
+                    <img src="${img}" alt="${name}" loading="lazy" decoding="async"
+                         onload="this.classList.add('loaded')"
+                         onerror="handleImageErrorFallback(this)"
+                         class="w-full h-20 object-cover">
+                    <div class="addon-check absolute top-1.5 right-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-gray-300 text-transparent'}">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+                <div class="p-2">
+                    <div class="text-[11px] font-bold text-gray-800 leading-tight line-clamp-2">${name}</div>
+                    <div class="text-[11px] font-bold text-accent mt-0.5">${price}₫</div>
+                    <div class="addon-qty-control mt-1.5 flex items-center justify-between ${isSelected ? '' : 'hidden'}">
+                        <button type="button" onclick="event.stopPropagation(); changeAddonQty('${addon.id}', -1)" class="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm flex items-center justify-center transition">−</button>
+                        <span class="addon-qty text-xs font-bold text-gray-800">${qty}</span>
+                        <button type="button" onclick="event.stopPropagation(); changeAddonQty('${addon.id}', 1)" class="w-6 h-6 rounded-full bg-primary hover:bg-primaryHover text-white font-bold text-sm flex items-center justify-center transition">+</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    list.innerHTML = html;
+    console.debug("[ADDONS] Đã render", addons.length, "thẻ add-on vào #addonsList");
+    console.debug("[ADDONS] #addonsList innerHTML dài:", list.innerHTML.length, "ký tự");
+    console.debug("[ADDONS] #addonsSection class:", section.className);
+
+    // Cập nhật trạng thái bật/tắt nút prev/next theo độ tràn khung
+    list.onscroll = updateAddonNavButtons;
+    requestAnimationFrame(updateAddonNavButtons);
+    setTimeout(updateAddonNavButtons, 120);
+}
+
+/**
+ * Bật/tắt nút prev/next: chỉ bật khi danh sách add-on tràn khung (nhiều sản phẩm).
+ */
+export function updateAddonNavButtons() {
+    const list = document.getElementById("addonsList");
+    const prevBtn = document.getElementById("addonPrevBtn");
+    const nextBtn = document.getElementById("addonNextBtn");
+    if (!list) return;
+    const hasOverflow = list.scrollWidth > list.clientWidth + 4;
+    const atStart = list.scrollLeft <= 2;
+    const atEnd = list.scrollLeft + list.clientWidth >= list.scrollWidth - 2;
+    if (prevBtn) prevBtn.disabled = !hasOverflow || atStart;
+    if (nextBtn) nextBtn.disabled = !hasOverflow || atEnd;
+}
+
+/**
+ * Cuộn ngang danh sách add-ons (prev/next)
+ */
+export function scrollAddons(direction) {
+    const list = document.getElementById("addonsList");
+    if (!list) return;
+    const cardWidth = 112 + 8; // w-28 (112px) + gap-2 (8px)
+    list.scrollBy({ left: direction * cardWidth * 2, behavior: "smooth" });
+    setTimeout(updateAddonNavButtons, 350);
+}
+
+/**
+ * Chọn / bỏ chọn một add-on (bấm vào thẻ)
+ */
+export function toggleAddonSelection(addonId) {
+    const addon = (cachedAddons || []).find(a => a && a.id === addonId);
+    if (!addon) return;
+    if (selectedAddons.has(addonId)) {
+        selectedAddons.delete(addonId);
+    } else {
+        selectedAddons.set(addonId, { addon, quantity: 1 });
+    }
+    updateAddonCardUI(addonId);
+}
+
+/**
+ * Tăng / giảm số lượng add-on
+ */
+export function changeAddonQty(addonId, delta) {
+    const addon = (cachedAddons || []).find(a => a && a.id === addonId);
+    if (!addon) return;
+    const sel = selectedAddons.get(addonId);
+    const newQty = (sel ? sel.quantity : 0) + delta;
+    if (newQty <= 0) {
+        selectedAddons.delete(addonId);
+    } else {
+        selectedAddons.set(addonId, { addon, quantity: newQty });
+    }
+    updateAddonCardUI(addonId);
+}
+
+/**
+ * Cập nhật giao diện của một thẻ add-on theo trạng thái chọn hiện tại
+ */
+function updateAddonCardUI(addonId) {
+    const card = document.querySelector(`[data-addon-id="${addonId}"]`);
+    if (!card) return;
+    const sel = selectedAddons.get(addonId);
+    const isSelected = !!sel && sel.quantity > 0;
+    const qty = sel ? sel.quantity : 0;
+
+    card.classList.toggle("border-primary", isSelected);
+    card.classList.toggle("bg-primary/5", isSelected);
+    card.classList.toggle("border-gray-200", !isSelected);
+    card.classList.toggle("hover:border-primary/50", !isSelected);
+
+    const check = card.querySelector(".addon-check");
+    if (check) {
+        check.classList.toggle("bg-primary", isSelected);
+        check.classList.toggle("border-primary", isSelected);
+        check.classList.toggle("text-white", isSelected);
+        check.classList.toggle("bg-white", !isSelected);
+        check.classList.toggle("border-gray-300", !isSelected);
+        check.classList.toggle("text-transparent", !isSelected);
+    }
+
+    const qtyControl = card.querySelector(".addon-qty-control");
+    const qtyEl = card.querySelector(".addon-qty");
+    if (qtyControl) qtyControl.classList.toggle("hidden", !isSelected);
+    if (qtyEl) qtyEl.textContent = qty;
+}
+
+/**
+ * Lấy danh sách add-ons đã chọn (mỗi add-on lặp theo số lượng)
+ */
+function getSelectedAddons() {
+    const result = [];
+    selectedAddons.forEach(({ addon, quantity }) => {
+        for (let i = 0; i < quantity; i++) {
+            result.push(addon);
+        }
+    });
+    return result;
+}
+
+/**
+ * Xóa toàn bộ add-ons đã chọn (sau khi thêm vào giỏ)
+ */
+function clearSelectedAddons() {
+    selectedAddons.clear();
+    const list = document.getElementById("addonsList");
+    if (list) {
+        list.querySelectorAll(".addon-card").forEach(card => {
+            card.classList.remove("border-primary", "bg-primary/5");
+            card.classList.add("border-gray-200", "hover:border-primary/50");
+            const check = card.querySelector(".addon-check");
+            if (check) {
+                check.classList.remove("bg-primary", "border-primary", "text-white");
+                check.classList.add("bg-white", "border-gray-300", "text-transparent");
+            }
+            const qtyControl = card.querySelector(".addon-qty-control");
+            if (qtyControl) qtyControl.classList.add("hidden");
+        });
+    }
 }
 
 /**
@@ -1265,6 +1515,10 @@ if (typeof window !== 'undefined') {
     window.initMobileMenu = initMobileMenu;
     window.openProductQuickDetail = openProductQuickDetail;
     window.closeProductQuickDetail = closeProductQuickDetail;
+    window.loadAddons = loadAddons;
+    window.toggleAddonSelection = toggleAddonSelection;
+    window.changeAddonQty = changeAddonQty;
+    window.scrollAddons = scrollAddons;
     window.applyStorefrontCompanyInfo = applyStorefrontCompanyInfo;
     window.loadStorefrontCompanyInfo = loadStorefrontCompanyInfo;
 

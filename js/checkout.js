@@ -33,12 +33,12 @@ export function saveCartItems(items) {
 /**
  * Thêm sản phẩm vào giỏ hàng
  */
-export function addToCart(productId, name, priceNumber, image, category = "bo_hoa") {
+export function addToCart(productId, name, priceNumber, image, category = "bo_hoa", quantity = 1) {
     let items = getCartItems();
     const existingIndex = items.findIndex((i) => i.productId === productId);
 
     if (existingIndex > -1) {
-        items[existingIndex].quantity += 1;
+        items[existingIndex].quantity += quantity;
     } else {
         items.push({
             productId: productId || `prod_${Date.now()}`,
@@ -46,7 +46,7 @@ export function addToCart(productId, name, priceNumber, image, category = "bo_ho
             price: parseInt(priceNumber, 10) || 420000,
             image: image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=400",
             category: category,
-            quantity: 1
+            quantity: quantity
         });
     }
 
@@ -228,9 +228,37 @@ let currentAppliedVoucher = null;
 
 /**
  * Mở Modal Đặt Hàng Thông Minh (Checkout Modal)
+ *
+ * Chính sách đăng nhập: Khách KHÔNG bắt buộc đăng nhập khi vào giỏ hàng.
+ * Chỉ khi nhấp nút "Thanh toán" (Checkout) và chưa đăng nhập, hệ thống
+ * sẽ mở modal đăng nhập trước. Sau khi đăng nhập thành công, tự động
+ * quay lại mở modal checkout (giữ nguyên giỏ hàng & thông tin đã nhập).
  */
 export function openCheckoutModal() {
     toggleCartDrawer(false);
+
+    // Kiểm tra đăng nhập: nếu chưa đăng nhập -> yêu cầu đăng nhập trước
+    if (typeof isLoggedIn === "function" && !isLoggedIn()) {
+        // Lưu intent để sau khi đăng nhập sẽ quay lại mở checkout
+        if (typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem("telua_pending_checkout", "1");
+        }
+        if (typeof openAuthModal === "function") {
+            openAuthModal("login");
+        } else {
+            alert("Vui lòng đăng nhập để thanh toán!");
+        }
+        return;
+    }
+
+    // Đã đăng nhập -> mở modal checkout bình thường
+    openCheckoutModalAfterAuth();
+}
+
+/**
+ * Mở Modal Checkout (chỉ gọi sau khi đã xác thực đăng nhập)
+ */
+export function openCheckoutModalAfterAuth() {
     const modal = document.getElementById("checkoutModal");
     if (!modal) return;
 
@@ -269,6 +297,70 @@ export function openCheckoutModal() {
 
     // 3. Cập nhật bảng tổng kết tài chính
     updateOrderSummary();
+
+    // 4. Khởi tạo phương thức nhận hàng (mặc định delivery)
+    onFulfillmentTypeChange();
+}
+
+/**
+ * Xử lý khi khách đổi phương thức nhận hàng (Giao hàng / Nhận tại cửa hàng)
+ */
+export function onFulfillmentTypeChange() {
+    const selected = document.querySelector("input[name='fulfillmentType']:checked");
+    const isPickup = selected && selected.value === "pickup";
+
+    const pickupSection = document.getElementById("pickupBranchSection");
+    const addressInput = document.getElementById("checkoutRecipientAddress");
+    const deliveryNotesInput = document.getElementById("checkoutDeliveryNotes");
+
+    if (pickupSection) pickupSection.classList.toggle("hidden", !isPickup);
+
+    // Khi pickup: không cần địa chỉ giao & ghi chú giao
+    if (addressInput) addressInput.required = !isPickup;
+    if (deliveryNotesInput) deliveryNotesInput.disabled = isPickup;
+
+    if (isPickup) {
+        loadPickupBranches();
+    }
+
+    // Cập nhật lại phí ship (pickup = miễn phí ship)
+    updateOrderSummary();
+}
+
+/**
+ * Tải danh sách cửa hàng để khách chọn nơi nhận hoa (pickup)
+ */
+export async function loadPickupBranches() {
+    const select = document.getElementById("checkoutPickupBranch");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">Đang tải danh sách cửa hàng...</option>`;
+
+    try {
+        const res = await fetch(`${API_BASE}/branches`);
+        const json = await res.json();
+
+        let branches = [];
+        if (json.success && Array.isArray(json.data)) {
+            branches = json.data;
+        } else if (Array.isArray(json)) {
+            branches = json;
+        }
+
+        const activeBranches = branches.filter(b => b && b.isActive !== false);
+
+        if (activeBranches.length === 0) {
+            select.innerHTML = `<option value="">Không có cửa hàng khả dụng</option>`;
+            return;
+        }
+
+        select.innerHTML = `<option value="">-- Chọn cửa hàng nhận hoa --</option>` +
+            activeBranches.map(b => `
+                <option value="${b.id}">${b.name || b.id}${b.address ? " • " + b.address : ""}</option>
+            `).join("");
+    } catch (e) {
+        select.innerHTML = `<option value="">Lỗi tải cửa hàng: ${e.message}</option>`;
+    }
 }
 
 /**
@@ -440,8 +532,14 @@ export function updateOrderSummary() {
     const isExpressCheckbox = document.getElementById("checkoutIsExpress2H");
     const isExpress = isExpressCheckbox ? isExpressCheckbox.checked : false;
 
+    // Pickup (nhận tại cửa hàng) -> miễn phí vận chuyển
+    const fulfillmentSelected = document.querySelector("input[name='fulfillmentType']:checked");
+    const isPickup = fulfillmentSelected && fulfillmentSelected.value === "pickup";
+
     let shippingFee = 0;
-    if (isExpress) {
+    if (isPickup) {
+        shippingFee = 0;
+    } else if (isExpress) {
         shippingFee = 50000;
     } else if (subtotal < 500000 && subtotal > 0) {
         shippingFee = 35000;
@@ -507,12 +605,34 @@ export async function handleCheckoutSubmit(event) {
     const ribbonBanner = document.getElementById("checkoutRibbonBanner")?.value.trim() || "";
     const paymentMethod = document.querySelector("input[name='paymentMethod']:checked")?.value || "vietqr";
 
+    // Phương thức nhận hàng (delivery / pickup)
+    const fulfillmentSelected = document.querySelector("input[name='fulfillmentType']:checked");
+    const fulfillmentType = fulfillmentSelected ? fulfillmentSelected.value : "delivery";
+    const pickupBranchId = document.getElementById("checkoutPickupBranch")?.value || "";
+
     const submitBtn = document.getElementById("btnSubmitOrder");
     const errorBox = document.getElementById("checkoutErrorMsg");
 
-    if (!senderPhone || !recipientName || !recipientPhone || !recipientAddress) {
+    // Validation theo phương thức nhận hàng
+    if (!senderPhone || !recipientName || !recipientPhone) {
         if (errorBox) {
             errorBox.textContent = "Vui lòng điền đầy đủ số điện thoại người gửi và thông tin người nhận";
+            errorBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    if (fulfillmentType === "pickup") {
+        if (!pickupBranchId) {
+            if (errorBox) {
+                errorBox.textContent = "Vui lòng chọn cửa hàng nhận hoa";
+                errorBox.classList.remove("hidden");
+            }
+            return;
+        }
+    } else if (!recipientAddress) {
+        if (errorBox) {
+            errorBox.textContent = "Vui lòng nhập địa chỉ giao hoa";
             errorBox.classList.remove("hidden");
         }
         return;
@@ -540,8 +660,11 @@ export async function handleCheckoutSubmit(event) {
         delivery: {
             deliveryDate: deliveryDate,
             timeSlot: isExpress2H ? "Giao Hỏa Tốc 2H" : timeSlot,
-            isExpress2H: isExpress2H
+            isExpress2H: isExpress2H,
+            fulfillmentType: fulfillmentType
         },
+        fulfillmentType: fulfillmentType,
+        branchId: fulfillmentType === "pickup" ? pickupBranchId : "",
         customization: {
             cardMessage: cardMessage,
             ribbonBanner: ribbonBanner
@@ -616,6 +739,7 @@ if (typeof window !== "undefined") {
         updateCartBadge,
         toggleCartDrawer,
         openCheckoutModal,
+        openCheckoutModalAfterAuth,
         closeCheckoutModal,
         onDeliveryDateChange,
         toggleExpress2H,
@@ -630,12 +754,15 @@ if (typeof window !== "undefined") {
     window.toggleCart = () => toggleCartDrawer();
     window.toggleCartDrawer = toggleCartDrawer;
     window.openCheckoutModal = openCheckoutModal;
+    window.openCheckoutModalAfterAuth = openCheckoutModalAfterAuth;
     window.closeCheckoutModal = closeCheckoutModal;
     window.onDeliveryDateChange = onDeliveryDateChange;
     window.toggleExpress2H = toggleExpress2H;
     window.handleApplyVoucher = handleApplyVoucher;
     window.updateOrderSummary = updateOrderSummary;
     window.handleCheckoutSubmit = handleCheckoutSubmit;
+    window.onFulfillmentTypeChange = onFulfillmentTypeChange;
+    window.loadPickupBranches = loadPickupBranches;
 
     document.addEventListener("DOMContentLoaded", () => {
         updateCartBadge();

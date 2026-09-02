@@ -133,6 +133,35 @@ Thiết kế **Dashboard 2 Cột Chuẩn (Responsive Sidebar + Main Content)**:
 
 ---
 
+## 4b. Bảng Điều Khiển Đơn Hàng Nội Bộ (`#orderDashboardModal`)
+
+Modal tổng quan đơn hàng **read-only** dành cho toàn bộ vai trò nội bộ (super_admin, branch_manager, florist, sales_consultant), mô phỏng Dashboard "Đơn Hàng Của Tôi" của khách hàng để mọi nhân sự nắm nhanh tình hình đơn.
+
+- **Điểm vào:** Nút "📊 Bảng Điều Khiển Đơn Hàng" trong dropdown tài khoản (cả desktop `#userDropdownMenu` và mobile `#mobileAccountBtn`), hiển thị cho mọi vai trò nội bộ.
+- **Phân quyền phạm vi dữ liệu:**
+  - `super_admin`: Toàn chuỗi cửa hàng.
+  - `branch_manager`: Đơn của chi nhánh mình (backend `query_admin_orders` tự ép theo `branchId`).
+  - `florist` / `sales_consultant`: Đơn của chi nhánh mình (frontend truyền `branchId`).
+- **Nguồn dữ liệu:** `GET /api/flower/v1/admin/orders?timeframe=all[&branchId=...]` → `data.orders`.
+- **Nội dung:** 4 thẻ thống kê (Tổng đơn, Đang xử lý, Hoàn thành, Doanh thu) + danh sách đơn read-only (không có nút đổi trạng thái). Việc xử lý/đổi trạng thái vẫn thực hiện ở Cổng Nhân Viên (`#staffPortalModal`) và Bảng Quản Trị (`/portal/admin`).
+- **Module:** `js/order_dashboard.js` (bundled sau `staff_portal.js`).
+
+```text
++-------------------------------------------------------------+
+| 📈 BẢNG ĐIỀU KHIỂN ĐƠN HÀNG   Phạm vi: Toàn chuỗi   [↻] [✕] |
++-------------------------------------------------------------+
+| [Tổng đơn: 128] [Đang xử lý: 12] [Hoàn thành: 110] [DT: 82M]|
++-------------------------------------------------------------+
+| #NHTB_128 | 12/06 | CN Q.10   [Đang cắm hoa] [Đã thanh toán]|
+|  👤 Trần Hoa · Bó Mây Trắng x1               1.250.000₫     |
++-------------------------------------------------------------+
+| #NHTB_127 | 12/06 | CN Q.1    [Giao thành công] [Đã TT]     |
+|  👤 Lê An · Giỏ Tulip x2 +1 món khác          2.400.000₫    |
++-------------------------------------------------------------+
+```
+
+---
+
 ## 5. Bảng Màu Sắc & Typography Quy Chuẩn (Design Tokens)
 
 - **Màu sắc chủ đạo:**

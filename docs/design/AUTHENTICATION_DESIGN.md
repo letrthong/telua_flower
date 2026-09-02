@@ -171,6 +171,53 @@ def get_branch_orders(branch_id):
 
 ---
 
+## 5.1 Luồng Giỏ Hàng & Thanh Toán — Kiểm Tra Đăng Nhập (Cart & Checkout Auth Flow)
+
+> **Chính sách:** Khách hàng **KHÔNG bắt buộc đăng nhập** khi vào giỏ hàng. Hệ thống **chỉ kiểm tra / bắt đăng nhập khi khách nhấp nút Thanh toán (Checkout)** và chọn hình thức "Đặt với tài khoản".
+
+```mermaid
+graph TD
+    A[User nhấp vào Giỏ hàng 🛒] --> B{Đã đăng nhập?}
+    B -->|Có| C[Hiển thị giỏ hàng → Checkout bình thường]
+    B -->|Chưa| D[Hiển thị giỏ hàng - KHÔNG bắt buộc đăng nhập]
+    D --> E{User nhấp nút Thanh toán}
+    E --> F{Chọn hình thức đặt hàng}
+    F -->|Đặt với tài khoản| G[Yêu cầu đăng nhập → /login]
+    G --> G1[Đăng nhập thành công] --> G2[Quay lại Checkout với thông tin đã nhập]
+    F -->|Đặt không cần tài khoản Guest| H[Nhập SĐT + thông tin giao hàng → Checkout]
+    H --> I[Không cần JWT - tạo đơn guest]
+```
+
+### Giải thích luồng
+
+| Bước | Hành vi |
+| :--- | :--- |
+| **Vào giỏ hàng** | Không kiểm tra đăng nhập — khách tự do xem/thêm/sửa giỏ hàng |
+| **Nhấp Thanh toán** | Hiện lựa chọn: "Đặt với tài khoản" hoặc "Đặt không cần tài khoản (Guest)" |
+| **Chọn "Đặt với tài khoản"** | Nếu chưa đăng nhập → redirect `/login`; sau khi đăng nhập → quay lại checkout, giữ nguyên giỏ hàng & thông tin đã nhập |
+| **Chọn "Guest"** | Không cần JWT — chỉ nhập SĐT + thông tin giao hàng, tạo đơn guest |
+
+### Lưu ý triển khai (Frontend)
+
+```javascript
+// Khi user nhấp nút Thanh toán và chọn "Đặt với tài khoản"
+function handleCheckoutWithAccount() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+        // Lưu giỏ hàng & thông tin đã nhập vào sessionStorage để khôi phục sau đăng nhập
+        sessionStorage.setItem('pending_checkout', JSON.stringify(cartData));
+        window.location.href = '/login?redirect=/checkout';
+        return;
+    }
+    // Đã đăng nhập → tiếp tục checkout
+    proceedCheckout();
+}
+```
+
+> **Lưu ý:** Luồng này **không mâu thuẫn** với luồng Guest trong `PAYMENT_CANCELLATION_RETURN_DESIGN.md` — khách có thể chọn đặt không cần tài khoản, hoặc đặt với tài khoản (bắt buộc đăng nhập).
+
+---
+
 ## 6. Tổng Kết Ưu Điểm Thiết Kế
 
 1. **Trải nghiệm mượt mà:** Khách hàng lẫn nhân viên chỉ cần nhớ 1 nút bấm "Đăng nhập", hệ thống tự động làm toàn bộ phần còn lại.

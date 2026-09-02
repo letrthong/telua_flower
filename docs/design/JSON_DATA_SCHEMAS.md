@@ -177,6 +177,12 @@ Mỗi khách hàng sở hữu một thư mục riêng biệt được tự độ
 ]
 ```
 
+> **⚠️ Quan trọng — 2 trạng thái độc lập:** Trong schema trên, `status` (cấp đơn hàng) và `payment.status` là **2 khái niệm khác nhau**:
+> - `status` = **trạng thái đơn hàng** (vòng đời xử lý & giao nhận): `pending → confirmed → arranging → shipping → delivered` (hoặc `ready_for_pickup → completed` cho pickup; kèm `cancelled`, `returned`).
+> - `payment.status` = **trạng thái thanh toán** (tình trạng thu tiền): `unpaid → paid` (+ `refunded`, `failed`).
+>
+> Hai trạng thái này **tiến hóa độc lập**. Ví dụ: đơn COD có thể `status = delivered` nhưng `payment.status = unpaid` (chờ shipper thu tiền); đơn VietQR trả trước có thể `payment.status = paid` nhưng `status = arranging` (đang cắm hoa).
+
 ---
 
 ### 🗂️ 3. `config/categories.json` - Danh Mục Mẫu Hoa Động, Timestamps & Xóa Mềm (Soft Delete)
@@ -416,6 +422,12 @@ File chi tiết riêng biệt được nạp qua API `GET /api/flower/v1/product
   }
 ]
 ```
+
+> **⚠️ 2 trạng thái độc lập trong schema đơn hàng:**
+> - `status` (cấp đơn hàng) = **trạng thái đơn hàng** (vòng đời xử lý & giao nhận): `pending → confirmed → arranging → shipping → delivered` (pickup: `ready_for_pickup → completed`; kèm `cancelled`, `returned`).
+> - `payment.status` = **trạng thái thanh toán** (tình trạng thu tiền): `unpaid → paid` (+ `refunded`, `failed`).
+>
+> Hai trạng thái này **tiến hóa độc lập**. Ví dụ: đơn COD có thể `status = delivered` nhưng `payment.status = unpaid` (chờ shipper thu tiền); đơn VietQR trả trước có thể `payment.status = paid` nhưng `status = arranging` (đang cắm hoa).
 
 ---
 

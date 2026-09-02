@@ -76,7 +76,7 @@
 | `GET` | `/api/user/orders` | Customer | **Xem lịch sử đơn hàng cá nhân (nạp trực tiếp từ `users/{user_id}/orders.json` siêu tốc)** |
 | `GET` | `/api/customers/<user_id>/orders` | Admin, Manager | **Admin/CRM tra cứu sổ đơn hàng cá nhân của 1 khách hàng cụ thể** |
 | `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager | Lấy danh sách đơn hàng được gán cho chi nhánh |
-| `PUT` | `/api/orders/<id>/status` | Staff / Manager | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `completed`) |
+| `PUT` | `/api/orders/<id>/status` | Staff / Manager | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`; pickup: `ready_for_pickup` $\rightarrow$ `completed`) |
 | `POST` | `/api/orders/<id>/photo` | `florist` / Manager | **Thợ cắm hoa upload ảnh hoa thực tế** để gửi khách duyệt |
 
 #### Request mẫu `POST /api/orders` đầy đủ tính năng:

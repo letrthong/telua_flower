@@ -257,10 +257,36 @@ def create_order(
 
     final_total = max(0, subtotal + shipping_fee - discount_amount)
 
-    # 6. Tự động gán chi nhánh gần nhất
+    # 6. Xác định chi nhánh xử lý đơn hàng
+    #    - Nếu khách chọn chi nhánh cụ thể (pickup hoặc giao từ chi nhánh) -> dùng chi nhánh đó.
+    #    - Ngược lại -> tự động gán chi nhánh gần nhất theo địa chỉ người nhận.
+    fulfillment_type = (order_data.get("fulfillmentType") or delivery.get("fulfillmentType") or "delivery").strip().lower()
+    requested_branch_id = (order_data.get("branchId") or delivery.get("branchId") or "").strip()
+
     recipient_lat = recipient.get("lat")
     recipient_lng = recipient.get("lng")
-    assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+
+    if requested_branch_id:
+        # Khách đã chọn chi nhánh -> kiểm tra chi nhánh tồn tại & đang hoạt động
+        requested_branch = get_branch_by_id(requested_branch_id)
+        if requested_branch and requested_branch.get("isActive", True):
+            assigned_branch_id = requested_branch_id
+        else:
+            assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+    else:
+        assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+
+    # 6b. Gán người xử lý (assignedTo):
+    #     - Nếu đơn thuộc 1 chi nhánh cụ thể -> gán cho Quản lý chi nhánh đó.
+    #     - Nếu không xác định được chi nhánh (hoặc đơn toàn chuỗi) -> gán cho Admin (super_admin).
+    assigned_manager_id = None
+    assigned_branch = get_branch_by_id(assigned_branch_id)
+    if assigned_branch:
+        assigned_manager_id = assigned_branch.get("managerId")
+
+    if not assigned_manager_id:
+        # Fallback: gán cho Admin toàn chuỗi
+        assigned_manager_id = "staff_admin"
 
     # 7. Khởi tạo đối tượng đơn hàng chuẩn
     order_id = f"ord_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}"
@@ -280,6 +306,8 @@ def create_order(
         "orderDate": created_at,
         "branchId": assigned_branch_id,
         "customerId": customer_id,
+        "assignedTo": assigned_manager_id,
+        "assignedBy": "system",
         "status": "pending",
         "cardMessage": card_msg,
         "ribbonBanner": ribbon_msg,
@@ -301,7 +329,8 @@ def create_order(
         "delivery": {
             "deliveryDate": delivery_date_str,
             "timeSlot": time_slot,
-            "isExpress2H": is_express
+            "isExpress2H": is_express,
+            "fulfillmentType": fulfillment_type
         },
         "customization": {
             "cardMessage": card_msg,

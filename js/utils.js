@@ -91,7 +91,12 @@ export function handleImageErrorFallback(imgEl) {
     // Tầng 2: Fallback ảnh Unsplash chuẩn
     if (!imgEl.dataset.fallbackTried) {
         imgEl.dataset.fallbackTried = "1";
-        imgEl.src = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+        // Nếu là ảnh add-on (sản phẩm kèm theo), dùng placeholder trung tính thay vì ảnh hoa
+        if (imgEl.closest && imgEl.closest("#addonsList")) {
+            imgEl.src = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=200";
+        } else {
+            imgEl.src = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
+        }
     }
 }
 

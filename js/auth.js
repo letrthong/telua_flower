@@ -372,6 +372,17 @@ async function handleLoginSubmit(event) {
         closeAuthModal();
         updateAuthUI();
 
+        // Nếu trước đó user đang cố thanh toán (nhấp nút Checkout) thì quay lại mở checkout
+        let pendingCheckout = false;
+        if (typeof sessionStorage !== "undefined") {
+            pendingCheckout = sessionStorage.getItem("telua_pending_checkout") === "1";
+            sessionStorage.removeItem("telua_pending_checkout");
+        }
+        if (pendingCheckout && typeof openCheckoutModalAfterAuth === "function") {
+            openCheckoutModalAfterAuth();
+            return;
+        }
+
         // Không tự động chuyển hướng / bật CMS, giữ admin ở trang chủ và chỉ hiển thị khi click
         if (typeof showToast === "function") {
             showToast(`Chào mừng ${result.user.fullName || "bạn"} (${result.user.role}) đã đăng nhập thành công!`);
@@ -478,6 +489,14 @@ function updateAuthUI() {
         const roleName = roleNameMap[user.role] || "Thành viên";
         const isAdminOrManager = user.role === "super_admin" || user.role === "branch_manager";
         const isFlorist = user.role === "florist";
+        const isSales = user.role === "sales_consultant";
+
+        const isInternalRole = isAdminOrManager || isFlorist || isSales;
+        const orderDashboardBtn = isInternalRole ? `
+                    <button onclick="openOrderDashboardModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                        <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                    </button>
+        ` : '';
 
         let portalActionBtn = "";
         if (isAdminOrManager) {
@@ -486,6 +505,7 @@ function updateAuthUI() {
                     <button onclick="openAdminPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                         <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
                     </button>
+                    ${orderDashboardBtn}
                     ${user.role === 'super_admin' ? `
                     <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
@@ -495,18 +515,33 @@ function updateAuthUI() {
             `;
         } else if (isFlorist) {
             portalActionBtn = `
-                <div class="p-1.5 border-b border-gray-100">
-                    <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal();" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-sm">
+                <div class="p-1.5 border-b border-gray-100 space-y-1.5">
+                    <button onclick="openStaffPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-sm">
                         <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
                     </button>
+                    ${orderDashboardBtn}
+                </div>
+            `;
+        } else if (isSales) {
+            portalActionBtn = `
+                <div class="p-1.5 border-b border-gray-100 space-y-1.5">
+                    <button onclick="openStaffPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-400 hover:opacity-95 transition rounded-lg shadow-sm">
+                        <i class="fa-solid fa-headset mr-2"></i> Tiếp Nhận Đơn Hàng
+                    </button>
+                    ${orderDashboardBtn}
                 </div>
             `;
         } else {
             // Customer (Khách hàng thân thiết)
             portalActionBtn = `
-                <div class="px-4 py-2 text-xs text-gray-700 flex justify-between items-center border-b border-gray-50">
-                    <span>Điểm tích lũy:</span>
-                    <span class="font-bold text-accent">50 điểm ⭐</span>
+                <div class="p-1.5 border-b border-gray-100 space-y-1.5">
+                    <button onclick="openCustomerPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
+                        <i class="fa-solid fa-box-open mr-2"></i> Đơn Hàng Của Tôi
+                    </button>
+                    <div class="px-3 py-2 text-xs text-gray-700 flex justify-between items-center bg-pink-50/50 rounded-lg">
+                        <span>Điểm tích lũy:</span>
+                        <span class="font-bold text-accent">50 điểm ⭐</span>
+                    </div>
                 </div>
             `;
         }
@@ -561,6 +596,9 @@ function updateAuthUI() {
                             <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                                 <i class="fa-solid fa-gauge-high mr-2"></i> Quản Trị Hệ Thống (CMS)
                             </button>
+                            <button onclick="openOrderDashboardModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                                <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                            </button>
                             ${user.role === 'super_admin' ? `
                             <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                                 <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
@@ -568,10 +606,27 @@ function updateAuthUI() {
                             ` : ''}
                         </div>
                     ` : isFlorist ? `
-                        <button onclick="if(typeof openFloristPortalModal==='function')openFloristPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-xs">
-                            <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
-                        </button>
+                        <div class="space-y-2">
+                            <button onclick="openStaffPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-400 hover:opacity-95 transition rounded-lg shadow-xs">
+                                <i class="fa-solid fa-scissors mr-2"></i> Cổng Thợ Cắm Hoa
+                            </button>
+                            <button onclick="openOrderDashboardModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-lg border border-emerald-200">
+                                <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                            </button>
+                        </div>
+                    ` : isSales ? `
+                        <div class="space-y-2">
+                            <button onclick="openStaffPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-blue-500 to-indigo-400 hover:opacity-95 transition rounded-lg shadow-xs">
+                                <i class="fa-solid fa-headset mr-2"></i> Tiếp Nhận Đơn Hàng
+                            </button>
+                            <button onclick="openOrderDashboardModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-lg border border-emerald-200">
+                                <i class="fa-solid fa-chart-line mr-2 text-emerald-600"></i> Bảng Điều Khiển Đơn Hàng
+                            </button>
+                        </div>
                     ` : `
+                        <button onclick="openCustomerPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
+                            <i class="fa-solid fa-box-open mr-2"></i> Đơn Hàng Của Tôi
+                        </button>
                         <div class="flex items-center justify-between px-3 py-1.5 bg-white/80 rounded-lg border border-pink-100 text-xs">
                             <span class="text-gray-600 font-medium">Điểm tích lũy:</span>
                             <span class="font-bold text-accent">50 ⭐</span>

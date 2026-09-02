@@ -39,6 +39,10 @@ RUN mkdir -p /app/src/static && \
 RUN mkdir -p /app/data
 RUN chmod 777 -R /app/data
 
+RUN mkdir -p /app/config
+RUN chmod 777 -R /app/config
+
+
 EXPOSE 5000
 
 CMD ["python", "/app/src/app.py"]
