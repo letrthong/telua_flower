@@ -20,9 +20,17 @@ graph TD
 ```
 
 ### 1. Chi tiết các phương thức:
-1. **Chuyển khoản tự động (VietQR):**
-   - Sinh mã QR động có sẵn chính xác Số tiền và Cú pháp nội dung: `NHTB <Mã_Đơn>`.
-   - Webhook ngân hàng tự động cập nhật trạng thái đơn sang `PAID` (Đã thanh toán) sau **5 giây**, khách không cần gửi biên lai chụp màn hình.
+1. **Chuyển khoản tự động (VietQR chuẩn Napas EMVCo):**
+   - **Cấu hình ngân hàng mặc định của shop:**
+     - **Ngân hàng:** `MBBank` (Mã BIN Napas: `970422`, Mã viết tắt: `MB`).
+     - **Số tài khoản:** `0976491323` (Trùng số hotline CSKH Nở Hoa Thả Bình).
+     - **Tên chủ tài khoản:** `NO HOA THA BINH`.
+     - **Cú pháp chuyển khoản:** `NHTB <Mã_Đơn>` (Ví dụ: `NHTB NHTB-20260902-888`).
+   - **Cơ chế kỹ thuật sinh mã QR (`src/vietqr_service.py`):**
+     - Tự động đóng gói chuỗi chuẩn EMVCo TLV (Tag 00 `Version 01`, Tag 01 `Dynamic 12`, Tag 38 `Napas 247 GUID A000000727 + BIN + Account`, Tag 53 `704 VND`, Tag 54 `Amount`, Tag 58 `VN`, Tag 62 `Additional Info`, Tag 63 `CRC16/CCITT-FALSE`).
+     - Tự động sinh QuickLink URL: `https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=<AMOUNT>&addInfo=NHTB%20<ORDER_CODE>&accountName=NO%20HOA%20THA%20BINH`
+     - Sinh mã QR Base64 trực tiếp trên máy chủ mà không phụ thuộc bên thứ ba.
+   - **Tự động gắn vào đơn hàng:** Khi gọi `POST /api/flower/v1/orders`, `payment` object tự động bao gồm toàn bộ payload QR, link ảnh và thông tin ngân hàng.
 2. **Thẻ Quốc Tế (Visa / MasterCard / JCB) & Ví Điện Tử (MoMo / ZaloPay):**
    - Dành cho khách du lịch và kiều bào ở nước ngoài gửi hoa về Việt Nam.
 3. **Thanh toán tiền mặt khi nhận hàng (COD):**
@@ -70,10 +78,11 @@ Trước khi xuất xưởng, thợ cắm hoa **bắt buộc chụp ảnh hoa th
 
 ---
 
-## 4. Thiết Kế API Endpoints Hủy Đơn & Khiếu Nại
+## 4. Thiết Kế API Endpoints Thanh Toán, Hủy Đơn & Khiếu Nại
 
 | Method | Endpoint | Quyền hạn | Mô tả |
 | :--- | :--- | :---: | :--- |
+| `GET` | `/api/flower/v1/orders/<id>/payment-qr` | Public / Customer | Lấy chi tiết mã VietQR (EMVCo payload, QuickLink, Base64) để quét thanh toán |
 | `POST` | `/api/orders/<id>/cancel` | Customer / Admin | Gửi yêu cầu hủy đơn hàng |
 | `POST` | `/api/orders/<id>/claim` | Customer | Gửi khiếu nại đổi trả kèm ảnh chụp hoa bị lỗi |
 | `POST` | `/api/admin/orders/<id>/refund` | `super_admin`, Manager | Duyệt hoàn tiền đơn hàng qua tài khoản khách |

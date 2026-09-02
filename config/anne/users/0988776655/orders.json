@@ -1,5 +1,500 @@
 [
   {
+    "id": "ord_1788321044_de5013",
+    "orderCode": "NHTB-260902-B7NK",
+    "createdAt": "2026-09-02T10:50:44Z",
+    "orderDate": "2026-09-02T10:50:44Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Khách Test API",
+      "realName": "Khách Test API",
+      "phone": "0988776655",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-B7NK",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260902-B7NK6304D048",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260902-B7NK&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACnklEQVR4nO1aXW8EIQgcyP3/v0wDA7pN7sHri9JTk+7tShqZIMOHYlgcuiqIK7kydEnq2yVhZaBm8Dm+WPyYq1000q2Sr0AOgEAMEBOIf4pXf0OuttFIt+MJoub4BboCE58JtfDRRSPdj2cOQuhw+gxzHecdbTTSUyTFJHyoW6jbpDzRxDn7PN8+LX4Oe6Rl+kgH0EojPYXf8X5yXH5fG/I80jTKYHca63NVF/8jvl1ScpLI3YW6H5VBUEKgt++zk6QxWmJ4FJOgOjXZjT91WfLlp5vW6IbJBGlSFGN8uJ120Uh3S0q4SouUKBD1D3XcI3A6Y59t+EiIYaVGM0SqLAlup1000gPiT6H7jJPtLw6kL8wn2mik2yXNfxTDe6hJj1lHXfh5/z4bnXdhSkQqj9PPo86Sk+3fpzaRlPCZxHT4zvKaFe7LrS+tDq2M0+PNqCxl7BnBKBleAt7t+2wjKWWRXltiVD+qy/SlN/78JP40KR/puD1iTtoquLp9n60kLYBzJIOGRiGEheVrn6tDCFzyTjY6BpwRjII830Uj3SopReJkefaQ2JGLftyEu4tGeoakZdJOKgrOz6YHWCU5ZJ/n55tSheQ46GWVI3NHGm8XjXS3pNUlhsyHgvCrRp/J5j3vH9XrMPL3LIQWQxFrXH5fHVL0k5dBsracfc7J9GijkW6VBBPL2c10Lsp7S9XdNH+//c3lfgceXfbqcVZQP1rxbTTSY+7X2bDRcdVuPq2LRnrK/boYzkiPQP5x8BWrQ79Y8uV/qnBc+VGWmnIJhLeLRnqKpFUSH02OSIzCgxpXjtlnF0lh4JT1z4o8UV3OY/Z5evwps6eRvI7fEajc/hFWh2T8njCO64rsJhFKuf13/Ol+3b/QSK/kwugi+QPHNl9RCVMinwAAAABJRU5ErkJggg=="
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:50:44Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0988776655"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788320827_70b7f8",
+    "orderCode": "NHTB-260902-Z6PQ",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "orderDate": "2026-09-02T10:47:07Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Khách Test API",
+      "realName": "Khách Test API",
+      "phone": "0988776655",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-Z6PQ",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260902-Z6PQ63049394",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260902-Z6PQ&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACf0lEQVR4nO1aXa/sIAgcyPn/f3lu+LJmcx7svij3SJO2WycbIAgjKsSi6CoQF7kiuoT660iwApTgx93Gxii7WKRbkT/uPQACyOxQUGgfUaNdLNLt/oQMr1HoPrSbCZ/RLhbpfn+GeDhaYHpYhnvxSBeL9BSk+Hy3Fw9PmcL0KD3Pj0/iubsbPXdmDgV7WaQH1Xf+coXc+r4mPyP+fHY/Mz4q0+NQdLFItyJhHDN9Zk8nS0E+48kkUDc+l0Q9Lt2R9rQXT51BlCqlkgfo2QIpTL8Z94z68/EthG0s0q1ICSI/hePD6Mu38FsXi3QrEjQZqdJ+5uyvSsSbP/GqvkukUJnWmzHlp3W97NZTmyDh8ehXsfrxMjeceONzGSmUyJojV9qsT1eK16gbny/4EsyBzpHsElvHj9rkPModu13PLvVdIldahFbGzBZTdZzk8qVVkXKhOS8byOMZEMZoF4v0hH4y67dP/qj4tYiXmz/1HV9i+tQpU0Ro/qzmHXbrqX2QhHgQxjI9CpB5tpaawjP07JQ/GW1kf/fvyZLqgd16ahMkniZdbRJPHbvi97zrzXdIZt2J0vNsJU1bxrr6l/jLSBlUc+wMezGaixQd1sUiPQDJLD8ZnjHd7csgpThCzx5IFoePfeLaQ6o6j/D1fj1bISXiUEjzXnInqWqPY/Q8P3+WZMqMVVHkzdz1wO2HfLP/jmmfM7+MRj0vX3p9vg7ZAa3uyOiJ8ubPr87XYTpqZ0Fa63kxh3axSI9BMpedFqF2n8864CA9j4/PkDjRYDW9eFNu0cmd7/jifB0iKjNpVoFHpNLdemrP8/N82iH8OMakW/XUfvzzP7FIL3JBuiD/AWuOaQw40lH4AAAAAElFTkSuQmCC"
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:47:07Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0988776655"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788317222_2ca0d1",
+    "orderCode": "NHTB-260902-4R1X",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "orderDate": "2026-09-02T09:47:02Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Khách Test API",
+      "realName": "Khách Test API",
+      "phone": "0988776655",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T09:47:02Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0988776655"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190983_35ab08",
+    "orderCode": "NHTB-260831-VYXC",
+    "createdAt": "2026-08-31T22:43:03Z",
+    "orderDate": "2026-08-31T22:43:03Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Khách Test API",
+      "realName": "Khách Test API",
+      "phone": "0988776655",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-03",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:43:03Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0988776655"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190787_88d9f0",
+    "orderCode": "NHTB-260831-DNSZ",
+    "createdAt": "2026-08-31T22:39:47Z",
+    "orderDate": "2026-08-31T22:39:47Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Khách Test API",
+      "realName": "Khách Test API",
+      "phone": "0988776655",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-03",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:39:47Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0988776655"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190503_939f5e",
+    "orderCode": "NHTB-260831-CDRG",
+    "createdAt": "2026-08-31T22:35:03Z",
+    "orderDate": "2026-08-31T22:35:03Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Khách Test API",
+      "realName": "Khách Test API",
+      "phone": "0988776655",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-03",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:35:03Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0988776655"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788186211_448791",
+    "orderCode": "NHTB-260831-B706",
+    "createdAt": "2026-08-31T21:23:31Z",
+    "orderDate": "2026-08-31T21:23:31Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "sender": {
+      "name": "Khách Test API",
+      "realName": "Khách Test API",
+      "phone": "0988776655",
+      "email": "",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM",
+      "deliveryNotes": "",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-03",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "",
+      "ribbonBanner": ""
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 1,
+        "itemTotal": 420000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 420000,
+      "shippingFee": 35000,
+      "discountAmount": 0,
+      "totalAmount": 455000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 455000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T21:23:31Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0988776655"
+      }
+    ]
+  },
+  {
     "id": "ord_1788155265_389dc2",
     "orderCode": "NHTB-260831-ZF4O",
     "createdAt": "2026-08-31T12:47:45Z",

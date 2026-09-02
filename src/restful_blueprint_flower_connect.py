@@ -47,6 +47,13 @@ from order_service import (
     assign_nearest_branch,
     query_admin_orders
 )
+from vietqr_service import (
+    build_order_payment_info,
+    generate_vietqr_payload,
+    get_vietqr_quicklink,
+    generate_vietqr_base64,
+    get_default_bank_config
+)
 from product_service import (
     list_products,
     create_or_update_product,
@@ -246,6 +253,47 @@ def api_get_order(order_id):
     return jsonify({
         "success": True,
         "data": order
+    }), 200
+
+
+@flower_connect_api.route("/orders/<order_id>/payment-qr", methods=["GET"])
+def api_get_order_payment_qr(order_id):
+    """
+    Lấy thông tin và mã VietQR thanh toán cho đơn hàng (hỗ trợ hiển thị trên popup checkout & trang tra cứu).
+    """
+    order = get_order_by_id(order_id)
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    order_code = order.get("orderCode") or order.get("id") or order_id
+    total_amount = order.get("totalAmount") or order.get("financials", {}).get("totalAmount", 0)
+    payment = order.get("payment", {})
+    payment_method = payment.get("method", "vietqr")
+    payment_status = payment.get("status", "unpaid")
+
+    # Nếu chưa có thông tin vietqr chi tiết thì tự động tạo
+    vietqr_data = payment.get("vietqr")
+    bank_info = payment.get("bankInfo")
+    transfer_content = payment.get("transferContent")
+
+    if not vietqr_data or not bank_info:
+        generated = build_order_payment_info(order_code=order_code, total_amount=total_amount, method="vietqr")
+        vietqr_data = generated.get("vietqr")
+        bank_info = generated.get("bankInfo")
+        transfer_content = generated.get("transferContent")
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "orderId": order.get("id"),
+            "orderCode": order_code,
+            "totalAmount": total_amount,
+            "paymentStatus": payment_status,
+            "paymentMethod": payment_method,
+            "bankInfo": bank_info,
+            "transferContent": transfer_content,
+            "vietqr": vietqr_data
+        }
     }), 200
 
 

@@ -26,6 +26,12 @@ from data_service import (
     sync_order_to_user_folder,
     get_user_orders
 )
+from vietqr_service import (
+    build_order_payment_info,
+    generate_vietqr_payload,
+    get_vietqr_quicklink,
+    get_default_bank_config
+)
 
 STANDARD_TIME_SLOTS = [
     {"id": "slot_08_10", "name": "08:00 - 10:00 (Sáng sớm)", "start": "08:00", "end": "10:00"},
@@ -310,12 +316,11 @@ def create_order(
             "appliedVoucher": applied_voucher
         },
         "totalAmount": final_total,
-        "payment": {
-            "method": order_data.get("paymentMethod", "vietqr"),
-            "status": "unpaid",
-            "transactionId": None,
-            "paidAt": None
-        },
+        "payment": build_order_payment_info(
+            order_code=order_code,
+            total_amount=final_total,
+            method=order_data.get("paymentMethod", "vietqr")
+        ),
         "history": [
             {
                 "status": "pending",

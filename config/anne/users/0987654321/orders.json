@@ -1,5 +1,500 @@
 [
   {
+    "id": "ord_1788321043_dfa21c",
+    "orderCode": "NHTB-260902-J27O",
+    "createdAt": "2026-09-02T10:50:43Z",
+    "orderDate": "2026-09-02T10:50:43Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "realName": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "email": "nva@gmail.com",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+      "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+      "ribbonBanner": "Happy Birthday My Love"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 0,
+      "totalAmount": 840000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 840000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-J27O",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454068400005802VN62250821NHTB NHTB-260902-J27O63040513",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=840000&addInfo=NHTB%20NHTB-260902-J27O&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACh0lEQVR4nO1a21LFMAhkGf//l3FgIemDD+l5MEGTai8po2FnKbfAZHHoqqBcyZWhS1L/XVLMnjfmV/OLWMzMt1000q2SXwRRBAITgUHgU/HoT5Jv22ik2/EUomaBZGJpgWWACV66aKTHSMIJ6j9h7jAz4Pf++x/iJwfMASUpYU5TC44200j342lxGxCWAyKQAbCdsE7t59/l54Pj+ve1gWc87/Ss3/iOPt/q4l+U/y6JPMq9k7T+QB8Pvtm+zi78BEnobt1dUhA0Dk4JqdpGI90taU5AID6k6YDqu1n8tBPW2UUSgZgz0cN4hvUReGayZDhjnV0kLYjoIPIc5h0c9ShUiPcB62zz/RSysvJ13jDTTA8P271ObSRpjhgexGR2VKaOy099x08pgmZiVD4+U09YJ410qyTSnme0lB+AkcdLnrtopFslxcvHfoqCXZ1YVKZTkjhuvrk2wBodLX5E9+mIZliPG8+vx5/mhbnMMCscpcFjunzZvs5Gkig+uqUXgDHo6X3uhHX2sHcZfqcy94Kz/JNcfr6th4BYcpL9jlmxx8XzhSQ8nB+94ehssjhSeajceOld/o7MhMyBJStZ+yyMccA6+0iCRk+OsvOerBxpqJywzh6SiFg+i3OJaVl/dpfs8vNtPC/DwGsfQ4XzcvN3XZaUuVspGcnks+Y4dfubqwOzg1lFpWRsRkySJdI2GulB++usyiNVFplX66KRnrK/TjLmzMpdClgZfheN9JT9dXhk7g7oKC9LwNtFIz1F0qLbEfWliEIra7JbX9JPJMEsvvz8MHSw9XHMOk/375g9jTT5Ki9nBIobf8on++skGx+5b778vV3/rp/tr/sTGumVXBhdJL8Bh/B9H8SQR2UAAAAASUVORK5CYII="
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:50:43Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0987654321"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788320827_2628ae",
+    "orderCode": "NHTB-260902-0NFW",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "orderDate": "2026-09-02T10:47:07Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "realName": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "email": "nva@gmail.com",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+      "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+      "ribbonBanner": "Happy Birthday My Love"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 0,
+      "totalAmount": 840000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 840000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null,
+      "bankInfo": {
+        "bankName": "MBBank (Ngân hàng Quân Đội)",
+        "bankCode": "MB",
+        "bankBin": "970422",
+        "accountNumber": "0976491323",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB NHTB-260902-0NFW",
+      "vietqr": {
+        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454068400005802VN62250821NHTB NHTB-260902-0NFW6304F422",
+        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=840000&addInfo=NHTB%20NHTB-260902-0NFW&accountName=NO%20HOA%20THA%20BINH",
+        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACl0lEQVR4nO1awa4jMQgD1P//ZVbYJn3SXmbeJWE3aTWaphyIBbEh8bSHI54a2rV8MuKR1f9uadkBmvXBj3pk8vf6N6esKLZafoSfuZkDSDfvRzpQNvw7ZUWxHU9zYJqFISazkEV8fv+1KSuKUywdKBZ6jqB1r+95fp4fnxwFIyIUqY+kz4Eriv14Jt9T+yaDtGDFlpon+Bkz+d3+/nBcfn82Piv+mOTkeDKSQB62otgenynJiZ+CENpTGtTK4Mbno+HkHzwZlGQh5/7ZcWq7/Yw5lk44W2talkoiJQFZp2za7uccy8S+iVgEoD9iU6Lp1kcPR3DfLJ1EHV+JDiHaksmkAbb7OYXfrQp1heYKSO6hWZzvjNQpK4oDLJ00lIVgBaMClHGbUPlH+DlCLyXVkdJanZCvjsqrl+wlv6eaIa0+l5bvlyP8nGKZICBgSkpa6hNbqHMj3e/nHMusPRLkvoBU6xOEZJg8wM8Z9ZEjRNVNBtEDRUwAy8TslBXFVkvjEZHoiNy0qvqmJ6tSfsqKYrelI9tz7ZcidBWcyfkD/Jyj5401OzFlZ75VfreXd/sZcyyzGh7IdB1wSIpy3mrc/fOVpaMkInigeFby31y3m+8vz9+dnM6uCPpNXXBi3Ph8OLw7yQKwz4uxd674zO1+xhBL7+zWoXtDTCaSCM16n7Ki2GrpgnCddijP17Td+t1e44mxdJK0p0pNU/ZPWVFstfz8oBwoTWX3oiJvST9lRXHO/TpjUPZzXV60y++/u1/numnDxmcF61eITllRnGLpX8WpeyIFbGIjuHr+/f06o0BqQFnBV6/k9uvinWXq5KjyvdtK6+jD1WI+wM8Zesn5pqs1Te4smVSK2tVL7/XnP7KiuJYPxhTLPwyjci6LV251AAAAAElFTkSuQmCC"
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T10:47:07Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0987654321"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788317222_dc3879",
+    "orderCode": "NHTB-260902-0O5I",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "orderDate": "2026-09-02T09:47:02Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "realName": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "email": "nva@gmail.com",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+      "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+      "ribbonBanner": "Happy Birthday My Love"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 0,
+      "totalAmount": 840000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 840000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-09-02T09:47:02Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0987654321"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190980_f5f608",
+    "orderCode": "NHTB-260831-FVKU",
+    "createdAt": "2026-08-31T22:43:00Z",
+    "orderDate": "2026-08-31T22:43:00Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "realName": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "email": "nva@gmail.com",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+      "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+      "ribbonBanner": "Happy Birthday My Love"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 0,
+      "totalAmount": 840000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 840000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:43:00Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0987654321"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190786_d1c96c",
+    "orderCode": "NHTB-260831-GLBJ",
+    "createdAt": "2026-08-31T22:39:46Z",
+    "orderDate": "2026-08-31T22:39:46Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "realName": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "email": "nva@gmail.com",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+      "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+      "ribbonBanner": "Happy Birthday My Love"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 0,
+      "totalAmount": 840000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 840000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:39:46Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0987654321"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788190503_22138b",
+    "orderCode": "NHTB-260831-R84Z",
+    "createdAt": "2026-08-31T22:35:03Z",
+    "orderDate": "2026-08-31T22:35:03Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "realName": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "email": "nva@gmail.com",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+      "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+      "ribbonBanner": "Happy Birthday My Love"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 0,
+      "totalAmount": 840000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 840000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T22:35:03Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0987654321"
+      }
+    ]
+  },
+  {
+    "id": "ord_1788186211_6365d5",
+    "orderCode": "NHTB-260831-3N44",
+    "createdAt": "2026-08-31T21:23:31Z",
+    "orderDate": "2026-08-31T21:23:31Z",
+    "branchId": "branch_q10",
+    "customerId": null,
+    "status": "pending",
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "realName": "Nguyễn Văn A",
+      "phone": "0987654321",
+      "email": "nva@gmail.com",
+      "isAnonymous": false
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+      "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+      "lat": null,
+      "lng": null
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "09:00 - 11:00",
+      "isExpress2H": false
+    },
+    "customization": {
+      "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+      "ribbonBanner": "Happy Birthday My Love"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "price": 420000,
+        "quantity": 2,
+        "itemTotal": 840000,
+        "image": "/api/flower/v1/images/bo_hoa_01.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 840000,
+      "shippingFee": 0,
+      "discountAmount": 0,
+      "totalAmount": 840000,
+      "appliedVoucher": null
+    },
+    "totalAmount": 840000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "transactionId": null,
+      "paidAt": null
+    },
+    "history": [
+      {
+        "status": "pending",
+        "updatedAt": "2026-08-31T21:23:31Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0987654321"
+      }
+    ]
+  },
+  {
     "id": "ord_1788155265_fe73ef",
     "orderCode": "NHTB-260831-1MOC",
     "createdAt": "2026-08-31T12:47:45Z",

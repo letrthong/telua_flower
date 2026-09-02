@@ -71,7 +71,8 @@
 | Method | Endpoint | Quyền hạn | Mô tả |
 | :--- | :--- | :---: | :--- |
 | `GET` | `/api/delivery/slots` | Public | Lấy danh sách khung giờ giao hàng còn trống theo ngày đã chọn |
-| `POST` | `/api/orders` | Public / Customer | Tạo đơn hàng (Bao gồm Ngày/Giờ giao, Lời chúc thiệp, In banner, Gửi ẩn danh, tự động đồng bộ vào `users/{phone}/orders.json`) |
+| `POST` | `/api/orders` | Public / Customer | Tạo đơn hàng (Bao gồm Ngày/Giờ giao, Lời chúc thiệp, In banner, Gửi ẩn danh, tự động gắn VietQR và đồng bộ vào `users/{phone}/orders.json`) |
+| `GET` | `/api/orders/<id>/payment-qr` | Public / Customer | **Lấy chi tiết mã QR VietQR (chuẩn Napas EMVCo + QuickLink URL)** để thanh toán đơn hàng |
 | `GET` | `/api/user/orders` | Customer | **Xem lịch sử đơn hàng cá nhân (nạp trực tiếp từ `users/{user_id}/orders.json` siêu tốc)** |
 | `GET` | `/api/customers/<user_id>/orders` | Admin, Manager | **Admin/CRM tra cứu sổ đơn hàng cá nhân của 1 khách hàng cụ thể** |
 | `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager | Lấy danh sách đơn hàng được gán cho chi nhánh |
