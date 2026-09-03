@@ -1,0 +1,42 @@
+[
+  {
+    "orderId": "ord_1788446661_053e35",
+    "orderCode": "NHTB-260903-GKLU",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "arranging",
+    "createdAt": "2026-09-03T21:44:21Z"
+  },
+  {
+    "orderId": "ord_1788446342_43bb17",
+    "orderCode": "NHTB-260903-VWD2",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "arranging",
+    "createdAt": "2026-09-03T21:39:02Z"
+  },
+  {
+    "orderId": "ord_1788446175_d56028",
+    "orderCode": "NHTB-260903-2F4Y",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "arranging",
+    "createdAt": "2026-09-03T21:36:15Z"
+  },
+  {
+    "orderId": "ord_1788446059_f1fa32",
+    "orderCode": "NHTB-260903-TFO6",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "arranging",
+    "createdAt": "2026-09-03T21:34:19Z"
+  },
+  {
+    "orderId": "ord_1788446029_b0773f",
+    "orderCode": "NHTB-260903-58RM",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "arranging",
+    "createdAt": "2026-09-03T21:33:49Z"
+  }
+]

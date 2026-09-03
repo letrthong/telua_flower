@@ -187,12 +187,12 @@ graph TD
 Hệ thống quản lý đơn hàng sử dụng kiến trúc **Hai Chuỗi Trạng Thái Độc Lập (Decoupled State Machine)** nhằm phản ánh trung thực thực tế vận hành logistics và tài chính:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│               1. ORDER FULFILLMENT STATUS               │
-│  pending ──> confirmed ──> arranging ──> shipping ──> delivered   │
-│     │            │             │                           │    │
-│     └────────────┴─────────────┴──> cancelled              └──> returned
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   1. ORDER FULFILLMENT STATUS                                   │
+│  pending ──> confirmed ──> arranging ──> photo_sent ──> shipping / ready_for_pickup ──> delivered ──> completed
+│     │            │             │                           │                                │
+│     └────────────┴─────────────┴───────────────────────────┴──> cancelled                   └──> returned
+└─────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
 │                 2. PAYMENT STATUS                       │
@@ -209,11 +209,12 @@ Hệ thống quản lý đơn hàng sử dụng kiến trúc **Hai Chuỗi Trạ
 | :--- | :--- | :--- | :--- |
 | `pending` | **Chờ xác nhận** | Khách hàng / Hệ thống | Đơn mới tạo trên Web, chưa có nhân viên tiếp nhận. |
 | `confirmed` | **Đã duyệt / Xác nhận** | Quản lý / CSKH | Quản lý chi nhánh kiểm tra hoa nguyên liệu, chấp nhận đơn. |
-| `arranging` | **Đang cắm hoa** | Thợ cắm hoa (`florist`) | Thợ chọn hoa tươi, thực hiện cắm bó/lẵng theo mẫu. |
+| `arranging` / `in_progress` | **Đang cắm hoa** | Thợ cắm hoa (`florist`) | Thợ chọn hoa tươi, thực hiện cắm bó/lẵng theo mẫu. |
+| `photo_sent` | **Đã gửi ảnh thành phẩm** | Thợ hoa / CSKH | Chụp ảnh hoa thực tế thành phẩm gửi khách hàng duyệt trước khi giao. |
 | `ready_for_pickup`| **Sẵn sàng nhận hoa** | Thợ / Quản lý | Áp dụng cho đơn nhận tại quầy (`pickup`), hoa đã cắm xong. |
 | `shipping` | **Đang vận chuyển** | Quản lý / Shipper | Bàn giao shipper mang hoa đi giao cho người nhận. |
 | `delivered` | **Giao thành công** | Shipper / Quản lý | Khách/Người nhận đã nhận hoa nguyên vẹn. |
-| `completed` | **Hoàn tất đơn** | Quản lý / Hệ thống | Đơn đã nhận tại quầy hoặc hoàn tất đối soát. |
+| `completed` | **Hoàn tất đơn** | Quản lý / Hệ thống | Đơn đã nhận tại quầy hoặc hoàn tất đối soát tài chính, cộng điểm. |
 | `cancelled` | **Đã hủy** | Khách / Quản lý / Admin | Hủy đơn theo quy định (trước khi cắm hoa). |
 | `returned` | **Đổi trả / Khiếu nại**| CSKH / Quản lý | Tiếp nhận khiếu nại hoa dập hỏng để đổi mẫu mới hoặc hoàn tiền. |
 
@@ -234,6 +235,30 @@ Hệ thống quản lý đơn hàng sử dụng kiến trúc **Hai Chuỗi Trạ
 | **Sales Tư Vấn (`sales`)** | Đơn chi nhánh mình | ✅ | ❌ | ❌ | ✅ | ✅ (POS/COD) | ❌ |
 | **Quản lý CN (`branch_manager`)**| Đơn chi nhánh mình | ✅ | ✅ | ✅ | ✅ | ✅ (POS/COD) | ❌ |
 | **Super Admin (`super_admin`)** | Toàn bộ chuỗi | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+### 3.3 Giao Diện Thanh Tiến Trình Đơn Hàng (Order Progress Stepper & Timeline UX)
+
+Trong Modal Chi Tiết Đơn Hàng (`#orderDetailModal`), hệ thống trang bị khối **Thanh Tiến Trình Trực Quan (`#ordDetailProgressCard`)** gồm 5 bước chuẩn hóa, tự động điều chỉnh theo hình thức nhận hàng (`fulfillmentType`):
+
+1. **Luồng Giao Hàng Tận Nơi (`delivery`):**
+   - Bước 1: `pending` — **Chờ xác nhận** (Tiếp nhận đơn)
+   - Bước 2: `confirmed` — **Đã xác nhận** (Chuẩn bị hoa & nguyên liệu)
+   - Bước 3: `arranging` / `photo_sent` — **Đang cắm hoa** (Florist cắm & chụp ảnh thành phẩm)
+   - Bước 4: `shipping` — **Đang vận chuyển** (Shipper đang giao tới nơi)
+   - Bước 5: `delivered` / `completed` — **Giao thành công** (Người nhận đã nhận hoa)
+
+2. **Luồng Nhận Tại Quầy Showroom (`pickup`):**
+   - Bước 1: `pending` — **Chờ xác nhận** (Tiếp nhận đơn)
+   - Bước 2: `confirmed` — **Đã xác nhận** (Chuẩn bị hoa)
+   - Bước 3: `arranging` / `photo_sent` — **Đang cắm hoa** (Florist cắm mẫu tại quầy)
+   - Bước 4: `ready_for_pickup` — **Sẵn sàng nhận** (Hoa đã hoàn thiện chờ khách đến)
+   - Bước 5: `completed` — **Đã nhận hoa** (Khách đã nhận hoa tại quầy)
+
+#### Quy Chuẩn Hiển Thị 3 Trạng Thái Bước:
+- **Bước đã hoàn thành (Done):** Vòng tròn xanh ngọc kèm icon check `fa-check`, hiển thị chính xác ngày giờ hoàn thành trích xuất từ `order.history` (định dạng `HH:mm DD/MM`).
+- **Bước hiện tại (Active):** Vòng tròn xanh sáng viền sáng nhấp nháy (Pulse animation), hiển thị mốc thời gian cập nhật gần nhất và nhãn *"Hiện tại / Đang xử lý"*.
+- **Bước tương lai còn lại (Upcoming):** Vòng tròn số thứ tự nét đứt màu xám nhẹ (`Chưa tới`), giúp khách hàng và nhân viên biết rõ **còn bao nhiêu bước nữa đơn hàng sẽ hoàn tất**.
+- **Xử lý đơn hủy (`cancelled` / `returned`):** Thanh tiến trình đổi sang dải màu cảnh báo (Đỏ/Cam) và hiển thị thời điểm kèm ghi chú lý do hủy.
 
 ---
 
@@ -376,9 +401,16 @@ pie title Tỷ trọng Doanh Thu Theo Chi Nhánh (Tháng 09/2026)
     "Showroom Thảo Điền (TP. Thủ Đức)" : 15
 ```
 
-### Các Bộ Lọc Phân Tích Đa Chiều:
-- **Khoảng thời gian (`timeframe`)**:
-  - `today`: Đơn phát sinh trong ngày hôm nay từ 00:00:00 đến 23:59:59.
+### Các Bộ Lọc Phân Tích & Sắp Xếp Đa Chiều:
+- **Tiêu chí Sắp xếp (`sortBy` & `sortOrder`)**:
+  - `updatedAt` (Mặc định): Sắp xếp theo thời gian mới cập nhật gần nhất (`history[-1].updatedAt` hoặc `updatedAt`), giúp nắm bắt tức thì các đơn vừa đổi trạng thái hoặc thợ hoa vừa thao tác.
+  - `createdAt`: Sắp xếp theo thời điểm đặt đơn gốc.
+  - `totalAmount`: Sắp xếp theo giá trị tổng thanh toán (tăng/giảm dần).
+  - `deliveryDate`: Sắp xếp theo ngày hẹn giao hàng.
+  - `sortOrder`: `desc` (mặc định - mới nhất lên đầu) hoặc `asc` (cũ nhất lên đầu).
+- **Lọc theo Mốc Thời Gian (`dateFilterBy` & `timeframe`)**:
+  - `dateFilterBy`: `createdAt` (mặc định) hoặc `updatedAt` (cho phép lọc các đơn có cập nhật trong khoảng thời gian đã chọn).
+  - `today`: Đơn phát sinh / cập nhật trong ngày hôm nay từ 00:00:00 đến 23:59:59.
   - `this_week`: Đơn từ Thứ Hai đầu tuần đến Chủ Nhật.
   - `this_month`: Đơn trong tháng hiện tại.
   - `last_month`: Đơn trong tháng trước.

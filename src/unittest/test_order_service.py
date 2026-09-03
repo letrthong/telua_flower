@@ -274,6 +274,77 @@ class TestOrderService(unittest.TestCase):
         # Dọn dẹp đơn test
         delete_order(admin_oid)
 
+    def test_09_query_admin_orders_sort_and_filter_by_updated_at(self):
+        """Kiểm tra chức năng Sắp xếp & Lọc theo Ngày mới cập nhật (updatedAt) trên Admin Orders API"""
+        from order_service import query_admin_orders, get_order_updated_at
+        from data_service import delete_order, update_order_status
+
+        # 1. Tạo 2 đơn hàng thử nghiệm với thời gian cập nhật khác nhau
+        admin_user = {"userId": "staff_admin", "role": "super_admin"}
+        token = generate_jwt_token(admin_user)
+
+        success1, order1, _ = create_order({
+            "sender": {"name": "Khách Test Sort 1", "phone": "0911223344"},
+            "recipient": {"name": "Người Nhận Sort 1", "phone": "0911223344", "address": "Quận 10, TP.HCM"},
+            "items": [{"productId": "bo_hoa_01", "quantity": 1, "price": 420000}]
+        })
+        self.assertTrue(success1)
+        self.assertIn("updatedAt", order1)
+
+        time.sleep(0.05)
+
+        success2, order2, _ = create_order({
+            "sender": {"name": "Khách Test Sort 2", "phone": "0955667788"},
+            "recipient": {"name": "Người Nhận Sort 2", "phone": "0955667788", "address": "Quận 10, TP.HCM"},
+            "items": [{"productId": "bo_hoa_01", "quantity": 2, "price": 420000}]
+        })
+        self.assertTrue(success2)
+
+        # Cập nhật order1 sau cùng để order1 có updatedAt mới hơn order2
+        time.sleep(0.05)
+        now_future_iso = (datetime.now() + timedelta(seconds=10)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        update_order_status(order1["id"], "arranging", updatedAt=now_future_iso)
+
+        # 2. Truy vấn sắp xếp theo updatedAt desc (order1 phải đứng trước order2)
+        res_updated_desc = query_admin_orders(
+            current_user=admin_user,
+            timeframe="all",
+            sort_by="updatedAt",
+            sort_order="desc"
+        )
+        orders_list = res_updated_desc.get("orders", [])
+        o1_idx = next((i for i, o in enumerate(orders_list) if o["id"] == order1["id"]), -1)
+        o2_idx = next((i for i, o in enumerate(orders_list) if o["id"] == order2["id"]), -1)
+        self.assertNotEqual(o1_idx, -1)
+        self.assertNotEqual(o2_idx, -1)
+        self.assertLess(o1_idx, o2_idx, "Đơn hàng order1 vừa cập nhật sau phải đứng trước order2 khi sort theo updatedAt desc")
+
+        # 3. Truy vấn sắp xếp theo createdAt desc (order2 tạo sau phải đứng trước order1)
+        res_created_desc = query_admin_orders(
+            current_user=admin_user,
+            timeframe="all",
+            sort_by="createdAt",
+            sort_order="desc"
+        )
+        created_list = res_created_desc.get("orders", [])
+        o1_c_idx = next((i for i, o in enumerate(created_list) if o["id"] == order1["id"]), -1)
+        o2_c_idx = next((i for i, o in enumerate(created_list) if o["id"] == order2["id"]), -1)
+        self.assertLess(o2_c_idx, o1_c_idx, "Đơn hàng order2 tạo sau phải đứng trước order1 khi sort theo createdAt desc")
+
+        # 4. Kiểm tra qua REST API endpoint /api/flower/v1/admin/orders
+        res_api = self.client.get(
+            "/api/flower/v1/admin/orders?timeframe=all&sortBy=updatedAt&sortOrder=desc",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        self.assertEqual(res_api.status_code, 200)
+        api_data = res_api.get_json()["data"]
+        self.assertEqual(api_data["sortBy"], "updatedAt")
+        self.assertEqual(api_data["sortOrder"], "desc")
+
+        # Dọn dẹp
+        delete_order(order1["id"])
+        delete_order(order2["id"])
+
 
 if __name__ == "__main__":
     unittest.main()

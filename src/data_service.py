@@ -5,7 +5,7 @@ import threading
 import functools
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 import sys
 
@@ -1806,6 +1806,8 @@ def save_order(order: Dict[str, Any]) -> bool:
     raw_status = order.get("status") or "pending"
     status = normalize_order_status(raw_status)
     order["status"] = status
+    if not order.get("updatedAt"):
+        order["updatedAt"] = order.get("createdAt") or order.get("orderDate") or datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # 1. Đường dẫn tệp mới
     new_file_path = get_order_file_path(order_id, year_month, branch_id, status)
@@ -1845,7 +1847,9 @@ def update_order_status(
     if not order:
         return None
 
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     order["status"] = normalize_order_status(new_status)
+    order["updatedAt"] = extra_fields.get("updatedAt", now_iso)
     for key, value in extra_fields.items():
         if isinstance(value, dict) and isinstance(order.get(key), dict):
             order[key].update(value)
@@ -2110,6 +2114,50 @@ def get_all_orders_across_all_months(
 
     all_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
     return all_orders
+
+
+def get_available_order_months(branch_id: Optional[str] = None) -> List[Dict[str, str]]:
+    """
+    Lấy danh sách các tháng (YYYY_MM) có dữ liệu đơn hàng trên hệ thống, kèm nhãn hiển thị thân thiện.
+    Sắp xếp tháng mới nhất lên đầu.
+    """
+    months = set()
+    if not os.path.exists(ORDERS_DIR):
+        return []
+
+    target_branches = [normalize_branch_id(branch_id)] if (branch_id and branch_id != "all") else os.listdir(ORDERS_DIR)
+    for b_entry in target_branches:
+        b_path = os.path.join(ORDERS_DIR, b_entry)
+        if not os.path.isdir(b_path):
+            continue
+        for entry in os.listdir(b_path):
+            if os.path.isdir(os.path.join(b_path, entry)) and re.match(r"^\d{4}_\d{2}$", entry):
+                months.add(entry)
+
+    now = datetime.now()
+    current_ym = now.strftime("%Y_%m")
+    first_day_current = now.replace(day=1)
+    last_day_prev = first_day_current - timedelta(days=1)
+    prev_ym = last_day_prev.strftime("%Y_%m")
+
+    result = []
+    for ym in sorted(list(months), reverse=True):
+        parts = ym.split("_")
+        year, month = parts[0], parts[1]
+        label = f"Tháng {month}/{year}"
+        if ym == current_ym:
+            label += " (Tháng này)"
+        elif ym == prev_ym:
+            label += " (Tháng trước - 1 tháng trước)"
+
+        result.append({
+            "key": ym,
+            "label": label,
+            "isCurrent": ym == current_ym,
+            "isPrevious": ym == prev_ym
+        })
+
+    return result
 
 
 def migrate_orders_to_status_folders() -> Dict[str, int]:

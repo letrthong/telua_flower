@@ -153,11 +153,12 @@ function renderCustomerOrders(orders) {
         const itemSummary = items.slice(0, 2).map(it => `${it.productName || it.name || "Sản phẩm"} x${it.quantity || 1}`).join(", ")
             + (items.length > 2 ? ` +${items.length - 2} món khác` : "");
 
+        const orderIdSafe = (order.id || order.orderCode || "").replace(/'/g, "\\'");
         return `
-            <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+            <div onclick="openOrderDetailModal('${orderIdSafe}')" class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden cursor-pointer hover:border-emerald-400 hover:shadow-md transition group">
                 <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-3">
-                        <span class="font-mono text-xs font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                        <span class="font-mono text-xs font-bold text-gray-800 group-hover:text-emerald-700 transition">${order.orderCode || order.id || ""}</span>
                         <span class="text-[11px] text-gray-400">${formatDate(order.createdAt || order.orderDate)}</span>
                     </div>
                     <div class="flex items-center gap-2">
@@ -177,9 +178,15 @@ function renderCustomerOrders(orders) {
                         </p>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <p class="text-sm font-bold text-gray-800">${formatVND(total)}</p>
+                        <p class="text-sm font-bold text-gray-800 group-hover:text-emerald-600 transition">${formatVND(total)}</p>
                         <p class="text-[10px] text-gray-400">${order.payment?.method === "vietqr" ? "VietQR" : (order.payment?.method || "Thanh toán")}</p>
                     </div>
+                </div>
+                <div class="px-4 py-1.5 bg-gray-50/70 border-t border-gray-100 flex items-center justify-between text-[10px]">
+                    <span class="text-gray-400">Xem chi tiết đơn hàng & tiến trình</span>
+                    <span class="font-bold text-emerald-600 group-hover:text-emerald-700 flex items-center gap-1">
+                        Chi tiết <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </span>
                 </div>
             </div>
         `;

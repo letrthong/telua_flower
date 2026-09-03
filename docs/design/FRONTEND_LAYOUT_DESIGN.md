@@ -143,7 +143,12 @@ Modal tổng quan đơn hàng **read-only** dành cho toàn bộ vai trò nội 
   - `branch_manager`: Đơn của chi nhánh mình (backend `query_admin_orders` tự ép theo `branchId`).
   - `florist` / `sales_consultant`: Đơn của chi nhánh mình (frontend truyền `branchId`).
 - **Nguồn dữ liệu:** `GET /api/flower/v1/admin/orders?timeframe=all[&branchId=...]` → `data.orders`.
-- **Nội dung:** 4 thẻ thống kê (Tổng đơn, Đang xử lý, Hoàn thành, Doanh thu) + danh sách đơn read-only (không có nút đổi trạng thái). Việc xử lý/đổi trạng thái vẫn thực hiện ở Cổng Nhân Viên (`#staffPortalModal`) và Bảng Quản Trị (`/portal/admin`).
+- **Nội dung:** 4 thẻ thống kê (Tổng đơn, Đang xử lý, Hoàn thành, Doanh thu) + danh sách đơn read-only kèm bộ lọc tháng, lọc trạng thái, ô tìm kiếm tức thì và **Dropdown Sắp xếp đa tiêu chí (`#dashSortSelect`)**:
+  - *Mới cập nhật gần nhất* (`updatedAt_desc` - mặc định)
+  - *Mới đặt nhất* (`createdAt_desc`)
+  - *Giá trị cao nhất* (`totalAmount_desc`)
+  - *Giá trị thấp nhất* (`totalAmount_asc`)
+- Mỗi thẻ đơn hàng hiển thị huy hiệu thời điểm cập nhật mới nhất (`<i class="fa-solid fa-clock-rotate-left"></i> Cập nhật: ...`), giúp nhân viên theo dõi sát sao đơn vừa có biến động.
 - **Module:** `js/order_dashboard.js` (bundled sau `staff_portal.js`).
 
 ```text
@@ -151,14 +156,32 @@ Modal tổng quan đơn hàng **read-only** dành cho toàn bộ vai trò nội 
 | 📈 BẢNG ĐIỀU KHIỂN ĐƠN HÀNG   Phạm vi: Toàn chuỗi   [↻] [✕] |
 +-------------------------------------------------------------+
 | [Tổng đơn: 128] [Đang xử lý: 12] [Hoàn thành: 110] [DT: 82M]|
+| [Lọc tháng ▾] [Sắp xếp: Mới cập nhật ▾] [Trạng thái ▾] [🔍] |
 +-------------------------------------------------------------+
 | #NHTB_128 | 12/06 | CN Q.10   [Đang cắm hoa] [Đã thanh toán]|
 |  👤 Trần Hoa · Bó Mây Trắng x1               1.250.000₫     |
+|  🕒 Cập nhật: 10:15 02/09                                    |
 +-------------------------------------------------------------+
 | #NHTB_127 | 12/06 | CN Q.1    [Giao thành công] [Đã TT]     |
 |  👤 Lê An · Giỏ Tulip x2 +1 món khác          2.400.000₫    |
+|  🕒 Cập nhật: 09:30 02/09                                    |
 +-------------------------------------------------------------+
 ```
+
+---
+
+## 4c. Modal Chi Tiết Đơn Hàng & Thanh Tiến Trình 5 Bước (`#orderDetailModal`)
+
+Dùng chung cho Khách Hàng (Customer Portal), Nhân Viên (Staff Portal), Quản Lý và Dashboard:
+
+- **Thanh Tiến Trình Trực Quan (`#ordDetailProgressCard`):**
+  - Thanh phần trăm tổng quan (e.g. `20%`, `40%`, `60%`, `80%`, `100% Hoàn Tất`).
+  - Lưới 5 bước theo luồng `delivery` hoặc `pickup`.
+  - **3 Trạng thái bước rõ rệt:**
+    - `Hoàn thành`: Vòng tròn xanh ngọc kèm tích check `fa-check` và ngày giờ hoàn tất trích xuất từ `order.history`.
+    - `Đang xử lý`: Vòng tròn viền phát sáng (Pulse ring) và ngày giờ cập nhật mới nhất.
+    - `Chưa tới`: Vòng tròn số nét đứt xám (`Chưa tới`) hiển thị các bước tiếp theo để khách hàng và nhân viên biết còn bao nhiêu bước nữa.
+- **Thanh tác vụ nghiệp vụ nội bộ (`#ordDetailStaffActions`):** Chỉ hiển thị cho nhân viên chi nhánh để Upload ảnh hoa, Thu tiền mặt (COD), và Chuyển nhanh trạng thái.
 
 ---
 

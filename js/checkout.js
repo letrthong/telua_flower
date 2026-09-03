@@ -300,6 +300,113 @@ export function openCheckoutModalAfterAuth() {
 
     // 4. Khởi tạo phương thức nhận hàng (mặc định delivery)
     onFulfillmentTypeChange();
+
+    // 5. Tải & đồng bộ cấu hình phương thức thanh toán đang BẬT từ paymentConfig.json
+    loadCheckoutPaymentMethods();
+}
+
+/**
+ * Tải cấu hình phương thức thanh toán từ backend (/api/payment-config)
+ * và ẩn/hiện/chọn các phương thức được BẬT (enabled: true/false).
+ */
+export async function loadCheckoutPaymentMethods() {
+    const vietqrOpt = document.getElementById("payOption_vietqr");
+    const codOpt = document.getElementById("payOption_cod");
+    const warningEl = document.getElementById("checkoutNoPaymentWarning");
+    const submitBtn = document.getElementById("btnSubmitOrder");
+
+    try {
+        const res = await fetch(`${API_BASE}/payment-config?_t=${Date.now()}`);
+        const json = await res.json();
+
+        let methods = {
+            online: { enabled: true },
+            cash: { enabled: true }
+        };
+
+        if (res.ok && json.success && json.data && json.data.methods) {
+            methods = json.data.methods;
+        }
+
+        const onlineEnabled = methods.online ? methods.online.enabled !== false : true;
+        const cashEnabled = methods.cash ? methods.cash.enabled !== false : true;
+
+        if (vietqrOpt) {
+            vietqrOpt.style.display = onlineEnabled ? "flex" : "none";
+            const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
+            if (radio) radio.disabled = !onlineEnabled;
+        }
+
+        if (codOpt) {
+            codOpt.style.display = cashEnabled ? "flex" : "none";
+            const radio = codOpt.querySelector("input[name='paymentMethod']");
+            if (radio) radio.disabled = !cashEnabled;
+        }
+
+        // Tự động chọn phương thức khả dụng đầu tiên nếu phương thức hiện tại bị tắt
+        const currentChecked = document.querySelector("input[name='paymentMethod']:checked");
+        const currentIsInvalid = !currentChecked || currentChecked.disabled || 
+            (currentChecked.value === "vietqr" && !onlineEnabled) || 
+            ((currentChecked.value === "cod" || currentChecked.value === "cash") && !cashEnabled);
+
+        if (currentIsInvalid) {
+            if (onlineEnabled && vietqrOpt) {
+                const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
+                if (radio) radio.checked = true;
+            } else if (cashEnabled && codOpt) {
+                const radio = codOpt.querySelector("input[name='paymentMethod']");
+                if (radio) radio.checked = true;
+            }
+        }
+
+        updatePaymentOptionStyles();
+
+        // Xử lý cảnh báo nếu toàn bộ phương thức bị tắt
+        const noneEnabled = !onlineEnabled && !cashEnabled;
+        if (warningEl) warningEl.classList.toggle("hidden", !noneEnabled);
+        if (submitBtn) {
+            if (noneEnabled) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            }
+        }
+    } catch (e) {
+        console.warn("[CHECKOUT] Không thể tải payment-config:", e);
+    }
+}
+
+/**
+ * Cập nhật style viền và màu nền của thẻ thanh toán khi người dùng chọn
+ */
+export function updatePaymentOptionStyles() {
+    const checked = document.querySelector("input[name='paymentMethod']:checked");
+    const vietqrOpt = document.getElementById("payOption_vietqr");
+    const codOpt = document.getElementById("payOption_cod");
+
+    if (vietqrOpt) {
+        const isSel = checked && checked.value === "vietqr";
+        if (isSel) {
+            vietqrOpt.classList.add("border-primary", "bg-pink-50/60", "font-bold", "text-gray-800", "shadow-2xs");
+            vietqrOpt.classList.remove("border-gray-200", "text-gray-600");
+        } else {
+            vietqrOpt.classList.remove("border-primary", "bg-pink-50/60", "font-bold", "text-gray-800", "shadow-2xs");
+            vietqrOpt.classList.add("border-gray-200", "text-gray-600");
+        }
+    }
+
+    if (codOpt) {
+        const isSel = checked && (checked.value === "cod" || checked.value === "cash");
+        if (isSel) {
+            codOpt.classList.add("border-primary", "bg-pink-50/60", "font-bold", "text-gray-800", "shadow-2xs");
+            codOpt.classList.remove("border-gray-200", "text-gray-600");
+        } else {
+            codOpt.classList.remove("border-primary", "bg-pink-50/60", "font-bold", "text-gray-800", "shadow-2xs");
+            codOpt.classList.add("border-gray-200", "text-gray-600");
+        }
+    }
 }
 
 /**
@@ -763,6 +870,8 @@ if (typeof window !== "undefined") {
     window.handleCheckoutSubmit = handleCheckoutSubmit;
     window.onFulfillmentTypeChange = onFulfillmentTypeChange;
     window.loadPickupBranches = loadPickupBranches;
+    window.loadCheckoutPaymentMethods = loadCheckoutPaymentMethods;
+    window.updatePaymentOptionStyles = updatePaymentOptionStyles;
 
     document.addEventListener("DOMContentLoaded", () => {
         updateCartBadge();

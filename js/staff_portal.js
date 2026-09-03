@@ -194,27 +194,38 @@ function renderStaffOrders(orders, role) {
 
         // Nút hành động theo vai trò
         let actionBtn = "";
+        const orderIdSafe = (order.id || order.orderCode || "").replace(/'/g, "\\'");
         if (isFlorist) {
             if (order.status === "confirmed") {
-                actionBtn = `<button onclick="updateStaffOrderStatus('${order.id}', 'arranging')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded-lg transition">
+                actionBtn = `<button onclick="event.stopPropagation(); updateStaffOrderStatus('${orderIdSafe}', 'arranging')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded-lg transition shadow-2xs">
                     <i class="fa-solid fa-scissors mr-1"></i> Bắt đầu cắm
                 </button>`;
             } else if (order.status === "arranging") {
-                actionBtn = `<button onclick="updateStaffOrderStatus('${order.id}', 'shipping')" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-[10px] font-bold rounded-lg transition">
-                    <i class="fa-solid fa-truck mr-1"></i> Đã cắm xong
+                actionBtn = `<button onclick="event.stopPropagation(); openOrderDetailModal('${orderIdSafe}')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-[10px] font-bold rounded-lg transition shadow-2xs">
+                    <i class="fa-solid fa-camera mr-1"></i> Tải ảnh hoa
+                </button>`;
+            } else if (order.status === "photo_sent") {
+                const nextStep = order.delivery?.fulfillmentType === "pickup" ? "ready_for_pickup" : "shipping";
+                const nextLabel = nextStep === "ready_for_pickup" ? "Chờ khách lấy" : "Chuyển giao hàng";
+                actionBtn = `<button onclick="event.stopPropagation(); updateStaffOrderStatus('${orderIdSafe}', '${nextStep}')" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-[10px] font-bold rounded-lg transition shadow-2xs">
+                    <i class="fa-solid fa-truck mr-1"></i> ${nextLabel}
                 </button>`;
             }
         } else {
-            // Sales consultant
+            // Sales consultant / Branch manager
             if (order.status === "pending") {
-                actionBtn = `<button onclick="updateStaffOrderStatus('${order.id}', 'confirmed')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-lg transition">
-                    <i class="fa-solid fa-check mr-1"></i> Xác nhận
+                actionBtn = `<button onclick="event.stopPropagation(); updateStaffOrderStatus('${orderIdSafe}', 'confirmed')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-lg transition shadow-2xs">
+                    <i class="fa-solid fa-check mr-1"></i> Xác nhận đơn
+                </button>`;
+            } else if (order.payment?.status !== "paid" && order.payment?.method === "cash") {
+                actionBtn = `<button onclick="event.stopPropagation(); openOrderDetailModal('${orderIdSafe}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg transition shadow-2xs">
+                    <i class="fa-solid fa-money-bill-wave mr-1"></i> Thu tiền mặt
                 </button>`;
             }
         }
 
         return `
-            <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
+            <div onclick="openOrderDetailModal('${orderIdSafe}')" class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden cursor-pointer hover:border-emerald-400 hover:shadow-md transition group">
                 <div class="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-3">
                         <span class="font-mono text-xs font-bold text-gray-700">${order.orderCode || order.id || ""}</span>

@@ -91,7 +91,7 @@ Mỗi Add-On là một object trong mảng JSON, được Admin quản lý (thê
 ## 5. Luồng Hiển Thị & Thêm Vào Giỏ Hàng
 
 ### 5.1 Hiển thị trong chi tiết sản phẩm
-Khi khách mở modal chi tiết bó hoa, frontend **trước tiên kiểm tra cấu hình bật/tắt toàn cục** qua `GET /api/flower/v1/addon-config` (xem mục 8). Nếu `showAddons = false`, khu vực add-on bị ẩn hoàn toàn. Nếu `true`, frontend gọi `GET /api/flower/v1/addons` và render mục **"Select Add-Ons To Make It Extra Special"** với các thẻ add-on (ảnh, tên, giá, nút chọn).
+Khi khách mở modal chi tiết bó hoa, frontend **trước tiên kiểm tra cấu hình bật/tắt toàn cục** qua `GET /api/flower/v1/addon-config` (xem mục 8). Nếu `showAddons = false`, khu vực add-on bị ẩn hoàn toàn. Nếu `true`, frontend gọi `GET /api/flower/v1/addons` và render mục **"Select Add-Ons To Make It Extra Special"** với các thẻ add-on (ảnh, tên, giá, nút chọn) nằm bên trong nội dung cuộn của sản phẩm (giúp tối ưu không gian màn hình di động, hiển thị tự nhiên khi khách cuộn xuống).
 
 ### 5.2 Thêm vào giỏ hàng
 Khi khách chọn add-on và nhấn "Thêm Vào Giỏ Hàng", hệ thống thêm add-on như một item riêng trong giỏ hàng (tương tự sản phẩm), với `productId = addon_<id>`, `name`, `price`, `image`, `category = "addon"`.

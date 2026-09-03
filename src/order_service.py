@@ -297,6 +297,21 @@ def create_order(
         # Fallback: gán cho Admin toàn chuỗi
         assigned_manager_id = "staff_admin"
 
+    # 6c. Kiểm tra cấu hình bật/tắt phương thức thanh toán (paymentConfig.json)
+    from data_service import get_payment_config
+    payment_config = get_payment_config(use_cache=False)
+    methods_cfg = (payment_config.get("methods") or {}) if isinstance(payment_config, dict) else {}
+    req_pay_method = (order_data.get("paymentMethod") or "vietqr").strip().lower()
+
+    if req_pay_method in ["vietqr", "online", "bank", "transfer"]:
+        online_cfg = methods_cfg.get("online") or {}
+        if online_cfg and online_cfg.get("enabled") is False:
+            return False, None, "Phương thức thanh toán Online (VietQR) hiện đang tạm ngưng phục vụ"
+    elif req_pay_method in ["cash", "cod", "pickup"]:
+        cash_cfg = methods_cfg.get("cash") or {}
+        if cash_cfg and cash_cfg.get("enabled") is False:
+            return False, None, "Phương thức thanh toán Tiền mặt (COD) hiện đang tạm ngưng phục vụ"
+
     # 7. Khởi tạo đối tượng đơn hàng chuẩn
     order_id = f"ord_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}"
     order_code = generate_order_code()
@@ -313,6 +328,7 @@ def create_order(
         "orderCode": order_code,
         "createdAt": created_at,
         "orderDate": created_at,
+        "updatedAt": created_at,
         "branchId": assigned_branch_id,
         "customerId": customer_id,
         "assignedTo": assigned_manager_id,
@@ -428,6 +444,21 @@ def _update_customer_crm_after_order(
     save_customers(customers)
 
 
+def get_order_updated_at(order: Dict[str, Any]) -> str:
+    """
+    Trả về timestamp ISO cập nhật mới nhất của đơn hàng:
+    Ưu tiên trường updatedAt cấp 1 -> bản ghi history cuối cùng -> createdAt / orderDate.
+    """
+    if order.get("updatedAt"):
+        return str(order["updatedAt"])
+    history = order.get("history")
+    if history and isinstance(history, list) and len(history) > 0:
+        latest = history[-1]
+        if isinstance(latest, dict) and latest.get("updatedAt"):
+            return str(latest["updatedAt"])
+    return str(order.get("createdAt") or order.get("orderDate") or "")
+
+
 def query_admin_orders(
     current_user: Dict[str, Any],
     timeframe: str = "this_month",
@@ -437,11 +468,17 @@ def query_admin_orders(
     search: Optional[str] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    month_key: Optional[str] = None
+    month_key: Optional[str] = None,
+    sort_by: str = "updatedAt",
+    sort_order: str = "desc",
+    date_filter_by: str = "createdAt"
 ) -> Dict[str, Any]:
     """
     Quản lý & Thống kê đơn hàng chuyên sâu cho Admin / Quản lý chi nhánh theo Tuần, Tháng, Quý:
     - timeframe: 'today' (hôm nay), 'this_week' (tuần này), 'this_month' (tháng này), 'last_month' (tháng trước), 'all' (toàn thời gian), 'custom' (tùy chọn)
+    - sort_by: 'updatedAt' (mặc định), 'createdAt', 'totalAmount', 'deliveryDate'
+    - sort_order: 'desc' (giảm dần / mới nhất), 'asc' (tăng dần / cũ nhất)
+    - date_filter_by: 'createdAt' (mặc định) hoặc 'updatedAt'
     - Tự động phân quyền: Quản lý chi nhánh chỉ xem đơn của chi nhánh mình, Super Admin xem toàn chuỗi.
     - Trả về danh sách đơn hàng đã lọc và bộ chỉ số thống kê doanh thu (Doanh thu tuần, tháng, biểu đồ theo ngày).
     """
@@ -470,7 +507,11 @@ def query_admin_orders(
     filter_start = None
     filter_end = None
 
-    if timeframe == "today":
+    if month_key:
+        ym_norm = month_key.replace("_", "-")
+        filter_start = f"{ym_norm}-01T00:00:00"
+        filter_end = f"{ym_norm}-31T23:59:59"
+    elif timeframe == "today":
         today_str = now.strftime("%Y-%m-%d")
         filter_start = today_str + "T00:00:00"
         filter_end = today_str + "T23:59:59"
@@ -484,11 +525,20 @@ def query_admin_orders(
         month_prefix = now.strftime("%Y-%m")
         filter_start = f"{month_prefix}-01T00:00:00"
         filter_end = f"{month_prefix}-31T23:59:59"
+    elif timeframe == "last_month":
+        first_day_current = now.replace(day=1)
+        last_day_prev = first_day_current - timedelta(days=1)
+        prev_prefix = last_day_prev.strftime("%Y-%m")
+        filter_start = f"{prev_prefix}-01T00:00:00"
+        filter_end = f"{prev_prefix}-31T23:59:59"
     elif timeframe == "custom":
         if start_date:
             filter_start = start_date + "T00:00:00" if "T" not in start_date else start_date
         if end_date:
             filter_end = end_date + "T23:59:59" if "T" not in end_date else end_date
+    elif timeframe == "all":
+        filter_start = None
+        filter_end = None
 
     # 3. Phân quyền chi nhánh
     target_branch = branch_id
@@ -500,6 +550,10 @@ def query_admin_orders(
     clean_search = (search or "").strip().lower()
 
     for o in orders_pool:
+        # Đồng bộ trường updatedAt cho đơn
+        o_updated_at = get_order_updated_at(o)
+        o["updatedAt"] = o_updated_at
+
         # Lọc theo chi nhánh
         o_branch = o.get("assignedBranchId") or o.get("branchId")
         if target_branch and target_branch != "all" and o_branch != target_branch:
@@ -515,11 +569,11 @@ def query_admin_orders(
         if payment_status and payment_status != "all" and o_pay_status != payment_status:
             continue
 
-        # Lọc theo thời gian tạo
-        created_at = o.get("createdAt") or ""
-        if filter_start and created_at < filter_start:
+        # Lọc theo thời gian (ngày tạo hoặc ngày mới cập nhật)
+        date_target = o_updated_at if date_filter_by in ["updatedAt", "updated_at", "updated"] else (o.get("createdAt") or o.get("orderDate") or "")
+        if filter_start and date_target < filter_start:
             continue
-        if filter_end and created_at > filter_end:
+        if filter_end and date_target > filter_end:
             continue
 
         # Tìm kiếm theo mã đơn, SĐT hoặc Tên khách
@@ -541,8 +595,26 @@ def query_admin_orders(
 
         filtered_orders.append(o)
 
-    # Sắp xếp mới nhất lên đầu
-    filtered_orders.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
+    # Sắp xếp theo tiêu chí sortBy và sortOrder
+    reverse_order = (str(sort_order).lower() != "asc")
+    clean_sort_by = (sort_by or "updatedAt").strip()
+
+    if clean_sort_by in ["updatedAt", "updated_at", "updated"]:
+        filtered_orders.sort(key=lambda x: get_order_updated_at(x), reverse=reverse_order)
+    elif clean_sort_by in ["createdAt", "created_at", "created"]:
+        filtered_orders.sort(key=lambda x: (x.get("createdAt") or x.get("orderDate") or ""), reverse=reverse_order)
+    elif clean_sort_by in ["totalAmount", "total_amount", "amount"]:
+        filtered_orders.sort(
+            key=lambda x: float(x.get("financials", {}).get("totalAmount") or x.get("totalAmount") or 0),
+            reverse=reverse_order
+        )
+    elif clean_sort_by in ["deliveryDate", "delivery_date"]:
+        filtered_orders.sort(
+            key=lambda x: str((x.get("delivery") or {}).get("deliveryDate") or ""),
+            reverse=reverse_order
+        )
+    else:
+        filtered_orders.sort(key=lambda x: get_order_updated_at(x), reverse=reverse_order)
 
     # 5. Tính toán bộ số liệu thống kê kinh doanh (Dashboard Metrics)
     total_revenue = 0
@@ -585,6 +657,9 @@ def query_admin_orders(
 
     return {
         "timeframe": timeframe,
+        "sortBy": clean_sort_by,
+        "sortOrder": "desc" if reverse_order else "asc",
+        "dateFilterBy": date_filter_by,
         "totalOrders": total_orders,
         "totalRevenue": total_revenue,
         "metrics": {

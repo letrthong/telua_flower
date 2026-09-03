@@ -23,6 +23,9 @@ config/anne/
 ├── categories.json           # Danh mục phân loại hoa
 ├── price_levels.json         # Phân tầng mức giá & Price Guardrails
 ├── promotions.json           # Mã giảm giá Voucher & chiến dịch khuyến mãi
+├── paymentConfig.json        # Cấu hình bật/tắt các cổng thanh toán (online VietQR / tiền mặt COD)
+├── addons.json               # Danh mục sản phẩm bán kèm (thiệp, gấu bông, nến thơm, topper)
+├── addonConfig.json          # Cấu hình bật/tắt toàn cục khu vực bán kèm Add-ons
 ├── translations.json         # Từ điển đa ngôn ngữ 5 thứ tiếng (Dynamic i18n)
 ├── wastage_reports.json      # Báo cáo hủy hoa dập/héo hỏng
 ├── infoCompany.json          # Thông tin thương hiệu, hotline, địa chỉ showroom
@@ -561,17 +564,18 @@ Kiến trúc phân cấp 4 tầng tối ưu hóa quy trình nghiệp vụ hoa t�
 - **Tầng 1 (Chi nhánh)**: Mỗi showroom (`branch_q10`, `branch_q1`, `branch_thao_dien`, `admin`) sở hữu thư mục con riêng biệt.
 - **Tầng 2 (Tháng)**: Trong mỗi chi nhánh, đơn hàng được gom nhóm theo thư mục tháng `{YYYY_MM}` (ví dụ: `2026_08`, `2026_09`).
 - **Tầng 3 (Trạng thái - Kanban Status)**: Bên trong tháng, đơn hàng được chia vào các thư mục trạng thái con:
-  - `pending/`: Chờ xác nhận
+  - `pending/`: Chờ xác nhận (Đơn mới tạo trực tuyến)
   - `confirmed/`: Đã duyệt / sẵn sàng nguyên liệu
-  - `arranging/`: Đang cắm hoa (Thợ hoa thao tác)
-  - `ready_for_pickup/`: Sẵn sàng nhận tại showroom
-  - `shipping/`: Đang vận chuyển (Shipper thao tác)
+  - `arranging/` (hoặc `in_progress/`): Đang cắm hoa (Thợ hoa thao tác)
+  - `photo_sent/`: Đã chụp & gửi ảnh thành phẩm cho khách duyệt
+  - `ready_for_pickup/`: Sẵn sàng nhận tại showroom (đơn nhận tại quầy)
+  - `shipping/`: Đang vận chuyển (Shipper giao hoa)
   - `delivered/`: Giao hoa thành công
   - `completed/`: Hoàn tất đơn & đối soát
   - `cancelled/`: Đã hủy đơn
-  - `returned/`: Đổi trả / khiếu nại
+  - `returned/`: Đổi trả / khiếu nại hoa dập hỏng
 - **Tầng 4 (Từng đơn hàng riêng lẻ)**: Mỗi đơn hàng là một tệp JSON độc lập `{order_id}.json`.
-- **Cơ chế di chuyển (Kanban Transition)**: Khi trạng thái đơn hàng thay đổi (ví dụ từ `pending` sang `arranging`), hệ thống thực hiện `os.replace()` di chuyển nguyên tử file từ thư mục status cũ sang thư mục status mới trong $< 0.1$ms.
+- **Cơ chế di chuyển (Kanban Transition)**: Khi trạng thái đơn hàng thay đổi (ví dụ từ `pending` sang `arranging`, `photo_sent`, `delivered`), hệ thống thực hiện `os.replace()` di chuyển nguyên tử file từ thư mục status cũ sang thư mục status mới trong $< 0.1$ms.
 
 **Lợi ích đột phá**:
 1. **Lọc đơn tức thì (Zero-Scan Filter)**: Thợ cắm hoa chỉ cần nạp thư mục `arranging/`, shipper chỉ cần nạp `shipping/`, không phải duyệt qua hàng nghìn đơn đã xong.
@@ -582,9 +586,10 @@ Kiến trúc phân cấp 4 tầng tối ưu hóa quy trình nghiệp vụ hoa t�
 {
   "id": "ord_1725324567_a8f9c1",
   "orderCode": "NHTB-260903-A8K2",
-    "createdAt": "2026-09-03T10:15:30Z",
-    "orderDate": "2026-09-03T10:15:30Z",
-    "branchId": "branch_q10",
+  "createdAt": "2026-09-03T10:15:30Z",
+  "orderDate": "2026-09-03T10:15:30Z",
+  "updatedAt": "2026-09-03T10:15:30Z",
+  "branchId": "branch_q10",
     "customerId": "cust_001",
     "assignedTo": "staff_001",
     "assignedBy": "system",
@@ -716,4 +721,62 @@ graph TD
    - `stockByBranch` phải là `dict` chứa số nguyên không âm (`>= 0`).
 4. **Cơ Chế Ghi Nguyên Tử (Atomic Write with Fsync)**:
    - Ghi xuống tệp tạm `<filename>.tmp`, gọi `f.flush()` và `os.fsync()`, sau đó thực hiện `os.replace()` để đảm bảo file chính không bao giờ bị cắt cụt (truncated) nếu xảy ra sự cố sập nguồn hoặc ngắt kết nối đột ngột.
+
+---
+
+## 12. `config/anne/paymentConfig.json` - Cấu Hình Phương Thức Thanh Toán (Payment Gateways)
+
+Quản lý trạng thái bật/tắt toàn cục các phương thức thanh toán trực tuyến (VietQR) và ngoại tuyến (Tiền mặt / COD):
+
+```json
+{
+  "methods": {
+    "online": {
+      "code": "vietqr",
+      "label": "Thanh toán Online (VietQR)",
+      "description": "Chuyển khoản tự động qua mã QR chuẩn Napas 247 EMVCo. Hệ thống/backend tự động xác nhận khi nhận được tiền; nhân viên không cần thao tác thu tiền.",
+      "enabled": true
+    },
+    "cash": {
+      "code": "cash",
+      "label": "Tiền mặt (COD / Tại quầy)",
+      "description": "Thanh toán tiền mặt khi nhận hàng (COD) hoặc trực tiếp tại cửa hàng (pickup). Nhân viên xác nhận trạng thái đã thanh toán sau khi thu tiền.",
+      "enabled": true
+    }
+  },
+  "updatedAt": "2026-09-02T10:16:13Z"
+}
+```
+
+---
+
+## 13. `config/anne/addons.json` & `addonConfig.json` - Sản Phẩm Bán Kèm & Cấu Hình Khu Vực Add-ons
+
+Quản lý danh sách các món quà tặng bán kèm (thiệp, thú bông, nến thơm) và công tắc tổng hiển thị:
+
+### A. `config/anne/addonConfig.json` (Công tắc tổng hiển thị trên Storefront):
+```json
+{
+  "showAddons": true,
+  "label": "Sản Phẩm Kèm Theo (Add-on)",
+  "description": "Hiển thị khu vực 'Chọn Sản Phẩm Kèm Theo Để Thêm Phần Đặc Biệt' trên trang chi tiết sản phẩm",
+  "updatedAt": "2026-09-02T00:00:00Z"
+}
+```
+
+### B. `config/anne/addons.json` (Danh mục sản phẩm bán kèm):
+```json
+[
+  {
+    "id": "addon_card_01",
+    "name": "Thiệp Thiết Kế Cao Cấp",
+    "nameVi": "Thiệp Thiết Kế Cao Cấp",
+    "price": 25000,
+    "image": "/images/addons/thiep_cao_cap.webp",
+    "description": "Thiệp ép kim vàng dập nổi hoa văn trang nhã kèm phong bì",
+    "isActive": true,
+    "order": 1
+  }
+]
+```
 

@@ -72,11 +72,14 @@
 | :--- | :--- | :---: | :--- |
 | `GET` | `/api/delivery/slots` | Public | Lấy danh sách khung giờ giao hàng còn trống theo ngày đã chọn |
 | `POST` | `/api/orders` | Public / Customer | Tạo đơn hàng (Bao gồm Ngày/Giờ giao, Lời chúc thiệp, In banner, Gửi ẩn danh, tự động gắn VietQR và đồng bộ vào `users/{phone}/orders.json`) |
+| `GET` | `/api/orders/<id>` | RBAC Guard | Lấy chi tiết đơn hàng (xác thực khách hàng hoặc quyền chi nhánh của nhân viên) |
 | `GET` | `/api/orders/<id>/payment-qr` | Public / Customer | **Lấy chi tiết mã QR VietQR (chuẩn Napas EMVCo + QuickLink URL)** để thanh toán đơn hàng |
 | `GET` | `/api/user/orders` | Customer | **Xem lịch sử đơn hàng cá nhân (nạp trực tiếp từ `users/{user_id}/orders.json` siêu tốc)** |
 | `GET` | `/api/customers/<user_id>/orders` | Admin, Manager | **Admin/CRM tra cứu sổ đơn hàng cá nhân của 1 khách hàng cụ thể** |
 | `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager | Lấy danh sách đơn hàng được gán cho chi nhánh |
-| `PUT` | `/api/orders/<id>/status` | Staff / Manager | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`; pickup: `ready_for_pickup` $\rightarrow$ `completed`) |
+| `GET` | `/api/admin/orders` | Staff / Manager / Admin | Quản lý, thống kê & lọc đơn hàng đa chiều (`sortBy=updatedAt/createdAt/totalAmount`, `sortOrder=desc/asc`, `dateFilterBy=createdAt/updatedAt`, `timeframe`, `branchId`, `status`) |
+| `PUT` | `/api/orders/<id>/status` hoặc `/api/admin/orders/<id>/status` | Staff / Manager | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`; pickup: `ready_for_pickup` $\rightarrow$ `completed`) |
+| `PUT` | `/api/admin/orders/<id>/payment` | Staff / Manager / Admin | **Xác nhận thanh toán tiền mặt (COD / Pickup)** cho đơn hàng chi nhánh mình |
 | `POST` | `/api/orders/<id>/photo` | `florist` / Manager | **Thợ cắm hoa upload ảnh hoa thực tế** để gửi khách duyệt |
 
 #### Request mẫu `POST /api/orders` đầy đủ tính năng:
@@ -112,10 +115,13 @@
 
 ---
 
-### 💳 4. Nhóm Cổng Thanh Toán Trực Tuyến (`/api/payments`)
+### 💳 4b. Nhóm Cổng Thanh Toán & Cấu Hình Thanh Toán (`/api/payments` & `/api/payment-config`)
 
 | Method | Endpoint | Quyền hạn | Mô tả |
 | :--- | :--- | :---: | :--- |
+| `GET` | `/api/payment-config` | Public | Lấy danh sách phương thức thanh toán đang BẬT cho Storefront (có ETag & HTTP Cache-Control) |
+| `GET` | `/api/admin/payment-config` | Manager / Admin | Lấy toàn bộ cấu hình bật/tắt cổng thanh toán |
+| `PUT` | `/api/admin/payment-config` | `super_admin` | Bật/tắt phương thức thanh toán (`online`, `cash`) |
 | `POST` | `/api/payments/create-qr` | Public | Tạo mã thanh toán VietQR động có sẵn số tiền & mã đơn |
 | `GET` | `/api/payments/check-status/<order_id>` | Public | Kiểm tra trạng thái thanh toán đơn hàng (polling) |
 | `POST` | `/api/payments/webhook` | System | Webhook nhận thông báo thanh toán tự động từ ngân hàng / MoMo / VNPay |

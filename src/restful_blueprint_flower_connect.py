@@ -25,6 +25,7 @@ from   data_service import (
     get_user_by_id,
     get_order_by_id,
     read_orders_by_month,
+    get_available_order_months,
     get_price_levels,
     get_product_by_id,
     get_branches,
@@ -373,6 +374,9 @@ def api_admin_orders():
     start_date = request.args.get("startDate")
     end_date = request.args.get("endDate")
     month_key = request.args.get("month")
+    sort_by = request.args.get("sortBy", "updatedAt")
+    sort_order = request.args.get("sortOrder", "desc")
+    date_filter_by = request.args.get("dateFilterBy", "createdAt")
 
     result = query_admin_orders(
         current_user=request.current_user,
@@ -383,13 +387,32 @@ def api_admin_orders():
         search=search,
         start_date=start_date,
         end_date=end_date,
-        month_key=month_key
+        month_key=month_key,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        date_filter_by=date_filter_by
     )
 
     return jsonify({
         "success": True,
         "data": result
     }), 200
+
+
+@flower_connect_api.route("/admin/orders/months", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_admin_order_months():
+    """
+    Lấy danh sách các tháng có đơn hàng trên hệ thống (kèm nhãn Tháng này, Tháng trước/1 tháng trước).
+    """
+    current_user = request.current_user
+    user_branch = current_user.get("branchId") if current_user.get("role") != "super_admin" else None
+    months = get_available_order_months(user_branch)
+    return jsonify({
+        "success": True,
+        "data": months
+    }), 200
+
 
 
 @flower_connect_api.route("/admin/orders/<order_id>/status", methods=["PUT"])
@@ -402,7 +425,10 @@ def api_update_order_status(order_id):
     payload = request.get_json(silent=True) or {}
     new_status = (payload.get("status") or "").strip().lower()
 
-    valid_statuses = ["pending", "confirmed", "arranging", "shipping", "delivered", "ready_for_pickup", "completed", "cancelled", "returned"]
+    valid_statuses = [
+        "pending", "confirmed", "arranging", "in_progress", "photo_sent",
+        "shipping", "delivered", "ready_for_pickup", "completed", "cancelled", "returned"
+    ]
     if new_status not in valid_statuses:
         return jsonify({"success": False, "message": "Trạng thái đơn hàng không hợp lệ"}), 400
 
@@ -516,6 +542,78 @@ def api_update_order_payment(order_id):
         return jsonify({"success": False, "message": "Không thể cập nhật thanh toán đơn hàng"}), 500
 
     return jsonify({"success": True, "message": "Cập nhật trạng thái thanh toán thành công", "data": updated}), 200
+
+
+@flower_connect_api.route("/admin/orders/<order_id>/photo", methods=["POST", "PUT"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_upload_order_flower_photo(order_id):
+    """
+    Tải lên hoặc cập nhật ảnh hoa thành phẩm thực tế sau khi cắm hoa (Thợ hoa / Quản lý).
+    Body JSON: { "photoUrl": str, "autoUpdateStatus"?: bool }
+    - Tự động lưu thông tin flowerPhoto: { photoUrl, uploadedAt, uploadedBy, isApprovedByCustomer: false }
+    - Tự động chuyển trạng thái đơn sang 'photo_sent' (nếu autoUpdateStatus=true, mặc định true).
+    - Tự động di chuyển file sang thư mục Kanban photo_sent/ trên đĩa cứng.
+    """
+    order = get_order_by_id(order_id)
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    # Phân quyền chi nhánh
+    current_user = request.current_user
+    order_branch = order.get("branchId") or order.get("assignedBranchId") or ""
+    if not can_access_branch(current_user, order_branch):
+        return jsonify({"success": False, "message": "Bạn không có quyền cập nhật đơn hàng của chi nhánh này"}), 403
+
+    payload = request.get_json(silent=True) or {}
+    photo_url = (payload.get("photoUrl") or "").strip()
+
+    # Hỗ trợ upload file ảnh trực tiếp qua multipart/form-data
+    if not photo_url and "photo" in request.files:
+        photo_file = request.files["photo"]
+        if photo_file and photo_file.filename:
+            ext = os.path.splitext(photo_file.filename)[1].lower() or ".webp"
+            safe_name = f"actual_{order_id}_{int(time.time())}{ext}"
+            upload_dir = os.path.join(FLOWER_CONFIG_DIR, "images", "orders")
+            os.makedirs(upload_dir, exist_ok=True)
+            save_path = os.path.join(upload_dir, safe_name)
+            photo_file.save(save_path)
+            photo_url = f"/config/anne/images/orders/{safe_name}"
+
+    if not photo_url:
+        return jsonify({"success": False, "message": "Vui lòng cung cấp URL hoặc file ảnh hoa thực tế"}), 400
+
+    auto_update_status = payload.get("autoUpdateStatus", True)
+    new_status = "photo_sent" if auto_update_status else order.get("status", "arranging")
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    flower_photo_obj = {
+        "photoUrl": photo_url,
+        "uploadedAt": now_iso,
+        "uploadedBy": current_user.get("userId") or current_user.get("phone") or "florist",
+        "isApprovedByCustomer": False
+    }
+
+    updated = update_order_status(
+        order_id,
+        new_status,
+        flowerPhoto=flower_photo_obj,
+        history=(order.get("history") or []) + [{
+            "status": new_status,
+            "updatedAt": now_iso,
+            "note": "Thợ hoa đã tải lên ảnh hoa thành phẩm thực tế",
+            "updatedBy": current_user.get("userId") or current_user.get("phone") or "florist"
+        }]
+    )
+
+    if not updated:
+        return jsonify({"success": False, "message": "Không thể cập nhật ảnh hoa cho đơn hàng"}), 500
+
+    return jsonify({
+        "success": True,
+        "message": "Đã tải lên ảnh hoa thực tế và cập nhật trạng thái đơn hàng",
+        "data": updated
+    }), 200
+
 
 
 

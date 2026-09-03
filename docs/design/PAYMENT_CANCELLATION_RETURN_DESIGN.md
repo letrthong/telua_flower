@@ -309,12 +309,19 @@ PUT  /api/flower/v1/admin/payment-config      (super_admin) — bật/tắt phư
      Body: { "methods": { "online": { "enabled": true }, "cash": { "enabled": false } } }
 ```
 
-### 1C.3 Tích hợp Frontend
+### 1C.3 Tích hợp Frontend & Storefront
 
-- **Backend:** `data_service.get_payment_config()` / `save_payment_config()` (tự khởi tạo file mặc định nếu chưa tồn tại, có RAM cache theo mtime).
-- **CMS (`js/portal_admin.js`):** `loadAdminPaymentConfig()` render danh sách phương thức với công tắc bật/tắt; `savePaymentConfig()` gửi `PUT`. Tab điều khiển qua `switchSystemConfigTab('payment')`.
+- **Backend Data Service:** `data_service.get_payment_config()` / `save_payment_config()` (tự khởi tạo file mặc định nếu chưa tồn tại, có RAM cache theo mtime).
+- **Backend Validation (`src/order_service.py`):** Trong `create_order()`, hệ thống đối chiếu phương thức thanh toán khách gửi lên với `paymentConfig.json`. Nếu phương thức đang bị tắt (`enabled: false`), backend từ chối tạo đơn và trả lỗi `400` ("Phương thức thanh toán hiện đang tạm ngưng phục vụ").
+- **Storefront Checkout (`js/checkout.js`):**
+  - Hàm `loadCheckoutPaymentMethods()` tự động gọi `GET /api/flower/v1/payment-config` mỗi khi khách mở Modal Đặt Hàng.
+  - Tự động ẩn/hiện `#payOption_vietqr` và `#payOption_cod` theo cờ `enabled`.
+  - Tự động chuyển radio chọn sang phương thức khả dụng đầu tiên nếu phương thức mặc định đang bị tắt.
+  - Nếu tất cả phương thức đều bị tắt, hiển thị khung cảnh báo `#checkoutNoPaymentWarning` và tạm khóa nút Đặt Hàng.
+  - Hàm `updatePaymentOptionStyles()` kích hoạt viền và màu nền active khi chuyển đổi phương thức.
+- **CMS Quản Trị (`js/portal_admin.js`):** `loadAdminPaymentConfig()` render danh sách phương thức với công tắc bật/tắt; `savePaymentConfig()` gửi `PUT /api/flower/v1/admin/payment-config`. Tab điều khiển qua `switchSystemConfigTab('payment')`.
 - **Thông báo:** Kết quả lưu hiển thị bằng **toast** (`notifyUser()` → `showToast()` trong `js/utils.js`) thay cho `alert()`: thành công (xanh), cảnh báo khi không bật phương thức nào (vàng), lỗi (đỏ).
-- **Giao diện:** Tab "Phương Thức Thanh Toán" (`#tabSysContentPayment`) trong `#systemConfigModal`.
+- **Giao diện Quản Trị:** Tab "Phương Thức Thanh Toán" (`#tabSysContentPayment`) trong `#systemConfigModal`.
 
 ---
 
