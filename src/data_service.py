@@ -1783,14 +1783,43 @@ def get_user_orders_file_path(user_identifier: str) -> str:
     return os.path.join(user_dir, "orders.json")
 
 
-def get_user_orders(user_identifier: str) -> List[Dict[str, Any]]:
-    """Đọc toàn bộ danh sách đơn hàng đã mua của khách hàng."""
+def get_user_orders_index(user_identifier: str) -> List[Dict[str, Any]]:
+    """Đọc danh sách tham chiếu chỉ mục đơn hàng trong thư mục khách: config/anne/users/{user_id}/orders.json"""
     filepath = get_user_orders_file_path(user_identifier)
     return _normalize_list_of_dicts(read_json(filepath, default=[]))
 
 
+def get_user_orders(user_identifier: str) -> List[Dict[str, Any]]:
+    """
+    Đọc toàn bộ danh sách đơn hàng đã mua của khách hàng theo thời gian thực (Real-time Resolve).
+    Tự động giải mã từ danh sách tham chiếu (orderId, branchId, yearMonth) sang đối tượng đơn hàng gốc
+    từ thư mục chi nhánh (Single Source of Truth), đảm bảo dữ liệu luôn mới nhất 100%.
+    """
+    filepath = get_user_orders_file_path(user_identifier)
+    raw_items = _normalize_list_of_dicts(read_json(filepath, default=[]))
+    resolved_orders: List[Dict[str, Any]] = []
+
+    for itm in raw_items:
+        oid = itm.get("orderId") or itm.get("id") or itm.get("orderCode")
+        branch_id = itm.get("branchId")
+        year_month = itm.get("yearMonth")
+
+        full_order = None
+        if oid:
+            full_order = get_order_by_id(oid, year_month=year_month, branch_id=branch_id)
+
+        if full_order and isinstance(full_order, dict):
+            resolved_orders.append(full_order)
+        else:
+            # Fallback nếu không tìm thấy bản ghi gốc hoặc là dữ liệu legacy có sẵn thông tin
+            resolved_orders.append(itm)
+
+    resolved_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
+    return resolved_orders
+
+
 def save_user_orders(user_identifier: str, orders: List[Dict[str, Any]]) -> bool:
-    """Ghi danh sách đơn hàng vào thư mục cá nhân của khách."""
+    """Ghi danh sách con trỏ đơn hàng vào thư mục cá nhân của khách."""
     filepath = get_user_orders_file_path(user_identifier)
     return write_json(filepath, orders)
 
@@ -1823,26 +1852,46 @@ def extract_user_identifier_from_order(order: Dict[str, Any]) -> str:
 
 def sync_order_to_user_folder(order: Dict[str, Any]) -> bool:
     """
-    Đồng bộ đơn hàng vào thư mục riêng của khách hàng (config/anne/users/{user_id}/orders.json):
-    - Nếu đơn đã tồn tại -> cập nhật trạng thái mới nhất.
-    - Nếu đơn mới -> chèn lên đầu danh sách.
-    - Đồng thời lưu thông tin profile tóm tắt nếu có.
+    Đồng bộ con trỏ tham chiếu đơn hàng vào thư mục riêng của khách hàng (config/anne/users/{user_id}/orders.json):
+    - Chỉ lưu thông tin tham chiếu gọn nhẹ: (orderId, orderCode, branchId, yearMonth, createdAt).
+    - Không sao chép toàn bộ object đơn hàng nhằm bảo đảm Single Source of Truth và tiết kiệm dung lượng.
+    - Đồng thời lưu/cập nhật thông tin profile tóm tắt nếu có.
     """
     user_id = extract_user_identifier_from_order(order)
     if not user_id or user_id == "guest":
         return False
 
-    user_orders = get_user_orders(user_id)
-    order_id = order.get("id") or order.get("orderCode")
+    filepath = get_user_orders_file_path(user_id)
+    user_orders_index = _normalize_list_of_dicts(read_json(filepath, default=[]))
 
-    # Kiểm tra xem đơn đã có trong sổ đơn cá nhân chưa
-    existing_idx = next((i for i, o in enumerate(user_orders) if (o.get("id") == order_id or o.get("orderCode") == order_id)), -1)
+    order_id = order.get("id")
+    order_code = order.get("orderCode")
+    raw_branch = order.get("branchId") or order.get("assignedBranchId") or "admin"
+    branch_id = normalize_branch_id(raw_branch)
+    year_month = extract_year_month_from_order(order)
+    created_at = order.get("createdAt") or order.get("orderDate") or datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    order_pointer = {
+        "orderId": order_id,
+        "orderCode": order_code,
+        "branchId": branch_id,
+        "yearMonth": year_month,
+        "createdAt": created_at
+    }
+
+    # Kiểm tra xem tham chiếu đã có trong sổ đơn cá nhân chưa
+    existing_idx = next(
+        (i for i, o in enumerate(user_orders_index) 
+         if (o.get("orderId") == order_id or o.get("id") == order_id or (order_code and o.get("orderCode") == order_code))),
+        -1
+    )
+
     if existing_idx != -1:
-        user_orders[existing_idx] = order
+        user_orders_index[existing_idx] = order_pointer
     else:
-        user_orders.insert(0, order)
+        user_orders_index.insert(0, order_pointer)
 
-    save_user_orders(user_id, user_orders)
+    save_user_orders(user_id, user_orders_index)
 
     # Lưu/cập nhật thông tin profile của khách vào config/anne/users/{user_id}/profile.json
     sender = order.get("sender") or {}
@@ -1854,8 +1903,8 @@ def sync_order_to_user_folder(order: Dict[str, Any]) -> bool:
             "name": sender.get("name") or current_profile.get("name", "Khách Hàng"),
             "phone": sender.get("phone") or current_profile.get("phone", user_id),
             "email": sender.get("email") or current_profile.get("email", ""),
-            "lastOrderAt": order.get("createdAt") or datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "totalOrders": len(user_orders)
+            "lastOrderAt": created_at,
+            "totalOrders": len(user_orders_index)
         })
         write_json(profile_path, current_profile)
 
