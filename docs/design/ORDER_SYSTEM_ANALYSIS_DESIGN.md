@@ -303,26 +303,29 @@ $$d = 2R \cdot \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta \text{lat}}{2}\right)
 
 ---
 
-## 6. Kiến Trúc Lưu Trữ Dữ Liệu: File-per-Order ({branch_id}/{YYYY_MM}/{order_id}.json)
+## 6. Kiến Trúc Lưu Trữ Dữ Liệu: Kanban Folder Partitioning ({branch_id}/{YYYY_MM}/{status}/{order_id}.json)
 
-Nhằm tối ưu hóa tốc độ ghi và loại bỏ hoàn toàn đụng độ khóa file (Zero Concurrency Lock Contention), hệ thống áp dụng kiến trúc phân cấp 3 tầng:
+Nhằm tối ưu hóa tốc độ ghi, loại bỏ hoàn toàn đụng độ khóa file và hỗ trợ bảng điều khiển Kanban thời gian thực, hệ thống áp dụng kiến trúc phân cấp 4 tầng:
 
 ```text
 config/anne/
 ├── orders/
 │   ├── branch_q10/                    # Showroom Flagship Quận 10
 │   │   ├── 2026_08/                   # Thư mục tháng 08/2026
-│   │   │   ├── ord_20260822_001.json  # File JSON đơn hàng độc lập (File-per-Order)
-│   │   │   └── ord_20260822_002.json
+│   │   │   ├── pending/               # Chờ xác nhận ({order_id}.json)
+│   │   │   ├── arranging/             # Đang cắm hoa
+│   │   │   ├── shipping/              # Đang giao hàng
+│   │   │   └── delivered/             # Giao thành công
 │   │   └── 2026_09/
 │   ├── branch_q1/                     # Showroom Quận 1
-│   │   └── 2026_08/
-│   │       └── ord_1788190982_68f740.json
+│   │   └── 2026_09/
+│   │       └── pending/
+│   │           └── ord_1788368978_739ed2.json
 │   ├── branch_thao_dien/              # Showroom Thảo Điền
-│   │   └── 2026_08/
 │   └── admin/                         # 🌟 ĐƠN HÀNG CHƯA ĐỊNH VỊ / TOÀN CHUỖI (Unassigned / Pending Dispatch)
-│       └── 2026_08/
-│           └── ord_1788199999_xyz.json
+│       └── 2026_09/
+│           └── pending/
+│               └── ord_1788199999_xyz.json
 │
 └── users/
     ├── 0901234567/
@@ -332,17 +335,26 @@ config/anne/
         └── orders.json
 ```
 
-### 6.1 Vai Trò Đặc Biệt Của Thư Mục `orders/admin/`:
+### 6.1 Cơ Chế Di Chuyển File Khi Đổi Trạng Thái (Kanban Status Transition):
+- Khi một đơn hàng đổi trạng thái (ví dụ: từ `pending` sang `arranging`), hệ thống thực hiện:
+  1. `os.replace(old_status_path, new_status_path)`: Di chuyển nguyên tử file JSON sang thư mục trạng thái mới.
+  2. Cập nhật `order["status"] = new_status` và ghi vết vào `history`.
+  3. Cập nhật con trỏ trạng thái trong sổ khách hàng `users/{user_id}/orders.json`.
+- Thao tác di chuyển này diễn ra tức thời ($< 0.1$ms) vì diễn ra trên cùng phân vùng lưu trữ.
+
+### 6.2 Vai Trò Đặc Biệt Của Thư Mục `orders/admin/`:
 - **Đơn hàng chưa biết gán cho ai (Unassigned Orders)**: Áp dụng khi khách đặt hàng nhưng địa chỉ ngoại tỉnh, chưa xác định showroom, hoặc đơn hợp đồng B2B toàn chuỗi.
 - **Quy trình Điều Phối & Chuyển Nhượng Đơn (Order Dispatch & Reassignment)**:
   - Khi Super Admin hoặc CSKH điều phối đơn từ `admin/` sang `branch_q10`:
-    1. Hệ thống di chuyển file đơn hàng từ `orders/admin/{YYYY_MM}/{order_id}.json` sang `orders/branch_q10/{YYYY_MM}/{order_id}.json`.
+    1. Hệ thống di chuyển file đơn hàng từ `orders/admin/{YYYY_MM}/{status}/{order_id}.json` sang `orders/branch_q10/{YYYY_MM}/{status}/{order_id}.json`.
     2. Cập nhật `branchId: "branch_q10"` và `assignedTo: "staff_manager_q10"`.
     3. Ghi vết lịch sử vào mảng `history`: *"Điều phối từ Admin sang Showroom Q10 bởi [User]"*.
     4. Tự động đồng bộ cập nhật con trỏ tham chiếu vào sổ đơn của khách hàng tại `users/{user_id}/orders.json`.
 
-### 6.2 Lợi Ích Của Kiến Trúc File-per-Order ({branch_id}/{YYYY_MM}/{order_id}.json):
-1. **Cô lập rủi ro ghi đè 100% (Zero Write Contention & Lock-Free)**:
+### 6.3 Lợi Ích Vượt Trội Của Kanban Folder Partitioning:
+1. **Lọc Trạng Thái Không Cần Quét (Zero-Scan Query)**:
+   - Khi thợ hoa xem "Đơn cần cắm", backend chỉ đọc thư mục con `arranging/` (5-10 đơn) thay vì đọc 10.000 đơn trong tháng.
+2. **Cô lập rủi ro ghi đè 100% (Zero Write Contention & Lock-Free)**:
    - Mỗi đơn hàng là một tệp JSON riêng biệt (~2 KB). Nhiều thợ cắm hoa, thu ngân, shipper cập nhật các đơn khác nhau cùng lúc hoàn toàn độc lập, không sợ đụng độ I/O lock.
 2. **Thao tác đơn hàng nguyên tử (Atomic File Operations)**:
    - Thêm, sửa, xóa đơn là thao tác trên tệp đơn lẻ nguyên tử, bảo vệ tính toàn vẹn dữ liệu tối đa.

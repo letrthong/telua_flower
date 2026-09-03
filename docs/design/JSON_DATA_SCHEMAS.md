@@ -30,12 +30,17 @@ config/anne/
 ├── images/                   # Kho ảnh tĩnh vật lý (.webp / .jpg) - Docker: /app/config/anne/images
 ├── products/                 # File JSON chi tiết của từng sản phẩm riêng lẻ ({id}.json)
 │   └── images/               # Kho ảnh phụ sản phẩm đồng bộ - Docker: /app/config/anne/products/images
-├── orders/                   # Sổ đơn hàng phân mảnh: Chi Nhánh -> Tháng -> Từng ID ({order_id}.json)
+├── orders/                   # Sổ đơn hàng Kanban: Chi Nhánh -> Tháng -> Trạng thái -> {order_id}.json
 │   ├── branch_q10/           # Showroom Quận 10
-│   │   ├── 2026_08/          # Thư mục tháng chứa các file {order_id}.json
+│   │   ├── 2026_08/          # Thư mục tháng
+│   │   │   ├── pending/      # Chờ xác nhận ({order_id}.json)
+│   │   │   ├── arranging/    # Đang cắm hoa
+│   │   │   ├── shipping/     # Đang giao
+│   │   │   └── delivered/    # Giao thành công
 │   │   └── 2026_09/
 │   ├── branch_q1/            # Showroom Quận 1
-│   │   └── 2026_08/
+│   │   └── 2026_09/
+│   │       └── pending/      # ord_1788368978_739ed2.json
 │   ├── branch_thao_dien/     # Showroom Thảo Điền
 │   └── admin/                # Đơn chờ điều phối / Ngoại tỉnh / Chưa xác định chi nhánh
 └── users/                    # Dữ liệu khách hàng/nhân sự mở rộng ({user_id}/orders.json)
@@ -550,18 +555,28 @@ Lưu trữ toàn bộ voucher đã xóa mềm có kèm dấu thời gian `delete
 
 ---
 
-### 💐 9. `config/anne/orders/{branch_id}/{YYYY_MM}/{order_id}.json` - Sổ Đơn Hàng Tách Riêng Từng ID (File-per-Order)
+### 💐 9. `config/anne/orders/{branch_id}/{YYYY_MM}/{status}/{order_id}.json` - Sổ Đơn Hàng Phân Cấp Theo Trạng Thái (Kanban Folder Partitioning)
 
-Kiến trúc phân cấp 3 tầng:
-- **Tầng 1 (Chi nhánh)**: Mỗi showroom (`branch_q10`, `branch_q1`, `branch_thao_dien`) sở hữu thư mục con riêng biệt.
+Kiến trúc phân cấp 4 tầng tối ưu hóa quy trình nghiệp vụ hoa tươi:
+- **Tầng 1 (Chi nhánh)**: Mỗi showroom (`branch_q10`, `branch_q1`, `branch_thao_dien`, `admin`) sở hữu thư mục con riêng biệt.
 - **Tầng 2 (Tháng)**: Trong mỗi chi nhánh, đơn hàng được gom nhóm theo thư mục tháng `{YYYY_MM}` (ví dụ: `2026_08`, `2026_09`).
-- **Tầng 3 (Từng đơn hàng riêng lẻ)**: Mỗi đơn hàng là **1 file JSON độc lập mang tên `{order_id}.json`** (ví dụ: `ord_1725324567_a8f9c1.json`).
-- **Thư mục đặc biệt `config/anne/orders/admin/{YYYY_MM}/{order_id}.json`**: Lưu trữ các đơn hàng chưa biết phân bổ cho chi nhánh nào (ngoại tỉnh, đơn hợp đồng sự kiện lớn B2B, hoặc tọa độ giao hàng ngoài vùng phủ sóng) chờ Super Admin / CSKH điều phối thủ công sang chi nhánh cụ thể.
+- **Tầng 3 (Trạng thái - Kanban Status)**: Bên trong tháng, đơn hàng được chia vào các thư mục trạng thái con:
+  - `pending/`: Chờ xác nhận
+  - `confirmed/`: Đã duyệt / sẵn sàng nguyên liệu
+  - `arranging/`: Đang cắm hoa (Thợ hoa thao tác)
+  - `ready_for_pickup/`: Sẵn sàng nhận tại showroom
+  - `shipping/`: Đang vận chuyển (Shipper thao tác)
+  - `delivered/`: Giao hoa thành công
+  - `completed/`: Hoàn tất đơn & đối soát
+  - `cancelled/`: Đã hủy đơn
+  - `returned/`: Đổi trả / khiếu nại
+- **Tầng 4 (Từng đơn hàng riêng lẻ)**: Mỗi đơn hàng là một tệp JSON độc lập `{order_id}.json`.
+- **Cơ chế di chuyển (Kanban Transition)**: Khi trạng thái đơn hàng thay đổi (ví dụ từ `pending` sang `arranging`), hệ thống thực hiện `os.replace()` di chuyển nguyên tử file từ thư mục status cũ sang thư mục status mới trong $< 0.1$ms.
 
-**Lợi ích kiến trúc File-per-Order**:
-1. **Zero Concurrency Lock**: Nhiều nhân viên, thợ cắm hoa, shipper cùng lúc cập nhật các đơn khác nhau không bao giờ bị nghẽn ghi đĩa hay đụng độ khóa (Zero Write Contention).
-2. **Nguyên tử & An toàn**: Thêm/sửa/xóa một đơn không ảnh hưởng đến các đơn khác trong cùng tháng.
-3. **Truy vấn $O(1)$**: Khi đã có `branchId`, `yearMonth` và `orderId`, hệ thống mở trực tiếp tệp đơn hàng mà không cần duyệt mảng.
+**Lợi ích đột phá**:
+1. **Lọc đơn tức thì (Zero-Scan Filter)**: Thợ cắm hoa chỉ cần nạp thư mục `arranging/`, shipper chỉ cần nạp `shipping/`, không phải duyệt qua hàng nghìn đơn đã xong.
+2. **Zero Concurrency Lock**: Các nhân viên cập nhật các đơn khác nhau hoàn toàn độc lập.
+3. **Thao tác Kanban nguyên tử**: Chuyển trạng thái đơn hàng trên đĩa tương đương kéo thẻ trên giao diện.
 
 ```json
 {

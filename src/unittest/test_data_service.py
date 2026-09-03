@@ -250,18 +250,22 @@ class TestDataService(unittest.TestCase):
         self.assertEqual(order["orderCode"], "NHTB_20260822_001")
         self.assertEqual(order["assignedBranchId"], "branch_q10")
 
-        # Kiểm tra file riêng lẻ {order_id}.json trong orders/{branch_id}/{YYYY_MM}/
+        # Kiểm tra file riêng lẻ {order_id}.json trong orders/{branch_id}/{YYYY_MM}/{status}/
         from data_service import get_order_file_path
-        ord_file = get_order_file_path("ord_20260822_001", "2026_08", "branch_q10")
+        initial_status = order.get("status") or "arranging"
+        ord_file = get_order_file_path("ord_20260822_001", "2026_08", "branch_q10", status=initial_status)
         self.assertTrue(os.path.exists(ord_file), f"File {ord_file} không tồn tại!")
 
-        # Cập nhật trạng thái đơn
-        updated = update_order_status("ord_20260822_001", "delivered", year_month="2026_08")
+        # Cập nhật trạng thái đơn sang 'delivered' -> file phải tự động di chuyển sang thư mục delivered/
+        updated = update_order_status("ord_20260822_001", "delivered", year_month="2026_08", branch_id="branch_q10")
         self.assertIsNotNone(updated)
         self.assertEqual(updated["status"], "delivered")
+        delivered_file = get_order_file_path("ord_20260822_001", "2026_08", "branch_q10", status="delivered")
+        self.assertTrue(os.path.exists(delivered_file), "File không tồn tại trong thư mục delivered!")
+        self.assertFalse(os.path.exists(ord_file), f"File cũ trong thư mục {initial_status} vẫn chưa được dọn dẹp!")
 
-        # Đổi lại về 'arranging' để giữ dữ liệu mẫu nhất quán
-        update_order_status("ord_20260822_001", "arranging", year_month="2026_08")
+        # Đổi lại về ban đầu để giữ dữ liệu mẫu nhất quán
+        update_order_status("ord_20260822_001", initial_status, year_month="2026_08", branch_id="branch_q10")
 
     def test_11_categories_crud_and_toggle(self):
         """Kiểm tra đọc ghi, cập nhật và bật/tắt hiển thị danh mục hoa (isActive)"""
