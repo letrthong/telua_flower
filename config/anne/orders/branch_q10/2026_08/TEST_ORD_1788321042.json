@@ -1,0 +1,37 @@
+{
+  "id": "TEST_ORD_1788321042",
+  "orderCode": "NHTB-TEST-1042",
+  "orderDate": "2026-08-22T14:00:00Z",
+  "branchId": "branch_q10",
+  "customerId": "cust_001",
+  "sender": {
+    "name": "Nguyễn Văn A",
+    "phone": "0987654321"
+  },
+  "recipient": {
+    "name": "Trần Thị B",
+    "phone": "0912345678",
+    "address": "123 Cách Mạng Tháng 8, Q.3, TP.HCM"
+  },
+  "items": [
+    {
+      "productId": "bo_hoa_01",
+      "productName": "Mây Trắng Bồng Bềnh",
+      "quantity": 1,
+      "price": 420000
+    }
+  ],
+  "cardMessage": "Chúc mừng sinh nhật em!",
+  "ribbonBanner": "Happy Birthday",
+  "anonymousSender": false,
+  "totalAmount": 420000,
+  "status": "completed",
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-08-22T14:00:00Z",
+      "note": "Đơn mới tạo"
+    }
+  ],
+  "note": "Giao hoa thành công"
+}

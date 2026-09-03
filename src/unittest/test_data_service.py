@@ -250,6 +250,11 @@ class TestDataService(unittest.TestCase):
         self.assertEqual(order["orderCode"], "NHTB_20260822_001")
         self.assertEqual(order["assignedBranchId"], "branch_q10")
 
+        # Kiểm tra file riêng lẻ {order_id}.json trong orders/{branch_id}/{YYYY_MM}/
+        from data_service import get_order_file_path
+        ord_file = get_order_file_path("ord_20260822_001", "2026_08", "branch_q10")
+        self.assertTrue(os.path.exists(ord_file), f"File {ord_file} không tồn tại!")
+
         # Cập nhật trạng thái đơn
         updated = update_order_status("ord_20260822_001", "delivered", year_month="2026_08")
         self.assertIsNotNone(updated)

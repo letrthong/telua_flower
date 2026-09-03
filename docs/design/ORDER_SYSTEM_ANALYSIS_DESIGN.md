@@ -303,55 +303,53 @@ $$d = 2R \cdot \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta \text{lat}}{2}\right)
 
 ---
 
-## 6. Kiến Trúc Lưu Trữ Dữ Liệu: Chi Nhánh Trước $\rightarrow$ Thời Gian Sau (Branch-First Storage Architecture)
+## 6. Kiến Trúc Lưu Trữ Dữ Liệu: File-per-Order ({branch_id}/{YYYY_MM}/{order_id}.json)
 
-Nhằm đảm bảo hệ thống có thể mở rộng xử lý hàng trăm nghìn đơn hàng mà **không gây tràn bộ nhớ RAM (Memory Leak)** và **cô lập hoàn toàn rủi ro ghi đè giữa các chi nhánh**, hệ thống áp dụng mô hình phân vùng **Chi Nhánh Trước $\rightarrow$ Thời Gian Sau**:
+Nhằm tối ưu hóa tốc độ ghi và loại bỏ hoàn toàn đụng độ khóa file (Zero Concurrency Lock Contention), hệ thống áp dụng kiến trúc phân cấp 3 tầng:
 
 ```text
 config/anne/
 ├── orders/
 │   ├── branch_q10/                    # Showroom Flagship Quận 10
-│   │   ├── orders_2026_08.json
-│   │   └── orders_2026_09.json
+│   │   ├── 2026_08/                   # Thư mục tháng 08/2026
+│   │   │   ├── ord_20260822_001.json  # File JSON đơn hàng độc lập (File-per-Order)
+│   │   │   └── ord_20260822_002.json
+│   │   └── 2026_09/
 │   ├── branch_q1/                     # Showroom Quận 1
-│   │   ├── orders_2026_08.json
-│   │   └── orders_2026_09.json
+│   │   └── 2026_08/
+│   │       └── ord_1788190982_68f740.json
 │   ├── branch_thao_dien/              # Showroom Thảo Điền
-│   │   ├── orders_2026_08.json
-│   │   └── orders_2026_09.json
+│   │   └── 2026_08/
 │   └── admin/                         # 🌟 ĐƠN HÀNG CHƯA ĐỊNH VỊ / TOÀN CHUỖI (Unassigned / Pending Dispatch)
-│       ├── orders_2026_08.json
-│       └── orders_2026_09.json
+│       └── 2026_08/
+│           └── ord_1788199999_xyz.json
 │
 └── users/
-    ├── cust_0901234567/
+    ├── 0901234567/
     │   ├── profile.json               # Hồ sơ cá nhân
-    │   └── orders.json                # Sổ đơn hàng riêng biệt (Sync tức thì)
-    └── cust_0987654321/
+    │   └── orders.json                # Sổ chỉ mục con trỏ tham chiếu (Reference Pointer)
+    └── 0987654321/
         └── orders.json
 ```
 
 ### 6.1 Vai Trò Đặc Biệt Của Thư Mục `orders/admin/`:
-- **Đơn hàng chưa biết gán cho ai (Unassigned Orders)**: Áp dụng khi khách đặt hàng nhưng:
-  - Địa chỉ giao hàng ở ngoại tỉnh hoặc ngoài vùng bán kính của các showroom hiện tại.
-  - Tọa độ GPS / địa chỉ chưa nhận diện được showroom phụ trách.
-  - Đơn hàng B2B / Hợp đồng sự kiện toàn chuỗi cần duyệt thủ công bởi Tổng Giám Đốc hoặc CSKH trung tâm.
+- **Đơn hàng chưa biết gán cho ai (Unassigned Orders)**: Áp dụng khi khách đặt hàng nhưng địa chỉ ngoại tỉnh, chưa xác định showroom, hoặc đơn hợp đồng B2B toàn chuỗi.
 - **Quy trình Điều Phối & Chuyển Nhượng Đơn (Order Dispatch & Reassignment)**:
-  - Khi Super Admin hoặc CSKH tiếp nhận đơn trong mục `admin/` và chọn showroom phụ trách (ví dụ: gán cho `branch_q10`):
-    1. Hệ thống di chuyển đối tượng đơn hàng từ `orders/admin/orders_{YYYY_MM}.json` sang `orders/branch_q10/orders_{YYYY_MM}.json`.
+  - Khi Super Admin hoặc CSKH điều phối đơn từ `admin/` sang `branch_q10`:
+    1. Hệ thống di chuyển file đơn hàng từ `orders/admin/{YYYY_MM}/{order_id}.json` sang `orders/branch_q10/{YYYY_MM}/{order_id}.json`.
     2. Cập nhật `branchId: "branch_q10"` và `assignedTo: "staff_manager_q10"`.
     3. Ghi vết lịch sử vào mảng `history`: *"Điều phối từ Admin sang Showroom Q10 bởi [User]"*.
-    4. Tự động đồng bộ cập nhật vào sổ đơn của khách hàng tại `users/{user_id}/orders.json`.
+    4. Tự động đồng bộ cập nhật con trỏ tham chiếu vào sổ đơn của khách hàng tại `users/{user_id}/orders.json`.
 
-### 6.2 Lợi Ích Của Kiến Trúc Chi Nhánh Trước $\rightarrow$ Thời Gian Sau:
-1. **Cô lập rủi ro ghi đè 100% (Zero Write-Conflict)**:
-   - Thợ và Quản lý tại Q10 chỉ thao tác trên `branch_q10/orders_YYYY_MM.json`, hoàn toàn độc lập với Quận 1 hay Thảo Điền.
-2. **Kiểm soát dung lượng nạp cực thấp (Ultra-Low I/O Footprint)**:
-   - Quản lý chi nhánh truy vấn đơn trong tháng chỉ cần đọc 1 tệp duy nhất khoảng $100$KB - $300$KB $\rightarrow$ Phản hồi trong $1$ - $2$ms.
-3. **Tổng hợp báo cáo Super Admin nhanh chóng**:
-   - Khi Admin xem toàn chuỗi, backend quét các thư mục chi nhánh con trong `orders/` và hợp nhất mảng đơn trong bộ nhớ siêu tốc (chỉ 3-4 file nhỏ).
-4. **Đồng bộ song song 2 chiều (Zero-Lag User History)**:
-   - Khách hàng xem lịch sử mua hàng cá nhân nạp trực tiếp từ `users/{user_id}/orders.json` mà không cần duyệt qua các thư mục chi nhánh.
+### 6.2 Lợi Ích Của Kiến Trúc File-per-Order ({branch_id}/{YYYY_MM}/{order_id}.json):
+1. **Cô lập rủi ro ghi đè 100% (Zero Write Contention & Lock-Free)**:
+   - Mỗi đơn hàng là một tệp JSON riêng biệt (~2 KB). Nhiều thợ cắm hoa, thu ngân, shipper cập nhật các đơn khác nhau cùng lúc hoàn toàn độc lập, không sợ đụng độ I/O lock.
+2. **Thao tác đơn hàng nguyên tử (Atomic File Operations)**:
+   - Thêm, sửa, xóa đơn là thao tác trên tệp đơn lẻ nguyên tử, bảo vệ tính toàn vẹn dữ liệu tối đa.
+3. **Truy vấn $O(1)$ trực tiếp**:
+   - Khi biết `branchId`, `yearMonth` và `orderId`, hệ thống mở thẳng file `{order_id}.json` trong thời gian $< 0.5$ms.
+4. **Đồng bộ con trỏ tham chiếu khách hàng (Lightweight Pointer Index)**:
+   - Khách hàng xem lịch sử mua hàng cá nhân qua `users/{user_id}/orders.json` chứa các con trỏ tham chiếu siêu nhẹ, giải mã trực tiếp từ file chi nhánh theo thời gian thực.
 
 ---
 

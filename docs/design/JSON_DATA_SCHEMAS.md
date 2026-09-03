@@ -30,10 +30,13 @@ config/anne/
 ├── images/                   # Kho ảnh tĩnh vật lý (.webp / .jpg) - Docker: /app/config/anne/images
 ├── products/                 # File JSON chi tiết của từng sản phẩm riêng lẻ ({id}.json)
 │   └── images/               # Kho ảnh phụ sản phẩm đồng bộ - Docker: /app/config/anne/products/images
-├── orders/                   # Sổ đơn hàng phân mảnh: Chi Nhánh Trước -> Tháng Sau
-│   ├── branch_q10/           # Showroom Quận 10 (orders_YYYY_MM.json)
-│   ├── branch_q1/            # Showroom Quận 1 (orders_YYYY_MM.json)
-│   ├── branch_thao_dien/     # Showroom Thảo Điền (orders_YYYY_MM.json)
+├── orders/                   # Sổ đơn hàng phân mảnh: Chi Nhánh -> Tháng -> Từng ID ({order_id}.json)
+│   ├── branch_q10/           # Showroom Quận 10
+│   │   ├── 2026_08/          # Thư mục tháng chứa các file {order_id}.json
+│   │   └── 2026_09/
+│   ├── branch_q1/            # Showroom Quận 1
+│   │   └── 2026_08/
+│   ├── branch_thao_dien/     # Showroom Thảo Điền
 │   └── admin/                # Đơn chờ điều phối / Ngoại tỉnh / Chưa xác định chi nhánh
 └── users/                    # Dữ liệu khách hàng/nhân sự mở rộng ({user_id}/orders.json)
 
@@ -547,18 +550,23 @@ Lưu trữ toàn bộ voucher đã xóa mềm có kèm dấu thời gian `delete
 
 ---
 
-### 💐 9. `config/anne/orders/{branch_id}/orders_{YYYY_MM}.json` - Sổ Đơn Hàng Phân Mảnh (Chi Nhánh Trước $\rightarrow$ Tháng Sau)
+### 💐 9. `config/anne/orders/{branch_id}/{YYYY_MM}/{order_id}.json` - Sổ Đơn Hàng Tách Riêng Từng ID (File-per-Order)
 
-Kiến trúc phân vùng hai cấp:
-- Mỗi chi nhánh (`branch_q10`, `branch_q1`, `branch_thao_dien`) sở hữu thư mục con riêng biệt.
-- Trong thư mục chi nhánh, đơn hàng được phân mảnh thành từng file tháng `orders_YYYY_MM.json`.
-- **Thư mục đặc biệt `config/anne/orders/admin/orders_{YYYY_MM}.json`**: Lưu trữ các đơn hàng chưa biết phân bổ cho chi nhánh nào (ngoại tỉnh, đơn hợp đồng sự kiện lớn B2B, hoặc tọa độ giao hàng ngoài vùng phủ sóng) chờ Super Admin / CSKH điều phối thủ công sang chi nhánh cụ thể.
+Kiến trúc phân cấp 3 tầng:
+- **Tầng 1 (Chi nhánh)**: Mỗi showroom (`branch_q10`, `branch_q1`, `branch_thao_dien`) sở hữu thư mục con riêng biệt.
+- **Tầng 2 (Tháng)**: Trong mỗi chi nhánh, đơn hàng được gom nhóm theo thư mục tháng `{YYYY_MM}` (ví dụ: `2026_08`, `2026_09`).
+- **Tầng 3 (Từng đơn hàng riêng lẻ)**: Mỗi đơn hàng là **1 file JSON độc lập mang tên `{order_id}.json`** (ví dụ: `ord_1725324567_a8f9c1.json`).
+- **Thư mục đặc biệt `config/anne/orders/admin/{YYYY_MM}/{order_id}.json`**: Lưu trữ các đơn hàng chưa biết phân bổ cho chi nhánh nào (ngoại tỉnh, đơn hợp đồng sự kiện lớn B2B, hoặc tọa độ giao hàng ngoài vùng phủ sóng) chờ Super Admin / CSKH điều phối thủ công sang chi nhánh cụ thể.
+
+**Lợi ích kiến trúc File-per-Order**:
+1. **Zero Concurrency Lock**: Nhiều nhân viên, thợ cắm hoa, shipper cùng lúc cập nhật các đơn khác nhau không bao giờ bị nghẽn ghi đĩa hay đụng độ khóa (Zero Write Contention).
+2. **Nguyên tử & An toàn**: Thêm/sửa/xóa một đơn không ảnh hưởng đến các đơn khác trong cùng tháng.
+3. **Truy vấn $O(1)$**: Khi đã có `branchId`, `yearMonth` và `orderId`, hệ thống mở trực tiếp tệp đơn hàng mà không cần duyệt mảng.
 
 ```json
-[
-  {
-    "id": "ord_1725324567_a8f9c1",
-    "orderCode": "NHTB-260903-A8K2",
+{
+  "id": "ord_1725324567_a8f9c1",
+  "orderCode": "NHTB-260903-A8K2",
     "createdAt": "2026-09-03T10:15:30Z",
     "orderDate": "2026-09-03T10:15:30Z",
     "branchId": "branch_q10",
@@ -645,9 +653,25 @@ Kiến trúc phân vùng hai cấp:
 
 ---
 
-### 📂 10. `config/anne/users/{user_id}/orders.json` - Sổ Đơn Hàng Cá Nhân Của Khách Hàng (Zero-Lag Sync)
+### 📂 10. `config/anne/users/{user_id}/orders.json` - Sổ Chỉ Mục Đơn Hàng Cá Nhân (Lightweight Reference Pointer Index)
 
-Được đồng bộ tự động song song ngay khi đơn hàng được tạo hoặc cập nhật trạng thái. Cho phép khách hàng mở xem tab "Lịch sử đơn hàng của tôi" với độ trễ $0$ms mà không cần phải quét qua các thư mục chi nhánh. Cấu trúc là mảng các đơn hàng của riêng khách hàng đó.
+Nhằm đảm bảo **Single Source of Truth (SSOT)** và ngăn ngừa triệt để sự cố lệch trạng thái khi chi nhánh cập nhật tiến độ cắm hoa/giao hàng, thư mục của từng khách hàng **không sao chép toàn bộ object đơn hàng** mà chỉ lưu các thẻ tham chiếu con trỏ (Reference Pointer) siêu nhẹ (~100 bytes/đơn):
+
+```json
+[
+  {
+    "orderId": "ord_1788368990_b33bc7",
+    "orderCode": "NHTB-260903-UJAR",
+    "branchId": "branch_q1",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:50Z"
+  }
+]
+```
+
+- **Khi ghi (`sync_order_to_user_folder`)**: Chỉ cập nhật hoặc chèn thẻ tham chiếu gọn nhẹ vào đầu danh sách (Index 0).
+- **Khi đọc (`get_user_orders`)**: Hệ thống tự động giải mã (Resolve) thời gian thực từ `orderId`, `branchId`, `yearMonth` sang trực tiếp bản ghi gốc trong `config/anne/orders/{branchId}/orders_{yearMonth}.json`.
+- **Lợi ích**: Khách hàng luôn xem được trạng thái mới nhất 100% của chi nhánh, không trùng lặp dung lượng, file user chỉ vài chục bytes.
 
 ---
 

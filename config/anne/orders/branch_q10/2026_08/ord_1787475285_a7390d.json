@@ -1,0 +1,65 @@
+{
+  "id": "ord_1787475285_a7390d",
+  "orderCode": "NHTB-260823-6RLZ",
+  "createdAt": "2026-08-23T08:54:45Z",
+  "orderDate": "2026-08-23T08:54:45Z",
+  "branchId": "branch_q10",
+  "customerId": null,
+  "status": "pending",
+  "sender": {
+    "name": "Khách Test API",
+    "realName": "Khách Test API",
+    "phone": "0988776655",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Người Nhận API",
+    "phone": "0933221100",
+    "address": "Quận 10, TP.HCM",
+    "deliveryNotes": "",
+    "lat": null,
+    "lng": null
+  },
+  "delivery": {
+    "deliveryDate": "2026-08-25",
+    "timeSlot": "09:00 - 11:00",
+    "isExpress2H": false
+  },
+  "customization": {
+    "cardMessage": "",
+    "ribbonBanner": ""
+  },
+  "items": [
+    {
+      "productId": "bo_hoa_01",
+      "productName": "Mây Trắng Bồng Bềnh",
+      "price": 420000,
+      "quantity": 1,
+      "itemTotal": 420000,
+      "image": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500"
+    }
+  ],
+  "financials": {
+    "subtotal": 420000,
+    "shippingFee": 35000,
+    "discountAmount": 0,
+    "totalAmount": 455000,
+    "appliedVoucher": null
+  },
+  "totalAmount": 455000,
+  "payment": {
+    "method": "vietqr",
+    "status": "unpaid",
+    "transactionId": null,
+    "paidAt": null
+  },
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-08-23T08:54:45Z",
+      "note": "Khách hàng tạo đơn hàng trực tuyến",
+      "updatedBy": "0988776655"
+    }
+  ]
+}
