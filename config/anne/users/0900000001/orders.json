@@ -1,1763 +1,226 @@
 [
   {
-    "id": "ord_1788370045_477921",
+    "orderId": "ord_1788398039_8d6050",
+    "orderCode": "NHTB-260903-2NDR",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:59Z"
+  },
+  {
+    "orderId": "ord_1788398038_51cbf1",
+    "orderCode": "NHTB-260903-89IP",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:58Z"
+  },
+  {
+    "orderId": "ord_1788398038_b0aca7",
+    "orderCode": "NHTB-260903-LQP1",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:58Z"
+  },
+  {
+    "orderId": "ord_1788398038_835dfb",
+    "orderCode": "NHTB-260903-B4H8",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:58Z"
+  },
+  {
+    "orderId": "ord_1788398037_13216e",
+    "orderCode": "NHTB-260903-N9OM",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:57Z"
+  },
+  {
+    "orderId": "ord_1788398037_dda236",
+    "orderCode": "NHTB-260903-CQB0",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:57Z"
+  },
+  {
+    "orderId": "ord_1788398037_838927",
+    "orderCode": "NHTB-260903-N54W",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:57Z"
+  },
+  {
+    "orderId": "ord_1788398036_4bc9d9",
+    "orderCode": "NHTB-260903-A04U",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T08:13:56Z"
+  },
+  {
+    "orderId": "ord_1788370045_477921",
     "orderCode": "NHTB-260903-SQ31",
-    "createdAt": "2026-09-03T00:27:25Z",
-    "orderDate": "2026-09-03T00:27:25Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:25Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:25Z"
   },
   {
-    "id": "ord_1788370045_6e0002",
+    "orderId": "ord_1788370045_6e0002",
     "orderCode": "NHTB-260903-HK18",
-    "createdAt": "2026-09-03T00:27:25Z",
-    "orderDate": "2026-09-03T00:27:25Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "paid",
-      "transactionId": null,
-      "paidAt": "2026-09-03T00:27:25Z"
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:25Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      },
-      {
-        "status": "pending",
-        "paymentStatus": "paid",
-        "updatedAt": "2026-09-03T00:27:25Z",
-        "note": "Cập nhật thanh toán -> paid",
-        "updatedBy": "admin1"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:25Z"
   },
   {
-    "id": "ord_1788370044_699c6c",
+    "orderId": "ord_1788370044_699c6c",
     "orderCode": "NHTB-260903-RVGY",
-    "createdAt": "2026-09-03T00:27:24Z",
-    "orderDate": "2026-09-03T00:27:24Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:24Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:24Z"
   },
   {
-    "id": "ord_1788370043_4f99d8",
+    "orderId": "ord_1788370043_4f99d8",
     "orderCode": "NHTB-260903-B4LG",
-    "createdAt": "2026-09-03T00:27:23Z",
-    "orderDate": "2026-09-03T00:27:23Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "delivered",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "delivery"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "paid",
-      "transactionId": null,
-      "paidAt": "2026-09-03T00:27:24Z"
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:23Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      },
-      {
-        "status": "delivered",
-        "paymentStatus": "paid",
-        "updatedAt": "2026-09-03T00:27:24Z",
-        "note": "Cập nhật thanh toán -> paid",
-        "updatedBy": "u_test"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:23Z"
   },
   {
-    "id": "ord_1788370043_72b7a9",
+    "orderId": "ord_1788370043_72b7a9",
     "orderCode": "NHTB-260903-0XNT",
-    "createdAt": "2026-09-03T00:27:23Z",
-    "orderDate": "2026-09-03T00:27:23Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "paid",
-      "transactionId": null,
-      "paidAt": "2026-09-03T00:27:23Z"
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:23Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      },
-      {
-        "status": "pending",
-        "paymentStatus": "paid",
-        "updatedAt": "2026-09-03T00:27:23Z",
-        "note": "Cập nhật thanh toán -> paid",
-        "updatedBy": "u_test"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:23Z"
   },
   {
-    "id": "ord_1788370042_bbd2ae",
+    "orderId": "ord_1788370042_bbd2ae",
     "orderCode": "NHTB-260903-2JM4",
-    "createdAt": "2026-09-03T00:27:22Z",
-    "orderDate": "2026-09-03T00:27:22Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "vietqr",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null,
-      "bankInfo": {
-        "bankName": "MBBank (Ngân hàng Quân Đội)",
-        "bankCode": "MB",
-        "bankBin": "970422",
-        "accountNumber": "0976491323",
-        "accountName": "NO HOA THA BINH"
-      },
-      "transferContent": "NHTB NHTB-260903-2JM4",
-      "vietqr": {
-        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260903-2JM46304D7F5",
-        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260903-2JM4&accountName=NO%20HOA%20THA%20BINH",
-        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAAChklEQVR4nO1ay24DMQgElP//5amAwU6lHrw51KY1aXa9CUoB8RiwFbJItsool3OFbInrv3MKykHhfwDgt/zcn6XYumhkWzlfaUkRFWh8ovAV/JYPEt+20ci221O0bOrXfKsoTSr8totGdgqnxlvVL2nf3/zvf8k/SZ4x3UU94Pk+Rk7rZE/kWkd0Z+DTS3GCnNawvuPHV9Kt72v0Gv4XyTPrUH3gK3TTyLZyvjLMw4ge5xHpBZPU67wwAXTRyHZzIkwJ2o72jVXBJ/Hrdjm7cCpf6ZEa0J4GVb8hzbtdzhacGkH+HW4ygzINIFqnG+9P6hEY6m63SJrjhgHuu2hk2znVF4HjC4GGS+qAUofI2YUTDi/DGSNVZm0Kr2T+1DPkbMKphYnSMd+I1UhufZdV0qw6LDphwESdA8vr7TflKV5Cjeiy7Zxj0ERTcuefy4Sw4dt8fqL4qEfg8vbvz+Z1yBAnnCf6zKjXVhrZGfN5ZSWPEj8BfiXWi+ef4SVNjDRs64P6HI7go9/87/EOlnOH8WnI2JSr4ZLsltOacOroLombuP1W47s5p++ikW3nhC9yaOdXINuiakMlIf9+ObtwKr2xhnRxjc0Oeimufy4TCnISgc7R3TgqIoFLu2hkWzl19pQDJBVCYrFHft1FI9vKKeOcEpujOrr0tlWMu78pq6RzxhnD+KrwdZyJE7ztclqj/U2RN19kiOdep47jYdJGIzvofB3mhClhPftPbJfTOnEqO800YI2VM/aVWOoEOZv4J6lCnFMRTkOlUmwXjewgTiW6n24a6VTdpCfJebh/op6q83RH5ZZx0M2fT+ypuczaM3Y7FMT0uOeX7BP8+Uc0ssu5QF04vwAg4lFKyNAnDAAAAABJRU5ErkJggg=="
-      }
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:22Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:22Z"
   },
   {
-    "id": "ord_1788370042_ac4027",
+    "orderId": "ord_1788370042_ac4027",
     "orderCode": "NHTB-260903-6NFR",
-    "createdAt": "2026-09-03T00:27:22Z",
-    "orderDate": "2026-09-03T00:27:22Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:22Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:22Z"
   },
   {
-    "id": "ord_1788370042_a0689b",
+    "orderId": "ord_1788370042_a0689b",
     "orderCode": "NHTB-260903-5OY7",
-    "createdAt": "2026-09-03T00:27:22Z",
-    "orderDate": "2026-09-03T00:27:22Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:27:22Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:27:22Z"
   },
   {
-    "id": "ord_1788369863_56671d",
+    "orderId": "ord_1788369863_56671d",
     "orderCode": "NHTB-260903-XN91",
-    "createdAt": "2026-09-03T00:24:23Z",
-    "orderDate": "2026-09-03T00:24:23Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:23Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:23Z"
   },
   {
-    "id": "ord_1788369862_d7da55",
+    "orderId": "ord_1788369862_d7da55",
     "orderCode": "NHTB-260903-POB4",
-    "createdAt": "2026-09-03T00:24:22Z",
-    "orderDate": "2026-09-03T00:24:22Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "paid",
-      "transactionId": null,
-      "paidAt": "2026-09-03T00:24:23Z"
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:22Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      },
-      {
-        "status": "pending",
-        "paymentStatus": "paid",
-        "updatedAt": "2026-09-03T00:24:23Z",
-        "note": "Cập nhật thanh toán -> paid",
-        "updatedBy": "admin1"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:22Z"
   },
   {
-    "id": "ord_1788369861_96adf4",
+    "orderId": "ord_1788369861_96adf4",
     "orderCode": "NHTB-260903-O5U4",
-    "createdAt": "2026-09-03T00:24:21Z",
-    "orderDate": "2026-09-03T00:24:21Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:21Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:21Z"
   },
   {
-    "id": "ord_1788369860_eb0750",
+    "orderId": "ord_1788369860_eb0750",
     "orderCode": "NHTB-260903-8KKA",
-    "createdAt": "2026-09-03T00:24:20Z",
-    "orderDate": "2026-09-03T00:24:20Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "delivered",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "delivery"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "paid",
-      "transactionId": null,
-      "paidAt": "2026-09-03T00:24:21Z"
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:20Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      },
-      {
-        "status": "delivered",
-        "paymentStatus": "paid",
-        "updatedAt": "2026-09-03T00:24:21Z",
-        "note": "Cập nhật thanh toán -> paid",
-        "updatedBy": "u_test"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:20Z"
   },
   {
-    "id": "ord_1788369859_864e44",
+    "orderId": "ord_1788369859_864e44",
     "orderCode": "NHTB-260903-ISYU",
-    "createdAt": "2026-09-03T00:24:19Z",
-    "orderDate": "2026-09-03T00:24:19Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "paid",
-      "transactionId": null,
-      "paidAt": "2026-09-03T00:24:20Z"
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:19Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      },
-      {
-        "status": "pending",
-        "paymentStatus": "paid",
-        "updatedAt": "2026-09-03T00:24:20Z",
-        "note": "Cập nhật thanh toán -> paid",
-        "updatedBy": "u_test"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:19Z"
   },
   {
-    "id": "ord_1788369858_897918",
+    "orderId": "ord_1788369858_897918",
     "orderCode": "NHTB-260903-T5I1",
-    "createdAt": "2026-09-03T00:24:18Z",
-    "orderDate": "2026-09-03T00:24:18Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "vietqr",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null,
-      "bankInfo": {
-        "bankName": "MBBank (Ngân hàng Quân Đội)",
-        "bankCode": "MB",
-        "bankBin": "970422",
-        "accountNumber": "0976491323",
-        "accountName": "NO HOA THA BINH"
-      },
-      "transferContent": "NHTB NHTB-260903-T5I1",
-      "vietqr": {
-        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260903-T5I16304F1F8",
-        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260903-T5I1&accountName=NO%20HOA%20THA%20BINH",
-        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAAChklEQVR4nO1a247dMAhkUP//l6eCgSRV+5CoDzZae3dznBy0ghGXAQe0l8vfCtqRfLP8ldRPlzS2gzK3ddVT0q5vOcUiXyr5K5E0M5iBhMWvxR8Rn/e3Uyzy5XgaGjUGiIzbQLLAhD6mWOS7SLL8MtBLOAHuqOcUSQg+WH9eXrqXnvvHO3PbKEbcR+6MupQX20BPn1jf7V8/Wqe+v1v4m89nUQ8XjWx6rykW+VJJC47Jxzb2Ip96Tvno8c93y7vqJE9KqpQIiigJaCSyy/WcU48sKfwFYHPQuIcKlHGMRb6+P0JdGs2kSvJKOerh858lkdwokSyiRAAIOhrUdBs99/dPZGgzgbtao9jcfb0dPN8u1lQpNsXrL3qveKekpljk6yWp3lLTpCxDlTr5yAO+Xs8ZklCYC0FkrnxWestcuoGeU/ojaK70nHUqn+oh68kUi3yHfhMZ8AVqD5J7BopEeopFvkn/juzZte2Umk28KRtMsci34EumrCmXzFs5qUBdr6fPkWTw9cyj1bmr1KvTvF14uZ6D4h3q1ZvNVxK9n3G5nj5IEjVCigazSHy4qDKAJZqHf36QZGwCwDx5f9DPnjvx+//8qZKosiPKWcH/oKLipqe+f5XkVX2qg1fAF9vfR88JkmxWpFivUM9ilPnTMpWu13MI/7Ri7FGTrgBX5rwIKVbr6fPON9HZU856505LwKdY5Nucv/fqc46e2fGcb9oXSfYoOY+IWYVIXL5A3ULPMfkTt3feMxFFer9/s1pPHyhJOWQP6tUzcT89d8+frFDXm8lX7vzjHIknf359v86qE7pny91t4sT7Fzyhrdh7NUoZ7D2tt8Pn/+P9uuEW+ZF8saZI/gbzY1suZu5xhwAAAABJRU5ErkJggg=="
-      }
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:18Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:18Z"
   },
   {
-    "id": "ord_1788369858_51b36d",
+    "orderId": "ord_1788369858_51b36d",
     "orderCode": "NHTB-260903-FTS7",
-    "createdAt": "2026-09-03T00:24:18Z",
-    "orderDate": "2026-09-03T00:24:18Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:18Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:18Z"
   },
   {
-    "id": "ord_1788369857_f58491",
+    "orderId": "ord_1788369857_f58491",
     "orderCode": "NHTB-260903-HBES",
-    "createdAt": "2026-09-03T00:24:17Z",
-    "orderDate": "2026-09-03T00:24:17Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:24:17Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:24:17Z"
   },
   {
-    "id": "ord_1788368980_bec410",
+    "orderId": "ord_1788368980_bec410",
     "orderCode": "NHTB-260903-KRNL",
-    "createdAt": "2026-09-03T00:09:40Z",
-    "orderDate": "2026-09-03T00:09:40Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:40Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:40Z"
   },
   {
-    "id": "ord_1788368979_0f058c",
+    "orderId": "ord_1788368979_0f058c",
     "orderCode": "NHTB-260903-5IQF",
-    "createdAt": "2026-09-03T00:09:39Z",
-    "orderDate": "2026-09-03T00:09:39Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:39Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:39Z"
   },
   {
-    "id": "ord_1788368979_0c88a9",
+    "orderId": "ord_1788368979_0c88a9",
     "orderCode": "NHTB-260903-ULNQ",
-    "createdAt": "2026-09-03T00:09:39Z",
-    "orderDate": "2026-09-03T00:09:39Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:39Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:39Z"
   },
   {
-    "id": "ord_1788368979_6f9c84",
+    "orderId": "ord_1788368979_6f9c84",
     "orderCode": "NHTB-260903-6V26",
-    "createdAt": "2026-09-03T00:09:39Z",
-    "orderDate": "2026-09-03T00:09:39Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "delivery"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:39Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:39Z"
   },
   {
-    "id": "ord_1788368979_4b6884",
+    "orderId": "ord_1788368979_4b6884",
     "orderCode": "NHTB-260903-E3B5",
-    "createdAt": "2026-09-03T00:09:39Z",
-    "orderDate": "2026-09-03T00:09:39Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:39Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:39Z"
   },
   {
-    "id": "ord_1788368979_9de71c",
+    "orderId": "ord_1788368979_9de71c",
     "orderCode": "NHTB-260903-DURV",
-    "createdAt": "2026-09-03T00:09:39Z",
-    "orderDate": "2026-09-03T00:09:39Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "vietqr",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null,
-      "bankInfo": {
-        "bankName": "MBBank (Ngân hàng Quân Đội)",
-        "bankCode": "MB",
-        "bankBin": "970422",
-        "accountNumber": "0976491323",
-        "accountName": "NO HOA THA BINH"
-      },
-      "transferContent": "NHTB NHTB-260903-DURV",
-      "vietqr": {
-        "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260903-DURV6304D878",
-        "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260903-DURV&accountName=NO%20HOA%20THA%20BINH",
-        "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACmElEQVR4nO1a245DIQgE0v//ZTbDgHaTffD0RdlKW89F0ggBGUB1WSRbZZTLuUK2xPXtnOJloC7OAW/cnbdj1rtIZFs5X6FJEVERdVURj59rDlKzXSSy7foUaBBfKBCDa5nqnJUuEtl+fZLCIkWpVWgXpjrDVReJ7BR9OnSKDZNG+lub0kYi269P532oECot+8SD1GwXieyg+O5/fEg3vq/Ra9gfCCYZFBGpQFQviWy7fTp1yl+gT94UBpUApF0ksq2civhDayRQSnQUkX7aqexep/Xh1LiJMZQ5UT01q/gesM5WnEoUz9D+ZpsJmm5+tEiW7g0HD2+HowM1DcgkiQG2r7NLfJdMMKm8NMgC95HTx3QXiewE/OlRUprXjOuc84s/ZZmcqGgC9xzGW794SZ5xKiwxgNEAn6CyT/FD1tmF0xGB6ORKyDRQJ5N5hWL3r7NLPFIok8B+hCUSgr1jWr2NRLaVU+jis/gR2+loe3D7dLztIpHt5nRcCeYDyeOTGB5QSXND3b7ORpyeRfnYLxMlZcLpzDjPWGeP/TOICdGozBfKj46cdpLItnM6tEY7HOiTFhrOLgxW+9fZhFPxgU+zDhIxPZUcLHrrIfawPu/DDtPFR60+xpu/yyP86aMZN04zvClWbny3ZU6N0E7Mjmcie5ab4qrxSi6eXyOlb2eLuO7qDA4fPJi6SGRbOXV2N6fHV1GeV6VGu0hkWzlfI2HPxpyW86eharWMu0hkx5yvk7fNs/qco3bXRiLbyqmZalbLuF5ms3ParnSRyA46XydlpSM6FSa9++cnnI7CXKadzNzzEOP19yecni04ZJtZn2cJNGv1+sF/fnV9Poh2iBII2/B5DsfZNm4jkZ2CP/+JRHY5F6gL5w/pkYIXg4CzlwAAAABJRU5ErkJggg=="
-      }
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:39Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:39Z"
   },
   {
-    "id": "ord_1788368979_acfb1a",
+    "orderId": "ord_1788368979_acfb1a",
     "orderCode": "NHTB-260903-R91J",
-    "createdAt": "2026-09-03T00:09:39Z",
-    "orderDate": "2026-09-03T00:09:39Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:39Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:39Z"
   },
   {
-    "id": "ord_1788368978_9b1ceb",
+    "orderId": "ord_1788368978_9b1ceb",
     "orderCode": "NHTB-260903-H2NB",
-    "createdAt": "2026-09-03T00:09:38Z",
-    "orderDate": "2026-09-03T00:09:38Z",
     "branchId": "branch_q10",
-    "customerId": null,
-    "assignedTo": "staff_001",
-    "assignedBy": "system",
-    "status": "pending",
-    "cardMessage": "",
-    "ribbonBanner": "",
-    "sender": {
-      "name": "Người Gửi Test",
-      "realName": "Người Gửi Test",
-      "phone": "0900000001",
-      "email": "",
-      "isAnonymous": false
-    },
-    "recipient": {
-      "name": "Người Nhận Test",
-      "phone": "0900000002",
-      "address": "183 Đường 3/2, Quận 10",
-      "deliveryNotes": "",
-      "lat": null,
-      "lng": null
-    },
-    "delivery": {
-      "deliveryDate": "2026-09-05",
-      "timeSlot": "09:00 - 11:00",
-      "isExpress2H": false,
-      "fulfillmentType": "pickup"
-    },
-    "customization": {
-      "cardMessage": "",
-      "ribbonBanner": ""
-    },
-    "items": [
-      {
-        "productId": "bo_hoa_01",
-        "productName": "Mây Trắng Bồng Bềnh",
-        "price": 420000,
-        "quantity": 1,
-        "itemTotal": 420000,
-        "image": "/api/flower/v1/images/bo_hoa_01.webp"
-      }
-    ],
-    "financials": {
-      "subtotal": 420000,
-      "shippingFee": 35000,
-      "discountAmount": 0,
-      "totalAmount": 455000,
-      "appliedVoucher": null
-    },
-    "totalAmount": 455000,
-    "payment": {
-      "method": "cash",
-      "status": "unpaid",
-      "transactionId": null,
-      "paidAt": null
-    },
-    "history": [
-      {
-        "status": "pending",
-        "updatedAt": "2026-09-03T00:09:38Z",
-        "note": "Khách hàng tạo đơn hàng trực tuyến",
-        "updatedBy": "0900000001"
-      }
-    ]
+    "yearMonth": "2026_09",
+    "createdAt": "2026-09-03T00:09:38Z"
   }
 ]
