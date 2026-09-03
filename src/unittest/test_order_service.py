@@ -240,8 +240,9 @@ class TestOrderService(unittest.TestCase):
         self.assertEqual(admin_order["assignedTo"], "staff_admin")
 
         admin_oid = admin_order["id"]
-        # Kiểm tra file vật lý tồn tại trong orders/admin/
-        admin_file_path = get_orders_file_path(branch_id="admin")
+        # Kiểm tra file vật lý tồn tại trong orders/admin/{YYYY_MM}/{status}/
+        from data_service import get_order_file_path
+        admin_file_path = get_order_file_path(admin_oid, branch_id="admin", status=admin_order.get("status"))
         self.assertTrue(os.path.exists(admin_file_path))
 
         # Tìm lại đơn qua get_order_by_id
