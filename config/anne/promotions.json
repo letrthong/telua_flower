@@ -1,5 +1,25 @@
 [
   {
+    "id": "promo_td75980_75",
+    "title": "Mừng Khai Trương Chi Nhánh Thảo Điền",
+    "code": "TD75980",
+    "discountType": "percentage",
+    "discountValue": 20,
+    "maxDiscountAmount": 200000,
+    "minOrderAmount": 500000,
+    "startDate": "2026-01-01T00:00:00Z",
+    "endDate": "2026-12-31T23:59:59Z",
+    "usageLimit": 500,
+    "usedCount": 0,
+    "topBarMessage": "",
+    "heroBannerUrl": "",
+    "status": "inactive",
+    "isActive": false,
+    "isDeleted": false,
+    "createdAt": "2026-09-03T01:47:55Z",
+    "updatedAt": "2026-09-03T01:47:56Z"
+  },
+  {
     "id": "promo_td990260_99990",
     "title": "Mừng Khai Trương Chi Nhánh Thảo Điền",
     "code": "TD990260",

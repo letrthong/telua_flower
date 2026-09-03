@@ -3,6 +3,8 @@ import json
 import time
 import threading
 import functools
+import re
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 import sys
@@ -1476,6 +1478,8 @@ ORDER_STATUSES: List[str] = [
     "pending",
     "confirmed",
     "arranging",
+    "in_progress",
+    "photo_sent",
     "ready_for_pickup",
     "shipping",
     "delivered",
@@ -1490,7 +1494,9 @@ def normalize_order_status(status: Optional[str]) -> str:
     if not status or not isinstance(status, str):
         return "pending"
     clean_s = status.strip().lower()
-    return clean_s if clean_s in ORDER_STATUSES else "pending"
+    # Chuẩn hóa an toàn cho hệ thống tệp tin (thay thế ký tự đặc biệt bằng '_')
+    clean_s = re.sub(r'[^a-z0-9_]', '_', clean_s)
+    return clean_s if clean_s else "pending"
 
 
 def normalize_branch_id(branch_id: Optional[str]) -> str:
@@ -1727,12 +1733,14 @@ def get_order_by_id(
         ym = normalize_year_month(year_month)
         month_dir = os.path.join(ORDERS_DIR, target_b, ym)
         if os.path.exists(month_dir):
-            for st in ORDER_STATUSES:
-                p = os.path.join(month_dir, st, f"{clean_oid}.json")
-                if os.path.exists(p):
-                    data = read_json(p)
-                    if isinstance(data, dict):
-                        return data
+            for st in os.listdir(month_dir):
+                st_dir = os.path.join(month_dir, st)
+                if os.path.isdir(st_dir):
+                    p = os.path.join(st_dir, f"{clean_oid}.json")
+                    if os.path.exists(p):
+                        data = read_json(p)
+                        if isinstance(data, dict):
+                            return data
             # Kiểm tra file trực tiếp dưới month_dir
             flat_p = os.path.join(month_dir, f"{clean_oid}.json")
             if os.path.exists(flat_p):
@@ -1747,12 +1755,14 @@ def get_order_by_id(
             for b_entry in os.listdir(ORDERS_DIR):
                 month_dir = os.path.join(ORDERS_DIR, b_entry, ym)
                 if os.path.isdir(month_dir):
-                    for st in ORDER_STATUSES:
-                        p = os.path.join(month_dir, st, f"{clean_oid}.json")
-                        if os.path.exists(p):
-                            data = read_json(p)
-                            if isinstance(data, dict):
-                                return data
+                    for st in os.listdir(month_dir):
+                        st_dir = os.path.join(month_dir, st)
+                        if os.path.isdir(st_dir):
+                            p = os.path.join(st_dir, f"{clean_oid}.json")
+                            if os.path.exists(p):
+                                data = read_json(p)
+                                if isinstance(data, dict):
+                                    return data
                     flat_p = os.path.join(month_dir, f"{clean_oid}.json")
                     if os.path.exists(flat_p):
                         data = read_json(flat_p)
