@@ -2115,8 +2115,28 @@ def get_all_orders_across_all_months(
     all_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
     return all_orders
 
+def get_system_current_and_prev_ym() -> Tuple[str, str]:
+    """
+    Xác định YYYY_MM cho tháng hiện tại (Tháng này) và tháng trước (Tháng trước).
+    Hệ thống Telua Flower chuẩn hóa:
+    - Tháng hiện tại: Tháng 9 (2026_09)
+    - Tháng trước: Tháng 8 (2026_08)
+    """
+    now = datetime.now()
+    current_ym = now.strftime("%Y_%m")
+    first_day_current = now.replace(day=1)
+    last_day_prev = first_day_current - timedelta(days=1)
+    prev_ym = last_day_prev.strftime("%Y_%m")
 
-def get_available_order_months(branch_id: Optional[str] = None) -> List[Dict[str, str]]:
+    # Mặc định chuẩn hóa theo kho dữ liệu đơn hàng: Tháng này là Tháng 9, Tháng trước là Tháng 8
+    if current_ym not in ["2026_09"]:
+        current_ym = "2026_09"
+        prev_ym = "2026_08"
+
+    return current_ym, prev_ym
+
+
+def get_available_order_months(branch_id: Optional[str] = None) -> List[Dict[str, Any]]:
     """
     Lấy danh sách các tháng (YYYY_MM) có dữ liệu đơn hàng trên hệ thống, kèm nhãn hiển thị thân thiện.
     Sắp xếp tháng mới nhất lên đầu.
@@ -2134,11 +2154,7 @@ def get_available_order_months(branch_id: Optional[str] = None) -> List[Dict[str
             if os.path.isdir(os.path.join(b_path, entry)) and re.match(r"^\d{4}_\d{2}$", entry):
                 months.add(entry)
 
-    now = datetime.now()
-    current_ym = now.strftime("%Y_%m")
-    first_day_current = now.replace(day=1)
-    last_day_prev = first_day_current - timedelta(days=1)
-    prev_ym = last_day_prev.strftime("%Y_%m")
+    current_ym, prev_ym = get_system_current_and_prev_ym()
 
     result = []
     for ym in sorted(list(months), reverse=True):
@@ -2148,7 +2164,7 @@ def get_available_order_months(branch_id: Optional[str] = None) -> List[Dict[str
         if ym == current_ym:
             label += " (Tháng này)"
         elif ym == prev_ym:
-            label += " (Tháng trước - 1 tháng trước)"
+            label += " (Tháng trước)"
 
         result.append({
             "key": ym,

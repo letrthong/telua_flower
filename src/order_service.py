@@ -24,7 +24,8 @@ from data_service import (
     read_orders_by_month,
     update_order_status,
     sync_order_to_user_folder,
-    get_user_orders
+    get_user_orders,
+    get_system_current_and_prev_ym
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -485,18 +486,15 @@ def query_admin_orders(
     now = datetime.now()
     role = current_user.get("role", "staff")
     user_branch = current_user.get("branchId")
+    current_ym, prev_ym = get_system_current_and_prev_ym()
 
     # 1. Xác định tập đơn hàng cơ sở cần nạp
     orders_pool: List[Dict[str, Any]] = []
     if month_key:
         orders_pool = read_orders_by_month(month_key)
     elif timeframe in ["this_month", "today", "this_week"]:
-        current_ym = now.strftime("%Y_%m")
         orders_pool = read_orders_by_month(current_ym)
     elif timeframe == "last_month":
-        first_day_current = now.replace(day=1)
-        last_day_prev = first_day_current - timedelta(days=1)
-        prev_ym = last_day_prev.strftime("%Y_%m")
         orders_pool = read_orders_by_month(prev_ym)
     else:
         # 'all' hoặc 'custom' qua nhiều tháng -> đọc từ toàn bộ các file tháng
@@ -522,13 +520,11 @@ def query_admin_orders(
         filter_start = monday.strftime("%Y-%m-%d") + "T00:00:00"
         filter_end = sunday.strftime("%Y-%m-%d") + "T23:59:59"
     elif timeframe == "this_month":
-        month_prefix = now.strftime("%Y-%m")
+        month_prefix = current_ym.replace("_", "-")
         filter_start = f"{month_prefix}-01T00:00:00"
         filter_end = f"{month_prefix}-31T23:59:59"
     elif timeframe == "last_month":
-        first_day_current = now.replace(day=1)
-        last_day_prev = first_day_current - timedelta(days=1)
-        prev_prefix = last_day_prev.strftime("%Y-%m")
+        prev_prefix = prev_ym.replace("_", "-")
         filter_start = f"{prev_prefix}-01T00:00:00"
         filter_end = f"{prev_prefix}-31T23:59:59"
     elif timeframe == "custom":

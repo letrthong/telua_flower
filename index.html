@@ -1197,9 +1197,8 @@
                     <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 shadow-2xs">
                         <i class="fa-solid fa-calendar-days text-xs text-emerald-600"></i>
                         <select id="dashMonthSelect" onchange="onDashboardMonthChange(this.value)" class="bg-transparent text-xs font-bold text-gray-700 focus:outline-none cursor-pointer">
-                            <option value="all">Tất cả các tháng</option>
-                            <option value="this_month">Tháng này</option>
-                            <option value="last_month">Tháng trước (1 tháng trước)</option>
+                            <option value="this_month" selected>Tháng này (Tháng 9)</option>
+                            <option value="last_month">Tháng trước (Tháng 8)</option>
                         </select>
                     </div>
 
@@ -1699,11 +1698,10 @@
                         </div>
                         <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                             <select id="filterOrderTimeframe" onchange="loadAdminOrders()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="this_month" selected>Tháng này (Tháng 9)</option>
+                                <option value="last_month">Tháng trước (Tháng 8)</option>
                                 <option value="today">Hôm nay</option>
                                 <option value="this_week">Tuần này</option>
-                                <option value="this_month" selected>Tháng này</option>
-                                <option value="last_month">Tháng trước</option>
-                                <option value="all">Toàn thời gian</option>
                             </select>
                             <select id="filterOrderStatus" onchange="loadAdminOrders()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
                                 <option value="all">Tất cả trạng thái</option>

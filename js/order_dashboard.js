@@ -105,6 +105,12 @@ export function openOrderDashboardModal() {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
+    // Mặc định filter luôn là tháng hiện tại (Tháng này - Tháng 9)
+    const monthSelect = document.getElementById("dashMonthSelect");
+    if (monthSelect) {
+        monthSelect.value = "this_month";
+    }
+
     fetchAvailableDashboardMonths();
     loadDashboardOrders();
 }
@@ -131,22 +137,22 @@ async function fetchAvailableDashboardMonths() {
         });
         const json = await res.json();
         if (res.ok && json.success && Array.isArray(json.data)) {
-            const currentVal = monthSelect.value || "last_month";
+            const currentVal = (monthSelect.value && monthSelect.value !== "all") ? monthSelect.value : "this_month";
             let html = `
-                <option value="all">Tất cả các tháng</option>
-                <option value="this_month">Tháng này</option>
-                <option value="last_month">Tháng trước (1 tháng trước)</option>
+                <option value="this_month" ${currentVal === "this_month" ? "selected" : ""}>Tháng này (Tháng 9)</option>
+                <option value="last_month" ${currentVal === "last_month" ? "selected" : ""}>Tháng trước (Tháng 8)</option>
             `;
             const hasMonths = json.data.length > 0;
             if (hasMonths) {
                 html += `<optgroup label="Tháng cụ thể">`;
                 for (const m of json.data) {
-                    html += `<option value="${m.key}">${m.label}</option>`;
+                    const isSel = currentVal === m.key ? "selected" : "";
+                    html += `<option value="${m.key}" ${isSel}>${m.label}</option>`;
                 }
                 html += `</optgroup>`;
             }
             monthSelect.innerHTML = html;
-            monthSelect.value = currentVal;
+            monthSelect.value = currentVal || "this_month";
         }
     } catch (e) {
         console.warn("Could not fetch available order months", e);
@@ -176,15 +182,15 @@ export async function loadDashboardOrders() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
     const monthSelect = document.getElementById("dashMonthSelect");
-    const selectedMonth = monthSelect ? monthSelect.value : "last_month";
+    const selectedMonth = (monthSelect && monthSelect.value && monthSelect.value !== "all") ? monthSelect.value : "this_month";
 
     let url = `${API_BASE}/admin/orders?`;
-    if (selectedMonth === "this_month" || selectedMonth === "last_month" || selectedMonth === "all") {
+    if (selectedMonth === "this_month" || selectedMonth === "last_month") {
         url += `timeframe=${encodeURIComponent(selectedMonth)}`;
     } else if (selectedMonth.includes("_")) {
         url += `month=${encodeURIComponent(selectedMonth)}`;
     } else {
-        url += `timeframe=all`;
+        url += `timeframe=this_month`;
     }
 
     // Florist/Sales: giới hạn theo chi nhánh của họ
