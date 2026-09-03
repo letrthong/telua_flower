@@ -3356,5 +3356,53 @@
     "savedAddresses": [],
     "isActive": true,
     "createdAt": "2026-09-03T01:50:28Z"
+  },
+  {
+    "id": "cust_1788400243",
+    "phone": "09110243",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:1000000$x1IUtee9dMZsmGmE$337d038957722c5f98203e5ea9e7a037bed8727d3e1dccdbe171a977a1d95b3c",
+    "role": "customer",
+    "branchId": null,
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "isActive": true,
+    "createdAt": "2026-09-03T01:50:43Z"
+  },
+  {
+    "id": "cust_1788400249",
+    "phone": "09220249",
+    "email": "cust_b@test.com",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:1000000$xsRJn7LVz4MOoqDG$74dadc1d32d77d3561de80b642d0a309a857fc78c0b65411cd6c9bcab6f2e649",
+    "role": "customer",
+    "branchId": null,
+    "tier": "standard",
+    "loyaltyPoints": 95,
+    "totalSpent": 455000,
+    "orderCount": 1,
+    "savedAddresses": [],
+    "isActive": true,
+    "createdAt": "2026-09-03T01:50:49Z"
+  },
+  {
+    "id": "cust_1788400257",
+    "phone": "09330257",
+    "email": "",
+    "fullName": "123456",
+    "passwordHash": "pbkdf2:sha256:1000000$0KBHqYwWrNvwJJHa$12f697b0b04b689386ace07eddddc838938cf15a5321778fa8d01c9acd1ebadc",
+    "role": "customer",
+    "branchId": null,
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "isActive": true,
+    "createdAt": "2026-09-03T01:50:57Z"
   }
 ]
