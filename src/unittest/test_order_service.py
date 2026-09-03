@@ -216,6 +216,63 @@ class TestOrderService(unittest.TestCase):
         self.assertEqual(res_get.status_code, 200)
         self.assertEqual(res_get.get_json()["data"]["id"], order_id)
 
+    def test_08_branch_first_storage_and_admin_fallback(self):
+        """Kiểm tra cấu trúc lưu trữ orders/{branch_id}/ và thư mục fallback orders/admin/"""
+        from data_service import (
+            read_orders_by_month,
+            save_order,
+            update_order_status,
+            get_order_by_id,
+            delete_order,
+            get_orders_file_path,
+            ORDERS_DIR
+        )
+
+        # 1. Đơn hàng ngoại tỉnh / không xác định chi nhánh -> lưu vào 'admin'
+        unknown_order_req = {
+            "sender": {"name": "Khách Ngoại Tỉnh", "phone": "0911000333"},
+            "recipient": {"name": "Nhận Ngoại Tỉnh", "phone": "0922000444", "address": "TP. Hà Nội"},
+            "items": [{"productId": "bo_hoa_01", "quantity": 1, "price": 420000}]
+        }
+        success, admin_order, _ = create_order(unknown_order_req)
+        self.assertTrue(success)
+        self.assertEqual(admin_order["branchId"], "admin")
+        self.assertEqual(admin_order["assignedTo"], "staff_admin")
+
+        admin_oid = admin_order["id"]
+        # Kiểm tra file vật lý tồn tại trong orders/admin/
+        admin_file_path = get_orders_file_path(branch_id="admin")
+        self.assertTrue(os.path.exists(admin_file_path))
+
+        # Tìm lại đơn qua get_order_by_id
+        found_in_admin = get_order_by_id(admin_oid)
+        self.assertIsNotNone(found_in_admin)
+        self.assertEqual(found_in_admin["branchId"], "admin")
+
+        # 2. Điều phối chuyển nhượng đơn từ 'admin' sang 'branch_q10' (Reassign)
+        updated = update_order_status(
+            admin_oid,
+            "confirmed",
+            branchId="branch_q10",
+            assignedTo="staff_manager_q10",
+            history=(admin_order.get("history") or []) + [{
+                "status": "confirmed",
+                "note": "Điều phối từ Admin sang Chi nhánh Q10",
+                "updatedBy": "staff_admin"
+            }]
+        )
+        self.assertIsNotNone(updated)
+        self.assertEqual(updated["branchId"], "branch_q10")
+
+        # Đơn phải xuất hiện trong orders/branch_q10/ và biến mất khỏi orders/admin/
+        q10_orders = read_orders_by_month(branch_id="branch_q10")
+        admin_orders = read_orders_by_month(branch_id="admin")
+        self.assertTrue(any(o["id"] == admin_oid for o in q10_orders))
+        self.assertFalse(any(o["id"] == admin_oid for o in admin_orders))
+
+        # Dọn dẹp đơn test
+        delete_order(admin_oid)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -103,8 +103,10 @@ class TestDataService(unittest.TestCase):
                 data = json.load(f)
                 self.assertIsNotNone(data, f"File {fname} không đọc được JSON")
 
-        # Kiểm tra file đơn hàng phân mảnh theo tháng
-        order_file = os.path.join(ORDERS_DIR, "orders_2026_08.json")
+        # Kiểm tra file đơn hàng phân mảnh theo chi nhánh và tháng
+        order_file = os.path.join(ORDERS_DIR, "branch_q10", "orders_2026_08.json")
+        if not os.path.exists(order_file):
+            order_file = os.path.join(ORDERS_DIR, "orders_2026_08.json")
         self.assertTrue(os.path.exists(order_file), "File orders_2026_08.json không tồn tại!")
 
     def test_02_branches_schema(self):

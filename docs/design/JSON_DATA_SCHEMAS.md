@@ -30,8 +30,12 @@ config/anne/
 ├── images/                   # Kho ảnh tĩnh vật lý (.webp / .jpg) - Docker: /app/config/anne/images
 ├── products/                 # File JSON chi tiết của từng sản phẩm riêng lẻ ({id}.json)
 │   └── images/               # Kho ảnh phụ sản phẩm đồng bộ - Docker: /app/config/anne/products/images
-├── orders/                   # Dữ liệu đơn hàng phân mảnh theo tháng (YYYY-MM.json)
-└── users/                    # Dữ liệu khách hàng/nhân sự mở rộng
+├── orders/                   # Sổ đơn hàng phân mảnh: Chi Nhánh Trước -> Tháng Sau
+│   ├── branch_q10/           # Showroom Quận 10 (orders_YYYY_MM.json)
+│   ├── branch_q1/            # Showroom Quận 1 (orders_YYYY_MM.json)
+│   ├── branch_thao_dien/     # Showroom Thảo Điền (orders_YYYY_MM.json)
+│   └── admin/                # Đơn chờ điều phối / Ngoại tỉnh / Chưa xác định chi nhánh
+└── users/                    # Dữ liệu khách hàng/nhân sự mở rộng ({user_id}/orders.json)
 
 ```
 
@@ -540,6 +544,110 @@ Lưu trữ toàn bộ voucher đã xóa mềm có kèm dấu thời gian `delete
   }
 ]
 ```
+
+---
+
+### 💐 9. `config/anne/orders/{branch_id}/orders_{YYYY_MM}.json` - Sổ Đơn Hàng Phân Mảnh (Chi Nhánh Trước $\rightarrow$ Tháng Sau)
+
+Kiến trúc phân vùng hai cấp:
+- Mỗi chi nhánh (`branch_q10`, `branch_q1`, `branch_thao_dien`) sở hữu thư mục con riêng biệt.
+- Trong thư mục chi nhánh, đơn hàng được phân mảnh thành từng file tháng `orders_YYYY_MM.json`.
+- **Thư mục đặc biệt `config/anne/orders/admin/orders_{YYYY_MM}.json`**: Lưu trữ các đơn hàng chưa biết phân bổ cho chi nhánh nào (ngoại tỉnh, đơn hợp đồng sự kiện lớn B2B, hoặc tọa độ giao hàng ngoài vùng phủ sóng) chờ Super Admin / CSKH điều phối thủ công sang chi nhánh cụ thể.
+
+```json
+[
+  {
+    "id": "ord_1725324567_a8f9c1",
+    "orderCode": "NHTB-260903-A8K2",
+    "createdAt": "2026-09-03T10:15:30Z",
+    "orderDate": "2026-09-03T10:15:30Z",
+    "branchId": "branch_q10",
+    "customerId": "cust_001",
+    "assignedTo": "staff_001",
+    "assignedBy": "system",
+    "status": "pending",
+    "cardMessage": "Chúc em tuổi mới luôn rực rỡ như hoa!",
+    "ribbonBanner": "Mừng Khai Trương Hồng Phát",
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "realName": "Nguyễn Văn An",
+      "phone": "0901234567",
+      "email": "an.nguyen@example.com",
+      "isAnonymous": true
+    },
+    "recipient": {
+      "name": "Trần Thị Mai",
+      "phone": "0987654321",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
+      "deliveryNotes": "Giao trước 11h trưa, gửi lễ tân",
+      "lat": 10.77123,
+      "lng": 106.67345
+    },
+    "delivery": {
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "10:00 - 12:00 (Trưa)",
+      "isExpress2H": false,
+      "fulfillmentType": "delivery"
+    },
+    "customization": {
+      "cardMessage": "Chúc em tuổi mới luôn rực rỡ như hoa!",
+      "ribbonBanner": "Mừng Khai Trương Hồng Phát"
+    },
+    "items": [
+      {
+        "productId": "prod_pink_bliss_01",
+        "productName": "Bó Hoa Hồng Juliet Giấc Mơ Ngọt Ngào",
+        "price": 650000,
+        "quantity": 1,
+        "itemTotal": 650000,
+        "image": "/images/products/bo_hoa_hong_juliet.webp"
+      }
+    ],
+    "financials": {
+      "subtotal": 650000,
+      "shippingFee": 0,
+      "discountAmount": 50000,
+      "totalAmount": 600000,
+      "appliedVoucher": {
+        "code": "FLOWERNEW",
+        "title": "Ưu đãi khách hàng mới giảm 50K",
+        "discountAmount": 50000
+      }
+    },
+    "totalAmount": 600000,
+    "payment": {
+      "method": "vietqr",
+      "status": "unpaid",
+      "paidAt": null,
+      "transactionId": null,
+      "bankInfo": {
+        "bankId": "MB",
+        "accountNo": "090123456789",
+        "accountName": "NO HOA THA BINH"
+      },
+      "transferContent": "NHTB 260903 A8K2",
+      "vietqr": {
+        "quickLink": "https://img.vietqr.io/image/MB-090123456789-compact2.png?amount=600000&addInfo=NHTB%20260903%20A8K2&accountName=NO%20HOA%20THA%20BINH"
+      }
+    },
+    "history": [
+      {
+        "status": "pending",
+        "paymentStatus": "unpaid",
+        "updatedAt": "2026-09-03T10:15:30Z",
+        "note": "Khách hàng tạo đơn hàng trực tuyến",
+        "updatedBy": "0901234567"
+      }
+    ]
+  }
+]
+```
+
+---
+
+### 📂 10. `config/anne/users/{user_id}/orders.json` - Sổ Đơn Hàng Cá Nhân Của Khách Hàng (Zero-Lag Sync)
+
+Được đồng bộ tự động song song ngay khi đơn hàng được tạo hoặc cập nhật trạng thái. Cho phép khách hàng mở xem tab "Lịch sử đơn hàng của tôi" với độ trễ $0$ms mà không cần phải quét qua các thư mục chi nhánh. Cấu trúc là mảng các đơn hàng của riêng khách hàng đó.
 
 ---
 

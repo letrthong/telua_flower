@@ -1485,21 +1485,87 @@ def get_monthly_order_filename(year_month: Optional[str] = None) -> str:
     return f"orders_{year_month}.json"
 
 
-def get_orders_file_path(year_month: Optional[str] = None) -> str:
+def normalize_branch_id(branch_id: Optional[str]) -> str:
+    """
+    Chuẩn hóa branch_id về chuỗi thư mục an toàn.
+    Mặc định trả về 'admin' nếu không xác định hoặc là 'all'.
+    """
+    if not branch_id or not isinstance(branch_id, str):
+        return "admin"
+    clean_b = branch_id.strip().lower()
+    return clean_b if clean_b and clean_b != "all" else "admin"
+
+
+def get_orders_file_path(year_month: Optional[str] = None, branch_id: Optional[str] = None) -> str:
+    """
+    Trả về đường dẫn tuyệt đối đến file đơn hàng theo cấu trúc:
+    config/anne/orders/{branch_id}/orders_{year_month}.json
+    Nếu không truyền branch_id -> mặc định lưu vào thư mục 'admin'.
+    """
     filename = get_monthly_order_filename(year_month)
-    os.makedirs(ORDERS_DIR, exist_ok=True)
-    return os.path.join(ORDERS_DIR, filename)
+    target_branch = normalize_branch_id(branch_id)
+    branch_dir = os.path.join(ORDERS_DIR, target_branch)
+    os.makedirs(branch_dir, exist_ok=True)
+    return os.path.join(branch_dir, filename)
 
 
-def read_orders_by_month(year_month: Optional[str] = None) -> List[Dict[str, Any]]:
-    """Đọc toàn bộ đơn hàng trong 1 tháng xác định."""
-    filepath = get_orders_file_path(year_month)
-    return _normalize_list_of_dicts(read_json(filepath, default=[]))
+def read_orders_by_month(
+    year_month: Optional[str] = None,
+    branch_id: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """
+    Đọc toàn bộ đơn hàng trong 1 tháng xác định.
+    - Nếu branch_id cụ thể (VD: 'branch_q10' hoặc 'admin'): chỉ đọc từ thư mục chi nhánh đó.
+    - Nếu branch_id là None hoặc 'all': quét qua tất cả các thư mục chi nhánh con trong orders/ và gộp lại.
+    - Tự động tương thích ngược với các file flat cũ orders_{year_month}.json nếu còn sót lại.
+    """
+    filename = get_monthly_order_filename(year_month)
+    
+    # 1. Đọc riêng 1 chi nhánh
+    if branch_id and branch_id != "all":
+        target_b = normalize_branch_id(branch_id)
+        filepath = os.path.join(ORDERS_DIR, target_b, filename)
+        branch_orders = _normalize_list_of_dicts(read_json(filepath, default=[]))
+        return branch_orders
+
+    # 2. Đọc toàn chuỗi (tất cả chi nhánh + admin)
+    all_month_orders: List[Dict[str, Any]] = []
+    seen_ids = set()
+
+    if os.path.exists(ORDERS_DIR):
+        for entry in sorted(os.listdir(ORDERS_DIR)):
+            entry_path = os.path.join(ORDERS_DIR, entry)
+            if os.path.isdir(entry_path):
+                branch_order_file = os.path.join(entry_path, filename)
+                if os.path.exists(branch_order_file):
+                    items = _normalize_list_of_dicts(read_json(branch_order_file, default=[]))
+                    for itm in items:
+                        o_id = itm.get("id") or itm.get("orderCode")
+                        if o_id and o_id not in seen_ids:
+                            seen_ids.add(o_id)
+                            all_month_orders.append(itm)
+
+        # Đọc tệp flat cũ nếu có
+        legacy_flat_file = os.path.join(ORDERS_DIR, filename)
+        if os.path.exists(legacy_flat_file):
+            legacy_items = _normalize_list_of_dicts(read_json(legacy_flat_file, default=[]))
+            for itm in legacy_items:
+                o_id = itm.get("id") or itm.get("orderCode")
+                if o_id and o_id not in seen_ids:
+                    seen_ids.add(o_id)
+                    all_month_orders.append(itm)
+
+    all_month_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
+    return all_month_orders
 
 
-def write_orders_by_month(orders: List[Dict[str, Any]], year_month: Optional[str] = None) -> bool:
-    """Ghi danh sách đơn hàng vào đúng file tháng tương ứng."""
-    filepath = get_orders_file_path(year_month)
+def write_orders_by_month(
+    orders: List[Dict[str, Any]],
+    year_month: Optional[str] = None,
+    branch_id: Optional[str] = None
+) -> bool:
+    """Ghi danh sách đơn hàng vào đúng file chi nhánh và tháng tương ứng."""
+    filepath = get_orders_file_path(year_month, branch_id=branch_id)
     return write_json(filepath, orders)
 
 
@@ -1519,68 +1585,126 @@ def extract_year_month_from_order(order: Dict[str, Any]) -> str:
     return datetime.now().strftime("%Y_%m")
 
 
-def get_order_by_id(order_id: str, year_month: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def get_order_by_id(
+    order_id: str,
+    year_month: Optional[str] = None,
+    branch_id: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
     """
-    Tìm đơn hàng theo ID.
-    Nếu biết year_month sẽ tìm thẳng trong file tháng đó.
-    Nếu không truyền, tự suy luận từ order_id hoặc quét các tháng gần nhất.
+    Tìm đơn hàng theo ID hoặc orderCode.
+    - Nếu biết branch_id & year_month: tìm thẳng trong file đó.
+    - Nếu không biết: quét qua các thư mục chi nhánh và các tháng gần nhất.
     """
-    if not year_month and order_id.startswith("ord_") and len(order_id) >= 10:
-        raw_ym = order_id[4:10]
+    if not order_id:
+        return None
+
+    clean_oid = str(order_id).strip()
+
+    if not year_month and clean_oid.startswith("ord_") and len(clean_oid) >= 10:
+        raw_ym = clean_oid[4:10]
         if raw_ym.isdigit() and len(raw_ym) == 6:
             year_month = f"{raw_ym[:4]}_{raw_ym[4:]}"
 
-    # Tìm trong tháng cụ thể
+    # 1. Tìm trong chi nhánh cụ thể nếu có
+    if branch_id and branch_id != "all":
+        orders = read_orders_by_month(year_month, branch_id=branch_id)
+        for o in orders:
+            if o.get("id") == clean_oid or o.get("orderCode") == clean_oid:
+                return o
+
+    # 2. Tìm trong tháng cụ thể (quét qua mọi chi nhánh)
     if year_month:
         orders = read_orders_by_month(year_month)
         for o in orders:
-            if o.get("id") == order_id or o.get("orderCode") == order_id:
+            if o.get("id") == clean_oid or o.get("orderCode") == clean_oid:
                 return o
 
-    # Nếu không tìm thấy, quét qua các file đơn hàng trong thư mục orders
+    # 3. Quét toàn bộ các thư mục con trong ORDERS_DIR
     if os.path.exists(ORDERS_DIR):
+        for entry in os.listdir(ORDERS_DIR):
+            entry_path = os.path.join(ORDERS_DIR, entry)
+            if os.path.isdir(entry_path):
+                files = sorted(os.listdir(entry_path), reverse=True)
+                for f in files:
+                    if f.startswith("orders_") and f.endswith(".json"):
+                        orders = _normalize_list_of_dicts(read_json(os.path.join(entry_path, f), default=[]))
+                        for o in orders:
+                            if o.get("id") == clean_oid or o.get("orderCode") == clean_oid:
+                                return o
+
+        # 4. Quét các file legacy flat
         files = sorted(os.listdir(ORDERS_DIR), reverse=True)
         for f in files:
             if f.startswith("orders_") and f.endswith(".json"):
-                month_key = f[7:-5]
-                orders = read_json(os.path.join(ORDERS_DIR, f), default=[])
+                orders = _normalize_list_of_dicts(read_json(os.path.join(ORDERS_DIR, f), default=[]))
                 for o in orders:
-                    if o.get("id") == order_id or o.get("orderCode") == order_id:
+                    if o.get("id") == clean_oid or o.get("orderCode") == clean_oid:
                         return o
+
     return None
 
 
 def save_order(order: Dict[str, Any]) -> bool:
     """
-    Lưu đơn hàng mới vào đúng file phân mảnh theo tháng.
+    Lưu đơn hàng mới vào đúng thư mục chi nhánh và phân mảnh theo tháng:
+    config/anne/orders/{branch_id}/orders_{YYYY_MM}.json
+    Nếu không xác định được chi nhánh -> tự động lưu vào 'admin'.
     """
     year_month = extract_year_month_from_order(order)
-    orders = read_orders_by_month(year_month)
-    
-    # Kiểm tra xem đơn đã tồn tại chưa để cập nhật hoặc thêm mới
-    order_id = order.get("id")
-    for i, existing in enumerate(orders):
-        if existing.get("id") == order_id:
-            orders[i] = order
-            return write_orders_by_month(orders, year_month)
+    raw_branch = order.get("branchId") or order.get("assignedBranchId") or "admin"
+    branch_id = normalize_branch_id(raw_branch)
+    order["branchId"] = branch_id
 
-    orders.insert(0, order)
-    return write_orders_by_month(orders, year_month)
+    orders = read_orders_by_month(year_month, branch_id=branch_id)
+    order_id = order.get("id")
+    order_code = order.get("orderCode")
+
+    # Nếu đơn đã tồn tại trong chi nhánh này -> cập nhật
+    updated = False
+    for i, existing in enumerate(orders):
+        if existing.get("id") == order_id or (order_code and existing.get("orderCode") == order_code):
+            orders[i] = order
+            updated = True
+            break
+
+    if not updated:
+        orders.insert(0, order)
+
+    success = write_orders_by_month(orders, year_month, branch_id=branch_id)
+
+    # Dọn dẹp: nếu đơn này từng nằm ở chi nhánh khác hoặc thư mục admin (khi reassign), xóa ở thư mục cũ
+    if os.path.exists(ORDERS_DIR):
+        filename = get_monthly_order_filename(year_month)
+        for entry in os.listdir(ORDERS_DIR):
+            if entry != branch_id:
+                other_dir = os.path.join(ORDERS_DIR, entry)
+                if os.path.isdir(other_dir):
+                    other_file = os.path.join(other_dir, filename)
+                    if os.path.exists(other_file):
+                        other_orders = _normalize_list_of_dicts(read_json(other_file, default=[]))
+                        filtered = [o for o in other_orders if o.get("id") != order_id and o.get("orderCode") != order_code]
+                        if len(filtered) != len(other_orders):
+                            write_json(other_file, filtered)
+
+    return success
 
 
 def update_order_status(
     order_id: str,
     new_status: str,
     year_month: Optional[str] = None,
+    branch_id: Optional[str] = None,
     **extra_fields: Any
 ) -> Optional[Dict[str, Any]]:
     """
     Cập nhật trạng thái và các trường mở rộng của đơn hàng.
+    Hỗ trợ tự động chuyển nhượng đơn giữa các chi nhánh nếu branchId thay đổi.
     """
-    order = get_order_by_id(order_id, year_month=year_month)
+    order = get_order_by_id(order_id, year_month=year_month, branch_id=branch_id)
     if not order:
         return None
 
+    old_branch = normalize_branch_id(order.get("branchId") or order.get("assignedBranchId"))
     order["status"] = new_status
     for key, value in extra_fields.items():
         if isinstance(value, dict) and isinstance(order.get(key), dict):
@@ -1588,28 +1712,44 @@ def update_order_status(
         else:
             order[key] = value
 
+    new_branch = normalize_branch_id(order.get("branchId") or order.get("assignedBranchId") or old_branch)
+    order["branchId"] = new_branch
     ym = year_month or extract_year_month_from_order(order)
-    orders = read_orders_by_month(ym)
-    for i, o in enumerate(orders):
-        if o.get("id") == order_id:
-            orders[i] = order
-            write_orders_by_month(orders, ym)
-            return order
+
+    # Nếu chi nhánh thay đổi (Reassign), di chuyển đơn giữa 2 thư mục chi nhánh
+    if new_branch != old_branch:
+        old_orders = read_orders_by_month(ym, branch_id=old_branch)
+        old_orders = [o for o in old_orders if o.get("id") != order_id and o.get("orderCode") != order_id]
+        write_orders_by_month(old_orders, ym, branch_id=old_branch)
+
+    new_orders = read_orders_by_month(ym, branch_id=new_branch)
+    found = False
+    for i, o in enumerate(new_orders):
+        if o.get("id") == order_id or o.get("orderCode") == order_id:
+            new_orders[i] = order
+            found = True
+            break
+    if not found:
+        new_orders.insert(0, order)
+
+    write_orders_by_month(new_orders, ym, branch_id=new_branch)
+    sync_order_to_user_folder(order)
     return order
 
 
-def delete_order(order_id: str, year_month: Optional[str] = None) -> bool:
+def delete_order(order_id: str, year_month: Optional[str] = None, branch_id: Optional[str] = None) -> bool:
     """
     Xóa đơn hàng theo ID (dùng cho dọn dẹp dữ liệu kiểm thử hoặc hủy đơn).
     """
-    order = get_order_by_id(order_id, year_month=year_month)
+    order = get_order_by_id(order_id, year_month=year_month, branch_id=branch_id)
     if not order:
         return False
 
     ym = year_month or extract_year_month_from_order(order)
-    orders = read_orders_by_month(ym)
+    target_branch = normalize_branch_id(order.get("branchId") or order.get("assignedBranchId"))
+    orders = read_orders_by_month(ym, branch_id=target_branch)
     new_orders = [o for o in orders if o.get("id") != order_id and o.get("orderCode") != order_id]
-    return write_orders_by_month(new_orders, ym)
+    return write_orders_by_month(new_orders, ym, branch_id=target_branch)
 
 
 # ==========================================
@@ -1722,16 +1862,110 @@ def sync_order_to_user_folder(order: Dict[str, Any]) -> bool:
     return True
 
 
-def get_all_orders_across_all_months() -> List[Dict[str, Any]]:
-    """Đọc toàn bộ đơn hàng trên toàn hệ thống (quét qua mọi file orders_YYYY_MM.json)."""
-    all_orders = []
-    if os.path.exists(ORDERS_DIR):
-        files = sorted(os.listdir(ORDERS_DIR), reverse=True)
-        for f in files:
-            if f.startswith("orders_") and f.endswith(".json"):
-                month_orders = _normalize_list_of_dicts(read_json(os.path.join(ORDERS_DIR, f), default=[]))
-                all_orders.extend(month_orders)
+def get_all_orders_across_all_months(branch_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """
+    Đọc toàn bộ đơn hàng trên toàn hệ thống hoặc theo một chi nhánh cụ thể.
+    Quét qua các thư mục chi nhánh (orders/{branch_id}/orders_*.json) và tệp flat cũ.
+    """
+    all_orders: List[Dict[str, Any]] = []
+    seen_ids = set()
+
+    if not os.path.exists(ORDERS_DIR):
+        return []
+
+    # 1. Nếu chỉ đọc 1 chi nhánh
+    if branch_id and branch_id != "all":
+        target_b = normalize_branch_id(branch_id)
+        branch_dir = os.path.join(ORDERS_DIR, target_b)
+        if os.path.exists(branch_dir):
+            for f in sorted(os.listdir(branch_dir), reverse=True):
+                if f.startswith("orders_") and f.endswith(".json"):
+                    items = _normalize_list_of_dicts(read_json(os.path.join(branch_dir, f), default=[]))
+                    for itm in items:
+                        o_id = itm.get("id") or itm.get("orderCode")
+                        if o_id and o_id not in seen_ids:
+                            seen_ids.add(o_id)
+                            all_orders.append(itm)
+        all_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
+        return all_orders
+
+    # 2. Đọc toàn chuỗi: duyệt tất cả thư mục chi nhánh con (bao gồm admin)
+    for entry in sorted(os.listdir(ORDERS_DIR)):
+        entry_path = os.path.join(ORDERS_DIR, entry)
+        if os.path.isdir(entry_path):
+            for f in sorted(os.listdir(entry_path), reverse=True):
+                if f.startswith("orders_") and f.endswith(".json"):
+                    items = _normalize_list_of_dicts(read_json(os.path.join(entry_path, f), default=[]))
+                    for itm in items:
+                        o_id = itm.get("id") or itm.get("orderCode")
+                        if o_id and o_id not in seen_ids:
+                            seen_ids.add(o_id)
+                            all_orders.append(itm)
+
+    # 3. Quét tệp flat cũ nếu có
+    for f in sorted(os.listdir(ORDERS_DIR), reverse=True):
+        if f.startswith("orders_") and f.endswith(".json"):
+            items = _normalize_list_of_dicts(read_json(os.path.join(ORDERS_DIR, f), default=[]))
+            for itm in items:
+                o_id = itm.get("id") or itm.get("orderCode")
+                if o_id and o_id not in seen_ids:
+                    seen_ids.add(o_id)
+                    all_orders.append(itm)
+
+    all_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
     return all_orders
+
+
+def migrate_orders_to_branch_folders() -> Dict[str, int]:
+    """
+    Tự động quét các file orders_YYYY_MM.json phẳng nằm trực tiếp trong config/anne/orders/
+    và phân loại từng đơn hàng vào đúng thư mục chi nhánh:
+    config/anne/orders/{branch_id}/orders_{YYYY_MM}.json (với fallback 'admin').
+    """
+    if not os.path.exists(ORDERS_DIR):
+        return {}
+
+    migrated_counts: Dict[str, int] = {}
+    legacy_files = [f for f in os.listdir(ORDERS_DIR) if f.startswith("orders_") and f.endswith(".json") and os.path.isfile(os.path.join(ORDERS_DIR, f))]
+
+    for f in legacy_files:
+        filepath = os.path.join(ORDERS_DIR, f)
+        raw_orders = _normalize_list_of_dicts(read_json(filepath, default=[]))
+        if not raw_orders:
+            continue
+
+        year_month = f[7:-5]  # '2026_08'
+
+        for order in raw_orders:
+            raw_b = order.get("branchId") or order.get("assignedBranchId") or "admin"
+            branch_id = normalize_branch_id(raw_b)
+            order["branchId"] = branch_id
+
+            target_file = get_orders_file_path(year_month, branch_id=branch_id)
+            current_branch_orders = _normalize_list_of_dicts(read_json(target_file, default=[]))
+
+            o_id = order.get("id")
+            o_code = order.get("orderCode")
+            existing_idx = next((i for i, o in enumerate(current_branch_orders) if o.get("id") == o_id or (o_code and o.get("orderCode") == o_code)), -1)
+
+            if existing_idx != -1:
+                current_branch_orders[existing_idx] = order
+            else:
+                current_branch_orders.append(order)
+
+            write_json(target_file, current_branch_orders)
+            migrated_counts[branch_id] = migrated_counts.get(branch_id, 0) + 1
+
+        # Đổi tên file cũ sang .bak để tránh trùng lặp mà vẫn giữ sao lưu
+        try:
+            bak_path = filepath + ".bak"
+            if os.path.exists(bak_path):
+                os.remove(bak_path)
+            os.rename(filepath, bak_path)
+        except Exception:
+            pass
+
+    return migrated_counts
 
 
 def migrate_existing_orders_to_users() -> int:

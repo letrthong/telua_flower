@@ -83,7 +83,7 @@ def assign_nearest_branch(
         return best_branch.get("id", "branch_q10")
 
     # 2. Định vị thông minh dựa theo tên Quận/Huyện trong địa chỉ
-    addr_lower = (address or "").lower()
+    addr_lower = (address or "").lower().strip()
     
     # Kiểm tra Q10 / Q3 / Q5 / Q11 trước (tránh 'quận 10' bị match nhầm bởi 'quận 1')
     if any(q in addr_lower for q in ["quận 10", "q.10", "q10", "quận 3", "q.3", "q3", "quận 5", "q.5", "q5", "quận 11", "q.11", "q11", "tân bình", "tan binh", "tân phú", "tan phu"]):
@@ -92,8 +92,12 @@ def assign_nearest_branch(
         return "branch_thao_dien"
     elif any(q in addr_lower for q in ["quận 1", "q.1", "q1", "quận 4", "q.4", "q4", "bình thạnh", "binh thanh", "phú nhuận", "phu nhuan"]):
         return "branch_q1"
+    elif any(q in addr_lower for q in ["ngoại tỉnh", "tỉnh", "hà nội", "ha noi", "đà nẵng", "da nang", "hải phòng", "cần thơ", "bình dương", "đồng nai"]):
+        return "admin"
     else:
-        # Mặc định về Flagship Q10
+        # Nếu địa chỉ không xác định được hoặc quá ngắn -> đưa về admin
+        if not addr_lower or len(addr_lower) < 5:
+            return "admin"
         return "branch_q10"
 
 
@@ -267,22 +271,27 @@ def create_order(
     recipient_lng = recipient.get("lng")
 
     if requested_branch_id:
-        # Khách đã chọn chi nhánh -> kiểm tra chi nhánh tồn tại & đang hoạt động
-        requested_branch = get_branch_by_id(requested_branch_id)
-        if requested_branch and requested_branch.get("isActive", True):
-            assigned_branch_id = requested_branch_id
+        if requested_branch_id.lower() == "admin":
+            assigned_branch_id = "admin"
         else:
-            assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+            requested_branch = get_branch_by_id(requested_branch_id)
+            if requested_branch and requested_branch.get("isActive", True):
+                assigned_branch_id = requested_branch_id
+            else:
+                assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
     else:
         assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
 
     # 6b. Gán người xử lý (assignedTo):
     #     - Nếu đơn thuộc 1 chi nhánh cụ thể -> gán cho Quản lý chi nhánh đó.
-    #     - Nếu không xác định được chi nhánh (hoặc đơn toàn chuỗi) -> gán cho Admin (super_admin).
+    #     - Nếu đơn thuộc 'admin' (hoặc đơn toàn chuỗi) -> gán cho Super Admin (staff_admin).
     assigned_manager_id = None
-    assigned_branch = get_branch_by_id(assigned_branch_id)
-    if assigned_branch:
-        assigned_manager_id = assigned_branch.get("managerId")
+    if assigned_branch_id == "admin":
+        assigned_manager_id = "staff_admin"
+    else:
+        assigned_branch = get_branch_by_id(assigned_branch_id)
+        if assigned_branch:
+            assigned_manager_id = assigned_branch.get("managerId")
 
     if not assigned_manager_id:
         # Fallback: gán cho Admin toàn chuỗi
