@@ -188,6 +188,14 @@ export function setLanguage(lang) {
         if (typeof window !== 'undefined' && typeof window.updateOrderSummary === 'function') {
             window.updateOrderSummary();
         }
+
+        // 12. Render lại Add-ons trong modal chi tiết nếu modal đang mở
+        if (typeof window !== 'undefined' && typeof window.renderAddonsInModal === 'function') {
+            const detailModal = document.getElementById('productQuickDetailModal');
+            if (detailModal && !detailModal.classList.contains('hidden') && detailModal.style.display !== 'none') {
+                window.renderAddonsInModal(lang);
+            }
+        }
     }
 }
 

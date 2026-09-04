@@ -364,22 +364,48 @@ export async function loadAddons(forceRefresh = false) {
 }
 
 /**
- * Lấy tên hiển thị add-on theo ngôn ngữ hiện tại
+ * Lấy tên hiển thị add-on theo ngôn ngữ hiện tại (hỗ trợ 5 ngôn ngữ: vi, en, ja, ko, zh)
  */
-function getAddonName(addon, lang) {
+export function getAddonName(addon, lang = "vi") {
     if (!addon) return "";
-    if (lang === "vi" && addon.nameVi) return addon.nameVi;
-    return addon.name || addon.nameVi || "";
+    const effectiveLang = lang || (typeof window !== "undefined" && window.currentLang) || "vi";
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const dict = (trans && trans[effectiveLang]) ? trans[effectiveLang] : {};
+
+    // 1. Kiểm tra từ điển dịch translation matrix (key addon_{id}_name)
+    const transKey = `addon_${addon.id}_name`;
+    if (dict[transKey]) return dict[transKey];
+
+    // 2. Kiểm tra thuộc tính ngôn ngữ trực tiếp trên addon object
+    if (effectiveLang === "vi") return addon.nameVi || addon.name || "";
+    if (effectiveLang === "en") return addon.nameEn || addon.name || addon.nameVi || "";
+    if (effectiveLang === "ja") return addon.nameJa || addon.nameEn || addon.name || addon.nameVi || "";
+    if (effectiveLang === "ko") return addon.nameKo || addon.nameEn || addon.name || addon.nameVi || "";
+    if (effectiveLang === "zh") return addon.nameZh || addon.nameEn || addon.name || addon.nameVi || "";
+
+    return addon.nameVi || addon.name || "";
 }
 
 /**
  * Render danh sách add-ons vào #addonsList trong modal chi tiết sản phẩm
  */
-async function renderAddonsInModal(currentAppLang) {
+export async function renderAddonsInModal(currentAppLang) {
     const section = document.getElementById("addonsSection");
     const list = document.getElementById("addonsList");
     console.debug("[ADDONS] renderAddonsInModal() | section =", !!section, "| list =", !!list);
     if (!section || !list) return;
+
+    const effectiveLang = currentAppLang || (typeof window !== "undefined" && window.currentLang) || "vi";
+
+    // Cập nhật tiêu đề đa ngôn ngữ cho mục add-on (Select Add-Ons To Make It Extra Special)
+    const titleEl = section.querySelector('[data-i18n="addons_title"]');
+    if (titleEl) {
+        const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+        const dict = (trans && trans[effectiveLang]) ? trans[effectiveLang] : {};
+        if (dict.addons_title) {
+            titleEl.textContent = dict.addons_title;
+        }
+    }
 
     // Kiểm tra cấu hình bật/tắt hiển thị add-on trước
     const enabled = await isAddonSectionEnabled();
@@ -1516,6 +1542,8 @@ if (typeof window !== 'undefined') {
     window.openProductQuickDetail = openProductQuickDetail;
     window.closeProductQuickDetail = closeProductQuickDetail;
     window.loadAddons = loadAddons;
+    window.renderAddonsInModal = renderAddonsInModal;
+    window.getAddonName = getAddonName;
     window.toggleAddonSelection = toggleAddonSelection;
     window.changeAddonQty = changeAddonQty;
     window.scrollAddons = scrollAddons;
