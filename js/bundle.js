@@ -369,66 +369,206 @@ function hideScreenLock() {
     }, 250);
 }
 
+const SELECTED_BRANCH_ID_KEY = 'telua_selected_branch_id_v1';
+const SELECTED_BRANCH_DATA_KEY = 'telua_selected_branch_data_v1';
+const STOREFRONT_BRANCHES_CACHE_KEY = 'telua_storefront_branches_cache_v1';
+const BRANCHES_ETAG_KEY = 'telua_branches_etag_v1';
+
 let storefrontBranches = [];
 let currentSelectedBranch = null;
+let _isSyncingBranches = false;
+let _lastBranchesSyncTime = 0;
 
-// Tải và hiển thị danh sách chuỗi cửa hàng động
+// Khởi tạo tức thì chi nhánh từ cache LocalStorage (0ms Instant Boot)
+try {
+    if (typeof localStorage !== 'undefined') {
+        const cachedRaw = localStorage.getItem(STOREFRONT_BRANCHES_CACHE_KEY);
+        if (cachedRaw) {
+            const parsed = JSON.parse(cachedRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                storefrontBranches = parsed;
+            }
+        }
+        const savedBranchData = localStorage.getItem(SELECTED_BRANCH_DATA_KEY);
+        if (savedBranchData) {
+            const parsedData = JSON.parse(savedBranchData);
+            if (parsedData && parsedData.id) {
+                currentSelectedBranch = parsedData;
+            }
+        }
+    }
+} catch (e) {
+    console.warn("Lỗi đọc cache chi nhánh showroom:", e);
+}
+
+function getCurrentSelectedBranch() {
+    return currentSelectedBranch;
+}
+
+/**
+ * Nạp lại danh sách chi nhánh (config/anne/branches.json) nếu có thay đổi từ máy chủ (dựa trên HTTP ETag / 304 Cache).
+ * Kết hợp lưu vào localStorage để chỉ tải lại khi file thay đổi.
+ */
+async function reloadBranchesIfChanged(forceRefresh = false) {
+    if (_isSyncingBranches) return { changed: false, branches: storefrontBranches };
+    _isSyncingBranches = true;
+
+    let branchesChanged = false;
+    let savedBranchId = null;
+    let storedEtag = null;
+
+    if (typeof localStorage !== 'undefined') {
+        try {
+            savedBranchId = localStorage.getItem(SELECTED_BRANCH_ID_KEY);
+            storedEtag = localStorage.getItem(BRANCHES_ETAG_KEY);
+        } catch (e) {}
+    }
+
+    try {
+        const headers = {};
+        if (storedEtag && !forceRefresh) {
+            headers['If-None-Match'] = storedEtag;
+        }
+
+        const res = await fetch(`${API_BASE}/branches?_t=${Date.now()}`, { headers });
+        if (res.status === 200) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                const activeBranches = json.data.filter(b => b && b.isActive !== false);
+                const oldStr = JSON.stringify(storefrontBranches || []);
+                const newStr = JSON.stringify(activeBranches);
+                if (oldStr !== newStr) {
+                    storefrontBranches = activeBranches;
+                    branchesChanged = true;
+                }
+                const newEtag = res.headers.get("ETag");
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(STOREFRONT_BRANCHES_CACHE_KEY, JSON.stringify(storefrontBranches));
+                        if (newEtag) localStorage.setItem(BRANCHES_ETAG_KEY, newEtag);
+                    } catch (e) {}
+                }
+            }
+        } else if (res.status === 304) {
+            // Không thay đổi (304 Not Modified) -> Giữ nguyên cache
+            branchesChanged = false;
+        } else if (!res.ok) {
+            throw new Error("HTTP " + res.status);
+        }
+    } catch (e) {
+        // Fallback file tĩnh config/anne/branches.json nếu API không phản hồi
+        if (!storefrontBranches || storefrontBranches.length === 0 || forceRefresh) {
+            try {
+                const fbRes = await fetch(`config/anne/branches.json?_t=${Date.now()}`);
+                if (fbRes.ok) {
+                    const fbData = await fbRes.json();
+                    if (Array.isArray(fbData) && fbData.length > 0) {
+                        const activeBranches = fbData.filter(b => b && b.isActive !== false);
+                        const oldStr = JSON.stringify(storefrontBranches || []);
+                        const newStr = JSON.stringify(activeBranches);
+                        if (oldStr !== newStr) {
+                            storefrontBranches = activeBranches;
+                            branchesChanged = true;
+                        }
+                        if (typeof localStorage !== 'undefined') {
+                            try {
+                                localStorage.setItem(STOREFRONT_BRANCHES_CACHE_KEY, JSON.stringify(storefrontBranches));
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (errFb) {}
+        }
+    }
+
+    // Fallback mặc định cuối cùng nếu danh sách rỗng
+    if (!storefrontBranches || storefrontBranches.length === 0) {
+        storefrontBranches = [
+            {
+                id: "branch_q10",
+                code: "CN_Q10",
+                name: "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+                address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
+                phone: "0976.491.322",
+                openHours: "07:00 - 21:00 (Thứ 2 - Chủ Nhật)",
+                amenities: "Đậu xe ô tô/xe máy miễn phí • Cắm hoa nghệ thuật tại chỗ • Phòng lạnh bảo quản hoa",
+                lat: 10.7725,
+                lng: 106.6698
+            },
+            {
+                id: "branch_q1",
+                code: "CN_Q1",
+                name: "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+                address: "Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
+                phone: "0976.491.323",
+                openHours: "08:00 - 21:30 (Thứ 2 - Chủ Nhật)",
+                amenities: "Giao hoa hỏa tốc văn phòng Bitexco • Gói quà cao cấp",
+                lat: 10.7715,
+                lng: 106.7042
+            },
+            {
+                id: "branch_thao_dien",
+                code: "CN_Q2",
+                name: "Nở Hoa Thả Bình - Showroom Thảo Điền",
+                address: "68 Xuân Thủy, Phường Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
+                phone: "0976.491.324",
+                openHours: "07:30 - 21:00 (Thứ 2 - Chủ Nhật)",
+                amenities: "Không gian workshop cắm hoa • Hoa nhập khẩu cao cấp Hà Lan & Ecuador",
+                lat: 10.8035,
+                lng: 106.7328
+            }
+        ];
+    }
+
+    _lastBranchesSyncTime = Date.now();
+    _isSyncingBranches = false;
+
+    // Nếu dữ liệu có thay đổi hoặc bắt buộc làm mới:
+    if (branchesChanged || forceRefresh || !currentSelectedBranch) {
+        renderStorefrontBranchButtons();
+
+        // Cập nhật lại chi nhánh đang chọn
+        let targetBranch = null;
+        if (savedBranchId) {
+            targetBranch = storefrontBranches.find(b => b.id === savedBranchId);
+        }
+        if (!targetBranch && currentSelectedBranch) {
+            targetBranch = storefrontBranches.find(b => b.id === currentSelectedBranch.id);
+        }
+        if (!targetBranch && storefrontBranches.length > 0) {
+            targetBranch = storefrontBranches[0];
+        }
+
+        if (targetBranch) {
+            selectShowroomBranch(targetBranch.id, true);
+        }
+    }
+
+    return { changed: branchesChanged, branches: storefrontBranches };
+}
+
+// Tải và hiển thị danh sách chuỗi cửa hàng động (có cache ETag)
 async function loadAndRenderStorefrontBranches() {
     const navContainer = document.getElementById("storeBranchNav");
     if (!navContainer) return;
 
-    try {
-        const res = await fetch(`${API_BASE}/branches`);
-        const json = await res.json();
-
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-            storefrontBranches = json.data.filter((b) => b.isActive !== false);
-        } else {
-            // Fallback nếu API chưa trả về
-            storefrontBranches = [
-                {
-                    id: "branch_q10",
-                    code: "CN_Q10",
-                    name: "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
-                    address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
-                    phone: "0976.491.322",
-                    openHours: "07:00 - 21:00 (Thứ 2 - Chủ Nhật)",
-                    amenities: "Đậu xe ô tô/xe máy miễn phí • Cắm hoa nghệ thuật tại chỗ • Phòng lạnh bảo quản hoa",
-                    lat: 10.7725,
-                    lng: 106.6698
-                },
-                {
-                    id: "branch_q1",
-                    code: "CN_Q1",
-                    name: "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
-                    address: "Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
-                    phone: "0976.491.323",
-                    openHours: "08:00 - 21:30 (Thứ 2 - Chủ Nhật)",
-                    amenities: "Giao hoa hỏa tốc văn phòng Bitexco • Gói quà cao cấp",
-                    lat: 10.7715,
-                    lng: 106.7042
-                },
-                {
-                    id: "branch_thao_dien",
-                    code: "CN_Q2",
-                    name: "Nở Hoa Thả Bình - Showroom Thảo Điền",
-                    address: "68 Xuân Thủy, Phường Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-                    phone: "0976.491.324",
-                    openHours: "07:30 - 21:00 (Thứ 2 - Chủ Nhật)",
-                    amenities: "Không gian workshop cắm hoa • Hoa nhập khẩu cao cấp Hà Lan & Ecuador",
-                    lat: 10.8035,
-                    lng: 106.7328
-                }
-            ];
-        }
-
+    // 1. Hiển thị tức thì nếu đã có trong cache (0ms)
+    if (storefrontBranches && storefrontBranches.length > 0) {
         renderStorefrontBranchButtons();
-        if (storefrontBranches.length > 0) {
-            selectShowroomBranch(storefrontBranches[0].id);
+        let savedBranchId = null;
+        if (typeof localStorage !== 'undefined') {
+            try {
+                savedBranchId = localStorage.getItem(SELECTED_BRANCH_ID_KEY);
+            } catch (e) {}
         }
-    } catch (e) {
-        console.warn("Lỗi tải chuỗi showroom:", e);
+        const target = (savedBranchId && storefrontBranches.find(b => b.id === savedBranchId)) || currentSelectedBranch || storefrontBranches[0];
+        if (target) {
+            selectShowroomBranch(target.id, false);
+        }
     }
+
+    // 2. Kiểm tra cập nhật từ máy chủ bằng ETag (chỉ tải lại khi file branches.json thay đổi)
+    await reloadBranchesIfChanged(false);
 }
 
 function renderStorefrontBranchButtons() {
@@ -453,11 +593,21 @@ function renderStorefrontBranchButtons() {
     navContainer.innerHTML = html;
 }
 
-function selectShowroomBranch(branchId) {
+function selectShowroomBranch(branchId, saveCache = true) {
     const b = storefrontBranches.find((item) => item.id === branchId) || storefrontBranches[0];
     if (!b) return;
 
     currentSelectedBranch = b;
+
+    // Lưu lựa chọn chi nhánh của khách hàng vào cache trình duyệt
+    if (saveCache && typeof localStorage !== 'undefined') {
+        try {
+            localStorage.setItem(SELECTED_BRANCH_ID_KEY, b.id);
+            localStorage.setItem(SELECTED_BRANCH_DATA_KEY, JSON.stringify(b));
+            localStorage.setItem('telua_selected_branch_address_v1', b.address);
+        } catch (e) {}
+    }
+
     renderStorefrontBranchButtons();
 
     // Cập nhật thẻ thông tin
@@ -479,7 +629,7 @@ function selectShowroomBranch(branchId) {
     }
     if (amenitiesEl) amenitiesEl.textContent = b.amenities || "Đậu xe ô tô/xe máy miễn phí, cắm hoa nghệ thuật theo yêu cầu";
 
-    // Cập nhật iframe Google Maps và Link chỉ đường
+    // Cập nhật iframe Google Maps và Link chỉ đường chính xác theo địa chỉ chi nhánh
     const query = encodeURIComponent(b.address);
     if (mapIframe) {
         mapIframe.src = `https://maps.google.com/maps?q=${query}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
@@ -530,6 +680,22 @@ function copyStoreAddress() {
     }
 }
 
+// Tự động kiểm tra thay đổi của file branches.json khi người dùng chuyển lại tab (sau ít nhất 15 giây)
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+    const handleBranchesVisibilityOrFocus = () => {
+        const now = Date.now();
+        if (now - _lastBranchesSyncTime > 15000) {
+            reloadBranchesIfChanged(false).catch(() => {});
+        }
+    };
+    window.addEventListener("focus", handleBranchesVisibilityOrFocus);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            handleBranchesVisibilityOrFocus();
+        }
+    });
+}
+
 // Tự động khởi chạy khi DOM sẵn sàng
 if (typeof document !== "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
@@ -547,8 +713,10 @@ if (typeof window !== "undefined") {
     window.openStoreMap = openStoreMap;
     window.copyStoreAddress = copyStoreAddress;
     window.selectShowroomBranch = selectShowroomBranch;
+    window.getCurrentSelectedBranch = getCurrentSelectedBranch;
     window.resolveImageUrl = resolveImageUrl;
     window.loadAndRenderStorefrontBranches = loadAndRenderStorefrontBranches;
+    window.reloadBranchesIfChanged = reloadBranchesIfChanged;
     window.removeVietnameseTones = removeVietnameseTones;
 }
 
@@ -776,8 +944,29 @@ if (typeof window !== 'undefined') {
 // ==========================================================================
 // Dịch vụ nạp dữ liệu sản phẩm & danh mục động từ Backend API (đọc trực tiếp từ config/anne/products.json)
 
+const CATEGORIES_CACHE_KEY = 'telua_categories_cache_v1';
+const CATEGORIES_ETAG_KEY = 'telua_categories_etag_v1';
+
 let cachedProducts = [];
 let cachedCategories = [];
+let _isSyncingCategories = false;
+let _lastCategoriesSyncTime = 0;
+
+// Khởi tạo tức thì danh mục từ cache LocalStorage (0ms Instant Boot)
+try {
+    if (typeof localStorage !== 'undefined') {
+        const cachedRaw = localStorage.getItem(CATEGORIES_CACHE_KEY);
+        if (cachedRaw) {
+            const parsed = JSON.parse(cachedRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                cachedCategories = parsed;
+                if (typeof window !== 'undefined') window.activeStorefrontCategories = cachedCategories;
+            }
+        }
+    }
+} catch (e) {
+    console.warn("Lỗi đọc cache danh mục:", e);
+}
 
 /**
  * Lấy toàn bộ danh sách sản phẩm động từ Backend (đọc từ config/anne/products.json)
@@ -844,31 +1033,159 @@ async function getProductById(productId, lang = null) {
             }
         }
     } catch (e) {
-        console.warn("Lỗi nạp chi tiết sản phẩm:", e);
+        console.warn("Lỗi nạp chi tiết sản phẩm từ API:", e);
     }
+
+    // Fallback: Thử đọc trực tiếp file chi tiết riêng config/anne/products/${productId}.json
+    try {
+        const fbRes = await fetch(`config/anne/products/${productId}.json?_t=${Date.now()}`);
+        if (fbRes.ok) {
+            const rawDetail = await fbRes.json();
+            if (rawDetail && typeof rawDetail === 'object') {
+                if (currentLang && currentLang !== 'vi' && rawDetail.i18n && rawDetail.i18n[currentLang]) {
+                    const lData = rawDetail.i18n[currentLang];
+                    rawDetail.name = lData.name || rawDetail.name;
+                    rawDetail.flowerComposition = lData.flowerComposition || rawDetail.flowerComposition;
+                    rawDetail.description = lData.description || rawDetail.description;
+                    rawDetail.careTips = lData.careTips || rawDetail.careTips;
+                }
+                productDetailMemoryCache.set(cacheKey, rawDetail);
+                return rawDetail;
+            }
+        }
+    } catch (fbErr) {
+        // Tiếp tục fallback tới cachedProducts
+    }
+
     return cachedProducts.find(p => p && p.id === productId) || null;
 }
 
 /**
- * Lấy danh sách danh mục động từ Backend (đọc từ config/anne/categories.json)
+ * Nạp lại danh mục (config/anne/categories.json) nếu có thay đổi từ máy chủ (dựa trên ETag HTTP 304).
+ */
+async function reloadCategoriesIfChanged(forceRefresh = false) {
+    if (_isSyncingCategories) return { changed: false, categories: cachedCategories };
+    _isSyncingCategories = true;
+
+    let categoriesChanged = false;
+    let storedEtag = null;
+
+    if (typeof localStorage !== 'undefined') {
+        try {
+            storedEtag = localStorage.getItem(CATEGORIES_ETAG_KEY);
+        } catch (e) {}
+    }
+
+    try {
+        const headers = {};
+        if (storedEtag && !forceRefresh) {
+            headers['If-None-Match'] = storedEtag;
+        }
+
+        const res = await fetch(`${API_BASE}/categories?_t=${Date.now()}`, { headers });
+        if (res.status === 200) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                const oldStr = JSON.stringify(cachedCategories || []);
+                const newStr = JSON.stringify(json.data);
+                if (oldStr !== newStr) {
+                    cachedCategories = json.data;
+                    categoriesChanged = true;
+                    if (typeof window !== 'undefined') window.activeStorefrontCategories = cachedCategories;
+                }
+                const newEtag = res.headers.get("ETag");
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(cachedCategories));
+                        if (newEtag) localStorage.setItem(CATEGORIES_ETAG_KEY, newEtag);
+                    } catch (e) {}
+                }
+            }
+        } else if (res.status === 304) {
+            categoriesChanged = false;
+        } else if (!res.ok) {
+            throw new Error("HTTP " + res.status);
+        }
+    } catch (e) {
+        // Fallback file tĩnh config/anne/categories.json nếu API không phản hồi
+        if (!cachedCategories || cachedCategories.length === 0 || forceRefresh) {
+            try {
+                const fbRes = await fetch(`config/anne/categories.json?_t=${Date.now()}`);
+                if (fbRes.ok) {
+                    const fbData = await fbRes.json();
+                    if (Array.isArray(fbData) && fbData.length > 0) {
+                        const oldStr = JSON.stringify(cachedCategories || []);
+                        const newStr = JSON.stringify(fbData);
+                        if (oldStr !== newStr) {
+                            cachedCategories = fbData;
+                            categoriesChanged = true;
+                            if (typeof window !== 'undefined') window.activeStorefrontCategories = cachedCategories;
+                        }
+                        if (typeof localStorage !== 'undefined') {
+                            try {
+                                localStorage.setItem(CATEGORIES_CACHE_KEY, JSON.stringify(cachedCategories));
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (errFb) {}
+        }
+    } finally {
+        _lastCategoriesSyncTime = Date.now();
+        _isSyncingCategories = false;
+    }
+
+    if (categoriesChanged && typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
+        window.renderStorefrontCategories();
+    }
+
+    return { changed: categoriesChanged, categories: cachedCategories };
+}
+
+function filterActiveCategories(cats, activeOnly) {
+    if (!Array.isArray(cats)) return [];
+    if (!activeOnly) return cats;
+    return cats.filter(c => 
+        c && 
+        c.isActive !== false && 
+        c.isActive !== 'false' && 
+        c.status !== 'inactive' && 
+        c.status !== 'deleted' && 
+        !c.isDeleted
+    );
+}
+
+/**
+ * Lấy danh sách danh mục động (hỗ trợ Cache 0ms và kiểm tra ETag)
  * @param {boolean} activeOnly - Chỉ lấy danh mục đang hoạt động
  */
 async function getCategories(activeOnly = true) {
-    try {
-        const url = activeOnly ? `${API_BASE}/categories?active=true&_t=${Date.now()}` : `${API_BASE}/categories?_t=${Date.now()}`;
-        const res = await fetch(url);
-        if (res.ok) {
-            const json = await res.json();
-            if (json.success && Array.isArray(json.data)) {
-                cachedCategories = json.data;
-                if (typeof window !== 'undefined') window.activeStorefrontCategories = cachedCategories;
-                return cachedCategories;
-            }
-        }
-    } catch (e) {
-        console.warn("Lỗi nạp danh mục từ API:", e);
+    // 1. Trả về ngay lập tức nếu đã có trong cache RAM / localStorage (0ms)
+    if (cachedCategories && cachedCategories.length > 0) {
+        // Kiểm tra ngầm ETag ở chế độ nền
+        reloadCategoriesIfChanged(false).catch(() => {});
+        return filterActiveCategories(cachedCategories, activeOnly);
     }
-    return cachedCategories;
+
+    // 2. Nếu chưa có, nạp qua reloadCategoriesIfChanged
+    await reloadCategoriesIfChanged(false);
+    return filterActiveCategories(cachedCategories, activeOnly);
+}
+
+// Tự động kiểm tra thay đổi của categories.json khi người dùng chuyển lại tab (sau ít nhất 15 giây)
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+    const handleCategoriesVisibilityOrFocus = () => {
+        const now = Date.now();
+        if (now - _lastCategoriesSyncTime > 15000) {
+            reloadCategoriesIfChanged(false).catch(() => {});
+        }
+    };
+    window.addEventListener("focus", handleCategoriesVisibilityOrFocus);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            handleCategoriesVisibilityOrFocus();
+        }
+    });
 }
 
 // Global browser support
@@ -876,6 +1193,7 @@ if (typeof window !== 'undefined') {
     window.getProducts = getProducts;
     window.getProductById = getProductById;
     window.getCategories = getCategories;
+    window.reloadCategoriesIfChanged = reloadCategoriesIfChanged;
 }
 
 
@@ -1187,76 +1505,122 @@ function openCheckoutModalAfterAuth() {
     loadCheckoutPaymentMethods();
 }
 
-/**
- * Tải cấu hình phương thức thanh toán từ backend (/api/payment-config)
- * và ẩn/hiện/chọn các phương thức được BẬT (enabled: true/false).
- */
-async function loadCheckoutPaymentMethods() {
+const PAYMENT_CONFIG_CACHE_KEY = 'telua_payment_config_cache_v1';
+const PAYMENT_CONFIG_ETAG_KEY = 'telua_payment_config_etag_v1';
+let _isSyncingPaymentConfig = false;
+
+function applyPaymentMethodsConfig(methods) {
+    if (!methods || typeof document === 'undefined') return;
+
     const vietqrOpt = document.getElementById("payOption_vietqr");
     const codOpt = document.getElementById("payOption_cod");
     const warningEl = document.getElementById("checkoutNoPaymentWarning");
     const submitBtn = document.getElementById("btnSubmitOrder");
 
-    try {
-        const res = await fetch(`${API_BASE}/payment-config?_t=${Date.now()}`);
-        const json = await res.json();
+    const onlineEnabled = methods.online ? methods.online.enabled !== false : true;
+    const cashEnabled = methods.cash ? methods.cash.enabled !== false : true;
 
-        let methods = {
-            online: { enabled: true },
-            cash: { enabled: true }
-        };
+    if (vietqrOpt) {
+        vietqrOpt.style.display = onlineEnabled ? "flex" : "none";
+        const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
+        if (radio) radio.disabled = !onlineEnabled;
+    }
 
-        if (res.ok && json.success && json.data && json.data.methods) {
-            methods = json.data.methods;
-        }
+    if (codOpt) {
+        codOpt.style.display = cashEnabled ? "flex" : "none";
+        const radio = codOpt.querySelector("input[name='paymentMethod']");
+        if (radio) radio.disabled = !cashEnabled;
+    }
 
-        const onlineEnabled = methods.online ? methods.online.enabled !== false : true;
-        const cashEnabled = methods.cash ? methods.cash.enabled !== false : true;
+    // Tự động chọn phương thức khả dụng đầu tiên nếu phương thức hiện tại bị tắt
+    const currentChecked = document.querySelector("input[name='paymentMethod']:checked");
+    const currentIsInvalid = !currentChecked || currentChecked.disabled || 
+        (currentChecked.value === "vietqr" && !onlineEnabled) || 
+        ((currentChecked.value === "cod" || currentChecked.value === "cash") && !cashEnabled);
 
-        if (vietqrOpt) {
-            vietqrOpt.style.display = onlineEnabled ? "flex" : "none";
+    if (currentIsInvalid) {
+        if (onlineEnabled && vietqrOpt) {
             const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
-            if (radio) radio.disabled = !onlineEnabled;
-        }
-
-        if (codOpt) {
-            codOpt.style.display = cashEnabled ? "flex" : "none";
+            if (radio) radio.checked = true;
+        } else if (cashEnabled && codOpt) {
             const radio = codOpt.querySelector("input[name='paymentMethod']");
-            if (radio) radio.disabled = !cashEnabled;
+            if (radio) radio.checked = true;
+        }
+    }
+
+    updatePaymentOptionStyles();
+
+    // Xử lý cảnh báo nếu toàn bộ phương thức bị tắt
+    const noneEnabled = !onlineEnabled && !cashEnabled;
+    if (warningEl) warningEl.classList.toggle("hidden", !noneEnabled);
+    if (submitBtn) {
+        if (noneEnabled) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+    }
+}
+
+/**
+ * Tải cấu hình phương thức thanh toán từ backend (/api/payment-config)
+ * Áp dụng cache LocalStorage (0ms) và kiểm tra ETag 304 khi file thay đổi.
+ */
+async function loadCheckoutPaymentMethods(forceRefresh = false) {
+    // 1. Khởi tạo tức thì từ LocalStorage cache nếu có (0ms Instant Boot)
+    let storedEtag = null;
+    if (typeof localStorage !== 'undefined') {
+        try {
+            const cachedRaw = localStorage.getItem(PAYMENT_CONFIG_CACHE_KEY);
+            storedEtag = localStorage.getItem(PAYMENT_CONFIG_ETAG_KEY);
+            if (cachedRaw) {
+                const parsed = JSON.parse(cachedRaw);
+                if (parsed && typeof parsed === 'object') {
+                    applyPaymentMethodsConfig(parsed);
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (_isSyncingPaymentConfig) return;
+    _isSyncingPaymentConfig = true;
+
+    try {
+        const headers = {};
+        if (storedEtag && !forceRefresh) {
+            headers['If-None-Match'] = storedEtag;
         }
 
-        // Tự động chọn phương thức khả dụng đầu tiên nếu phương thức hiện tại bị tắt
-        const currentChecked = document.querySelector("input[name='paymentMethod']:checked");
-        const currentIsInvalid = !currentChecked || currentChecked.disabled || 
-            (currentChecked.value === "vietqr" && !onlineEnabled) || 
-            ((currentChecked.value === "cod" || currentChecked.value === "cash") && !cashEnabled);
+        const res = await fetch(`${API_BASE}/payment-config?_t=${Date.now()}`, { headers });
+        if (res.status === 200) {
+            const json = await res.json();
+            let methods = {
+                online: { enabled: true },
+                cash: { enabled: true }
+            };
 
-        if (currentIsInvalid) {
-            if (onlineEnabled && vietqrOpt) {
-                const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
-                if (radio) radio.checked = true;
-            } else if (cashEnabled && codOpt) {
-                const radio = codOpt.querySelector("input[name='paymentMethod']");
-                if (radio) radio.checked = true;
+            if (json.success && json.data && json.data.methods) {
+                methods = json.data.methods;
             }
-        }
 
-        updatePaymentOptionStyles();
+            applyPaymentMethodsConfig(methods);
 
-        // Xử lý cảnh báo nếu toàn bộ phương thức bị tắt
-        const noneEnabled = !onlineEnabled && !cashEnabled;
-        if (warningEl) warningEl.classList.toggle("hidden", !noneEnabled);
-        if (submitBtn) {
-            if (noneEnabled) {
-                submitBtn.disabled = true;
-                submitBtn.classList.add("opacity-50", "cursor-not-allowed");
-            } else {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            const newEtag = res.headers.get("ETag");
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.setItem(PAYMENT_CONFIG_CACHE_KEY, JSON.stringify(methods));
+                    if (newEtag) localStorage.setItem(PAYMENT_CONFIG_ETAG_KEY, newEtag);
+                } catch (e) {}
             }
+        } else if (res.status === 304) {
+            // Không thay đổi (304 Not Modified) -> Giữ nguyên cấu hình từ cache
         }
     } catch (e) {
-        console.warn("[CHECKOUT] Không thể tải payment-config:", e);
+        console.warn("[CHECKOUT] Không thể nạp payment-config từ API:", e);
+    } finally {
+        _isSyncingPaymentConfig = false;
     }
 }
 
@@ -1753,6 +2117,7 @@ if (typeof window !== "undefined") {
     window.onFulfillmentTypeChange = onFulfillmentTypeChange;
     window.loadPickupBranches = loadPickupBranches;
     window.loadCheckoutPaymentMethods = loadCheckoutPaymentMethods;
+    window.reloadPaymentConfigIfChanged = loadCheckoutPaymentMethods;
     window.updatePaymentOptionStyles = updatePaymentOptionStyles;
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -4763,6 +5128,9 @@ async function handleCategorySubmit(event) {
         if (res.ok && json.success) {
             closeCategoryModal();
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
             notifyUser(isEdit ? `Đã cập nhật danh mục "${name}" thành công!` : `Đã tạo danh mục mới "${name}" thành công!`, 'success');
@@ -4815,6 +5183,9 @@ async function toggleCategory(catId, catName, currentActive) {
         const json = await res.json();
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
             notifyUser(`Đã ${actionText.toLowerCase()} danh mục "${displayName}" thành công!`, 'success');
@@ -4850,6 +5221,9 @@ async function deleteCategory(catId, catName) {
         const json = await res.json();
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã chuyển danh mục sang trạng thái Đã Xóa thành công!", 'success');
         } else {
             notifyUser("Không thể xóa danh mục: " + (json.message || ""), 'error');
@@ -4872,6 +5246,9 @@ async function restoreCategory(catId, catName) {
         const json = await res.json();
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             notifyUser(`Đã khôi phục danh mục "${catName || catId}" thành công!`, 'success');
         } else {
             notifyUser("Lỗi khôi phục danh mục: " + (json.message || ""), 'error');
@@ -4907,6 +5284,9 @@ async function moveCategory(catId, direction) {
 
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             if (typeof renderStorefrontCategories === "function") {
                 renderStorefrontCategories();
             }
@@ -5598,6 +5978,9 @@ async function handleBranchSubmit(event) {
         if (res.ok && json.success) {
             closeBranchModal();
             await loadAdminBranches();
+            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
+                window.reloadBranchesIfChanged(true).catch(() => {});
+            }
             notifyUser(isEdit ? `Cập nhật chi nhánh "${name}" thành công!` : `Mở chi nhánh mới "${name}" thành công!`, 'success');
         } else {
             const msg = json.message || "Lỗi lưu thông tin chi nhánh";
@@ -5630,6 +6013,9 @@ async function toggleBranch(branchId) {
         const json = await res.json();
         if (res.ok && json.success) {
             await loadAdminBranches();
+            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
+                window.reloadBranchesIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã cập nhật trạng thái chi nhánh thành công!", 'success');
         } else {
             notifyUser("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"), 'error');
@@ -7014,6 +7400,9 @@ async function handleAddonSubmit(event) {
         if (json.success) {
             closeAddonModal();
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser(editId ? "Đã cập nhật add-on thành công!" : "Đã tạo add-on mới thành công!", 'success');
         } else {
             const msg = json.message || "Lỗi lưu add-on";
@@ -7111,6 +7500,9 @@ async function toggleAddon(addonId) {
         const json = await res.json();
         if (json.success) {
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã cập nhật trạng thái hiển thị add-on thành công!", 'success');
         } else {
             notifyUser("Lỗi: " + (json.message || "Lỗi cập nhật trạng thái add-on"), 'error');
@@ -7144,6 +7536,9 @@ async function deleteAddon(addonId, addonName) {
         const json = await res.json();
         if (json.success) {
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã chuyển add-on sang trạng thái Đã Xóa thành công!", 'success');
         } else {
             notifyUser("Không thể xóa add-on: " + (json.message || ""), 'error');
@@ -7166,6 +7561,9 @@ async function restoreAddon(addonId) {
         const json = await res.json();
         if (json.success) {
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser(`Đã khôi phục add-on thành công!`, 'success');
         } else {
             notifyUser(json.message || "Lỗi khôi phục add-on", 'error');
@@ -7805,6 +8203,9 @@ async function savePaymentConfig() {
         }
         adminPaymentConfig = json.data;
         renderPaymentMethods(adminPaymentConfig);
+        if (typeof window !== "undefined" && typeof window.reloadPaymentConfigIfChanged === "function") {
+            window.reloadPaymentConfigIfChanged(true).catch(() => {});
+        }
         notifyUser("Đã lưu cấu hình phương thức thanh toán thành công!", "success");
     } catch (e) {
         notifyUser("Lỗi lưu cấu hình thanh toán: " + e.message, "error");
@@ -7873,6 +8274,9 @@ async function saveAddonConfig() {
         if (!res.ok || !json.success) throw new Error(json.message || "Không thể lưu cấu hình");
         adminAddonConfig = json.data;
         renderAddonConfig(adminAddonConfig);
+        if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+            window.reloadAddonsIfChanged(true).catch(() => {});
+        }
         notifyUser(
             adminAddonConfig.showAddons
                 ? "Đã BẬT hiển thị khu vực Sản Phẩm Kèm Theo trên giao diện khách hàng."
@@ -8085,9 +8489,14 @@ async function handleCompanyInfoSubmit(event) {
             adminCompanyInfo = json.data || payload;
             updateLiveCompanyPreview(adminCompanyInfo);
             
-            // Cập nhật ngay lên giao diện bán hàng khách hàng nếu có hàm đồng bộ
-            if (typeof window !== "undefined" && typeof window.applyStorefrontCompanyInfo === "function") {
-                window.applyStorefrontCompanyInfo(adminCompanyInfo);
+            // Cập nhật ngay lên giao diện bán hàng và làm mới cache ETag
+            if (typeof window !== "undefined") {
+                if (typeof window.applyStorefrontCompanyInfo === "function") {
+                    window.applyStorefrontCompanyInfo(adminCompanyInfo);
+                }
+                if (typeof window.loadStorefrontCompanyInfo === "function") {
+                    window.loadStorefrontCompanyInfo(true).catch(() => {});
+                }
             }
             
             notifyUser("Đã cập nhật thông tin doanh nghiệp thành công!", 'success');
@@ -8569,8 +8978,9 @@ let currentOpenDetailProductId = null;
 
 /**
  * Đổ dữ liệu sản phẩm vào Modal Chi Tiết Nhanh
+ * Hỗ trợ hiển thị tức thì (Optimistic 0ms) và nạp ngầm các thông tin thiếu sau đó (Progressive Lazy Load)
  */
-function populateProductDetailModalContent(prod, currentAppLang, productId) {
+function populateProductDetailModalContent(prod, currentAppLang, productId, isPartial = false) {
     const modal = document.getElementById("productQuickDetailModal");
     const spinner = document.getElementById("detailLoadingSpinner");
     const body = document.getElementById("detailContentBody");
@@ -8595,7 +9005,7 @@ function populateProductDetailModalContent(prod, currentAppLang, productId) {
         }
     });
 
-    // Điền thông tin vào modal
+    // 1. Điền thông tin cơ bản sẵn có
     const nameEl = document.getElementById("detailProdName");
     if (nameEl) {
         nameEl.textContent = prodDisplayName;
@@ -8618,25 +9028,66 @@ function populateProductDetailModalContent(prod, currentAppLang, productId) {
         catLabelEl.textContent = catObj ? getCategoryDisplayName(catObj).toUpperCase() : (prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP");
     }
 
+    // 2. Điền thông tin chi tiết - Nếu thiếu thì hiển thị skeleton/loading indicator chờ nạp sau
     const descEl = document.getElementById("detailDescription");
     if (descEl) {
-        descEl.textContent = prodDescText || dict.prod_desc_fallback || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
-        if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
-        else descEl.removeAttribute("data-i18n");
+        if (prodDescText) {
+            descEl.innerHTML = `<span class="transition-opacity duration-300">${prodDescText}</span>`;
+            if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
+            else descEl.removeAttribute("data-i18n");
+        } else if (isPartial) {
+            descEl.innerHTML = `
+                <span class="inline-flex items-center text-gray-400 italic text-[11px] animate-pulse">
+                    <i class="fa-solid fa-wand-magic-sparkles text-primary/70 mr-1.5 text-xs"></i>
+                    <span>Đang nạp ý nghĩa & câu chuyện thiết kế...</span>
+                </span>
+            `;
+            descEl.removeAttribute("data-i18n");
+        } else {
+            descEl.textContent = dict.prod_desc_fallback || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
+        }
     }
 
     const compEl = document.getElementById("detailComposition");
     if (compEl) {
-        compEl.textContent = prodCompText || dict.prod_comp_fallback || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
-        if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
-        else compEl.removeAttribute("data-i18n");
+        if (prodCompText) {
+            compEl.innerHTML = `<span class="transition-opacity duration-300">${prodCompText}</span>`;
+            if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
+            else compEl.removeAttribute("data-i18n");
+        } else if (isPartial) {
+            compEl.innerHTML = `
+                <span class="inline-flex items-center text-gray-400 text-[11px] animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin text-primary mr-1.5 text-xs"></i>
+                    <span>Đang nạp danh sách hoa tự nhiên phối mẫu...</span>
+                </span>
+            `;
+            compEl.removeAttribute("data-i18n");
+        } else {
+            compEl.textContent = dict.prod_comp_fallback || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
+        }
     }
 
     const dimEl = document.getElementById("detailDimension");
-    if (dimEl) dimEl.textContent = prod.dimension || dict.prod_dim_standard || "Kích thước tiêu chuẩn";
+    if (dimEl) {
+        if (prod.dimension) {
+            dimEl.textContent = prod.dimension;
+        } else if (isPartial) {
+            dimEl.innerHTML = `<span class="text-gray-400 animate-pulse text-[10px]">Đang cập nhật...</span>`;
+        } else {
+            dimEl.textContent = dict.prod_dim_standard || "Kích thước tiêu chuẩn";
+        }
+    }
 
     const careEl = document.getElementById("detailCareTips");
-    if (careEl) careEl.textContent = prodCareTipsText || dict.prod_care_default || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
+    if (careEl) {
+        if (prodCareTipsText) {
+            careEl.textContent = prodCareTipsText;
+        } else if (isPartial) {
+            careEl.innerHTML = `<span class="text-gray-400 animate-pulse text-[10px]">Đang nạp mẹo giữ hoa...</span>`;
+        } else {
+            careEl.textContent = dict.prod_care_default || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
+        }
+    }
 
     const mainImgEl = document.getElementById("detailMainImg");
     if (mainImgEl) {
@@ -8646,23 +9097,47 @@ function populateProductDetailModalContent(prod, currentAppLang, productId) {
         mainImgEl.alt = prodDisplayName;
     }
 
-    // Gallery thumbnails (với Lazy loading và Skeleton preview)
+    // Gallery thumbnails (với Lazy loading, Skeleton preview và nạp sau mượt mà)
     const galleryContainer = document.getElementById("detailGalleryThumbnails");
     if (galleryContainer) {
-        const galleryList = Array.isArray(prod.gallery) && prod.gallery.length > 0 ? prod.gallery : [prodImg];
-        let galHtml = '';
-        galleryList.forEach(imgUrl => {
-            galHtml += `
-                <div onclick="const mImg=document.getElementById('detailMainImg'); if(mImg){mImg.parentElement?.classList.add('img-skeleton'); mImg.classList.remove('loaded'); mImg.src='${imgUrl}';}" class="w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-primary flex-shrink-0 transition img-skeleton">
-                    <img src="${imgUrl}" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement?.classList.remove('img-skeleton');" onerror="handleImageErrorFallback(this)" class="w-full h-full object-cover">
+        const hasFullGallery = Array.isArray(prod.gallery) && prod.gallery.length > 1;
+        if (hasFullGallery) {
+            let galHtml = '';
+            prod.gallery.forEach((imgUrl, idx) => {
+                const isFirst = idx === 0;
+                galHtml += `
+                    <div onclick="const mImg=document.getElementById('detailMainImg'); if(mImg){mImg.parentElement?.classList.add('img-skeleton'); mImg.classList.remove('loaded'); mImg.src='${imgUrl}';}" class="w-12 h-12 rounded-lg overflow-hidden border-2 ${isFirst ? 'border-primary' : 'border-gray-200'} cursor-pointer hover:border-primary flex-shrink-0 transition img-skeleton">
+                        <img src="${imgUrl}" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement?.classList.remove('img-skeleton');" onerror="handleImageErrorFallback(this)" class="w-full h-full object-cover">
+                    </div>
+                `;
+            });
+            galleryContainer.innerHTML = galHtml;
+        } else if (isPartial) {
+            // Hiển thị ảnh chính và 2 ô skeleton loader biểu thị album ảnh đang được nạp ngầm
+            galleryContainer.innerHTML = `
+                <div class="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary cursor-pointer flex-shrink-0">
+                    <img src="${prodImg}" class="w-full h-full object-cover">
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-gray-100 border border-dashed border-gray-200 animate-pulse flex-shrink-0 flex items-center justify-center text-gray-300" title="Đang tải thêm ảnh...">
+                    <i class="fa-solid fa-image text-xs"></i>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-gray-100 border border-dashed border-gray-200 animate-pulse flex-shrink-0 flex items-center justify-center text-gray-300" title="Đang tải thêm ảnh...">
+                    <i class="fa-solid fa-image text-xs"></i>
                 </div>
             `;
-        });
-        galleryContainer.innerHTML = galHtml;
+        } else {
+            galleryContainer.innerHTML = `
+                <div class="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary cursor-pointer flex-shrink-0">
+                    <img src="${prodImg}" class="w-full h-full object-cover">
+                </div>
+            `;
+        }
     }
 
-    // Render Add-Ons (sản phẩm kèm theo) trong modal
+    // Render Add-Ons (sản phẩm kèm theo) trong modal từ cache tức thì
     renderAddonsInModal(currentAppLang);
+    // Kiểm tra ngầm xem file addons.json hoặc addonConfig.json có thay đổi hay không
+    reloadAddonsIfChanged(false).catch(() => {});
 
     // Gắn sự kiện nút Thêm Giỏ Hàng (kèm các add-on đã chọn)
     const btnAdd = document.getElementById("btnQuickAddToCart");
@@ -8688,9 +9163,39 @@ function populateProductDetailModalContent(prod, currentAppLang, productId) {
 }
 
 // ================= ADD-ONS (SẢN PHẨM KÈM THEO) =================
+const ADDONS_STORAGE_KEY = 'telua_addons_cache_v1';
+const ADDONS_ETAG_KEY = 'telua_addons_etag_v1';
+const ADDON_CONFIG_STORAGE_KEY = 'telua_addon_config_cache_v1';
+const ADDON_CONFIG_ETAG_KEY = 'telua_addon_config_etag_v1';
+
 let cachedAddons = null;
 let cachedAddonVisible = null; // null = chưa tải; true/false = cấu hình showAddons
 let selectedAddons = new Map(); // addonId -> { addon, quantity }
+let _lastAddonsSyncTime = 0;
+let _isSyncingAddons = false;
+let _hasScheduledAddonsPreload = false;
+
+// 1. Tải tức thì từ LocalStorage Cache (0ms - Instant Boot) nếu có
+try {
+    if (typeof localStorage !== 'undefined') {
+        const savedAddons = localStorage.getItem(ADDONS_STORAGE_KEY);
+        if (savedAddons) {
+            const parsed = JSON.parse(savedAddons);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                cachedAddons = parsed;
+            }
+        }
+        const savedCfg = localStorage.getItem(ADDON_CONFIG_STORAGE_KEY);
+        if (savedCfg) {
+            const parsedCfg = JSON.parse(savedCfg);
+            if (parsedCfg && typeof parsedCfg.showAddons === 'boolean') {
+                cachedAddonVisible = parsedCfg.showAddons;
+            }
+        }
+    }
+} catch (e) {
+    console.warn("[ADDONS] Lỗi đọc cache từ localStorage:", e);
+}
 
 /**
  * Kiểm tra cấu hình bật/tắt hiển thị khu vực add-on (config/anne/addonConfig.json).
@@ -8698,43 +9203,188 @@ let selectedAddons = new Map(); // addonId -> { addon, quantity }
  */
 async function isAddonSectionEnabled(forceRefresh = false) {
     if (cachedAddonVisible !== null && !forceRefresh) return cachedAddonVisible;
-    try {
-        const res = await fetch(`${API_BASE}/addon-config`);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        const cfg = (data && data.data) ? data.data : data;
-        cachedAddonVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
-    } catch (err) {
-        console.warn("[ADDONS] Lỗi tải addon-config, mặc định hiển thị:", err);
-        cachedAddonVisible = true;
-    }
-    return cachedAddonVisible;
+    await reloadAddonsIfChanged(forceRefresh);
+    return cachedAddonVisible !== null ? cachedAddonVisible : true;
 }
 
 /**
  * Lấy danh sách add-ons đang hoạt động từ API (có cache)
  */
 async function loadAddons(forceRefresh = false) {
-    console.debug("[ADDONS] loadAddons() gọi, forceRefresh =", forceRefresh, "| cachedAddons =", cachedAddons);
-    if (cachedAddons && !forceRefresh) {
+    console.debug("[ADDONS] loadAddons() gọi, forceRefresh =", forceRefresh, "| cachedAddons =", cachedAddons ? cachedAddons.length : 0);
+    if (cachedAddons && cachedAddons.length > 0 && !forceRefresh) {
         console.debug("[ADDONS] Dùng cache:", cachedAddons.length, "add-ons");
         return cachedAddons;
     }
+    await reloadAddonsIfChanged(forceRefresh);
+    return cachedAddons || [];
+}
+
+/**
+ * Nạp lại addons.json và addonConfig.json nếu có thay đổi từ máy chủ (dựa trên ETag HTTP 304).
+ * Cập nhật vào Memory và LocalStorage; tự động re-render modal nếu đang mở.
+ */
+async function reloadAddonsIfChanged(forceRefresh = false) {
+    if (_isSyncingAddons) return { changed: false, cachedAddons, cachedAddonVisible };
+    _isSyncingAddons = true;
+
+    let configChanged = false;
+    let addonsChanged = false;
+
+    // 1. Kiểm tra & nạp cấu hình addonConfig.json (GET /addon-config)
     try {
-        console.debug("[ADDONS] Fetch:", `${API_BASE}/addons`);
-        const res = await fetch(`${API_BASE}/addons`);
-        console.debug("[ADDONS] HTTP status:", res.status);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        // Endpoint trả về { success, data: [...] }
-        cachedAddons = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
-        console.debug("[ADDONS] Đã parse:", cachedAddons.length, "add-ons");
-        cachedAddons.forEach(a => console.debug("[ADDONS]   -", a.id, "| image:", a.image));
-    } catch (err) {
-        console.warn("[ADDONS] Lỗi tải add-ons:", err);
-        cachedAddons = cachedAddons || [];
+        const cfgHeaders = {};
+        const storedCfgEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDON_CONFIG_ETAG_KEY) : null;
+        if (storedCfgEtag && !forceRefresh) {
+            cfgHeaders['If-None-Match'] = storedCfgEtag;
+        }
+
+        const resCfg = await fetch(`${API_BASE}/addon-config?_t=${Date.now()}`, { headers: cfgHeaders });
+        if (resCfg.status === 200) {
+            const data = await resCfg.json();
+            const cfg = (data && data.data) ? data.data : data;
+            const newVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
+            if (cachedAddonVisible !== newVisible) {
+                cachedAddonVisible = newVisible;
+                configChanged = true;
+            }
+            const newEtag = resCfg.headers.get("ETag");
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(cfg));
+                    if (newEtag) localStorage.setItem(ADDON_CONFIG_ETAG_KEY, newEtag);
+                } catch (e) {}
+            }
+        } else if (resCfg.status !== 304 && !resCfg.ok) {
+            throw new Error("HTTP " + resCfg.status);
+        }
+    } catch (errCfg) {
+        // Fallback trực tiếp file config/anne/addonConfig.json tĩnh
+        try {
+            const fbRes = await fetch(`config/anne/addonConfig.json?_t=${Date.now()}`);
+            if (fbRes.ok) {
+                const fbCfg = await fbRes.json();
+                const newVisible = fbCfg && typeof fbCfg.showAddons === "boolean" ? fbCfg.showAddons : true;
+                if (cachedAddonVisible !== newVisible) {
+                    cachedAddonVisible = newVisible;
+                    configChanged = true;
+                }
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(fbCfg));
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
+        if (cachedAddonVisible === null) cachedAddonVisible = true;
     }
-    return cachedAddons;
+
+    // 2. Kiểm tra & nạp danh sách addons.json (GET /addons)
+    try {
+        const addonHeaders = {};
+        const storedAddonsEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDONS_ETAG_KEY) : null;
+        if (storedAddonsEtag && !forceRefresh) {
+            addonHeaders['If-None-Match'] = storedAddonsEtag;
+        }
+
+        const resAddons = await fetch(`${API_BASE}/addons?_t=${Date.now()}`, { headers: addonHeaders });
+        if (resAddons.status === 200) {
+            const data = await resAddons.json();
+            const items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
+            const oldStr = JSON.stringify(cachedAddons || []);
+            const newStr = JSON.stringify(items);
+            if (oldStr !== newStr) {
+                cachedAddons = items;
+                addonsChanged = true;
+            }
+            const newEtag = resAddons.headers.get("ETag");
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.setItem(ADDONS_STORAGE_KEY, JSON.stringify(cachedAddons));
+                    if (newEtag) localStorage.setItem(ADDONS_ETAG_KEY, newEtag);
+                } catch (e) {}
+            }
+        } else if (resAddons.status !== 304 && !resAddons.ok) {
+            throw new Error("HTTP " + resAddons.status);
+        }
+    } catch (errAddons) {
+        // Fallback trực tiếp file config/anne/addons.json tĩnh
+        try {
+            const fbRes = await fetch(`config/anne/addons.json?_t=${Date.now()}`);
+            if (fbRes.ok) {
+                const raw = await fbRes.json();
+                const activeItems = Array.isArray(raw) ? raw.filter(a => a && a.isActive !== false && a.status !== 'inactive' && !a.isDeleted) : [];
+                const oldStr = JSON.stringify(cachedAddons || []);
+                const newStr = JSON.stringify(activeItems);
+                if (oldStr !== newStr) {
+                    cachedAddons = activeItems;
+                    addonsChanged = true;
+                }
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(ADDONS_STORAGE_KEY, JSON.stringify(cachedAddons));
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
+        if (!cachedAddons) cachedAddons = [];
+    }
+
+    _lastAddonsSyncTime = Date.now();
+    _isSyncingAddons = false;
+
+    const hasChanged = configChanged || addonsChanged;
+    if (hasChanged || forceRefresh) {
+        console.debug("[ADDONS] Dữ liệu addons hoặc addonConfig đã được cập nhật thành công:", { configChanged, addonsChanged, count: (cachedAddons || []).length });
+        
+        // Tự động re-render nếu modal chi tiết sản phẩm đang mở
+        if (typeof document !== 'undefined') {
+            const modal = document.getElementById("productQuickDetailModal");
+            if (modal && !modal.classList.contains("hidden")) {
+                const activeLang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : "vi";
+                renderAddonsInModal(activeLang);
+            }
+        }
+
+        // Phát sự kiện CustomEvent cho các module khác
+        if (typeof window !== 'undefined') {
+            try {
+                window.dispatchEvent(new CustomEvent("addonsUpdated", {
+                    detail: { addons: cachedAddons, config: cachedAddonVisible }
+                }));
+            } catch (e) {}
+        }
+    }
+
+    return { changed: hasChanged, cachedAddons, cachedAddonVisible };
+}
+
+/**
+ * Lên lịch nạp ngầm addons.json & addonConfig.json sau đúng 1 giây sau khi tải xong web.
+ */
+function scheduleAddonsPreload() {
+    if (_hasScheduledAddonsPreload) return;
+    _hasScheduledAddonsPreload = true;
+
+    const runPreload = () => {
+        setTimeout(async () => {
+            console.debug("[ADDONS] Bắt đầu nạp ngầm addons.json & addonConfig.json (1 giây sau khi web nạp xong)...");
+            try {
+                await reloadAddonsIfChanged(false);
+                console.debug("[ADDONS] Đã nạp và lưu trữ addons:", (cachedAddons || []).length, "mục; showAddons:", cachedAddonVisible);
+            } catch (err) {
+                console.warn("[ADDONS] Lỗi nạp ngầm addons sau 1 giây:", err);
+            }
+        }, 1000);
+    };
+
+    if (typeof window !== 'undefined') {
+        if (document.readyState === 'complete') {
+            runPreload();
+        } else {
+            window.addEventListener('load', runPreload, { once: true });
+        }
+    }
 }
 
 /**
@@ -8985,9 +9635,13 @@ async function openProductQuickDetail(productId) {
         cachedProd = allStorefrontProducts.find(p => p && (p.id === productId || p.name === productId));
     }
 
+    const hasFullDetail = cachedProd && (cachedProd.isFullDetailLoaded || (cachedProd.flowerComposition && Array.isArray(cachedProd.gallery) && cachedProd.gallery.length > 1));
+
     if (cachedProd) {
-        // Hiển thị ngay lập tức 0ms không để khách hàng phải chờ spinner
-        populateProductDetailModalContent(cachedProd, currentAppLang, productId);
+        // Hiển thị ngay lập tức 0ms với thông tin cơ bản; các thông tin thiếu sẽ tự động tải sau
+        populateProductDetailModalContent(cachedProd, currentAppLang, productId, !hasFullDetail);
+        if (spinner) spinner.classList.add("hidden");
+        if (body) body.classList.remove("hidden");
     } else {
         if (spinner) {
             spinner.innerHTML = `
@@ -8999,11 +9653,17 @@ async function openProductQuickDetail(productId) {
         if (body) body.classList.add("hidden");
     }
 
-    // 2. Tải thêm chi tiết đầy đủ ngầm qua API (album gallery, thành phần chi tiết, tồn kho)
+    // 2. Tự động tải ngầm các thông tin còn thiếu (album gallery, thành phần chi tiết, câu chuyện, mẹo chăm sóc...)
     try {
         const fullProd = await getProductById(productId, currentAppLang);
         if (fullProd && currentOpenDetailProductId === productId) {
-            populateProductDetailModalContent(fullProd, currentAppLang, productId);
+            fullProd.isFullDetailLoaded = true;
+            if (cachedProd) {
+                Object.assign(cachedProd, fullProd);
+            }
+            populateProductDetailModalContent(fullProd, currentAppLang, productId, false);
+            if (spinner) spinner.classList.add("hidden");
+            if (body) body.classList.remove("hidden");
         }
     } catch (err) {
         console.warn("Lỗi đồng bộ chi tiết sản phẩm:", err);
@@ -9671,6 +10331,11 @@ async function renderStorefrontCategories() {
     }
 }
 
+const INFO_COMPANY_CACHE_KEY = 'telua_info_company_cache_v1';
+const INFO_COMPANY_ETAG_KEY = 'telua_info_company_etag_v1';
+let _isSyncingCompanyInfo = false;
+let _lastCompanyInfoSyncTime = 0;
+
 /**
  * 3. Đồng bộ thông tin thương hiệu & liên hệ doanh nghiệp (infoCompany.json) lên Storefront
  */
@@ -9730,38 +10395,98 @@ function applyStorefrontCompanyInfo(info) {
         setHref('floatingZaloLink', info.zalo);
     }
 
-    if (info.mapUrl) {
-        setHref('storeDirectionsLink', info.mapUrl);
-        setHref('storeLargerMapLink', info.mapUrl);
-    }
+    // Bản đồ và chỉ đường khu vực Showroom do Showroom Locator (branches.json) quản lý
+    // Ưu tiên hiển thị chi nhánh đang chọn (từ cache), không để infoCompany ghi đè
+    const activeBranch = (typeof window !== 'undefined' && typeof window.getCurrentSelectedBranch === 'function') 
+        ? window.getCurrentSelectedBranch() 
+        : null;
 
-    if (info.mapEmbedUrl) {
-        const iframe = document.getElementById('storeMapIframe');
-        if (iframe && info.mapEmbedUrl) {
-            iframe.src = info.mapEmbedUrl;
+    if (activeBranch && typeof window.selectShowroomBranch === 'function') {
+        window.selectShowroomBranch(activeBranch.id, false);
+    } else {
+        if (info.mapUrl) {
+            setHref('storeDirectionsLink', info.mapUrl);
+            setHref('storeLargerMapLink', info.mapUrl);
+        }
+
+        if (info.mapEmbedUrl) {
+            const iframe = document.getElementById('storeMapIframe');
+            if (iframe && info.mapEmbedUrl) {
+                iframe.src = info.mapEmbedUrl;
+            }
         }
     }
 }
 
-async function loadStorefrontCompanyInfo() {
+// Khởi tạo tức thì thông tin doanh nghiệp từ cache LocalStorage (0ms Instant Boot)
+try {
+    if (typeof localStorage !== 'undefined') {
+        const cachedRaw = localStorage.getItem(INFO_COMPANY_CACHE_KEY);
+        if (cachedRaw) {
+            const parsed = JSON.parse(cachedRaw);
+            if (parsed && typeof parsed === 'object') {
+                applyStorefrontCompanyInfo(parsed);
+            }
+        }
+    }
+} catch (e) {
+    console.warn("Lỗi đọc cache infoCompany:", e);
+}
+
+async function loadStorefrontCompanyInfo(forceRefresh = false) {
+    if (_isSyncingCompanyInfo) return;
+    _isSyncingCompanyInfo = true;
+
+    let storedEtag = null;
+    if (typeof localStorage !== 'undefined') {
+        try {
+            storedEtag = localStorage.getItem(INFO_COMPANY_ETAG_KEY);
+        } catch (e) {}
+    }
+
     try {
-        const res = await fetch(`${API_BASE}/company-info?_t=${Date.now()}`);
-        if (res.ok) {
+        const headers = {};
+        if (storedEtag && !forceRefresh) {
+            headers['If-None-Match'] = storedEtag;
+        }
+
+        const res = await fetch(`${API_BASE}/company-info?_t=${Date.now()}`, { headers });
+        if (res.status === 200) {
             const json = await res.json();
             if (json.success && json.data) {
                 applyStorefrontCompanyInfo(json.data);
+                const newEtag = res.headers.get("ETag");
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(INFO_COMPANY_CACHE_KEY, JSON.stringify(json.data));
+                        if (newEtag) localStorage.setItem(INFO_COMPANY_ETAG_KEY, newEtag);
+                    } catch (e) {}
+                }
                 return;
             }
+        } else if (res.status === 304) {
+            // Không thay đổi (304 Not Modified) -> Giữ nguyên cache
+            return;
         }
     } catch (e) {
         // Thử fallback trực tiếp từ file JSON tĩnh
+    } finally {
+        _lastCompanyInfoSyncTime = Date.now();
+        _isSyncingCompanyInfo = false;
     }
 
     try {
         const fallbackRes = await fetch(`config/anne/infoCompany.json?_t=${Date.now()}`);
         if (fallbackRes.ok) {
             const info = await fallbackRes.json();
-            if (info) applyStorefrontCompanyInfo(info);
+            if (info) {
+                applyStorefrontCompanyInfo(info);
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(INFO_COMPANY_CACHE_KEY, JSON.stringify(info));
+                    } catch (e) {}
+                }
+            }
         }
     } catch (err) {
         console.log("Using static default company info.");
@@ -9801,6 +10526,7 @@ async function initApp() {
     renderStorefrontCategories();
     await renderAllProducts();
     loadStorefrontCompanyInfo();
+    scheduleAddonsPreload();
     
     // 1. Kiểm tra tham số tìm kiếm từ URL Hash (#/search?q=...) hoặc query khi vừa tải trang
     if (typeof window !== 'undefined') {
@@ -9923,6 +10649,26 @@ if (typeof window !== 'undefined') {
     window.scrollAddons = scrollAddons;
     window.applyStorefrontCompanyInfo = applyStorefrontCompanyInfo;
     window.loadStorefrontCompanyInfo = loadStorefrontCompanyInfo;
+    window.reloadCompanyInfoIfChanged = loadStorefrontCompanyInfo;
+    window.reloadAddonsIfChanged = reloadAddonsIfChanged;
+    window.scheduleAddonsPreload = scheduleAddonsPreload;
+
+    // Tự động kiểm tra thay đổi của file addons.json / addonConfig.json / infoCompany.json khi người dùng chuyển lại tab
+    const handleAddonsVisibilityOrFocus = () => {
+        const now = Date.now();
+        if (now - _lastAddonsSyncTime > 10000) {
+            reloadAddonsIfChanged(false).catch(() => {});
+        }
+        if (now - _lastCompanyInfoSyncTime > 15000) {
+            loadStorefrontCompanyInfo(false).catch(() => {});
+        }
+    };
+    window.addEventListener('focus', handleAddonsVisibilityOrFocus);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            handleAddonsVisibilityOrFocus();
+        }
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initApp);

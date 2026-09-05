@@ -712,6 +712,9 @@ export async function handleCategorySubmit(event) {
         if (res.ok && json.success) {
             closeCategoryModal();
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
             notifyUser(isEdit ? `Đã cập nhật danh mục "${name}" thành công!` : `Đã tạo danh mục mới "${name}" thành công!`, 'success');
@@ -764,6 +767,9 @@ export async function toggleCategory(catId, catName, currentActive) {
         const json = await res.json();
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             if (typeof renderStorefrontCategories === "function") renderStorefrontCategories();
             if (typeof renderAllProducts === "function") renderAllProducts();
             notifyUser(`Đã ${actionText.toLowerCase()} danh mục "${displayName}" thành công!`, 'success');
@@ -799,6 +805,9 @@ export async function deleteCategory(catId, catName) {
         const json = await res.json();
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã chuyển danh mục sang trạng thái Đã Xóa thành công!", 'success');
         } else {
             notifyUser("Không thể xóa danh mục: " + (json.message || ""), 'error');
@@ -821,6 +830,9 @@ export async function restoreCategory(catId, catName) {
         const json = await res.json();
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             notifyUser(`Đã khôi phục danh mục "${catName || catId}" thành công!`, 'success');
         } else {
             notifyUser("Lỗi khôi phục danh mục: " + (json.message || ""), 'error');
@@ -856,6 +868,9 @@ export async function moveCategory(catId, direction) {
 
         if (json.success) {
             await loadAdminCategories();
+            if (typeof window !== "undefined" && typeof window.reloadCategoriesIfChanged === "function") {
+                window.reloadCategoriesIfChanged(true).catch(() => {});
+            }
             if (typeof renderStorefrontCategories === "function") {
                 renderStorefrontCategories();
             }
@@ -1547,6 +1562,9 @@ export async function handleBranchSubmit(event) {
         if (res.ok && json.success) {
             closeBranchModal();
             await loadAdminBranches();
+            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
+                window.reloadBranchesIfChanged(true).catch(() => {});
+            }
             notifyUser(isEdit ? `Cập nhật chi nhánh "${name}" thành công!` : `Mở chi nhánh mới "${name}" thành công!`, 'success');
         } else {
             const msg = json.message || "Lỗi lưu thông tin chi nhánh";
@@ -1579,6 +1597,9 @@ export async function toggleBranch(branchId) {
         const json = await res.json();
         if (res.ok && json.success) {
             await loadAdminBranches();
+            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
+                window.reloadBranchesIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã cập nhật trạng thái chi nhánh thành công!", 'success');
         } else {
             notifyUser("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"), 'error');
@@ -2963,6 +2984,9 @@ export async function handleAddonSubmit(event) {
         if (json.success) {
             closeAddonModal();
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser(editId ? "Đã cập nhật add-on thành công!" : "Đã tạo add-on mới thành công!", 'success');
         } else {
             const msg = json.message || "Lỗi lưu add-on";
@@ -3060,6 +3084,9 @@ export async function toggleAddon(addonId) {
         const json = await res.json();
         if (json.success) {
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã cập nhật trạng thái hiển thị add-on thành công!", 'success');
         } else {
             notifyUser("Lỗi: " + (json.message || "Lỗi cập nhật trạng thái add-on"), 'error');
@@ -3093,6 +3120,9 @@ export async function deleteAddon(addonId, addonName) {
         const json = await res.json();
         if (json.success) {
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser("Đã chuyển add-on sang trạng thái Đã Xóa thành công!", 'success');
         } else {
             notifyUser("Không thể xóa add-on: " + (json.message || ""), 'error');
@@ -3115,6 +3145,9 @@ export async function restoreAddon(addonId) {
         const json = await res.json();
         if (json.success) {
             await loadAdminAddons();
+            if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+                window.reloadAddonsIfChanged(true).catch(() => {});
+            }
             notifyUser(`Đã khôi phục add-on thành công!`, 'success');
         } else {
             notifyUser(json.message || "Lỗi khôi phục add-on", 'error');
@@ -3754,6 +3787,9 @@ export async function savePaymentConfig() {
         }
         adminPaymentConfig = json.data;
         renderPaymentMethods(adminPaymentConfig);
+        if (typeof window !== "undefined" && typeof window.reloadPaymentConfigIfChanged === "function") {
+            window.reloadPaymentConfigIfChanged(true).catch(() => {});
+        }
         notifyUser("Đã lưu cấu hình phương thức thanh toán thành công!", "success");
     } catch (e) {
         notifyUser("Lỗi lưu cấu hình thanh toán: " + e.message, "error");
@@ -3822,6 +3858,9 @@ export async function saveAddonConfig() {
         if (!res.ok || !json.success) throw new Error(json.message || "Không thể lưu cấu hình");
         adminAddonConfig = json.data;
         renderAddonConfig(adminAddonConfig);
+        if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
+            window.reloadAddonsIfChanged(true).catch(() => {});
+        }
         notifyUser(
             adminAddonConfig.showAddons
                 ? "Đã BẬT hiển thị khu vực Sản Phẩm Kèm Theo trên giao diện khách hàng."
@@ -4034,9 +4073,14 @@ export async function handleCompanyInfoSubmit(event) {
             adminCompanyInfo = json.data || payload;
             updateLiveCompanyPreview(adminCompanyInfo);
             
-            // Cập nhật ngay lên giao diện bán hàng khách hàng nếu có hàm đồng bộ
-            if (typeof window !== "undefined" && typeof window.applyStorefrontCompanyInfo === "function") {
-                window.applyStorefrontCompanyInfo(adminCompanyInfo);
+            // Cập nhật ngay lên giao diện bán hàng và làm mới cache ETag
+            if (typeof window !== "undefined") {
+                if (typeof window.applyStorefrontCompanyInfo === "function") {
+                    window.applyStorefrontCompanyInfo(adminCompanyInfo);
+                }
+                if (typeof window.loadStorefrontCompanyInfo === "function") {
+                    window.loadStorefrontCompanyInfo(true).catch(() => {});
+                }
             }
             
             notifyUser("Đã cập nhật thông tin doanh nghiệp thành công!", 'success');

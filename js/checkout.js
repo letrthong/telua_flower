@@ -305,76 +305,122 @@ export function openCheckoutModalAfterAuth() {
     loadCheckoutPaymentMethods();
 }
 
-/**
- * Tải cấu hình phương thức thanh toán từ backend (/api/payment-config)
- * và ẩn/hiện/chọn các phương thức được BẬT (enabled: true/false).
- */
-export async function loadCheckoutPaymentMethods() {
+const PAYMENT_CONFIG_CACHE_KEY = 'telua_payment_config_cache_v1';
+const PAYMENT_CONFIG_ETAG_KEY = 'telua_payment_config_etag_v1';
+let _isSyncingPaymentConfig = false;
+
+function applyPaymentMethodsConfig(methods) {
+    if (!methods || typeof document === 'undefined') return;
+
     const vietqrOpt = document.getElementById("payOption_vietqr");
     const codOpt = document.getElementById("payOption_cod");
     const warningEl = document.getElementById("checkoutNoPaymentWarning");
     const submitBtn = document.getElementById("btnSubmitOrder");
 
-    try {
-        const res = await fetch(`${API_BASE}/payment-config?_t=${Date.now()}`);
-        const json = await res.json();
+    const onlineEnabled = methods.online ? methods.online.enabled !== false : true;
+    const cashEnabled = methods.cash ? methods.cash.enabled !== false : true;
 
-        let methods = {
-            online: { enabled: true },
-            cash: { enabled: true }
-        };
+    if (vietqrOpt) {
+        vietqrOpt.style.display = onlineEnabled ? "flex" : "none";
+        const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
+        if (radio) radio.disabled = !onlineEnabled;
+    }
 
-        if (res.ok && json.success && json.data && json.data.methods) {
-            methods = json.data.methods;
-        }
+    if (codOpt) {
+        codOpt.style.display = cashEnabled ? "flex" : "none";
+        const radio = codOpt.querySelector("input[name='paymentMethod']");
+        if (radio) radio.disabled = !cashEnabled;
+    }
 
-        const onlineEnabled = methods.online ? methods.online.enabled !== false : true;
-        const cashEnabled = methods.cash ? methods.cash.enabled !== false : true;
+    // Tự động chọn phương thức khả dụng đầu tiên nếu phương thức hiện tại bị tắt
+    const currentChecked = document.querySelector("input[name='paymentMethod']:checked");
+    const currentIsInvalid = !currentChecked || currentChecked.disabled || 
+        (currentChecked.value === "vietqr" && !onlineEnabled) || 
+        ((currentChecked.value === "cod" || currentChecked.value === "cash") && !cashEnabled);
 
-        if (vietqrOpt) {
-            vietqrOpt.style.display = onlineEnabled ? "flex" : "none";
+    if (currentIsInvalid) {
+        if (onlineEnabled && vietqrOpt) {
             const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
-            if (radio) radio.disabled = !onlineEnabled;
-        }
-
-        if (codOpt) {
-            codOpt.style.display = cashEnabled ? "flex" : "none";
+            if (radio) radio.checked = true;
+        } else if (cashEnabled && codOpt) {
             const radio = codOpt.querySelector("input[name='paymentMethod']");
-            if (radio) radio.disabled = !cashEnabled;
+            if (radio) radio.checked = true;
+        }
+    }
+
+    updatePaymentOptionStyles();
+
+    // Xử lý cảnh báo nếu toàn bộ phương thức bị tắt
+    const noneEnabled = !onlineEnabled && !cashEnabled;
+    if (warningEl) warningEl.classList.toggle("hidden", !noneEnabled);
+    if (submitBtn) {
+        if (noneEnabled) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+    }
+}
+
+/**
+ * Tải cấu hình phương thức thanh toán từ backend (/api/payment-config)
+ * Áp dụng cache LocalStorage (0ms) và kiểm tra ETag 304 khi file thay đổi.
+ */
+export async function loadCheckoutPaymentMethods(forceRefresh = false) {
+    // 1. Khởi tạo tức thì từ LocalStorage cache nếu có (0ms Instant Boot)
+    let storedEtag = null;
+    if (typeof localStorage !== 'undefined') {
+        try {
+            const cachedRaw = localStorage.getItem(PAYMENT_CONFIG_CACHE_KEY);
+            storedEtag = localStorage.getItem(PAYMENT_CONFIG_ETAG_KEY);
+            if (cachedRaw) {
+                const parsed = JSON.parse(cachedRaw);
+                if (parsed && typeof parsed === 'object') {
+                    applyPaymentMethodsConfig(parsed);
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (_isSyncingPaymentConfig) return;
+    _isSyncingPaymentConfig = true;
+
+    try {
+        const headers = {};
+        if (storedEtag && !forceRefresh) {
+            headers['If-None-Match'] = storedEtag;
         }
 
-        // Tự động chọn phương thức khả dụng đầu tiên nếu phương thức hiện tại bị tắt
-        const currentChecked = document.querySelector("input[name='paymentMethod']:checked");
-        const currentIsInvalid = !currentChecked || currentChecked.disabled || 
-            (currentChecked.value === "vietqr" && !onlineEnabled) || 
-            ((currentChecked.value === "cod" || currentChecked.value === "cash") && !cashEnabled);
+        const res = await fetch(`${API_BASE}/payment-config?_t=${Date.now()}`, { headers });
+        if (res.status === 200) {
+            const json = await res.json();
+            let methods = {
+                online: { enabled: true },
+                cash: { enabled: true }
+            };
 
-        if (currentIsInvalid) {
-            if (onlineEnabled && vietqrOpt) {
-                const radio = vietqrOpt.querySelector("input[name='paymentMethod']");
-                if (radio) radio.checked = true;
-            } else if (cashEnabled && codOpt) {
-                const radio = codOpt.querySelector("input[name='paymentMethod']");
-                if (radio) radio.checked = true;
+            if (json.success && json.data && json.data.methods) {
+                methods = json.data.methods;
             }
-        }
 
-        updatePaymentOptionStyles();
+            applyPaymentMethodsConfig(methods);
 
-        // Xử lý cảnh báo nếu toàn bộ phương thức bị tắt
-        const noneEnabled = !onlineEnabled && !cashEnabled;
-        if (warningEl) warningEl.classList.toggle("hidden", !noneEnabled);
-        if (submitBtn) {
-            if (noneEnabled) {
-                submitBtn.disabled = true;
-                submitBtn.classList.add("opacity-50", "cursor-not-allowed");
-            } else {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            const newEtag = res.headers.get("ETag");
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.setItem(PAYMENT_CONFIG_CACHE_KEY, JSON.stringify(methods));
+                    if (newEtag) localStorage.setItem(PAYMENT_CONFIG_ETAG_KEY, newEtag);
+                } catch (e) {}
             }
+        } else if (res.status === 304) {
+            // Không thay đổi (304 Not Modified) -> Giữ nguyên cấu hình từ cache
         }
     } catch (e) {
-        console.warn("[CHECKOUT] Không thể tải payment-config:", e);
+        console.warn("[CHECKOUT] Không thể nạp payment-config từ API:", e);
+    } finally {
+        _isSyncingPaymentConfig = false;
     }
 }
 
@@ -871,6 +917,7 @@ if (typeof window !== "undefined") {
     window.onFulfillmentTypeChange = onFulfillmentTypeChange;
     window.loadPickupBranches = loadPickupBranches;
     window.loadCheckoutPaymentMethods = loadCheckoutPaymentMethods;
+    window.reloadPaymentConfigIfChanged = loadCheckoutPaymentMethods;
     window.updatePaymentOptionStyles = updatePaymentOptionStyles;
 
     document.addEventListener("DOMContentLoaded", () => {

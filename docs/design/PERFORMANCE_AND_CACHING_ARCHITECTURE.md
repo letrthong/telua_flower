@@ -40,21 +40,34 @@ graph TD
 
 ---
 
-### 🚀 TẦNG 1: Frontend In-Memory Cache & UI Debounce
+### 🚀 TẦNG 1: Frontend In-Memory, LocalStorage Instant Hydration (0ms) & ETag 304
 
-1. **Bộ nhớ đệm RAM cho Modal Chi Tiết Mẫu Hoa (`productDetailCache`)**:
-   * Khởi tạo `Map<string, Object>` trong `js/flower_app.js`.
-   * Khi gọi `openProductQuickDetail(productId)`:
-     * Kiểm tra `if (productDetailCache.has(productId))` $\rightarrow$ Lấy trực tiếp dữ liệu từ RAM và hiển thị ngay lập tức (0ms).
-     * Nếu chưa có $\rightarrow$ Gửi request `/api/flower/v1/products/<id>`, nhận kết quả và lưu vào `productDetailCache.set(productId, data)`.
+1. **Bộ nhớ đệm RAM cho Modal Chi Tiết Mẫu Hoa (`productDetailMemoryCache`)**:
+   * Khởi tạo `Map<string, Object>` trong `js/products.js` với giới hạn tối đa `MAX_PRODUCT_CACHE_SIZE = 120` (tự động giải phóng theo LRU/FIFO chống tràn bộ nhớ).
+   * Khi gọi `getProductById(productId, lang)`:
+     * Kiểm tra `if (productDetailMemoryCache.has(cacheKey))` $\rightarrow$ Trả về trực tiếp từ RAM (0ms tức thì).
+     * Nếu chưa có $\rightarrow$ Gửi request `/api/flower/v1/products/<id>?lang=...`, nhận kết quả và lưu vào RAM.
 
-2. **Debounce (Trì hoãn) ô tìm kiếm Storefront (100ms)**:
-   * Sử dụng hàm `debounce` để gom các lần gõ phím liên tiếp của người dùng.
-   * Giúp việc tìm kiếm mượt mà 60 FPS, không gây lag giật trên trình duyệt điện thoại.
+2. **Cơ chế LocalStorage Instant Boot (0ms) + HTTP ETag 304 Caching**:
+   Áp dụng cho toàn bộ các file cấu hình cốt lõi trên Storefront. Khi mở web, giao diện đọc ngay từ `localStorage` để render tức thì 0ms, sau đó gửi request kèm header `If-None-Match: <etag>`. Nếu file trên server chưa đổi, máy chủ trả về `304 Not Modified` (0 KB), trình duyệt giữ nguyên cache:
 
-3. **Lưu trữ Cấu hình tĩnh vào `sessionStorage` (TTL: 5 phút)**:
-   * Áp dụng cho: `categories`, `company-info`, `translations`.
-   * Khi khách chuyển tab hoặc tải lại trang, giao diện nạp ngay từ `sessionStorage` mà không cần đợi vòng quay mạng.
+   | File Cấu Hình | Khóa LocalStorage Data | Khóa LocalStorage ETag | API Endpoint | Tác Dụng Khi Cache |
+   | :--- | :--- | :--- | :--- | :--- |
+   | **`infoCompany.json`** | `telua_info_company_cache_v1` | `telua_info_company_etag_v1` | `/api/flower/v1/company-info` | Hotline, Footer, Zalo, địa chỉ, bản đồ hiện ngay 0ms, không bị giật layout. |
+   | **`categories.json`** | `telua_categories_cache_v1` | `telua_categories_etag_v1` | `/api/flower/v1/categories` | Menu Header và vòng tròn danh mục hoa hiển thị tức thì khi vừa vào trang. |
+   | **`paymentConfig.json`** | `telua_payment_config_cache_v1` | `telua_payment_config_etag_v1` | `/api/flower/v1/payment-config` | Mở Popup Checkout hiện ngay tùy chọn VietQR/COD, không bị khựng. |
+   | **`branches.json`** | `telua_storefront_branches_cache_v1` | `telua_branches_etag_v1` | `/api/flower/v1/branches` | Hiển thị chuỗi showroom 0ms, tự động ghi nhớ chi nhánh khách đã chọn. |
+   | **`translations.json`** | `telua_translations_cache_v2` | `telua_translations_etag_v2` | `/api/flower/v1/translations` | Chuyển đổi 5 ngôn ngữ (VI, EN, JA, KO, ZH) tức thì 0ms. |
+   | **`addons.json` & `addonConfig.json`** | `telua_addons_cache_v1` & `telua_addon_config_cache_v1` | ETag HTTP 304 | `/api/flower/v1/addons` | Tải ngầm sau 1s khi web đã sẵn sàng, không chặn luồng tải trang chủ. |
+
+3. **Tự động làm mới khi Admin chỉnh sửa (Admin Cache Invalidation)**:
+   * Khi quản trị viên cập nhật danh mục, thông tin công ty, chi nhánh hoặc phương thức thanh toán trong Admin Portal (`portal_admin.js`), hệ thống tự động gọi hàm reload tương ứng với cờ `forceRefresh = true` (`reloadCategoriesIfChanged`, `loadStorefrontCompanyInfo(true)`, `reloadPaymentConfigIfChanged(true)`).
+
+4. **Kiểm tra thay đổi khi chuyển lại Tab (Background Visibility Sync)**:
+   * Lắng nghe sự kiện `visibilitychange` và `window.focus` (debounced 15 giây). Khi người dùng quay lại tab sau một khoảng thời gian, client tự động gửi request ETag ngầm để kiểm tra xem file cấu hình có được cập nhật mới hay không.
+
+5. **Debounce ô tìm kiếm Storefront (100ms)**:
+   * Gom các lần gõ phím liên tiếp của người dùng, duy trì 60 FPS trên điện thoại.
 
 ---
 

@@ -245,6 +245,26 @@ class TestPriceGovernanceAndProductCMS(unittest.TestCase):
         res_branches_304 = self.client.get("/api/flower/v1/branches", headers={"If-None-Match": etag_branches})
         self.assertEqual(res_branches_304.status_code, 304)
 
+        # 3. Kiểm tra API Addons
+        res_addons = self.client.get("/api/flower/v1/addons")
+        self.assertEqual(res_addons.status_code, 200)
+        etag_addons = res_addons.headers.get("ETag")
+        self.assertIsNotNone(etag_addons, "API /api/flower/v1/addons phải trả về header ETag")
+
+        # Gửi lại với If-None-Match -> Phải trả về 304 Not Modified
+        res_addons_304 = self.client.get("/api/flower/v1/addons", headers={"If-None-Match": etag_addons})
+        self.assertEqual(res_addons_304.status_code, 304)
+
+        # 4. Kiểm tra API Addon-Config
+        res_cfg = self.client.get("/api/flower/v1/addon-config")
+        self.assertEqual(res_cfg.status_code, 200)
+        etag_cfg = res_cfg.headers.get("ETag")
+        self.assertIsNotNone(etag_cfg, "API /api/flower/v1/addon-config phải trả về header ETag")
+
+        # Gửi lại với If-None-Match -> Phải trả về 304 Not Modified
+        res_cfg_304 = self.client.get("/api/flower/v1/addon-config", headers={"If-None-Match": etag_cfg})
+        self.assertEqual(res_cfg_304.status_code, 304)
+
 
 if __name__ == "__main__":
     unittest.main()

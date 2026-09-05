@@ -358,66 +358,206 @@ export function hideScreenLock() {
     }, 250);
 }
 
+const SELECTED_BRANCH_ID_KEY = 'telua_selected_branch_id_v1';
+const SELECTED_BRANCH_DATA_KEY = 'telua_selected_branch_data_v1';
+const STOREFRONT_BRANCHES_CACHE_KEY = 'telua_storefront_branches_cache_v1';
+const BRANCHES_ETAG_KEY = 'telua_branches_etag_v1';
+
 let storefrontBranches = [];
 let currentSelectedBranch = null;
+let _isSyncingBranches = false;
+let _lastBranchesSyncTime = 0;
 
-// Tải và hiển thị danh sách chuỗi cửa hàng động
+// Khởi tạo tức thì chi nhánh từ cache LocalStorage (0ms Instant Boot)
+try {
+    if (typeof localStorage !== 'undefined') {
+        const cachedRaw = localStorage.getItem(STOREFRONT_BRANCHES_CACHE_KEY);
+        if (cachedRaw) {
+            const parsed = JSON.parse(cachedRaw);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                storefrontBranches = parsed;
+            }
+        }
+        const savedBranchData = localStorage.getItem(SELECTED_BRANCH_DATA_KEY);
+        if (savedBranchData) {
+            const parsedData = JSON.parse(savedBranchData);
+            if (parsedData && parsedData.id) {
+                currentSelectedBranch = parsedData;
+            }
+        }
+    }
+} catch (e) {
+    console.warn("Lỗi đọc cache chi nhánh showroom:", e);
+}
+
+export function getCurrentSelectedBranch() {
+    return currentSelectedBranch;
+}
+
+/**
+ * Nạp lại danh sách chi nhánh (config/anne/branches.json) nếu có thay đổi từ máy chủ (dựa trên HTTP ETag / 304 Cache).
+ * Kết hợp lưu vào localStorage để chỉ tải lại khi file thay đổi.
+ */
+export async function reloadBranchesIfChanged(forceRefresh = false) {
+    if (_isSyncingBranches) return { changed: false, branches: storefrontBranches };
+    _isSyncingBranches = true;
+
+    let branchesChanged = false;
+    let savedBranchId = null;
+    let storedEtag = null;
+
+    if (typeof localStorage !== 'undefined') {
+        try {
+            savedBranchId = localStorage.getItem(SELECTED_BRANCH_ID_KEY);
+            storedEtag = localStorage.getItem(BRANCHES_ETAG_KEY);
+        } catch (e) {}
+    }
+
+    try {
+        const headers = {};
+        if (storedEtag && !forceRefresh) {
+            headers['If-None-Match'] = storedEtag;
+        }
+
+        const res = await fetch(`${API_BASE}/branches?_t=${Date.now()}`, { headers });
+        if (res.status === 200) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                const activeBranches = json.data.filter(b => b && b.isActive !== false);
+                const oldStr = JSON.stringify(storefrontBranches || []);
+                const newStr = JSON.stringify(activeBranches);
+                if (oldStr !== newStr) {
+                    storefrontBranches = activeBranches;
+                    branchesChanged = true;
+                }
+                const newEtag = res.headers.get("ETag");
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(STOREFRONT_BRANCHES_CACHE_KEY, JSON.stringify(storefrontBranches));
+                        if (newEtag) localStorage.setItem(BRANCHES_ETAG_KEY, newEtag);
+                    } catch (e) {}
+                }
+            }
+        } else if (res.status === 304) {
+            // Không thay đổi (304 Not Modified) -> Giữ nguyên cache
+            branchesChanged = false;
+        } else if (!res.ok) {
+            throw new Error("HTTP " + res.status);
+        }
+    } catch (e) {
+        // Fallback file tĩnh config/anne/branches.json nếu API không phản hồi
+        if (!storefrontBranches || storefrontBranches.length === 0 || forceRefresh) {
+            try {
+                const fbRes = await fetch(`config/anne/branches.json?_t=${Date.now()}`);
+                if (fbRes.ok) {
+                    const fbData = await fbRes.json();
+                    if (Array.isArray(fbData) && fbData.length > 0) {
+                        const activeBranches = fbData.filter(b => b && b.isActive !== false);
+                        const oldStr = JSON.stringify(storefrontBranches || []);
+                        const newStr = JSON.stringify(activeBranches);
+                        if (oldStr !== newStr) {
+                            storefrontBranches = activeBranches;
+                            branchesChanged = true;
+                        }
+                        if (typeof localStorage !== 'undefined') {
+                            try {
+                                localStorage.setItem(STOREFRONT_BRANCHES_CACHE_KEY, JSON.stringify(storefrontBranches));
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (errFb) {}
+        }
+    }
+
+    // Fallback mặc định cuối cùng nếu danh sách rỗng
+    if (!storefrontBranches || storefrontBranches.length === 0) {
+        storefrontBranches = [
+            {
+                id: "branch_q10",
+                code: "CN_Q10",
+                name: "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+                address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
+                phone: "0976.491.322",
+                openHours: "07:00 - 21:00 (Thứ 2 - Chủ Nhật)",
+                amenities: "Đậu xe ô tô/xe máy miễn phí • Cắm hoa nghệ thuật tại chỗ • Phòng lạnh bảo quản hoa",
+                lat: 10.7725,
+                lng: 106.6698
+            },
+            {
+                id: "branch_q1",
+                code: "CN_Q1",
+                name: "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+                address: "Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
+                phone: "0976.491.323",
+                openHours: "08:00 - 21:30 (Thứ 2 - Chủ Nhật)",
+                amenities: "Giao hoa hỏa tốc văn phòng Bitexco • Gói quà cao cấp",
+                lat: 10.7715,
+                lng: 106.7042
+            },
+            {
+                id: "branch_thao_dien",
+                code: "CN_Q2",
+                name: "Nở Hoa Thả Bình - Showroom Thảo Điền",
+                address: "68 Xuân Thủy, Phường Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
+                phone: "0976.491.324",
+                openHours: "07:30 - 21:00 (Thứ 2 - Chủ Nhật)",
+                amenities: "Không gian workshop cắm hoa • Hoa nhập khẩu cao cấp Hà Lan & Ecuador",
+                lat: 10.8035,
+                lng: 106.7328
+            }
+        ];
+    }
+
+    _lastBranchesSyncTime = Date.now();
+    _isSyncingBranches = false;
+
+    // Nếu dữ liệu có thay đổi hoặc bắt buộc làm mới:
+    if (branchesChanged || forceRefresh || !currentSelectedBranch) {
+        renderStorefrontBranchButtons();
+
+        // Cập nhật lại chi nhánh đang chọn
+        let targetBranch = null;
+        if (savedBranchId) {
+            targetBranch = storefrontBranches.find(b => b.id === savedBranchId);
+        }
+        if (!targetBranch && currentSelectedBranch) {
+            targetBranch = storefrontBranches.find(b => b.id === currentSelectedBranch.id);
+        }
+        if (!targetBranch && storefrontBranches.length > 0) {
+            targetBranch = storefrontBranches[0];
+        }
+
+        if (targetBranch) {
+            selectShowroomBranch(targetBranch.id, true);
+        }
+    }
+
+    return { changed: branchesChanged, branches: storefrontBranches };
+}
+
+// Tải và hiển thị danh sách chuỗi cửa hàng động (có cache ETag)
 export async function loadAndRenderStorefrontBranches() {
     const navContainer = document.getElementById("storeBranchNav");
     if (!navContainer) return;
 
-    try {
-        const res = await fetch(`${API_BASE}/branches`);
-        const json = await res.json();
-
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-            storefrontBranches = json.data.filter((b) => b.isActive !== false);
-        } else {
-            // Fallback nếu API chưa trả về
-            storefrontBranches = [
-                {
-                    id: "branch_q10",
-                    code: "CN_Q10",
-                    name: "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
-                    address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
-                    phone: "0976.491.322",
-                    openHours: "07:00 - 21:00 (Thứ 2 - Chủ Nhật)",
-                    amenities: "Đậu xe ô tô/xe máy miễn phí • Cắm hoa nghệ thuật tại chỗ • Phòng lạnh bảo quản hoa",
-                    lat: 10.7725,
-                    lng: 106.6698
-                },
-                {
-                    id: "branch_q1",
-                    code: "CN_Q1",
-                    name: "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
-                    address: "Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
-                    phone: "0976.491.323",
-                    openHours: "08:00 - 21:30 (Thứ 2 - Chủ Nhật)",
-                    amenities: "Giao hoa hỏa tốc văn phòng Bitexco • Gói quà cao cấp",
-                    lat: 10.7715,
-                    lng: 106.7042
-                },
-                {
-                    id: "branch_thao_dien",
-                    code: "CN_Q2",
-                    name: "Nở Hoa Thả Bình - Showroom Thảo Điền",
-                    address: "68 Xuân Thủy, Phường Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-                    phone: "0976.491.324",
-                    openHours: "07:30 - 21:00 (Thứ 2 - Chủ Nhật)",
-                    amenities: "Không gian workshop cắm hoa • Hoa nhập khẩu cao cấp Hà Lan & Ecuador",
-                    lat: 10.8035,
-                    lng: 106.7328
-                }
-            ];
-        }
-
+    // 1. Hiển thị tức thì nếu đã có trong cache (0ms)
+    if (storefrontBranches && storefrontBranches.length > 0) {
         renderStorefrontBranchButtons();
-        if (storefrontBranches.length > 0) {
-            selectShowroomBranch(storefrontBranches[0].id);
+        let savedBranchId = null;
+        if (typeof localStorage !== 'undefined') {
+            try {
+                savedBranchId = localStorage.getItem(SELECTED_BRANCH_ID_KEY);
+            } catch (e) {}
         }
-    } catch (e) {
-        console.warn("Lỗi tải chuỗi showroom:", e);
+        const target = (savedBranchId && storefrontBranches.find(b => b.id === savedBranchId)) || currentSelectedBranch || storefrontBranches[0];
+        if (target) {
+            selectShowroomBranch(target.id, false);
+        }
     }
+
+    // 2. Kiểm tra cập nhật từ máy chủ bằng ETag (chỉ tải lại khi file branches.json thay đổi)
+    await reloadBranchesIfChanged(false);
 }
 
 function renderStorefrontBranchButtons() {
@@ -442,11 +582,21 @@ function renderStorefrontBranchButtons() {
     navContainer.innerHTML = html;
 }
 
-export function selectShowroomBranch(branchId) {
+export function selectShowroomBranch(branchId, saveCache = true) {
     const b = storefrontBranches.find((item) => item.id === branchId) || storefrontBranches[0];
     if (!b) return;
 
     currentSelectedBranch = b;
+
+    // Lưu lựa chọn chi nhánh của khách hàng vào cache trình duyệt
+    if (saveCache && typeof localStorage !== 'undefined') {
+        try {
+            localStorage.setItem(SELECTED_BRANCH_ID_KEY, b.id);
+            localStorage.setItem(SELECTED_BRANCH_DATA_KEY, JSON.stringify(b));
+            localStorage.setItem('telua_selected_branch_address_v1', b.address);
+        } catch (e) {}
+    }
+
     renderStorefrontBranchButtons();
 
     // Cập nhật thẻ thông tin
@@ -468,7 +618,7 @@ export function selectShowroomBranch(branchId) {
     }
     if (amenitiesEl) amenitiesEl.textContent = b.amenities || "Đậu xe ô tô/xe máy miễn phí, cắm hoa nghệ thuật theo yêu cầu";
 
-    // Cập nhật iframe Google Maps và Link chỉ đường
+    // Cập nhật iframe Google Maps và Link chỉ đường chính xác theo địa chỉ chi nhánh
     const query = encodeURIComponent(b.address);
     if (mapIframe) {
         mapIframe.src = `https://maps.google.com/maps?q=${query}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
@@ -519,6 +669,22 @@ export function copyStoreAddress() {
     }
 }
 
+// Tự động kiểm tra thay đổi của file branches.json khi người dùng chuyển lại tab (sau ít nhất 15 giây)
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+    const handleBranchesVisibilityOrFocus = () => {
+        const now = Date.now();
+        if (now - _lastBranchesSyncTime > 15000) {
+            reloadBranchesIfChanged(false).catch(() => {});
+        }
+    };
+    window.addEventListener("focus", handleBranchesVisibilityOrFocus);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            handleBranchesVisibilityOrFocus();
+        }
+    });
+}
+
 // Tự động khởi chạy khi DOM sẵn sàng
 if (typeof document !== "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
@@ -536,7 +702,9 @@ if (typeof window !== "undefined") {
     window.openStoreMap = openStoreMap;
     window.copyStoreAddress = copyStoreAddress;
     window.selectShowroomBranch = selectShowroomBranch;
+    window.getCurrentSelectedBranch = getCurrentSelectedBranch;
     window.resolveImageUrl = resolveImageUrl;
     window.loadAndRenderStorefrontBranches = loadAndRenderStorefrontBranches;
+    window.reloadBranchesIfChanged = reloadBranchesIfChanged;
     window.removeVietnameseTones = removeVietnameseTones;
 }

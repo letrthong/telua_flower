@@ -780,3 +780,21 @@ Quản lý danh sách các món quà tặng bán kèm (thiệp, thú bông, nế
 ]
 ```
 
+---
+
+## 14. Bảng Tổng Hợp Chiến Lược Caching Của Từng Tệp JSON
+
+Nhằm đảm bảo trải nghiệm khách hàng đạt tốc độ hiển thị tức thì (**0ms Instant Boot**), tránh nhấp nháy giao diện và chỉ tải lại khi file có thay đổi thực sự, toàn bộ hệ thống file JSON được phân nhóm caching như sau:
+
+| Tên Tệp JSON | Phương Thức Cache | Khóa Client Storage / ETag | Hành Vi Khi File Đổi |
+| :--- | :--- | :--- | :--- |
+| **`infoCompany.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_info_company_cache_v1` / `telua_info_company_etag_v1` | Tự động làm mới khi Admin lưu hoặc phát hiện ETag mới từ server. |
+| **`categories.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_categories_cache_v1` / `telua_categories_etag_v1` | Menu header & vòng tròn danh mục hoa nạp 0ms, cập nhật ngầm. |
+| **`paymentConfig.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_payment_config_cache_v1` / `telua_payment_config_etag_v1` | Popup đặt hàng hiển thị phương thức VietQR/COD ngay lập tức. |
+| **`branches.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_storefront_branches_cache_v1` / `telua_branches_etag_v1` | Giữ nguyên chi nhánh khách hàng đã chọn (`telua_selected_branch_id_v1`). |
+| **`translations.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_translations_cache_v2` / `telua_translations_etag_v2` | Chuyển đổi ngôn ngữ không độ trễ. |
+| **`addons.json` / `addonConfig.json`** | Tải sau 1s (Background) + HTTP ETag 304 | `telua_addons_cache_v1` / `telua_addon_config_cache_v1` | Không chiếm băng thông khi mở trang chủ, nạp ngầm sau 1s. |
+| **`products.json`** | RAM Memory Cache (`productDetailMemoryCache`) | Giới hạn tối đa 120 sản phẩm theo LRU | Giữ giá và tồn kho chính xác, tránh stale data. |
+| **`orders/` & `customers.json`** | Không Cache Client (Real-time) | Giao dịch thời gian thực | Đảm bảo tính bảo mật và trạng thái thanh toán trực tiếp. |
+
+

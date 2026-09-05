@@ -195,8 +195,9 @@ let currentOpenDetailProductId = null;
 
 /**
  * Đổ dữ liệu sản phẩm vào Modal Chi Tiết Nhanh
+ * Hỗ trợ hiển thị tức thì (Optimistic 0ms) và nạp ngầm các thông tin thiếu sau đó (Progressive Lazy Load)
  */
-export function populateProductDetailModalContent(prod, currentAppLang, productId) {
+export function populateProductDetailModalContent(prod, currentAppLang, productId, isPartial = false) {
     const modal = document.getElementById("productQuickDetailModal");
     const spinner = document.getElementById("detailLoadingSpinner");
     const body = document.getElementById("detailContentBody");
@@ -221,7 +222,7 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
         }
     });
 
-    // Điền thông tin vào modal
+    // 1. Điền thông tin cơ bản sẵn có
     const nameEl = document.getElementById("detailProdName");
     if (nameEl) {
         nameEl.textContent = prodDisplayName;
@@ -244,25 +245,66 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
         catLabelEl.textContent = catObj ? getCategoryDisplayName(catObj).toUpperCase() : (prod.category ? prod.category.toUpperCase().replace("_", " ") : "HOA TƯƠI CAO CẤP");
     }
 
+    // 2. Điền thông tin chi tiết - Nếu thiếu thì hiển thị skeleton/loading indicator chờ nạp sau
     const descEl = document.getElementById("detailDescription");
     if (descEl) {
-        descEl.textContent = prodDescText || dict.prod_desc_fallback || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
-        if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
-        else descEl.removeAttribute("data-i18n");
+        if (prodDescText) {
+            descEl.innerHTML = `<span class="transition-opacity duration-300">${prodDescText}</span>`;
+            if (prod.descTextId) descEl.setAttribute("data-i18n", prod.descTextId);
+            else descEl.removeAttribute("data-i18n");
+        } else if (isPartial) {
+            descEl.innerHTML = `
+                <span class="inline-flex items-center text-gray-400 italic text-[11px] animate-pulse">
+                    <i class="fa-solid fa-wand-magic-sparkles text-primary/70 mr-1.5 text-xs"></i>
+                    <span>Đang nạp ý nghĩa & câu chuyện thiết kế...</span>
+                </span>
+            `;
+            descEl.removeAttribute("data-i18n");
+        } else {
+            descEl.textContent = dict.prod_desc_fallback || "Mẫu hoa tươi thiết kế độc quyền tại Nở Hoa Thả Bình với sự kết hợp hài hòa giữa màu sắc và hương thơm.";
+        }
     }
 
     const compEl = document.getElementById("detailComposition");
     if (compEl) {
-        compEl.textContent = prodCompText || dict.prod_comp_fallback || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
-        if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
-        else compEl.removeAttribute("data-i18n");
+        if (prodCompText) {
+            compEl.innerHTML = `<span class="transition-opacity duration-300">${prodCompText}</span>`;
+            if (prod.compTextId) compEl.setAttribute("data-i18n", prod.compTextId);
+            else compEl.removeAttribute("data-i18n");
+        } else if (isPartial) {
+            compEl.innerHTML = `
+                <span class="inline-flex items-center text-gray-400 text-[11px] animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin text-primary mr-1.5 text-xs"></i>
+                    <span>Đang nạp danh sách hoa tự nhiên phối mẫu...</span>
+                </span>
+            `;
+            compEl.removeAttribute("data-i18n");
+        } else {
+            compEl.textContent = dict.prod_comp_fallback || "Hoa tươi tự nhiên chọn lọc loại 1, giấy gói cao cấp chuẩn showroom.";
+        }
     }
 
     const dimEl = document.getElementById("detailDimension");
-    if (dimEl) dimEl.textContent = prod.dimension || dict.prod_dim_standard || "Kích thước tiêu chuẩn";
+    if (dimEl) {
+        if (prod.dimension) {
+            dimEl.textContent = prod.dimension;
+        } else if (isPartial) {
+            dimEl.innerHTML = `<span class="text-gray-400 animate-pulse text-[10px]">Đang cập nhật...</span>`;
+        } else {
+            dimEl.textContent = dict.prod_dim_standard || "Kích thước tiêu chuẩn";
+        }
+    }
 
     const careEl = document.getElementById("detailCareTips");
-    if (careEl) careEl.textContent = prodCareTipsText || dict.prod_care_default || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
+    if (careEl) {
+        if (prodCareTipsText) {
+            careEl.textContent = prodCareTipsText;
+        } else if (isPartial) {
+            careEl.innerHTML = `<span class="text-gray-400 animate-pulse text-[10px]">Đang nạp mẹo giữ hoa...</span>`;
+        } else {
+            careEl.textContent = dict.prod_care_default || "Cắt vát gốc 45 độ, phun sương nhẹ cánh hoa và giữ nước sạch mỗi ngày.";
+        }
+    }
 
     const mainImgEl = document.getElementById("detailMainImg");
     if (mainImgEl) {
@@ -272,23 +314,47 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
         mainImgEl.alt = prodDisplayName;
     }
 
-    // Gallery thumbnails (với Lazy loading và Skeleton preview)
+    // Gallery thumbnails (với Lazy loading, Skeleton preview và nạp sau mượt mà)
     const galleryContainer = document.getElementById("detailGalleryThumbnails");
     if (galleryContainer) {
-        const galleryList = Array.isArray(prod.gallery) && prod.gallery.length > 0 ? prod.gallery : [prodImg];
-        let galHtml = '';
-        galleryList.forEach(imgUrl => {
-            galHtml += `
-                <div onclick="const mImg=document.getElementById('detailMainImg'); if(mImg){mImg.parentElement?.classList.add('img-skeleton'); mImg.classList.remove('loaded'); mImg.src='${imgUrl}';}" class="w-12 h-12 rounded-lg overflow-hidden border-2 border-gray-200 cursor-pointer hover:border-primary flex-shrink-0 transition img-skeleton">
-                    <img src="${imgUrl}" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement?.classList.remove('img-skeleton');" onerror="handleImageErrorFallback(this)" class="w-full h-full object-cover">
+        const hasFullGallery = Array.isArray(prod.gallery) && prod.gallery.length > 1;
+        if (hasFullGallery) {
+            let galHtml = '';
+            prod.gallery.forEach((imgUrl, idx) => {
+                const isFirst = idx === 0;
+                galHtml += `
+                    <div onclick="const mImg=document.getElementById('detailMainImg'); if(mImg){mImg.parentElement?.classList.add('img-skeleton'); mImg.classList.remove('loaded'); mImg.src='${imgUrl}';}" class="w-12 h-12 rounded-lg overflow-hidden border-2 ${isFirst ? 'border-primary' : 'border-gray-200'} cursor-pointer hover:border-primary flex-shrink-0 transition img-skeleton">
+                        <img src="${imgUrl}" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement?.classList.remove('img-skeleton');" onerror="handleImageErrorFallback(this)" class="w-full h-full object-cover">
+                    </div>
+                `;
+            });
+            galleryContainer.innerHTML = galHtml;
+        } else if (isPartial) {
+            // Hiển thị ảnh chính và 2 ô skeleton loader biểu thị album ảnh đang được nạp ngầm
+            galleryContainer.innerHTML = `
+                <div class="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary cursor-pointer flex-shrink-0">
+                    <img src="${prodImg}" class="w-full h-full object-cover">
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-gray-100 border border-dashed border-gray-200 animate-pulse flex-shrink-0 flex items-center justify-center text-gray-300" title="Đang tải thêm ảnh...">
+                    <i class="fa-solid fa-image text-xs"></i>
+                </div>
+                <div class="w-12 h-12 rounded-lg bg-gray-100 border border-dashed border-gray-200 animate-pulse flex-shrink-0 flex items-center justify-center text-gray-300" title="Đang tải thêm ảnh...">
+                    <i class="fa-solid fa-image text-xs"></i>
                 </div>
             `;
-        });
-        galleryContainer.innerHTML = galHtml;
+        } else {
+            galleryContainer.innerHTML = `
+                <div class="w-12 h-12 rounded-lg overflow-hidden border-2 border-primary cursor-pointer flex-shrink-0">
+                    <img src="${prodImg}" class="w-full h-full object-cover">
+                </div>
+            `;
+        }
     }
 
-    // Render Add-Ons (sản phẩm kèm theo) trong modal
+    // Render Add-Ons (sản phẩm kèm theo) trong modal từ cache tức thì
     renderAddonsInModal(currentAppLang);
+    // Kiểm tra ngầm xem file addons.json hoặc addonConfig.json có thay đổi hay không
+    reloadAddonsIfChanged(false).catch(() => {});
 
     // Gắn sự kiện nút Thêm Giỏ Hàng (kèm các add-on đã chọn)
     const btnAdd = document.getElementById("btnQuickAddToCart");
@@ -314,9 +380,39 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
 }
 
 // ================= ADD-ONS (SẢN PHẨM KÈM THEO) =================
+const ADDONS_STORAGE_KEY = 'telua_addons_cache_v1';
+const ADDONS_ETAG_KEY = 'telua_addons_etag_v1';
+const ADDON_CONFIG_STORAGE_KEY = 'telua_addon_config_cache_v1';
+const ADDON_CONFIG_ETAG_KEY = 'telua_addon_config_etag_v1';
+
 let cachedAddons = null;
 let cachedAddonVisible = null; // null = chưa tải; true/false = cấu hình showAddons
 let selectedAddons = new Map(); // addonId -> { addon, quantity }
+let _lastAddonsSyncTime = 0;
+let _isSyncingAddons = false;
+let _hasScheduledAddonsPreload = false;
+
+// 1. Tải tức thì từ LocalStorage Cache (0ms - Instant Boot) nếu có
+try {
+    if (typeof localStorage !== 'undefined') {
+        const savedAddons = localStorage.getItem(ADDONS_STORAGE_KEY);
+        if (savedAddons) {
+            const parsed = JSON.parse(savedAddons);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                cachedAddons = parsed;
+            }
+        }
+        const savedCfg = localStorage.getItem(ADDON_CONFIG_STORAGE_KEY);
+        if (savedCfg) {
+            const parsedCfg = JSON.parse(savedCfg);
+            if (parsedCfg && typeof parsedCfg.showAddons === 'boolean') {
+                cachedAddonVisible = parsedCfg.showAddons;
+            }
+        }
+    }
+} catch (e) {
+    console.warn("[ADDONS] Lỗi đọc cache từ localStorage:", e);
+}
 
 /**
  * Kiểm tra cấu hình bật/tắt hiển thị khu vực add-on (config/anne/addonConfig.json).
@@ -324,43 +420,188 @@ let selectedAddons = new Map(); // addonId -> { addon, quantity }
  */
 export async function isAddonSectionEnabled(forceRefresh = false) {
     if (cachedAddonVisible !== null && !forceRefresh) return cachedAddonVisible;
-    try {
-        const res = await fetch(`${API_BASE}/addon-config`);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        const cfg = (data && data.data) ? data.data : data;
-        cachedAddonVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
-    } catch (err) {
-        console.warn("[ADDONS] Lỗi tải addon-config, mặc định hiển thị:", err);
-        cachedAddonVisible = true;
-    }
-    return cachedAddonVisible;
+    await reloadAddonsIfChanged(forceRefresh);
+    return cachedAddonVisible !== null ? cachedAddonVisible : true;
 }
 
 /**
  * Lấy danh sách add-ons đang hoạt động từ API (có cache)
  */
 export async function loadAddons(forceRefresh = false) {
-    console.debug("[ADDONS] loadAddons() gọi, forceRefresh =", forceRefresh, "| cachedAddons =", cachedAddons);
-    if (cachedAddons && !forceRefresh) {
+    console.debug("[ADDONS] loadAddons() gọi, forceRefresh =", forceRefresh, "| cachedAddons =", cachedAddons ? cachedAddons.length : 0);
+    if (cachedAddons && cachedAddons.length > 0 && !forceRefresh) {
         console.debug("[ADDONS] Dùng cache:", cachedAddons.length, "add-ons");
         return cachedAddons;
     }
+    await reloadAddonsIfChanged(forceRefresh);
+    return cachedAddons || [];
+}
+
+/**
+ * Nạp lại addons.json và addonConfig.json nếu có thay đổi từ máy chủ (dựa trên ETag HTTP 304).
+ * Cập nhật vào Memory và LocalStorage; tự động re-render modal nếu đang mở.
+ */
+export async function reloadAddonsIfChanged(forceRefresh = false) {
+    if (_isSyncingAddons) return { changed: false, cachedAddons, cachedAddonVisible };
+    _isSyncingAddons = true;
+
+    let configChanged = false;
+    let addonsChanged = false;
+
+    // 1. Kiểm tra & nạp cấu hình addonConfig.json (GET /addon-config)
     try {
-        console.debug("[ADDONS] Fetch:", `${API_BASE}/addons`);
-        const res = await fetch(`${API_BASE}/addons`);
-        console.debug("[ADDONS] HTTP status:", res.status);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        // Endpoint trả về { success, data: [...] }
-        cachedAddons = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
-        console.debug("[ADDONS] Đã parse:", cachedAddons.length, "add-ons");
-        cachedAddons.forEach(a => console.debug("[ADDONS]   -", a.id, "| image:", a.image));
-    } catch (err) {
-        console.warn("[ADDONS] Lỗi tải add-ons:", err);
-        cachedAddons = cachedAddons || [];
+        const cfgHeaders = {};
+        const storedCfgEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDON_CONFIG_ETAG_KEY) : null;
+        if (storedCfgEtag && !forceRefresh) {
+            cfgHeaders['If-None-Match'] = storedCfgEtag;
+        }
+
+        const resCfg = await fetch(`${API_BASE}/addon-config?_t=${Date.now()}`, { headers: cfgHeaders });
+        if (resCfg.status === 200) {
+            const data = await resCfg.json();
+            const cfg = (data && data.data) ? data.data : data;
+            const newVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
+            if (cachedAddonVisible !== newVisible) {
+                cachedAddonVisible = newVisible;
+                configChanged = true;
+            }
+            const newEtag = resCfg.headers.get("ETag");
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(cfg));
+                    if (newEtag) localStorage.setItem(ADDON_CONFIG_ETAG_KEY, newEtag);
+                } catch (e) {}
+            }
+        } else if (resCfg.status !== 304 && !resCfg.ok) {
+            throw new Error("HTTP " + resCfg.status);
+        }
+    } catch (errCfg) {
+        // Fallback trực tiếp file config/anne/addonConfig.json tĩnh
+        try {
+            const fbRes = await fetch(`config/anne/addonConfig.json?_t=${Date.now()}`);
+            if (fbRes.ok) {
+                const fbCfg = await fbRes.json();
+                const newVisible = fbCfg && typeof fbCfg.showAddons === "boolean" ? fbCfg.showAddons : true;
+                if (cachedAddonVisible !== newVisible) {
+                    cachedAddonVisible = newVisible;
+                    configChanged = true;
+                }
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(fbCfg));
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
+        if (cachedAddonVisible === null) cachedAddonVisible = true;
     }
-    return cachedAddons;
+
+    // 2. Kiểm tra & nạp danh sách addons.json (GET /addons)
+    try {
+        const addonHeaders = {};
+        const storedAddonsEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDONS_ETAG_KEY) : null;
+        if (storedAddonsEtag && !forceRefresh) {
+            addonHeaders['If-None-Match'] = storedAddonsEtag;
+        }
+
+        const resAddons = await fetch(`${API_BASE}/addons?_t=${Date.now()}`, { headers: addonHeaders });
+        if (resAddons.status === 200) {
+            const data = await resAddons.json();
+            const items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
+            const oldStr = JSON.stringify(cachedAddons || []);
+            const newStr = JSON.stringify(items);
+            if (oldStr !== newStr) {
+                cachedAddons = items;
+                addonsChanged = true;
+            }
+            const newEtag = resAddons.headers.get("ETag");
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.setItem(ADDONS_STORAGE_KEY, JSON.stringify(cachedAddons));
+                    if (newEtag) localStorage.setItem(ADDONS_ETAG_KEY, newEtag);
+                } catch (e) {}
+            }
+        } else if (resAddons.status !== 304 && !resAddons.ok) {
+            throw new Error("HTTP " + resAddons.status);
+        }
+    } catch (errAddons) {
+        // Fallback trực tiếp file config/anne/addons.json tĩnh
+        try {
+            const fbRes = await fetch(`config/anne/addons.json?_t=${Date.now()}`);
+            if (fbRes.ok) {
+                const raw = await fbRes.json();
+                const activeItems = Array.isArray(raw) ? raw.filter(a => a && a.isActive !== false && a.status !== 'inactive' && !a.isDeleted) : [];
+                const oldStr = JSON.stringify(cachedAddons || []);
+                const newStr = JSON.stringify(activeItems);
+                if (oldStr !== newStr) {
+                    cachedAddons = activeItems;
+                    addonsChanged = true;
+                }
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(ADDONS_STORAGE_KEY, JSON.stringify(cachedAddons));
+                    } catch (e) {}
+                }
+            }
+        } catch (e) {}
+        if (!cachedAddons) cachedAddons = [];
+    }
+
+    _lastAddonsSyncTime = Date.now();
+    _isSyncingAddons = false;
+
+    const hasChanged = configChanged || addonsChanged;
+    if (hasChanged || forceRefresh) {
+        console.debug("[ADDONS] Dữ liệu addons hoặc addonConfig đã được cập nhật thành công:", { configChanged, addonsChanged, count: (cachedAddons || []).length });
+        
+        // Tự động re-render nếu modal chi tiết sản phẩm đang mở
+        if (typeof document !== 'undefined') {
+            const modal = document.getElementById("productQuickDetailModal");
+            if (modal && !modal.classList.contains("hidden")) {
+                const activeLang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : "vi";
+                renderAddonsInModal(activeLang);
+            }
+        }
+
+        // Phát sự kiện CustomEvent cho các module khác
+        if (typeof window !== 'undefined') {
+            try {
+                window.dispatchEvent(new CustomEvent("addonsUpdated", {
+                    detail: { addons: cachedAddons, config: cachedAddonVisible }
+                }));
+            } catch (e) {}
+        }
+    }
+
+    return { changed: hasChanged, cachedAddons, cachedAddonVisible };
+}
+
+/**
+ * Lên lịch nạp ngầm addons.json & addonConfig.json sau đúng 1 giây sau khi tải xong web.
+ */
+export function scheduleAddonsPreload() {
+    if (_hasScheduledAddonsPreload) return;
+    _hasScheduledAddonsPreload = true;
+
+    const runPreload = () => {
+        setTimeout(async () => {
+            console.debug("[ADDONS] Bắt đầu nạp ngầm addons.json & addonConfig.json (1 giây sau khi web nạp xong)...");
+            try {
+                await reloadAddonsIfChanged(false);
+                console.debug("[ADDONS] Đã nạp và lưu trữ addons:", (cachedAddons || []).length, "mục; showAddons:", cachedAddonVisible);
+            } catch (err) {
+                console.warn("[ADDONS] Lỗi nạp ngầm addons sau 1 giây:", err);
+            }
+        }, 1000);
+    };
+
+    if (typeof window !== 'undefined') {
+        if (document.readyState === 'complete') {
+            runPreload();
+        } else {
+            window.addEventListener('load', runPreload, { once: true });
+        }
+    }
 }
 
 /**
@@ -611,9 +852,13 @@ export async function openProductQuickDetail(productId) {
         cachedProd = allStorefrontProducts.find(p => p && (p.id === productId || p.name === productId));
     }
 
+    const hasFullDetail = cachedProd && (cachedProd.isFullDetailLoaded || (cachedProd.flowerComposition && Array.isArray(cachedProd.gallery) && cachedProd.gallery.length > 1));
+
     if (cachedProd) {
-        // Hiển thị ngay lập tức 0ms không để khách hàng phải chờ spinner
-        populateProductDetailModalContent(cachedProd, currentAppLang, productId);
+        // Hiển thị ngay lập tức 0ms với thông tin cơ bản; các thông tin thiếu sẽ tự động tải sau
+        populateProductDetailModalContent(cachedProd, currentAppLang, productId, !hasFullDetail);
+        if (spinner) spinner.classList.add("hidden");
+        if (body) body.classList.remove("hidden");
     } else {
         if (spinner) {
             spinner.innerHTML = `
@@ -625,11 +870,17 @@ export async function openProductQuickDetail(productId) {
         if (body) body.classList.add("hidden");
     }
 
-    // 2. Tải thêm chi tiết đầy đủ ngầm qua API (album gallery, thành phần chi tiết, tồn kho)
+    // 2. Tự động tải ngầm các thông tin còn thiếu (album gallery, thành phần chi tiết, câu chuyện, mẹo chăm sóc...)
     try {
         const fullProd = await getProductById(productId, currentAppLang);
         if (fullProd && currentOpenDetailProductId === productId) {
-            populateProductDetailModalContent(fullProd, currentAppLang, productId);
+            fullProd.isFullDetailLoaded = true;
+            if (cachedProd) {
+                Object.assign(cachedProd, fullProd);
+            }
+            populateProductDetailModalContent(fullProd, currentAppLang, productId, false);
+            if (spinner) spinner.classList.add("hidden");
+            if (body) body.classList.remove("hidden");
         }
     } catch (err) {
         console.warn("Lỗi đồng bộ chi tiết sản phẩm:", err);
@@ -1297,6 +1548,11 @@ export async function renderStorefrontCategories() {
     }
 }
 
+const INFO_COMPANY_CACHE_KEY = 'telua_info_company_cache_v1';
+const INFO_COMPANY_ETAG_KEY = 'telua_info_company_etag_v1';
+let _isSyncingCompanyInfo = false;
+let _lastCompanyInfoSyncTime = 0;
+
 /**
  * 3. Đồng bộ thông tin thương hiệu & liên hệ doanh nghiệp (infoCompany.json) lên Storefront
  */
@@ -1356,38 +1612,98 @@ export function applyStorefrontCompanyInfo(info) {
         setHref('floatingZaloLink', info.zalo);
     }
 
-    if (info.mapUrl) {
-        setHref('storeDirectionsLink', info.mapUrl);
-        setHref('storeLargerMapLink', info.mapUrl);
-    }
+    // Bản đồ và chỉ đường khu vực Showroom do Showroom Locator (branches.json) quản lý
+    // Ưu tiên hiển thị chi nhánh đang chọn (từ cache), không để infoCompany ghi đè
+    const activeBranch = (typeof window !== 'undefined' && typeof window.getCurrentSelectedBranch === 'function') 
+        ? window.getCurrentSelectedBranch() 
+        : null;
 
-    if (info.mapEmbedUrl) {
-        const iframe = document.getElementById('storeMapIframe');
-        if (iframe && info.mapEmbedUrl) {
-            iframe.src = info.mapEmbedUrl;
+    if (activeBranch && typeof window.selectShowroomBranch === 'function') {
+        window.selectShowroomBranch(activeBranch.id, false);
+    } else {
+        if (info.mapUrl) {
+            setHref('storeDirectionsLink', info.mapUrl);
+            setHref('storeLargerMapLink', info.mapUrl);
+        }
+
+        if (info.mapEmbedUrl) {
+            const iframe = document.getElementById('storeMapIframe');
+            if (iframe && info.mapEmbedUrl) {
+                iframe.src = info.mapEmbedUrl;
+            }
         }
     }
 }
 
-export async function loadStorefrontCompanyInfo() {
+// Khởi tạo tức thì thông tin doanh nghiệp từ cache LocalStorage (0ms Instant Boot)
+try {
+    if (typeof localStorage !== 'undefined') {
+        const cachedRaw = localStorage.getItem(INFO_COMPANY_CACHE_KEY);
+        if (cachedRaw) {
+            const parsed = JSON.parse(cachedRaw);
+            if (parsed && typeof parsed === 'object') {
+                applyStorefrontCompanyInfo(parsed);
+            }
+        }
+    }
+} catch (e) {
+    console.warn("Lỗi đọc cache infoCompany:", e);
+}
+
+export async function loadStorefrontCompanyInfo(forceRefresh = false) {
+    if (_isSyncingCompanyInfo) return;
+    _isSyncingCompanyInfo = true;
+
+    let storedEtag = null;
+    if (typeof localStorage !== 'undefined') {
+        try {
+            storedEtag = localStorage.getItem(INFO_COMPANY_ETAG_KEY);
+        } catch (e) {}
+    }
+
     try {
-        const res = await fetch(`${API_BASE}/company-info?_t=${Date.now()}`);
-        if (res.ok) {
+        const headers = {};
+        if (storedEtag && !forceRefresh) {
+            headers['If-None-Match'] = storedEtag;
+        }
+
+        const res = await fetch(`${API_BASE}/company-info?_t=${Date.now()}`, { headers });
+        if (res.status === 200) {
             const json = await res.json();
             if (json.success && json.data) {
                 applyStorefrontCompanyInfo(json.data);
+                const newEtag = res.headers.get("ETag");
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(INFO_COMPANY_CACHE_KEY, JSON.stringify(json.data));
+                        if (newEtag) localStorage.setItem(INFO_COMPANY_ETAG_KEY, newEtag);
+                    } catch (e) {}
+                }
                 return;
             }
+        } else if (res.status === 304) {
+            // Không thay đổi (304 Not Modified) -> Giữ nguyên cache
+            return;
         }
     } catch (e) {
         // Thử fallback trực tiếp từ file JSON tĩnh
+    } finally {
+        _lastCompanyInfoSyncTime = Date.now();
+        _isSyncingCompanyInfo = false;
     }
 
     try {
         const fallbackRes = await fetch(`config/anne/infoCompany.json?_t=${Date.now()}`);
         if (fallbackRes.ok) {
             const info = await fallbackRes.json();
-            if (info) applyStorefrontCompanyInfo(info);
+            if (info) {
+                applyStorefrontCompanyInfo(info);
+                if (typeof localStorage !== 'undefined') {
+                    try {
+                        localStorage.setItem(INFO_COMPANY_CACHE_KEY, JSON.stringify(info));
+                    } catch (e) {}
+                }
+            }
         }
     } catch (err) {
         console.log("Using static default company info.");
@@ -1427,6 +1743,7 @@ async function initApp() {
     renderStorefrontCategories();
     await renderAllProducts();
     loadStorefrontCompanyInfo();
+    scheduleAddonsPreload();
     
     // 1. Kiểm tra tham số tìm kiếm từ URL Hash (#/search?q=...) hoặc query khi vừa tải trang
     if (typeof window !== 'undefined') {
@@ -1549,6 +1866,26 @@ if (typeof window !== 'undefined') {
     window.scrollAddons = scrollAddons;
     window.applyStorefrontCompanyInfo = applyStorefrontCompanyInfo;
     window.loadStorefrontCompanyInfo = loadStorefrontCompanyInfo;
+    window.reloadCompanyInfoIfChanged = loadStorefrontCompanyInfo;
+    window.reloadAddonsIfChanged = reloadAddonsIfChanged;
+    window.scheduleAddonsPreload = scheduleAddonsPreload;
+
+    // Tự động kiểm tra thay đổi của file addons.json / addonConfig.json / infoCompany.json khi người dùng chuyển lại tab
+    const handleAddonsVisibilityOrFocus = () => {
+        const now = Date.now();
+        if (now - _lastAddonsSyncTime > 10000) {
+            reloadAddonsIfChanged(false).catch(() => {});
+        }
+        if (now - _lastCompanyInfoSyncTime > 15000) {
+            loadStorefrontCompanyInfo(false).catch(() => {});
+        }
+    };
+    window.addEventListener('focus', handleAddonsVisibilityOrFocus);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            handleAddonsVisibilityOrFocus();
+        }
+    });
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initApp);
