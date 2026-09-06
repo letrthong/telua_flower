@@ -2456,6 +2456,134 @@ def save_addon_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[
     return False, None, "Không thể ghi file cấu hình addonConfig.json"
 
 
+# ==========================================
+# CẤU HÌNH BANNER TRÌNH CHIẾU (banners.json)
+# ==========================================
+
+DEFAULT_BANNERS_CONFIG = {
+    "interval": 5000,
+    "autoplay": True,
+    "banners": [
+        {
+            "id": "banner_01",
+            "image": "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+            "link": "#products",
+            "active": True,
+            "order": 1
+        },
+        {
+            "id": "banner_02",
+            "image": "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+            "link": "#products",
+            "active": True,
+            "order": 2
+        },
+        {
+            "id": "banner_03",
+            "image": "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+            "link": "#products",
+            "active": True,
+            "order": 3
+        },
+        {
+            "id": "banner_04",
+            "image": "https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+            "link": "#products",
+            "active": True,
+            "order": 4
+        },
+        {
+            "id": "banner_05",
+            "image": "https://images.unsplash.com/photo-1508610048659-a06b669e3321?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+            "link": "#products",
+            "active": True,
+            "order": 5
+        }
+    ],
+    "updatedAt": "2026-09-06T22:40:00Z"
+}
+
+
+def get_banners_config(use_cache: bool = True) -> Dict[str, Any]:
+    """
+    Đọc cấu hình danh sách banner trình chiếu từ banners.json (có cache).
+    Tự khởi tạo mặc định 5 ảnh nếu file chưa tồn tại.
+    """
+    filepath = get_config_path("banners.json")
+    if not os.path.exists(filepath):
+        write_json(filepath, DEFAULT_BANNERS_CONFIG)
+        return dict(DEFAULT_BANNERS_CONFIG)
+
+    data = read_json_cached(filepath, default={}) if use_cache else read_json(filepath, default={})
+    if not isinstance(data, dict) or "banners" not in data:
+        data = dict(DEFAULT_BANNERS_CONFIG)
+        write_json(filepath, data)
+        return data
+
+    if "interval" not in data or not isinstance(data["interval"], (int, float)) or data["interval"] < 1000:
+        data["interval"] = DEFAULT_BANNERS_CONFIG["interval"]
+    data["interval"] = int(data["interval"])
+    data["autoplay"] = bool(data.get("autoplay", True))
+
+    if not isinstance(data.get("banners"), list):
+        data["banners"] = list(DEFAULT_BANNERS_CONFIG["banners"])
+
+    return data
+
+
+def save_banners_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Lưu cấu hình danh sách ảnh banner trình chiếu (banners.json).
+    Cho phép quản trị viên cập nhật link ảnh, link đích, trạng thái active, order, interval.
+    """
+    if not isinstance(config_dict, dict):
+        return False, None, "Dữ liệu cấu hình banner không hợp lệ"
+
+    current = get_banners_config(use_cache=False)
+
+    if "interval" in config_dict:
+        try:
+            val = int(config_dict["interval"])
+            if val >= 1000:
+                current["interval"] = val
+        except (ValueError, TypeError):
+            pass
+
+    if "autoplay" in config_dict:
+        current["autoplay"] = bool(config_dict["autoplay"])
+
+    if "banners" in config_dict and isinstance(config_dict["banners"], list):
+        clean_banners = []
+        for idx, b in enumerate(config_dict["banners"]):
+            if not isinstance(b, dict):
+                continue
+            img_link = str(b.get("image", "")).strip()
+            if not img_link:
+                continue
+            item = {
+                "id": str(b.get("id") or f"banner_{idx + 1:02d}").strip(),
+                "image": img_link,
+                "link": str(b.get("link", "#products")).strip(),
+                "active": bool(b.get("active", True)),
+                "order": int(b.get("order", idx + 1)) if str(b.get("order", "")).isdigit() else (idx + 1)
+            }
+            if "title" in b and str(b.get("title", "")).strip():
+                item["title"] = str(b.get("title", "")).strip()
+            clean_banners.append(item)
+        if clean_banners:
+            clean_banners.sort(key=lambda x: x["order"])
+            current["banners"] = clean_banners
+
+    current["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    filepath = get_config_path("banners.json")
+    success = write_json(filepath, current)
+    if success:
+        return True, current, None
+    return False, None, "Không thể ghi file cấu hình banners.json"
+
+
+
 
 
 

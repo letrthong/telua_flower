@@ -1733,12 +1733,247 @@ function parseSearchQueryFromUrl() {
     return null;
 }
 
-// 4. Khởi chạy khi tải xong trang (DOM Content Loaded - Đảm bảo chỉ chạy duy nhất 1 lần để tránh rò rỉ listener)
+// 4. Quản lý trình chiếu Hero Banner (Đồng bộ cấu hình banners.json & tự động đổi ảnh)
+let _heroSlideIndex = 0;
+let _heroSlideTimer = null;
+let _heroSlideInterval = 5000;
+let _heroBannersData = [];
+
+export async function loadHeroBanners(forceRefresh = false) {
+    if (typeof document === 'undefined') return;
+    try {
+        let loaded = false;
+        // 1. Thử tải từ API
+        try {
+            const res = await fetch(`${API_BASE}/banners?_t=${Date.now()}`);
+            if (res.ok) {
+                const json = await res.json();
+                const data = json.data || json;
+                if (data && Array.isArray(data.banners) && data.banners.length > 0) {
+                    applyHeroBannersConfig(data);
+                    loaded = true;
+                }
+            }
+        } catch (e) {
+            // API offline / fallback
+        }
+
+        // 2. Thử fallback tải từ file config tĩnh
+        if (!loaded) {
+            try {
+                const staticRes = await fetch(`config/anne/banners.json?_t=${Date.now()}`);
+                if (staticRes.ok) {
+                    const data = await staticRes.json();
+                    if (data && Array.isArray(data.banners) && data.banners.length > 0) {
+                        applyHeroBannersConfig(data);
+                        loaded = true;
+                    }
+                }
+            } catch (e) {
+                // Ignore fallback error
+            }
+        }
+    } catch (err) {
+        console.warn("[HERO-BANNER] Dùng banner mặc định:", err.message);
+    }
+}
+
+export function applyHeroBannersConfig(config) {
+    if (typeof document === 'undefined' || !config) return;
+    
+    if (config.interval && typeof config.interval === 'number' && config.interval >= 1000) {
+        _heroSlideInterval = config.interval;
+    }
+
+    const rawList = Array.isArray(config.banners) ? config.banners : [];
+    const activeList = rawList.filter(b => b.active !== false);
+    if (activeList.length === 0) return;
+
+    _heroBannersData = activeList;
+
+    const slidesContainer = document.getElementById('heroBannerSlides');
+    const dotsContainer = document.getElementById('heroBannerDots');
+    if (!slidesContainer) return;
+
+    // Tải trước (preload) toàn bộ ảnh banner để khi bấm Next/Prev hoặc tự chuyển thì ảnh hiện ngay lập tức
+    _heroBannersData.forEach((b) => {
+        if (b.image) {
+            const preImg = new Image();
+            preImg.src = b.image;
+        }
+    });
+
+    // Render động các slides
+    let slidesHtml = '';
+    _heroBannersData.forEach((b, idx) => {
+        const isFirst = idx === 0;
+        const opacityCls = isFirst ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none';
+        const priorityAttr = isFirst ? 'fetchpriority="high"' : 'decoding="async"';
+        const lang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : 'vi';
+        const trans = (typeof window !== 'undefined' && window.translations) ? window.translations : {};
+        const heroTitle = (trans[lang] && trans[lang].hero_heading) ? trans[lang].hero_heading : 'Gửi Trọn Vẹn Cảm Xúc';
+        const altText = b.title || heroTitle;
+        const link = b.link || '#products';
+        const linkTagOpen = link ? `<a href="${link}" class="block w-full h-full">` : '';
+        const linkTagClose = link ? `</a>` : '';
+
+        slidesHtml += `
+            <div class="hero-slide absolute inset-0 ${opacityCls}" data-index="${idx}">
+                ${linkTagOpen}
+                    <img src="${b.image}" alt="${altText}" ${priorityAttr} class="w-full h-full object-cover object-center loaded" style="opacity: 1 !important;" onload="this.classList.add('loaded')" onerror="this.src='https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=800'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                ${linkTagClose}
+            </div>
+        `;
+    });
+    slidesContainer.innerHTML = slidesHtml;
+
+    // Render động các dots
+    if (dotsContainer) {
+        let dotsHtml = '';
+        _heroBannersData.forEach((_, idx) => {
+            const isFirst = idx === 0;
+            const dotCls = isFirst
+                ? 'hero-dot w-6 h-2 rounded-full bg-primary transition-all duration-300 shadow-sm cursor-pointer'
+                : 'hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer';
+            dotsHtml += `<button type="button" onclick="changeHeroSlide(${idx})" aria-label="Ảnh ${idx + 1}" class="${dotCls}"></button>`;
+        });
+        dotsContainer.innerHTML = dotsHtml;
+    }
+
+    _heroSlideIndex = 0;
+    initHeroBannerSlider();
+}
+
+export function changeHeroSlide(newIndex) {
+    if (typeof document === 'undefined') return;
+    const slides = document.querySelectorAll('#heroBannerSlides .hero-slide');
+    const dots = document.querySelectorAll('#heroBannerDots .hero-dot');
+    if (!slides || slides.length === 0) return;
+
+    if (newIndex < 0) {
+        _heroSlideIndex = slides.length - 1;
+    } else if (newIndex >= slides.length) {
+        _heroSlideIndex = 0;
+    } else {
+        _heroSlideIndex = newIndex;
+    }
+
+    slides.forEach((slide, idx) => {
+        const img = slide.querySelector('img');
+        if (idx === _heroSlideIndex) {
+            slide.classList.remove('opacity-0', 'z-0', 'pointer-events-none');
+            slide.classList.add('opacity-100', 'z-10');
+            if (img) {
+                img.classList.add('loaded');
+                img.style.opacity = '1';
+            }
+        } else {
+            slide.classList.remove('opacity-100', 'z-10');
+            slide.classList.add('opacity-0', 'z-0', 'pointer-events-none');
+        }
+    });
+
+    if (dots && dots.length > 0) {
+        dots.forEach((dot, idx) => {
+            if (idx === _heroSlideIndex) {
+                dot.className = 'hero-dot w-6 h-2 rounded-full bg-primary transition-all duration-300 shadow-sm cursor-pointer';
+            } else {
+                dot.className = 'hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer';
+            }
+        });
+    }
+
+    resetHeroSlideTimer();
+}
+
+export function nextHeroSlide() {
+    changeHeroSlide(_heroSlideIndex + 1);
+}
+
+export function prevHeroSlide() {
+    changeHeroSlide(_heroSlideIndex - 1);
+}
+
+export function resetHeroSlideTimer() {
+    if (typeof document === 'undefined') return;
+    if (_heroSlideTimer) {
+        clearInterval(_heroSlideTimer);
+        _heroSlideTimer = null;
+    }
+
+    const progressBar = document.getElementById('heroSlideProgressBar');
+    if (progressBar) {
+        progressBar.style.transition = 'none';
+        progressBar.style.width = '0%';
+        void progressBar.offsetWidth; // Force reflow
+        progressBar.style.transition = `width ${_heroSlideInterval}ms linear`;
+        progressBar.style.width = '100%';
+    }
+
+    _heroSlideTimer = setInterval(() => {
+        nextHeroSlide();
+    }, _heroSlideInterval);
+}
+
+export function initHeroBannerSlider() {
+    if (typeof document === 'undefined') return;
+    const container = document.getElementById('heroBannerCarousel');
+    const slides = document.querySelectorAll('#heroBannerSlides .hero-slide');
+    if (!container || !slides || slides.length === 0) return;
+
+    changeHeroSlide(0);
+
+    // Tạm dừng khi rê chuột vào, tiếp tục khi rời chuột
+    container.addEventListener('mouseenter', () => {
+        if (_heroSlideTimer) {
+            clearInterval(_heroSlideTimer);
+            _heroSlideTimer = null;
+        }
+        const progressBar = document.getElementById('heroSlideProgressBar');
+        if (progressBar) {
+            const computedWidth = window.getComputedStyle(progressBar).width;
+            progressBar.style.transition = 'none';
+            progressBar.style.width = computedWidth;
+        }
+    });
+
+    container.addEventListener('mouseleave', () => {
+        resetHeroSlideTimer();
+    });
+
+    // Cảm ứng vuốt (Mobile swipe)
+    let touchStartX = 0;
+    let touchEndX = 0;
+    container.addEventListener('touchstart', (e) => {
+        if (e.changedTouches && e.changedTouches[0]) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches[0]) {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchEndX - touchStartX;
+            if (Math.abs(diff) > 40) {
+                if (diff < 0) {
+                    nextHeroSlide();
+                } else {
+                    prevHeroSlide();
+                }
+            }
+        }
+    }, { passive: true });
+}
+
+// 5. Khởi chạy khi tải xong trang (DOM Content Loaded - Đảm bảo chỉ chạy duy nhất 1 lần để tránh rò rỉ listener)
 let _hasInitApp = false;
 async function initApp() {
     if (_hasInitApp) return;
     _hasInitApp = true;
 
+    initHeroBannerSlider();
+    loadHeroBanners();
     initMobileMenu();
     renderStorefrontCategories();
     await renderAllProducts();
@@ -1869,6 +2104,12 @@ if (typeof window !== 'undefined') {
     window.reloadCompanyInfoIfChanged = loadStorefrontCompanyInfo;
     window.reloadAddonsIfChanged = reloadAddonsIfChanged;
     window.scheduleAddonsPreload = scheduleAddonsPreload;
+    window.changeHeroSlide = changeHeroSlide;
+    window.nextHeroSlide = nextHeroSlide;
+    window.prevHeroSlide = prevHeroSlide;
+    window.initHeroBannerSlider = initHeroBannerSlider;
+    window.loadHeroBanners = loadHeroBanners;
+    window.applyHeroBannersConfig = applyHeroBannersConfig;
 
     // Tự động kiểm tra thay đổi của file addons.json / addonConfig.json / infoCompany.json khi người dùng chuyển lại tab
     const handleAddonsVisibilityOrFocus = () => {

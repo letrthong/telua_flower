@@ -510,6 +510,9 @@ function updateAuthUI() {
                     <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                     </button>
+                    <button onclick="openSystemConfigModal('banners')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-rose-700 bg-rose-50/80 hover:bg-rose-100 transition rounded-xl border border-rose-200">
+                        <i class="fa-solid fa-images mr-2 text-rose-500"></i> Cấu Hình Banner (banners.json)
+                    </button>
                     ` : ''}
                 </div>
             `;
@@ -602,6 +605,9 @@ function updateAuthUI() {
                             ${user.role === 'super_admin' ? `
                             <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                                 <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
+                            </button>
+                            <button onclick="openSystemConfigModal('banners'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 transition rounded-xl border border-rose-200">
+                                <i class="fa-solid fa-images mr-2 text-rose-500"></i> Cấu Hình Banner (banners.json)
                             </button>
                             ` : ''}
                         </div>

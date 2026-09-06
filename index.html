@@ -56,6 +56,20 @@
             transition: transform 0.3s ease;
         }
 
+        /* Hiệu ứng chuyển động mượt mà cho Hero Banner Slideshow */
+        .hero-slide {
+            transition: opacity 1000ms cubic-bezier(0.4, 0, 0.2, 1), transform 1200ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hero-slide.opacity-100 {
+            transform: scale(1);
+        }
+        .hero-slide.opacity-0 {
+            transform: scale(1.05);
+        }
+        .hero-slide img {
+            opacity: 1 !important;
+        }
+
         .hide-scroll::-webkit-scrollbar {
             display: none;
         }
@@ -417,9 +431,65 @@
                     Khám Phá Ngay <i class="fa-solid fa-arrow-right ml-2"></i>
                 </a>
             </div>
-            <div class="w-full md:w-1/2 h-[300px] md:h-[500px]">
-                <img src="https://images.unsplash.com/photo-1563241527-3004b7be0ffd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Banner Hoa Tươi" fetchpriority="high" class="w-full h-full object-cover object-center rounded-bl-[100px]">
+            <!-- Hero Banner Slideshow (Tự động chuyển 5s/lần & thanh điều hướng danh sách ảnh) -->
+            <div id="heroBannerCarousel" class="w-full md:w-1/2 h-[340px] md:h-[500px] relative overflow-hidden rounded-bl-[60px] md:rounded-bl-[100px] shadow-lg group select-none bg-pink-100">
+                <!-- Danh sách các ảnh Banner -->
+                <div id="heroBannerSlides" class="relative w-full h-full">
+                    <!-- Slide 1 -->
+                    <div class="hero-slide absolute inset-0 opacity-100 z-10" data-index="0">
+                        <img src="https://images.unsplash.com/photo-1563241527-3004b7be0ffd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            alt="Gửi Trọn Vẹn Cảm Xúc - Bó hoa tình yêu" fetchpriority="high" class="w-full h-full object-cover object-center">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="1">
+                        <img src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            alt="Bộ Sưu Tập Hoa Tươi Thiết Kế" class="w-full h-full object-cover object-center">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                    </div>
+                    <!-- Slide 3 -->
+                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="2">
+                        <img src="https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            alt="Hoa Tươi Phong Cách Lãng Mạn" class="w-full h-full object-cover object-center">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                    </div>
+                    <!-- Slide 4 -->
+                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="3">
+                        <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            alt="Bình Hoa Tươi Sang Trọng Độc Bản" class="w-full h-full object-cover object-center">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                    </div>
+                    <!-- Slide 5 -->
+                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="4">
+                        <img src="https://images.unsplash.com/photo-1508610048659-a06b669e3321?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            alt="Nở Hoa Thả Bình - Trao Gửi Yêu Thương" class="w-full h-full object-cover object-center">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                    </div>
+                </div>
+
+                <!-- Nút điều hướng Trái / Phải (Hiện mượt khi hover) -->
+                <button type="button" onclick="prevHeroSlide()" aria-label="Ảnh trước"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-white/70 hover:bg-white text-gray-800 backdrop-blur-md shadow-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
+                    <i class="fa-solid fa-chevron-left text-sm md:text-base"></i>
+                </button>
+                <button type="button" onclick="nextHeroSlide()" aria-label="Ảnh kế tiếp"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full bg-white/70 hover:bg-white text-gray-800 backdrop-blur-md shadow-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer">
+                    <i class="fa-solid fa-chevron-right text-sm md:text-base"></i>
+                </button>
+
+                <!-- Thanh danh sách chỉ số ảnh (Dots Navigation Bar) -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20 shadow-md" id="heroBannerDots">
+                    <button type="button" onclick="changeHeroSlide(0)" aria-label="Ảnh 1" class="hero-dot w-6 h-2 rounded-full bg-primary transition-all duration-300 shadow-sm cursor-pointer"></button>
+                    <button type="button" onclick="changeHeroSlide(1)" aria-label="Ảnh 2" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
+                    <button type="button" onclick="changeHeroSlide(2)" aria-label="Ảnh 3" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
+                    <button type="button" onclick="changeHeroSlide(3)" aria-label="Ảnh 4" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
+                    <button type="button" onclick="changeHeroSlide(4)" aria-label="Ảnh 5" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
+                </div>
+
+                <!-- Thanh tiến trình thời gian 5 giây -->
+                <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-20 overflow-hidden pointer-events-none">
+                    <div id="heroSlideProgressBar" class="h-full bg-primary transition-all duration-[5000ms] ease-linear w-0"></div>
+                </div>
             </div>
         </div>
     </section>
@@ -1685,6 +1755,9 @@
                 <button onclick="switchAdminTab('addons')" id="tabBtnAddons" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-gift mr-1.5 text-base text-pink-600"></i> Sản Phẩm Kèm Theo
                 </button>
+                <button onclick="switchAdminTab('banners')" id="tabBtnBanners" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-images mr-1.5 text-base text-rose-500"></i> Banner Trang Chủ
+                </button>
             </div>
 
             <!-- Modal Body (Scrollable) -->
@@ -2071,6 +2144,9 @@
                 </button>
                 <button onclick="switchSystemConfigTab('addonvis')" id="tabSysBtnAddonVis" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-gift mr-1.5 text-base text-amber-600"></i> Sản Phẩm Kèm Theo
+                </button>
+                <button onclick="switchSystemConfigTab('banners')" id="tabSysBtnBanners" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-images mr-1.5 text-base text-rose-500"></i> Banner Trình Chiếu
                 </button>
             </div>
 
@@ -2493,6 +2569,50 @@
                     <p class="text-[11px] text-gray-400 flex items-center gap-1.5">
                         <i class="fa-solid fa-circle-info"></i>
                         Nguồn dữ liệu: <code class="font-mono">config/anne/addonConfig.json</code>. Khi tắt, khu vực add-on sẽ ẩn hoàn toàn trên giao diện khách hàng.
+                    </p>
+                </section>
+
+                <!-- ================= TAB 5: BANNER TRÌNH CHIẾU ================= -->
+                <section id="tabSysContentBanners" class="space-y-5 hidden">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-pink-50 text-primary flex items-center justify-center text-xl shadow-inner border border-pink-100">
+                                <i class="fa-solid fa-images"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-gray-800">Cấu Hình Banner Trình Chiếu (banners.json)</h4>
+                                    <span id="adminBannersStatus" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                        Đang tải…
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5">Tùy chỉnh danh sách ảnh, link ảnh bên phải "Gửi Trọn Vẹn Cảm Xúc" và chu kỳ tự động chuyển.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                            <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
+                                <span class="text-xs font-bold text-gray-600">Đổi ảnh mỗi:</span>
+                                <input type="number" id="adminBannerIntervalInput" min="1" max="60" value="5" class="w-14 px-2 py-0.5 text-center text-xs font-bold bg-white border border-gray-300 rounded focus:outline-none focus:border-primary">
+                                <span class="text-xs font-semibold text-gray-500">giây</span>
+                            </div>
+                            <button type="button" onclick="addAdminBannerItem()" class="px-3 py-2 bg-pink-50 hover:bg-pink-100 text-primary border border-pink-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                                <i class="fa-solid fa-plus"></i> Thêm Ảnh
+                            </button>
+                            <button type="button" onclick="saveAdminBanners()" class="px-4 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách các banner -->
+                    <div id="adminBannersList" class="space-y-3.5">
+                        <!-- Render động qua loadAdminBanners() -->
+                    </div>
+
+                    <p class="text-[11px] text-gray-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Nguồn cấu hình: <code class="font-mono">config/anne/banners.json</code>. Các thay đổi sẽ được áp dụng ngay lập tức trên trang chủ Storefront.
                     </p>
                 </section>
             </div>

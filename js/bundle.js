@@ -2639,6 +2639,9 @@ function updateAuthUI() {
                     <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                     </button>
+                    <button onclick="openSystemConfigModal('banners')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-rose-700 bg-rose-50/80 hover:bg-rose-100 transition rounded-xl border border-rose-200">
+                        <i class="fa-solid fa-images mr-2 text-rose-500"></i> Cấu Hình Banner (banners.json)
+                    </button>
                     ` : ''}
                 </div>
             `;
@@ -2731,6 +2734,9 @@ function updateAuthUI() {
                             ${user.role === 'super_admin' ? `
                             <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                                 <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
+                            </button>
+                            <button onclick="openSystemConfigModal('banners'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 transition rounded-xl border border-rose-200">
+                                <i class="fa-solid fa-images mr-2 text-rose-500"></i> Cấu Hình Banner (banners.json)
                             </button>
                             ` : ''}
                         </div>
@@ -4478,7 +4484,7 @@ if (typeof document !== "undefined" && document.readyState !== "loading") {
 
 function openAdminPortalModal(initialTab = null) {
     // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
-    if (initialTab === "company" || initialTab === "translations") {
+    if (initialTab === "company" || initialTab === "translations" || initialTab === "banners") {
         openSystemConfigModal(initialTab);
         return;
     }
@@ -4583,16 +4589,18 @@ function closeSystemConfigModal() {
 }
 
 function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
     const btnPayment = document.getElementById("tabSysBtnPayment");
     const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
+    const btnBanners = document.getElementById("tabSysBtnBanners");
     const contentCompany = document.getElementById("tabSysContentCompany");
     const contentTranslations = document.getElementById("tabSysContentTranslations");
     const contentPayment = document.getElementById("tabSysContentPayment");
     const contentAddonVis = document.getElementById("tabSysContentAddonVis");
+    const contentBanners = document.getElementById("tabSysContentBanners");
 
     const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
     const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
@@ -4602,10 +4610,12 @@ function switchSystemConfigTab(tabName) {
     if (btnTranslations) btnTranslations.className = idleCls;
     if (btnPayment) btnPayment.className = idleCls;
     if (btnAddonVis) btnAddonVis.className = idleCls;
+    if (btnBanners) btnBanners.className = idleCls;
     if (contentCompany) contentCompany.classList.add("hidden");
     if (contentTranslations) contentTranslations.classList.add("hidden");
     if (contentPayment) contentPayment.classList.add("hidden");
     if (contentAddonVis) contentAddonVis.classList.add("hidden");
+    if (contentBanners) contentBanners.classList.add("hidden");
 
     if (tabName === "company") {
         if (btnCompany) btnCompany.className = activeCls;
@@ -4619,6 +4629,10 @@ function switchSystemConfigTab(tabName) {
         if (btnAddonVis) btnAddonVis.className = activeCls;
         if (contentAddonVis) contentAddonVis.classList.remove("hidden");
         loadAdminAddonConfig();
+    } else if (tabName === "banners") {
+        if (btnBanners) btnBanners.className = activeCls;
+        if (contentBanners) contentBanners.classList.remove("hidden");
+        loadAdminBanners();
     } else {
         if (btnTranslations) btnTranslations.className = activeCls;
         if (contentTranslations) contentTranslations.classList.remove("hidden");
@@ -4637,7 +4651,7 @@ function checkAdminAccess() {
 
 function switchAdminTab(tabName) {
     // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
-    if (tabName === "company" || tabName === "translations") {
+    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
         closeAdminPortalModal();
         openSystemConfigModal(tabName);
         return;
@@ -8288,6 +8302,252 @@ async function saveAddonConfig() {
     }
 }
 
+// ==========================================
+// CẤU HÌNH BANNER TRÌNH CHIẾU (banners.json)
+// ==========================================
+let adminBannersConfig = {
+    interval: 5000,
+    autoplay: true,
+    banners: []
+};
+
+async function loadAdminBanners() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const listEl = document.getElementById("adminBannersList");
+    const statusEl = document.getElementById("adminBannersStatus");
+    if (!listEl) return;
+
+    if (statusEl) {
+        statusEl.textContent = "Đang tải…";
+        statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500";
+    }
+
+    try {
+        let loaded = false;
+        try {
+            const res = await fetch(`${API_BASE}/admin/banners?_t=${Date.now()}`, {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success && json.data) {
+                    adminBannersConfig = json.data;
+                    loaded = true;
+                }
+            }
+        } catch (e) {}
+
+        if (!loaded) {
+            try {
+                const pubRes = await fetch(`${API_BASE}/banners?_t=${Date.now()}`);
+                if (pubRes.ok) {
+                    const json = await pubRes.json();
+                    adminBannersConfig = json.data || json;
+                    loaded = true;
+                }
+            } catch (e) {}
+        }
+
+        if (!loaded) {
+            const staticRes = await fetch(`config/anne/banners.json?_t=${Date.now()}`);
+            if (staticRes.ok) {
+                adminBannersConfig = await staticRes.json();
+                loaded = true;
+            }
+        }
+
+        if (statusEl) {
+            statusEl.textContent = "Đã nạp";
+            statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700";
+        }
+    } catch (err) {
+        if (statusEl) {
+            statusEl.textContent = "Lỗi nạp";
+            statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600";
+        }
+    }
+
+    renderAdminBanners();
+}
+
+function renderAdminBanners() {
+    const listEl = document.getElementById("adminBannersList");
+    const intervalInput = document.getElementById("adminBannerIntervalInput");
+    if (!listEl) return;
+
+    if (intervalInput) {
+        intervalInput.value = Math.round((adminBannersConfig.interval || 5000) / 1000);
+    }
+
+    const banners = Array.isArray(adminBannersConfig.banners) ? adminBannersConfig.banners : [];
+    if (banners.length === 0) {
+        listEl.innerHTML = `
+            <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-gray-200 text-gray-400 text-xs">
+                <i class="fa-solid fa-images text-2xl mb-2 text-gray-300"></i>
+                <p>Chưa có hình ảnh nào trong danh sách. Hãy nhấn "Thêm Banner Mới" bên dưới!</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    banners.forEach((b, idx) => {
+        const active = b.active !== false;
+        const imgUrl = b.image || '';
+        const title = b.title || '';
+        const link = b.link || '#products';
+        const order = b.order || (idx + 1);
+
+        html += `
+            <div class="bg-white rounded-2xl border ${active ? 'border-gray-200' : 'border-dashed border-gray-300 opacity-60'} p-4 shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 items-start relative group" data-banner-idx="${idx}">
+                <!-- Ảnh xem trước -->
+                <div class="w-full md:w-44 h-32 md:h-28 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200 relative group/thumb">
+                    <img id="adminBannerPreview_${idx}" src="${imgUrl}" alt="${title}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500'">
+                    <span class="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-xs">#${idx + 1}</span>
+                </div>
+
+                <!-- Các trường dữ liệu -->
+                <div class="flex-1 w-full space-y-2.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                        <!-- Đường dẫn ảnh -->
+                        <div class="sm:col-span-8">
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">
+                                Đường Dẫn Hình Ảnh (URL / Path) <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" value="${imgUrl}" oninput="updateAdminBannerField(${idx}, 'image', this.value)" placeholder="https://images.unsplash.com/... hoặc /api/flower/v1/images/..." class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                        </div>
+
+                        <!-- Thứ tự -->
+                        <div class="sm:col-span-4">
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Thứ tự hiển thị</label>
+                            <input type="number" min="1" value="${order}" onchange="updateAdminBannerField(${idx}, 'order', parseInt(this.value) || 1)" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                        <!-- Link đích khi click -->
+                        <div class="sm:col-span-8">
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Link chuyển đến khi click</label>
+                            <input type="text" value="${link}" oninput="updateAdminBannerField(${idx}, 'link', this.value)" placeholder="vd: #products hoặc /#bo-hoa" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                        </div>
+
+                        <!-- Gợi ý ngôn ngữ -->
+                        <div class="sm:col-span-4 flex items-end">
+                            <div class="text-[10px] text-gray-400 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 w-full">
+                                <i class="fa-solid fa-language text-purple-600 mr-1"></i> Alt: <b>Gửi Trọn Vẹn Cảm Xúc</b> (Đa ngữ)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút thao tác: Bật/Tắt & Xóa -->
+                    <div class="flex items-center justify-between pt-1 border-t border-gray-100">
+                        <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs">
+                            <input type="checkbox" ${active ? 'checked' : ''} onchange="updateAdminBannerField(${idx}, 'active', this.checked)" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                            <span class="${active ? 'text-green-700 font-semibold' : 'text-gray-400'}">${active ? 'Đang kích hoạt' : 'Tạm ẩn'}</span>
+                        </label>
+
+                        <button type="button" onclick="removeAdminBannerItem(${idx})" class="text-xs text-rose-500 hover:text-rose-700 font-bold px-2 py-1 rounded hover:bg-rose-50 transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can text-xs"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    listEl.innerHTML = html;
+}
+
+function updateAdminBannerField(idx, field, value) {
+    if (!adminBannersConfig.banners || !adminBannersConfig.banners[idx]) return;
+    adminBannersConfig.banners[idx][field] = value;
+
+    if (field === 'image') {
+        const preview = document.getElementById(`adminBannerPreview_${idx}`);
+        if (preview && value) {
+            preview.src = value;
+        }
+    }
+}
+
+function addAdminBannerItem() {
+    if (!Array.isArray(adminBannersConfig.banners)) {
+        adminBannersConfig.banners = [];
+    }
+    const newIdx = adminBannersConfig.banners.length + 1;
+    adminBannersConfig.banners.push({
+        id: `banner_${Date.now().toString().slice(-4)}`,
+        image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        link: "#products",
+        active: true,
+        order: newIdx
+    });
+    renderAdminBanners();
+}
+
+function removeAdminBannerItem(idx) {
+    if (!adminBannersConfig.banners || !adminBannersConfig.banners[idx]) return;
+    if (adminBannersConfig.banners.length <= 1) {
+        alert("Cần giữ ít nhất 1 ảnh banner cho trang chủ!");
+        return;
+    }
+    adminBannersConfig.banners.splice(idx, 1);
+    renderAdminBanners();
+}
+
+async function saveAdminBanners() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const intervalInput = document.getElementById("adminBannerIntervalInput");
+    if (intervalInput) {
+        const sec = parseInt(intervalInput.value) || 5;
+        adminBannersConfig.interval = Math.max(1, sec) * 1000;
+    }
+
+    if (!Array.isArray(adminBannersConfig.banners) || adminBannersConfig.banners.length === 0) {
+        alert("Danh sách banner không được để trống!");
+        return;
+    }
+
+    try {
+        let saved = false;
+        try {
+            const res = await fetch(`${API_BASE}/admin/banners`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(adminBannersConfig)
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success && json.data) {
+                    adminBannersConfig = json.data;
+                    saved = true;
+                }
+            }
+        } catch (e) {}
+
+        // Đồng bộ tức thời lên storefront
+        if (typeof window !== 'undefined' && typeof window.applyHeroBannersConfig === 'function') {
+            window.applyHeroBannersConfig(adminBannersConfig);
+        }
+
+        renderAdminBanners();
+        if (typeof notifyUser === 'function') {
+            notifyUser("Đã lưu cấu hình banner trình chiếu (banners.json) thành công!", "success");
+        } else {
+            alert("Đã lưu cấu hình banner thành công!");
+        }
+    } catch (err) {
+        if (typeof notifyUser === 'function') {
+            notifyUser("Lỗi lưu cấu hình: " + err.message, "error");
+        } else {
+            alert("Lỗi: " + err.message);
+        }
+    }
+}
+
 async function loadAdminCompanyInfo() {
     bindLiveCompanyInfoInputs();
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -8683,6 +8943,12 @@ if (typeof window !== "undefined") {
     window.savePaymentConfig = savePaymentConfig;
     window.loadAdminAddonConfig = loadAdminAddonConfig;
     window.saveAddonConfig = saveAddonConfig;
+    window.loadAdminBanners = loadAdminBanners;
+    window.renderAdminBanners = renderAdminBanners;
+    window.updateAdminBannerField = updateAdminBannerField;
+    window.addAdminBannerItem = addAdminBannerItem;
+    window.removeAdminBannerItem = removeAdminBannerItem;
+    window.saveAdminBanners = saveAdminBanners;
     window.loadAdminProducts = loadAdminProducts;
     window.openProductModal = openProductModal;
     window.closeProductModal = closeProductModal;
@@ -10516,12 +10782,247 @@ function parseSearchQueryFromUrl() {
     return null;
 }
 
-// 4. Khởi chạy khi tải xong trang (DOM Content Loaded - Đảm bảo chỉ chạy duy nhất 1 lần để tránh rò rỉ listener)
+// 4. Quản lý trình chiếu Hero Banner (Đồng bộ cấu hình banners.json & tự động đổi ảnh)
+let _heroSlideIndex = 0;
+let _heroSlideTimer = null;
+let _heroSlideInterval = 5000;
+let _heroBannersData = [];
+
+async function loadHeroBanners(forceRefresh = false) {
+    if (typeof document === 'undefined') return;
+    try {
+        let loaded = false;
+        // 1. Thử tải từ API
+        try {
+            const res = await fetch(`${API_BASE}/banners?_t=${Date.now()}`);
+            if (res.ok) {
+                const json = await res.json();
+                const data = json.data || json;
+                if (data && Array.isArray(data.banners) && data.banners.length > 0) {
+                    applyHeroBannersConfig(data);
+                    loaded = true;
+                }
+            }
+        } catch (e) {
+            // API offline / fallback
+        }
+
+        // 2. Thử fallback tải từ file config tĩnh
+        if (!loaded) {
+            try {
+                const staticRes = await fetch(`config/anne/banners.json?_t=${Date.now()}`);
+                if (staticRes.ok) {
+                    const data = await staticRes.json();
+                    if (data && Array.isArray(data.banners) && data.banners.length > 0) {
+                        applyHeroBannersConfig(data);
+                        loaded = true;
+                    }
+                }
+            } catch (e) {
+                // Ignore fallback error
+            }
+        }
+    } catch (err) {
+        console.warn("[HERO-BANNER] Dùng banner mặc định:", err.message);
+    }
+}
+
+function applyHeroBannersConfig(config) {
+    if (typeof document === 'undefined' || !config) return;
+    
+    if (config.interval && typeof config.interval === 'number' && config.interval >= 1000) {
+        _heroSlideInterval = config.interval;
+    }
+
+    const rawList = Array.isArray(config.banners) ? config.banners : [];
+    const activeList = rawList.filter(b => b.active !== false);
+    if (activeList.length === 0) return;
+
+    _heroBannersData = activeList;
+
+    const slidesContainer = document.getElementById('heroBannerSlides');
+    const dotsContainer = document.getElementById('heroBannerDots');
+    if (!slidesContainer) return;
+
+    // Tải trước (preload) toàn bộ ảnh banner để khi bấm Next/Prev hoặc tự chuyển thì ảnh hiện ngay lập tức
+    _heroBannersData.forEach((b) => {
+        if (b.image) {
+            const preImg = new Image();
+            preImg.src = b.image;
+        }
+    });
+
+    // Render động các slides
+    let slidesHtml = '';
+    _heroBannersData.forEach((b, idx) => {
+        const isFirst = idx === 0;
+        const opacityCls = isFirst ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none';
+        const priorityAttr = isFirst ? 'fetchpriority="high"' : 'decoding="async"';
+        const lang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : 'vi';
+        const trans = (typeof window !== 'undefined' && window.translations) ? window.translations : {};
+        const heroTitle = (trans[lang] && trans[lang].hero_heading) ? trans[lang].hero_heading : 'Gửi Trọn Vẹn Cảm Xúc';
+        const altText = b.title || heroTitle;
+        const link = b.link || '#products';
+        const linkTagOpen = link ? `<a href="${link}" class="block w-full h-full">` : '';
+        const linkTagClose = link ? `</a>` : '';
+
+        slidesHtml += `
+            <div class="hero-slide absolute inset-0 ${opacityCls}" data-index="${idx}">
+                ${linkTagOpen}
+                    <img src="${b.image}" alt="${altText}" ${priorityAttr} class="w-full h-full object-cover object-center loaded" style="opacity: 1 !important;" onload="this.classList.add('loaded')" onerror="this.src='https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=800'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                ${linkTagClose}
+            </div>
+        `;
+    });
+    slidesContainer.innerHTML = slidesHtml;
+
+    // Render động các dots
+    if (dotsContainer) {
+        let dotsHtml = '';
+        _heroBannersData.forEach((_, idx) => {
+            const isFirst = idx === 0;
+            const dotCls = isFirst
+                ? 'hero-dot w-6 h-2 rounded-full bg-primary transition-all duration-300 shadow-sm cursor-pointer'
+                : 'hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer';
+            dotsHtml += `<button type="button" onclick="changeHeroSlide(${idx})" aria-label="Ảnh ${idx + 1}" class="${dotCls}"></button>`;
+        });
+        dotsContainer.innerHTML = dotsHtml;
+    }
+
+    _heroSlideIndex = 0;
+    initHeroBannerSlider();
+}
+
+function changeHeroSlide(newIndex) {
+    if (typeof document === 'undefined') return;
+    const slides = document.querySelectorAll('#heroBannerSlides .hero-slide');
+    const dots = document.querySelectorAll('#heroBannerDots .hero-dot');
+    if (!slides || slides.length === 0) return;
+
+    if (newIndex < 0) {
+        _heroSlideIndex = slides.length - 1;
+    } else if (newIndex >= slides.length) {
+        _heroSlideIndex = 0;
+    } else {
+        _heroSlideIndex = newIndex;
+    }
+
+    slides.forEach((slide, idx) => {
+        const img = slide.querySelector('img');
+        if (idx === _heroSlideIndex) {
+            slide.classList.remove('opacity-0', 'z-0', 'pointer-events-none');
+            slide.classList.add('opacity-100', 'z-10');
+            if (img) {
+                img.classList.add('loaded');
+                img.style.opacity = '1';
+            }
+        } else {
+            slide.classList.remove('opacity-100', 'z-10');
+            slide.classList.add('opacity-0', 'z-0', 'pointer-events-none');
+        }
+    });
+
+    if (dots && dots.length > 0) {
+        dots.forEach((dot, idx) => {
+            if (idx === _heroSlideIndex) {
+                dot.className = 'hero-dot w-6 h-2 rounded-full bg-primary transition-all duration-300 shadow-sm cursor-pointer';
+            } else {
+                dot.className = 'hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer';
+            }
+        });
+    }
+
+    resetHeroSlideTimer();
+}
+
+function nextHeroSlide() {
+    changeHeroSlide(_heroSlideIndex + 1);
+}
+
+function prevHeroSlide() {
+    changeHeroSlide(_heroSlideIndex - 1);
+}
+
+function resetHeroSlideTimer() {
+    if (typeof document === 'undefined') return;
+    if (_heroSlideTimer) {
+        clearInterval(_heroSlideTimer);
+        _heroSlideTimer = null;
+    }
+
+    const progressBar = document.getElementById('heroSlideProgressBar');
+    if (progressBar) {
+        progressBar.style.transition = 'none';
+        progressBar.style.width = '0%';
+        void progressBar.offsetWidth; // Force reflow
+        progressBar.style.transition = `width ${_heroSlideInterval}ms linear`;
+        progressBar.style.width = '100%';
+    }
+
+    _heroSlideTimer = setInterval(() => {
+        nextHeroSlide();
+    }, _heroSlideInterval);
+}
+
+function initHeroBannerSlider() {
+    if (typeof document === 'undefined') return;
+    const container = document.getElementById('heroBannerCarousel');
+    const slides = document.querySelectorAll('#heroBannerSlides .hero-slide');
+    if (!container || !slides || slides.length === 0) return;
+
+    changeHeroSlide(0);
+
+    // Tạm dừng khi rê chuột vào, tiếp tục khi rời chuột
+    container.addEventListener('mouseenter', () => {
+        if (_heroSlideTimer) {
+            clearInterval(_heroSlideTimer);
+            _heroSlideTimer = null;
+        }
+        const progressBar = document.getElementById('heroSlideProgressBar');
+        if (progressBar) {
+            const computedWidth = window.getComputedStyle(progressBar).width;
+            progressBar.style.transition = 'none';
+            progressBar.style.width = computedWidth;
+        }
+    });
+
+    container.addEventListener('mouseleave', () => {
+        resetHeroSlideTimer();
+    });
+
+    // Cảm ứng vuốt (Mobile swipe)
+    let touchStartX = 0;
+    let touchEndX = 0;
+    container.addEventListener('touchstart', (e) => {
+        if (e.changedTouches && e.changedTouches[0]) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+    }, { passive: true });
+
+    container.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches[0]) {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchEndX - touchStartX;
+            if (Math.abs(diff) > 40) {
+                if (diff < 0) {
+                    nextHeroSlide();
+                } else {
+                    prevHeroSlide();
+                }
+            }
+        }
+    }, { passive: true });
+}
+
+// 5. Khởi chạy khi tải xong trang (DOM Content Loaded - Đảm bảo chỉ chạy duy nhất 1 lần để tránh rò rỉ listener)
 let _hasInitApp = false;
 async function initApp() {
     if (_hasInitApp) return;
     _hasInitApp = true;
 
+    initHeroBannerSlider();
+    loadHeroBanners();
     initMobileMenu();
     renderStorefrontCategories();
     await renderAllProducts();
@@ -10652,6 +11153,12 @@ if (typeof window !== 'undefined') {
     window.reloadCompanyInfoIfChanged = loadStorefrontCompanyInfo;
     window.reloadAddonsIfChanged = reloadAddonsIfChanged;
     window.scheduleAddonsPreload = scheduleAddonsPreload;
+    window.changeHeroSlide = changeHeroSlide;
+    window.nextHeroSlide = nextHeroSlide;
+    window.prevHeroSlide = prevHeroSlide;
+    window.initHeroBannerSlider = initHeroBannerSlider;
+    window.loadHeroBanners = loadHeroBanners;
+    window.applyHeroBannersConfig = applyHeroBannersConfig;
 
     // Tự động kiểm tra thay đổi của file addons.json / addonConfig.json / infoCompany.json khi người dùng chuyển lại tab
     const handleAddonsVisibilityOrFocus = () => {

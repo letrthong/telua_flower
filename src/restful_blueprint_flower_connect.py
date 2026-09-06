@@ -44,6 +44,8 @@ from   data_service import (
     save_payment_config,
     get_addon_config,
     save_addon_config,
+    get_banners_config,
+    save_banners_config,
     save_uploaded_image,
     find_image_file,
     update_order_status
@@ -1334,5 +1336,41 @@ def api_update_admin_addon_config():
         "message": "Đã cập nhật cấu hình hiển thị Sản Phẩm Kèm Theo thành công!",
         "data": updated
     }), 200
+
+
+@flower_connect_api.route("/banners", methods=["GET"])
+def api_get_public_banners():
+    """Lấy cấu hình danh sách banner trình chiếu cho Storefront (ETag & Cache-Control)."""
+    return _build_cached_file_response("banners.json", lambda: get_banners_config(use_cache=True), max_age=60)
+
+
+@flower_connect_api.route("/admin/banners", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_banners():
+    """Lấy đầy đủ cấu hình banner trình chiếu cho Cổng Quản Trị."""
+    return jsonify({
+        "success": True,
+        "data": get_banners_config(use_cache=False)
+    }), 200
+
+
+@flower_connect_api.route("/admin/banners", methods=["PUT", "POST"])
+@require_role(["super_admin"])
+def api_update_admin_banners():
+    """Cập nhật danh sách ảnh banner, link ảnh, tiêu đề, thứ tự và thời gian chuyển."""
+    data = request.get_json(silent=True) or {}
+    success, updated, err = save_banners_config(data)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể lưu cấu hình banner"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã cập nhật cấu hình banner trình chiếu thành công!",
+        "data": updated
+    }), 200
+
 
 

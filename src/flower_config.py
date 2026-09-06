@@ -68,6 +68,7 @@ PROMOTIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "promotions.json")
 TRANSLATIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "translations.json")
 WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.json")
 COMPANY_INFO_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "infoCompany.json")
+BANNERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "banners.json")
 
 # File cache version - dùng để đồng bộ cache giữa các workers / instances
 CACHE_VERSION_FILE = os.path.join(FLOWER_CONFIG_DIR, "cache_version.json")

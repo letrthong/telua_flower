@@ -62,7 +62,7 @@ if (typeof document !== "undefined" && document.readyState !== "loading") {
 
 export function openAdminPortalModal(initialTab = null) {
     // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
-    if (initialTab === "company" || initialTab === "translations") {
+    if (initialTab === "company" || initialTab === "translations" || initialTab === "banners") {
         openSystemConfigModal(initialTab);
         return;
     }
@@ -167,16 +167,18 @@ export function closeSystemConfigModal() {
 }
 
 export function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
     const btnPayment = document.getElementById("tabSysBtnPayment");
     const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
+    const btnBanners = document.getElementById("tabSysBtnBanners");
     const contentCompany = document.getElementById("tabSysContentCompany");
     const contentTranslations = document.getElementById("tabSysContentTranslations");
     const contentPayment = document.getElementById("tabSysContentPayment");
     const contentAddonVis = document.getElementById("tabSysContentAddonVis");
+    const contentBanners = document.getElementById("tabSysContentBanners");
 
     const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
     const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
@@ -186,10 +188,12 @@ export function switchSystemConfigTab(tabName) {
     if (btnTranslations) btnTranslations.className = idleCls;
     if (btnPayment) btnPayment.className = idleCls;
     if (btnAddonVis) btnAddonVis.className = idleCls;
+    if (btnBanners) btnBanners.className = idleCls;
     if (contentCompany) contentCompany.classList.add("hidden");
     if (contentTranslations) contentTranslations.classList.add("hidden");
     if (contentPayment) contentPayment.classList.add("hidden");
     if (contentAddonVis) contentAddonVis.classList.add("hidden");
+    if (contentBanners) contentBanners.classList.add("hidden");
 
     if (tabName === "company") {
         if (btnCompany) btnCompany.className = activeCls;
@@ -203,6 +207,10 @@ export function switchSystemConfigTab(tabName) {
         if (btnAddonVis) btnAddonVis.className = activeCls;
         if (contentAddonVis) contentAddonVis.classList.remove("hidden");
         loadAdminAddonConfig();
+    } else if (tabName === "banners") {
+        if (btnBanners) btnBanners.className = activeCls;
+        if (contentBanners) contentBanners.classList.remove("hidden");
+        loadAdminBanners();
     } else {
         if (btnTranslations) btnTranslations.className = activeCls;
         if (contentTranslations) contentTranslations.classList.remove("hidden");
@@ -221,7 +229,7 @@ export function checkAdminAccess() {
 
 export function switchAdminTab(tabName) {
     // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
-    if (tabName === "company" || tabName === "translations") {
+    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
         closeAdminPortalModal();
         openSystemConfigModal(tabName);
         return;
@@ -3872,6 +3880,252 @@ export async function saveAddonConfig() {
     }
 }
 
+// ==========================================
+// CẤU HÌNH BANNER TRÌNH CHIẾU (banners.json)
+// ==========================================
+let adminBannersConfig = {
+    interval: 5000,
+    autoplay: true,
+    banners: []
+};
+
+export async function loadAdminBanners() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const listEl = document.getElementById("adminBannersList");
+    const statusEl = document.getElementById("adminBannersStatus");
+    if (!listEl) return;
+
+    if (statusEl) {
+        statusEl.textContent = "Đang tải…";
+        statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500";
+    }
+
+    try {
+        let loaded = false;
+        try {
+            const res = await fetch(`${API_BASE}/admin/banners?_t=${Date.now()}`, {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success && json.data) {
+                    adminBannersConfig = json.data;
+                    loaded = true;
+                }
+            }
+        } catch (e) {}
+
+        if (!loaded) {
+            try {
+                const pubRes = await fetch(`${API_BASE}/banners?_t=${Date.now()}`);
+                if (pubRes.ok) {
+                    const json = await pubRes.json();
+                    adminBannersConfig = json.data || json;
+                    loaded = true;
+                }
+            } catch (e) {}
+        }
+
+        if (!loaded) {
+            const staticRes = await fetch(`config/anne/banners.json?_t=${Date.now()}`);
+            if (staticRes.ok) {
+                adminBannersConfig = await staticRes.json();
+                loaded = true;
+            }
+        }
+
+        if (statusEl) {
+            statusEl.textContent = "Đã nạp";
+            statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700";
+        }
+    } catch (err) {
+        if (statusEl) {
+            statusEl.textContent = "Lỗi nạp";
+            statusEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600";
+        }
+    }
+
+    renderAdminBanners();
+}
+
+export function renderAdminBanners() {
+    const listEl = document.getElementById("adminBannersList");
+    const intervalInput = document.getElementById("adminBannerIntervalInput");
+    if (!listEl) return;
+
+    if (intervalInput) {
+        intervalInput.value = Math.round((adminBannersConfig.interval || 5000) / 1000);
+    }
+
+    const banners = Array.isArray(adminBannersConfig.banners) ? adminBannersConfig.banners : [];
+    if (banners.length === 0) {
+        listEl.innerHTML = `
+            <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-gray-200 text-gray-400 text-xs">
+                <i class="fa-solid fa-images text-2xl mb-2 text-gray-300"></i>
+                <p>Chưa có hình ảnh nào trong danh sách. Hãy nhấn "Thêm Banner Mới" bên dưới!</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    banners.forEach((b, idx) => {
+        const active = b.active !== false;
+        const imgUrl = b.image || '';
+        const title = b.title || '';
+        const link = b.link || '#products';
+        const order = b.order || (idx + 1);
+
+        html += `
+            <div class="bg-white rounded-2xl border ${active ? 'border-gray-200' : 'border-dashed border-gray-300 opacity-60'} p-4 shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 items-start relative group" data-banner-idx="${idx}">
+                <!-- Ảnh xem trước -->
+                <div class="w-full md:w-44 h-32 md:h-28 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200 relative group/thumb">
+                    <img id="adminBannerPreview_${idx}" src="${imgUrl}" alt="${title}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1563241527-3004b7be0ffd?w=500'">
+                    <span class="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-xs">#${idx + 1}</span>
+                </div>
+
+                <!-- Các trường dữ liệu -->
+                <div class="flex-1 w-full space-y-2.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                        <!-- Đường dẫn ảnh -->
+                        <div class="sm:col-span-8">
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">
+                                Đường Dẫn Hình Ảnh (URL / Path) <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="text" value="${imgUrl}" oninput="updateAdminBannerField(${idx}, 'image', this.value)" placeholder="https://images.unsplash.com/... hoặc /api/flower/v1/images/..." class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                        </div>
+
+                        <!-- Thứ tự -->
+                        <div class="sm:col-span-4">
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Thứ tự hiển thị</label>
+                            <input type="number" min="1" value="${order}" onchange="updateAdminBannerField(${idx}, 'order', parseInt(this.value) || 1)" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                        <!-- Link đích khi click -->
+                        <div class="sm:col-span-8">
+                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Link chuyển đến khi click</label>
+                            <input type="text" value="${link}" oninput="updateAdminBannerField(${idx}, 'link', this.value)" placeholder="vd: #products hoặc /#bo-hoa" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                        </div>
+
+                        <!-- Gợi ý ngôn ngữ -->
+                        <div class="sm:col-span-4 flex items-end">
+                            <div class="text-[10px] text-gray-400 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 w-full">
+                                <i class="fa-solid fa-language text-purple-600 mr-1"></i> Alt: <b>Gửi Trọn Vẹn Cảm Xúc</b> (Đa ngữ)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nút thao tác: Bật/Tắt & Xóa -->
+                    <div class="flex items-center justify-between pt-1 border-t border-gray-100">
+                        <label class="inline-flex items-center gap-2 cursor-pointer select-none text-xs">
+                            <input type="checkbox" ${active ? 'checked' : ''} onchange="updateAdminBannerField(${idx}, 'active', this.checked)" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                            <span class="${active ? 'text-green-700 font-semibold' : 'text-gray-400'}">${active ? 'Đang kích hoạt' : 'Tạm ẩn'}</span>
+                        </label>
+
+                        <button type="button" onclick="removeAdminBannerItem(${idx})" class="text-xs text-rose-500 hover:text-rose-700 font-bold px-2 py-1 rounded hover:bg-rose-50 transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can text-xs"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    listEl.innerHTML = html;
+}
+
+export function updateAdminBannerField(idx, field, value) {
+    if (!adminBannersConfig.banners || !adminBannersConfig.banners[idx]) return;
+    adminBannersConfig.banners[idx][field] = value;
+
+    if (field === 'image') {
+        const preview = document.getElementById(`adminBannerPreview_${idx}`);
+        if (preview && value) {
+            preview.src = value;
+        }
+    }
+}
+
+export function addAdminBannerItem() {
+    if (!Array.isArray(adminBannersConfig.banners)) {
+        adminBannersConfig.banners = [];
+    }
+    const newIdx = adminBannersConfig.banners.length + 1;
+    adminBannersConfig.banners.push({
+        id: `banner_${Date.now().toString().slice(-4)}`,
+        image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        link: "#products",
+        active: true,
+        order: newIdx
+    });
+    renderAdminBanners();
+}
+
+export function removeAdminBannerItem(idx) {
+    if (!adminBannersConfig.banners || !adminBannersConfig.banners[idx]) return;
+    if (adminBannersConfig.banners.length <= 1) {
+        alert("Cần giữ ít nhất 1 ảnh banner cho trang chủ!");
+        return;
+    }
+    adminBannersConfig.banners.splice(idx, 1);
+    renderAdminBanners();
+}
+
+export async function saveAdminBanners() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const intervalInput = document.getElementById("adminBannerIntervalInput");
+    if (intervalInput) {
+        const sec = parseInt(intervalInput.value) || 5;
+        adminBannersConfig.interval = Math.max(1, sec) * 1000;
+    }
+
+    if (!Array.isArray(adminBannersConfig.banners) || adminBannersConfig.banners.length === 0) {
+        alert("Danh sách banner không được để trống!");
+        return;
+    }
+
+    try {
+        let saved = false;
+        try {
+            const res = await fetch(`${API_BASE}/admin/banners`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify(adminBannersConfig)
+            });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success && json.data) {
+                    adminBannersConfig = json.data;
+                    saved = true;
+                }
+            }
+        } catch (e) {}
+
+        // Đồng bộ tức thời lên storefront
+        if (typeof window !== 'undefined' && typeof window.applyHeroBannersConfig === 'function') {
+            window.applyHeroBannersConfig(adminBannersConfig);
+        }
+
+        renderAdminBanners();
+        if (typeof notifyUser === 'function') {
+            notifyUser("Đã lưu cấu hình banner trình chiếu (banners.json) thành công!", "success");
+        } else {
+            alert("Đã lưu cấu hình banner thành công!");
+        }
+    } catch (err) {
+        if (typeof notifyUser === 'function') {
+            notifyUser("Lỗi lưu cấu hình: " + err.message, "error");
+        } else {
+            alert("Lỗi: " + err.message);
+        }
+    }
+}
+
 export async function loadAdminCompanyInfo() {
     bindLiveCompanyInfoInputs();
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -4267,6 +4521,12 @@ if (typeof window !== "undefined") {
     window.savePaymentConfig = savePaymentConfig;
     window.loadAdminAddonConfig = loadAdminAddonConfig;
     window.saveAddonConfig = saveAddonConfig;
+    window.loadAdminBanners = loadAdminBanners;
+    window.renderAdminBanners = renderAdminBanners;
+    window.updateAdminBannerField = updateAdminBannerField;
+    window.addAdminBannerItem = addAdminBannerItem;
+    window.removeAdminBannerItem = removeAdminBannerItem;
+    window.saveAdminBanners = saveAdminBanners;
     window.loadAdminProducts = loadAdminProducts;
     window.openProductModal = openProductModal;
     window.closeProductModal = closeProductModal;
