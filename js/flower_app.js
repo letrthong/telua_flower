@@ -1737,6 +1737,7 @@ function parseSearchQueryFromUrl() {
 let _heroSlideIndex = 0;
 let _heroSlideTimer = null;
 let _heroSlideInterval = 5000;
+let _heroSlideAutoplay = true;
 let _heroBannersData = [];
 
 export async function loadHeroBanners(forceRefresh = false) {
@@ -1783,6 +1784,9 @@ export function applyHeroBannersConfig(config) {
     
     if (config.interval && typeof config.interval === 'number' && config.interval >= 1000) {
         _heroSlideInterval = config.interval;
+    }
+    if (typeof config.autoplay !== 'undefined') {
+        _heroSlideAutoplay = config.autoplay !== false;
     }
 
     const rawList = Array.isArray(config.banners) ? config.banners : [];
@@ -1903,6 +1907,14 @@ export function resetHeroSlideTimer() {
     }
 
     const progressBar = document.getElementById('heroSlideProgressBar');
+    if (!_heroSlideAutoplay) {
+        if (progressBar) {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+        }
+        return;
+    }
+
     if (progressBar) {
         progressBar.style.transition = 'none';
         progressBar.style.width = '0%';

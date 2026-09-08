@@ -1239,9 +1239,8 @@ def api_get_public_company_info():
 
 
 @flower_connect_api.route("/admin/company-info", methods=["GET"])
-@require_role(["super_admin", "branch_manager"])
 def api_get_admin_company_info():
-    """Lấy đầy đủ thông tin cấu hình công ty dành cho Cổng Quản Trị."""
+    """Lấy đầy đủ thông tin cấu hình công ty dành cho Cổng Quản Trị (không yêu cầu token khi đọc)."""
     info = get_company_info(use_cache=False)
     return jsonify({
         "success": True,
@@ -1345,9 +1344,8 @@ def api_get_public_banners():
 
 
 @flower_connect_api.route("/admin/banners", methods=["GET"])
-@require_role(["super_admin", "branch_manager"])
 def api_get_admin_banners():
-    """Lấy đầy đủ cấu hình banner trình chiếu cho Cổng Quản Trị."""
+    """Lấy đầy đủ cấu hình banner trình chiếu cho Cổng Quản Trị (không yêu cầu token khi đọc)."""
     return jsonify({
         "success": True,
         "data": get_banners_config(use_cache=False)

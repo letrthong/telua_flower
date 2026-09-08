@@ -8373,7 +8373,28 @@ async function loadAdminBanners() {
 function renderAdminBanners() {
     const listEl = document.getElementById("adminBannersList");
     const intervalInput = document.getElementById("adminBannerIntervalInput");
+    const autoplayInput = document.getElementById("adminBannerAutoplayInput");
+    const intervalWrapper = document.getElementById("adminBannerIntervalWrapper");
     if (!listEl) return;
+
+    if (autoplayInput) {
+        autoplayInput.checked = adminBannersConfig.autoplay !== false;
+        if (intervalWrapper) {
+            intervalWrapper.style.opacity = autoplayInput.checked ? "1" : "0.5";
+        }
+        if (intervalInput) {
+            intervalInput.disabled = !autoplayInput.checked;
+        }
+        autoplayInput.onchange = () => {
+            adminBannersConfig.autoplay = autoplayInput.checked;
+            if (intervalWrapper) {
+                intervalWrapper.style.opacity = autoplayInput.checked ? "1" : "0.5";
+            }
+            if (intervalInput) {
+                intervalInput.disabled = !autoplayInput.checked;
+            }
+        };
+    }
 
     if (intervalInput) {
         intervalInput.value = Math.round((adminBannersConfig.interval || 5000) / 1000);
@@ -8497,6 +8518,10 @@ function removeAdminBannerItem(idx) {
 
 async function saveAdminBanners() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const autoplayInput = document.getElementById("adminBannerAutoplayInput");
+    if (autoplayInput) {
+        adminBannersConfig.autoplay = autoplayInput.checked;
+    }
     const intervalInput = document.getElementById("adminBannerIntervalInput");
     if (intervalInput) {
         const sec = parseInt(intervalInput.value) || 5;
@@ -10786,6 +10811,7 @@ function parseSearchQueryFromUrl() {
 let _heroSlideIndex = 0;
 let _heroSlideTimer = null;
 let _heroSlideInterval = 5000;
+let _heroSlideAutoplay = true;
 let _heroBannersData = [];
 
 async function loadHeroBanners(forceRefresh = false) {
@@ -10832,6 +10858,9 @@ function applyHeroBannersConfig(config) {
     
     if (config.interval && typeof config.interval === 'number' && config.interval >= 1000) {
         _heroSlideInterval = config.interval;
+    }
+    if (typeof config.autoplay !== 'undefined') {
+        _heroSlideAutoplay = config.autoplay !== false;
     }
 
     const rawList = Array.isArray(config.banners) ? config.banners : [];
@@ -10952,6 +10981,14 @@ function resetHeroSlideTimer() {
     }
 
     const progressBar = document.getElementById('heroSlideProgressBar');
+    if (!_heroSlideAutoplay) {
+        if (progressBar) {
+            progressBar.style.transition = 'none';
+            progressBar.style.width = '0%';
+        }
+        return;
+    }
+
     if (progressBar) {
         progressBar.style.transition = 'none';
         progressBar.style.width = '0%';

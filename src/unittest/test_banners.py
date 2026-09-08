@@ -107,5 +107,25 @@ class TestBannerSliderConfiguration(unittest.TestCase):
         self.assertEqual(len(cfg_after["banners"]), 2)
         self.assertEqual(cfg_after["banners"][0]["image"], "https://images.unsplash.com/photo-custom-01")
 
+    def test_get_admin_endpoints_without_token(self):
+        """Kiểm tra GET /admin/company-info và /admin/banners hoạt động công khai không cần token, nhưng PUT bắt buộc token"""
+        # 1. GET /admin/company-info không cần token
+        res_ci = self.client.get("/api/flower/v1/admin/company-info")
+        self.assertEqual(res_ci.status_code, 200)
+        self.assertTrue(res_ci.get_json().get("success"))
+
+        # 2. GET /admin/banners không cần token
+        res_bn = self.client.get("/api/flower/v1/admin/banners")
+        self.assertEqual(res_bn.status_code, 200)
+        self.assertTrue(res_bn.get_json().get("success"))
+
+        # 3. PUT /admin/banners không có token phải bị từ chối 401
+        res_put = self.client.put("/api/flower/v1/admin/banners", json={"interval": 5000})
+        self.assertEqual(res_put.status_code, 401)
+
+        # 4. PUT /admin/company-info không có token phải bị từ chối 401
+        res_put_ci = self.client.put("/api/flower/v1/admin/company-info", json={"companyName": "Test"})
+        self.assertEqual(res_put_ci.status_code, 401)
+
 if __name__ == "__main__":
     unittest.main()
