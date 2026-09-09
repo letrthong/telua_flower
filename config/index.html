@@ -162,13 +162,13 @@
     <div class="bg-primary text-white text-sm py-2 px-4 hidden md:block relative z-[60]">
         <div class="container mx-auto max-w-7xl flex justify-between items-center">
             <div class="flex space-x-6">
-                <a id="topHeaderHotlineLink" href="tel:0976491322" class="hover:text-pink-200 transition inline-flex items-center">
+                <a id="topHeaderHotlineLink" href="#" class="hover:text-pink-200 transition inline-flex items-center">
                     <i class="fa-solid fa-phone mr-2"></i> 
-                    <span data-i18n="hotline">Hotline:</span>&nbsp;<span id="topHeaderHotlineVal">0976.491.322</span>
+                    <span data-i18n="hotline">Hotline:</span>&nbsp;<span id="topHeaderHotlineVal"><span class="inline-block h-3.5 w-24 bg-pink-400/50 rounded animate-pulse align-middle"></span></span>
                 </a>
-                <a id="topHeaderEmailLink" href="mailto:cskh@nohoathabinh.vn" class="hover:text-pink-200 transition inline-flex items-center">
+                <a id="topHeaderEmailLink" href="#" class="hover:text-pink-200 transition inline-flex items-center">
                     <i class="fa-regular fa-envelope mr-2"></i> 
-                    <span id="topHeaderEmailVal">cskh@nohoathabinh.vn</span>
+                    <span id="topHeaderEmailVal"><span class="inline-block h-3.5 w-32 bg-pink-400/50 rounded animate-pulse align-middle"></span></span>
                 </a>
             </div>
             <div class="flex items-center space-x-4">
@@ -606,7 +606,9 @@
 
             <!-- Thanh chọn chi nhánh chuỗi cửa hàng (Dynamic Showroom Switcher) -->
             <div id="storeBranchNav" class="flex flex-wrap justify-center gap-2 md:gap-3 mb-8">
-                <!-- Render qua JS: Nút chọn từng chi nhánh trong chuỗi -->
+                <span class="inline-block h-9 w-28 bg-pink-100/70 rounded-full animate-pulse"></span>
+                <span class="inline-block h-9 w-28 bg-pink-100/70 rounded-full animate-pulse"></span>
+                <span class="inline-block h-9 w-28 bg-pink-100/70 rounded-full animate-pulse"></span>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -616,7 +618,9 @@
                         <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
                             <div>
                                 <span id="storeBadgeType" class="text-xs uppercase font-bold tracking-wider text-primary" data-i18n="store_type">Showroom Trực Thuộc</span>
-                                <h3 id="storeNameVal" class="font-serif text-xl md:text-2xl font-bold text-gray-900 mt-1">Nở Hoa Thả Bình - Q.10</h3>
+                                <h3 id="storeNameVal" class="font-serif text-xl md:text-2xl font-bold text-gray-900 mt-1">
+                                    <span class="inline-block h-6 md:h-7 w-48 bg-gray-200 rounded animate-pulse"></span>
+                                </h3>
                             </div>
                             <span id="storeStatusBadge" class="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-200">
                                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> <span id="storeStatusVal">Đang mở cửa</span>
@@ -628,36 +632,36 @@
                                 <div class="w-9 h-9 rounded-full bg-pink-50 text-primary flex items-center justify-center flex-shrink-0 mr-3 mt-0.5 shadow-sm">
                                     <i class="fa-solid fa-location-dot text-base"></i>
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_address">Địa chỉ cửa hàng:</strong>
-                                    <span id="storeAddressVal">183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh</span>
+                                    <span id="storeAddressVal" class="block"><span class="inline-block h-4 w-64 max-w-full bg-gray-200 rounded animate-pulse mt-1"></span></span>
                                 </div>
                             </li>
                             <li class="flex items-start">
                                 <div class="w-9 h-9 rounded-full bg-pink-50 text-primary flex items-center justify-center flex-shrink-0 mr-3 mt-0.5 shadow-sm">
                                     <i class="fa-solid fa-clock text-base"></i>
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_hours">Giờ mở cửa:</strong>
-                                    <span id="storeHoursVal">07:00 - 21:00 (Thứ 2 - Chủ Nhật, kể cả ngày lễ)</span>
+                                    <span id="storeHoursVal" class="block"><span class="inline-block h-4 w-52 max-w-full bg-gray-200 rounded animate-pulse mt-1"></span></span>
                                 </div>
                             </li>
                             <li class="flex items-start">
                                 <div class="w-9 h-9 rounded-full bg-pink-50 text-primary flex items-center justify-center flex-shrink-0 mr-3 mt-0.5 shadow-sm">
                                     <i class="fa-solid fa-phone text-base"></i>
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_hotline">Hotline đặt hoa nhanh:</strong>
-                                    <a id="storeHotlineLink" href="tel:0976491322" class="text-primary font-bold hover:underline text-base">0976.491.322</a>
+                                    <a id="storeHotlineLink" href="#" class="text-primary font-bold hover:underline text-base inline-block"><span class="inline-block h-4 w-28 bg-gray-200 rounded animate-pulse mt-1"></span></a>
                                 </div>
                             </li>
                             <li class="flex items-start">
                                 <div class="w-9 h-9 rounded-full bg-pink-50 text-primary flex items-center justify-center flex-shrink-0 mr-3 mt-0.5 shadow-sm">
                                     <i class="fa-solid fa-square-check text-base"></i>
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <strong class="block text-gray-900 text-sm" data-i18n="store_lbl_amenities">Tiện ích phục vụ:</strong>
-                                    <span id="storeAmenitiesVal" class="text-gray-600 text-xs md:text-sm">Đậu xe ô tô / xe máy miễn phí • Thiết kế hoa theo yêu cầu tại chỗ • Tặng thiệp & banner cao cấp.</span>
+                                    <span id="storeAmenitiesVal" class="text-gray-600 text-xs md:text-sm block"><span class="inline-block h-4 w-5/6 bg-gray-200 rounded animate-pulse mt-1"></span></span>
                                 </div>
                             </li>
                         </ul>
@@ -665,7 +669,7 @@
 
                     <!-- Nút thao tác nhanh -->
                     <div class="pt-6 mt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
-                        <a id="storeDirectionsLink" href="https://www.google.com/maps/dir/?api=1&destination=183%2F37+%C4%90%C6%B0%E1%BB%9Dng+3+Th%C3%A1ng+2%2C+Ph%C6%B0%E1%BB%9Dng+11%2C+Qu%E1%BA%ADn+10%2C+TP.HCM"
+                        <a id="storeDirectionsLink" href="#"
                             target="_blank" rel="noopener noreferrer"
                             class="flex-1 bg-primary hover:bg-primaryHover text-white font-bold py-3 px-4 rounded-xl text-center shadow-md hover:shadow-lg transition duration-200 flex items-center justify-center text-sm" data-i18n="store_btn_directions">
                             <i class="fa-solid fa-diamond-turn-right mr-2"></i> Chỉ Đường Đến Shop
@@ -683,7 +687,7 @@
                         <span class="font-semibold flex items-center">
                             <i class="fa-solid fa-map-location-dot text-primary mr-2"></i> <span data-i18n="store_map_title">Vị trí Showroom trên Google Maps</span>
                         </span>
-                        <a id="storeLargerMapLink" href="https://maps.google.com/?q=183%2F37+%C4%90%C6%B0%E1%BB%9Dng+3+Th%C3%A1ng+2%2C+Ph%C6%B0%E1%BB%9Dng+11%2C+Qu%E1%BA%ADn+10%2C+TP.HCM"
+                        <a id="storeLargerMapLink" href="#"
                             target="_blank" rel="noopener noreferrer" class="text-primary hover:underline font-bold text-xs flex items-center" data-i18n="store_view_larger_map">
                             Xem bản đồ lớn <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
                         </a>
@@ -733,19 +737,19 @@
                     <ul class="space-y-4 text-sm">
                         <li class="flex items-start">
                             <i class="fa-solid fa-location-dot mt-1 mr-3 text-primary"></i>
-                            <span id="footerAddress">183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh</span>
+                            <span id="footerAddress" class="flex-1"><span class="inline-block h-4 w-60 max-w-full bg-gray-700/60 rounded animate-pulse"></span></span>
                         </li>
                         <li class="flex items-center">
                             <i class="fa-solid fa-phone mr-3 text-primary"></i>
-                            <a id="footerPhone" href="tel:0976491322" class="hover:text-primary transition">0976.491.322</a>
+                            <a id="footerPhone" href="#" class="hover:text-primary transition inline-block"><span class="inline-block h-4 w-28 bg-gray-700/60 rounded animate-pulse"></span></a>
                         </li>
                         <li class="flex items-center">
                             <i class="fa-solid fa-envelope mr-3 text-primary"></i>
-                            <a id="footerEmail" href="mailto:cskh@nohoathabinh.vn" class="hover:text-primary transition">cskh@nohoathabinh.vn</a>
+                            <a id="footerEmail" href="#" class="hover:text-primary transition inline-block"><span class="inline-block h-4 w-36 bg-gray-700/60 rounded animate-pulse"></span></a>
                         </li>
                         <li class="flex items-center">
                             <i class="fa-solid fa-clock mr-3 text-primary"></i>
-                            <span id="footerHours">Thứ 2 - Chủ Nhật: 7:00 - 21:00</span>
+                            <span id="footerHours" class="flex-1"><span class="inline-block h-4 w-44 max-w-full bg-gray-700/60 rounded animate-pulse"></span></span>
                         </li>
                     </ul>
                 </div>
@@ -806,14 +810,14 @@
         </a>
 
         <!-- Hotline Button -->
-        <a id="floatingHotlineLink" href="tel:0976491322"
+        <a id="floatingHotlineLink" href="#"
             class="group flex items-center bg-white hover:bg-pink-50 text-primary rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 p-1.5 border border-pink-100"
             title="Gọi Hotline tư vấn đặt hoa">
             <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 pulse-hotline shadow-md">
                 <i class="fa-solid fa-phone-volume text-xl shake-icon"></i>
             </div>
             <div class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out px-0 group-hover:px-3 text-sm font-bold text-gray-800">
-                Hotline: <span class="text-primary font-extrabold">0976.491.322</span>
+                Hotline: <span id="floatingHotlineText" class="text-primary font-extrabold"><span class="inline-block h-4 w-24 bg-gray-200 rounded animate-pulse align-middle"></span></span>
             </div>
         </a>
     </div>

@@ -1569,9 +1569,15 @@ export function applyStorefrontCompanyInfo(info) {
         if (el && href) el.setAttribute('href', href);
     };
 
+    const activeBranch = (typeof window !== 'undefined' && typeof window.getCurrentSelectedBranch === 'function') 
+        ? window.getCurrentSelectedBranch() 
+        : null;
+
     if (info.address) {
         setText('footerAddress', info.address);
-        setText('storeAddressVal', info.address);
+        if (!activeBranch) {
+            setText('storeAddressVal', info.address);
+        }
     }
 
     if (info.phone || info.hotline) {

@@ -9,8 +9,9 @@ Xây dựng phân hệ quản lý tồn kho hoa tươi theo hạn mức ngày (D
 ---
 
 ## 2. Tài Liệu Tham Khảo (References)
-- 📐 [docs/design/INVENTORY_MANAGEMENT_DESIGN.md](file:///d:/code/telua_flower/docs/design/INVENTORY_MANAGEMENT_DESIGN.md)
-- 📐 [docs/design/MULTI_BRANCH_INVENTORY_TRACKING.md](file:///d:/code/telua_flower/docs/design/MULTI_BRANCH_INVENTORY_TRACKING.md)
+- 📐 [docs/design/INVENTORY_AND_WASTAGE_LIFECYCLE_DESIGN.md](file:///d:/wmshare/telua_flower/docs/design/INVENTORY_AND_WASTAGE_LIFECYCLE_DESIGN.md) *(Thiết kế cốt lõi: Vòng đời Nhập - Bán - Tồn - Hủy & Động hóa chi nhánh Catalogue)*
+- 📐 [docs/design/INVENTORY_MANAGEMENT_DESIGN.md](file:///d:/wmshare/telua_flower/docs/design/INVENTORY_MANAGEMENT_DESIGN.md)
+- 📐 [docs/design/MULTI_BRANCH_INVENTORY_TRACKING.md](file:///d:/wmshare/telua_flower/docs/design/MULTI_BRANCH_INVENTORY_TRACKING.md)
 
 ---
 

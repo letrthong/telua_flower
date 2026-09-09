@@ -663,9 +663,18 @@ function openStoreMap(e) {
 
 // Sao chép địa chỉ showroom vào clipboard
 function copyStoreAddress() {
-    const addressText = currentSelectedBranch 
-        ? currentSelectedBranch.address 
-        : (document.getElementById("storeAddressVal") ? document.getElementById("storeAddressVal").textContent : "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh");
+    const addrEl = document.getElementById("storeAddressVal");
+    const hasSkeleton = addrEl && addrEl.querySelector('.animate-pulse');
+    const addressText = (currentSelectedBranch && currentSelectedBranch.address)
+        ? currentSelectedBranch.address
+        : (addrEl && !hasSkeleton ? addrEl.textContent.trim() : "");
+        
+    if (!addressText) {
+        if (typeof showToast === 'function') {
+            showToast("Đang tải dữ liệu showroom, vui lòng thử lại sau giây lát...");
+        }
+        return;
+    }
         
     const copiedMsg = "Đã sao chép địa chỉ showroom vào clipboard!";
 
@@ -10643,9 +10652,15 @@ function applyStorefrontCompanyInfo(info) {
         if (el && href) el.setAttribute('href', href);
     };
 
+    const activeBranch = (typeof window !== 'undefined' && typeof window.getCurrentSelectedBranch === 'function') 
+        ? window.getCurrentSelectedBranch() 
+        : null;
+
     if (info.address) {
         setText('footerAddress', info.address);
-        setText('storeAddressVal', info.address);
+        if (!activeBranch) {
+            setText('storeAddressVal', info.address);
+        }
     }
 
     if (info.phone || info.hotline) {
