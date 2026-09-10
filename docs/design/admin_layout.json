@@ -14,5 +14,9 @@
    {
     "title": "Thông tin cá nhân",
     "children": [{"tab": "thông tin"} , {"tab": "địa chỉ"}, {"tab": "Dữ liệu ngân hàng"}]
+  },
+  {
+    "title": "Thời gian làm việc",
+    "children": [{"tab": "thông tin"}  ]
   }
 ]
