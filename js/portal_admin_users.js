@@ -7,12 +7,8 @@ import { BRANCH_NAME_MAP, populateBranchDropdowns } from './portal_admin_branche
 // 1. QUẢN LÝ NHÂN SỰ NỘI BỘ (STAFF & RBAC)
 // ==========================================
 
-export const ROLE_DISPLAY_MAP = {
-    super_admin: { label: "👑 Tổng Quản Trị", badge: "bg-purple-100 text-purple-800" },
-    branch_manager: { label: "🏬 Quản Lý Chi Nhánh", badge: "bg-blue-100 text-blue-800" },
-    florist: { label: "🌸 Thợ Cắm Hoa", badge: "bg-pink-100 text-pink-800" },
-    sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" }
-};
+import { ROLE_DISPLAY_MAP } from './roles_const.js';
+export { ROLE_DISPLAY_MAP };
 
 export async function loadAdminUsers() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";

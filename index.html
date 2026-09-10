@@ -1164,6 +1164,149 @@
         </div>
     </div>
 
+    <!-- ================= USER PROFILE & SECURITY MODAL (HỒ SƠ CÁ NHÂN & ĐỔI MẬT KHẨU) ================= -->
+    <div id="userProfileModal" onclick="if (event.target === this) closeUserProfileModal();" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-2 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 h-[92vh] max-h-[92vh] flex flex-col animate-fadeIn relative">
+            <!-- Top Header with Avatar & User Summary -->
+            <div class="px-6 py-4 sm:py-5 bg-gradient-to-r from-pink-50/80 via-white to-pink-50/40 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-3.5">
+                    <div id="profileAvatarBadge" class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-accent text-white flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0">
+                        A
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 id="profileHeaderName" class="font-serif text-lg font-bold text-gray-800">Quản Trị Viên</h3>
+                            <span id="profileHeaderRole" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">Admin</span>
+                        </div>
+                        <p id="profileBranchBadge" class="text-xs text-gray-500 mt-0.5">Toàn hệ thống</p>
+                    </div>
+                </div>
+                <button onclick="closeUserProfileModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <!-- Profile Tabs Bar -->
+            <div class="flex border-b border-gray-200 bg-gray-50/80 px-6 space-x-6 flex-shrink-0">
+                <button onclick="switchProfileTab('info')" id="tabProfileBtnInfo" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center">
+                    <i class="fa-solid fa-id-card mr-1.5 text-base"></i> Thông Tin Cá Nhân
+                </button>
+                <button onclick="switchProfileTab('password')" id="tabProfileBtnPassword" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center">
+                    <i class="fa-solid fa-key mr-1.5 text-base"></i> Đổi Mật Khẩu
+                </button>
+            </div>
+
+            <!-- Modal Content Body (Tối đa chiều cao, cuộn mượt khi nội dung dài) -->
+            <div class="p-6 sm:p-8 overflow-y-auto flex-1 bg-white flex flex-col">
+                <!-- TAB 1: THÔNG TIN HỒ SƠ (CHẾ ĐỘ XEM THÔNG TIN ĐỊNH DANH) -->
+                <div id="tabProfileContentInfo" class="flex-1 flex flex-col justify-between">
+                    <div class="space-y-4 sm:space-y-5">
+                        <div class="p-4 rounded-xl bg-pink-50/50 border border-pink-100 flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-white shadow-xs border border-pink-100 flex items-center justify-center text-primary text-base">
+                                    <i class="fa-solid fa-user-shield"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-gray-800">Trạng Thái Tài Khoản</div>
+                                    <div class="text-gray-500">Đang hoạt động & Đồng bộ bảo mật phân quyền</div>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Hoạt động
+                            </span>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="text-xs font-bold text-gray-700">
+                                    <i class="fa-solid fa-user text-primary mr-1"></i> Họ và Tên
+                                </label>
+                                <span class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fa-solid fa-lock text-[10px]"></i> Cố định</span>
+                            </div>
+                            <input type="text" id="profileFullNameInput" readonly placeholder="Họ và tên..." class="w-full px-3.5 py-2.5 bg-gray-100/70 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-800 font-medium cursor-not-allowed focus:outline-none select-all transition" />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-gray-700">
+                                        <i class="fa-solid fa-phone text-primary mr-1"></i> Số Điện Thoại
+                                    </label>
+                                    <span class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fa-solid fa-lock text-[10px]"></i> Cố định</span>
+                                </div>
+                                <input type="text" id="profilePhoneInput" readonly placeholder="0909xxxxxx" class="w-full px-3.5 py-2.5 bg-gray-100/70 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-800 font-medium cursor-not-allowed focus:outline-none select-all transition" />
+                            </div>
+                            <div>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-gray-700">
+                                        <i class="fa-solid fa-envelope text-primary mr-1"></i> Địa Chỉ Email
+                                    </label>
+                                    <span class="text-[11px] text-gray-400 flex items-center gap-1"><i class="fa-solid fa-lock text-[10px]"></i> Cố định</span>
+                                </div>
+                                <input type="email" id="profileEmailInput" readonly placeholder="Chưa liên kết email" class="w-full px-3.5 py-2.5 bg-gray-100/70 border border-gray-200 rounded-xl text-xs sm:text-sm text-gray-800 font-medium cursor-not-allowed focus:outline-none select-all transition" />
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2.5">
+                            <i class="fa-solid fa-circle-info text-primary text-sm mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <span class="font-bold text-gray-700">Bảo mật thông tin:</span> Thông tin định danh tài khoản (Họ tên, SĐT, Email) được cố định để bảo vệ an toàn. Nếu có nhu cầu thay đổi, vui lòng liên hệ Bộ phận Kỹ thuật / Quản trị viên hệ thống.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6 flex-shrink-0">
+                        <button type="button" onclick="closeUserProfileModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Đóng</button>
+                        <button type="button" onclick="switchProfileTab('password')" class="px-5 py-2.5 bg-gradient-to-r from-primary to-accent hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-key"></i> Đổi Mật Khẩu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: ĐỔI MẬT KHẨU -->
+                <form id="tabProfileContentPassword" onsubmit="handlePasswordChangeSubmit(event); return false;" class="flex-1 flex flex-col justify-between hidden">
+                    <div class="space-y-4 sm:space-y-5">
+                        <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 flex items-start gap-3">
+                            <i class="fa-solid fa-shield-halved text-amber-600 text-base mt-0.5 flex-shrink-0"></i>
+                            <div>
+                                <span class="font-bold">Lưu ý an toàn:</span> Mật khẩu nên có tối thiểu 6 ký tự. Sau khi đổi thành công, hệ thống sẽ tự động cập nhật phiên đăng nhập an toàn.
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1.5">
+                                <i class="fa-solid fa-lock text-primary mr-1"></i> Mật Khẩu Hiện Tại <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="password" id="profileCurrentPasswordInput" required placeholder="Nhập mật khẩu đang sử dụng..." class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" />
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1.5">
+                                <i class="fa-solid fa-key text-primary mr-1"></i> Mật Khẩu Mới <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="password" id="profileNewPasswordInput" required minlength="6" placeholder="Tối thiểu 6 ký tự..." class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" />
+                            <p class="text-[11px] text-gray-400 mt-1">Mật khẩu cần ít nhất 6 ký tự bảo mật.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1.5">
+                                <i class="fa-solid fa-shield-check text-primary mr-1"></i> Xác Nhận Mật Khẩu Mới <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="password" id="profileConfirmPasswordInput" required minlength="6" placeholder="Nhập lại mật khẩu mới..." class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-primary focus:bg-white transition" />
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6 flex-shrink-0">
+                        <button type="button" onclick="closeUserProfileModal()" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                        <button type="submit" id="btnSubmitPassword" class="px-5 py-2.5 bg-gradient-to-r from-primary to-accent hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-key"></i> Cập Nhật Mật Khẩu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= CUSTOMER DASHBOARD MODAL (ĐƠN HÀNG CỦA TÔI) ================= -->
     <div id="customerPortalModal" onclick="if (event.target === this) closeCustomerPortalModal();" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-2 sm:p-4" style="display: none;">
         <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 h-[90vh] max-h-[90vh] flex flex-col animate-fadeIn relative">

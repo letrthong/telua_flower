@@ -18,7 +18,9 @@ from  anne_auth_service import (
     list_staff_users,
     create_or_update_staff_user,
     delete_staff_user,
-    list_crm_customers
+    list_crm_customers,
+    update_current_user_profile,
+    change_user_password
 )
 from   data_service import (
     get_config_path,
@@ -182,6 +184,43 @@ def api_logout():
     return jsonify({
         "success": True,
         "message": "Đăng xuất thành công"
+    }), 200
+
+
+@flower_connect_api.route("/auth/profile", methods=["PUT"])
+@require_auth
+def api_update_profile():
+    """
+    Cập nhật thông tin cá nhân (Họ tên, Email, Số điện thoại) của tài khoản đang đăng nhập.
+    """
+    current_user = request.current_user
+    payload = request.get_json(silent=True) or {}
+    success, updated_data, err = update_current_user_profile(current_user.get("userId"), payload)
+    if not success:
+        return jsonify({"success": False, "message": err or "Cập nhật hồ sơ thất bại"}), 400
+    return jsonify({
+        "success": True,
+        "message": "Cập nhật hồ sơ cá nhân thành công",
+        "data": updated_data
+    }), 200
+
+
+@flower_connect_api.route("/auth/change-password", methods=["PUT"])
+@require_auth
+def api_change_password():
+    """
+    Đổi mật khẩu người dùng đang đăng nhập.
+    """
+    current_user = request.current_user
+    payload = request.get_json(silent=True) or {}
+    current_password = payload.get("currentPassword") or ""
+    new_password = payload.get("newPassword") or ""
+    success, err = change_user_password(current_user.get("userId"), current_password, new_password)
+    if not success:
+        return jsonify({"success": False, "message": err or "Đổi mật khẩu thất bại"}), 400
+    return jsonify({
+        "success": True,
+        "message": "Đổi mật khẩu thành công"
     }), 200
 
 

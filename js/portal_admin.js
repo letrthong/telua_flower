@@ -16,6 +16,7 @@
 
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
 import { API_BASE, showToast, showConfirmDialog, showScreenLock, hideScreenLock, removeVietnameseTones } from './utils.js';
+import { CONFIG_LAYOUT, isTabAllowed, getDefaultTabForRole, getTabConfig } from './config_layout.js';
 
 // Re-export state & helpers
 export {
@@ -258,14 +259,30 @@ export function openAdminPortalModal(initialTab = null) {
     if (nameEl) nameEl.textContent = user.fullName || user.phone || "Quản trị viên";
     if (roleEl) roleEl.textContent = user.role;
 
-    // Phân quyền hiển thị Tab Chuỗi Cửa Hàng
-    const branchTabBtn = document.getElementById("tabBtnBranches");
+    // Đồng bộ phân quyền hiển thị các Tab trong Admin CMS theo config_layout.js
     const optSuperAdmin = document.getElementById("optRoleSuperAdmin");
     const optBranchManager = document.getElementById("optRoleBranchManager");
     const filterBranchSelect = document.getElementById("filterUserBranch");
 
+    const cmsGroup = (typeof CONFIG_LAYOUT !== "undefined" ? CONFIG_LAYOUT : (typeof window !== "undefined" ? window.CONFIG_LAYOUT : null))?.find(g => g.groupId === "cms");
+    if (cmsGroup && Array.isArray(cmsGroup.children)) {
+        cmsGroup.children.forEach(t => {
+            const btn = document.getElementById(`tabBtn${t.tabKey.charAt(0).toUpperCase() + t.tabKey.slice(1)}`);
+            if (btn) {
+                const checkAllowed = (typeof isTabAllowed === "function") 
+                    ? isTabAllowed 
+                    : ((typeof window !== "undefined" && typeof window.isTabAllowed === "function") ? window.isTabAllowed : null);
+                const allowed = checkAllowed ? checkAllowed(t.tabKey, user.role) : true;
+                if (allowed) {
+                    btn.classList.remove("hidden");
+                } else {
+                    btn.classList.add("hidden");
+                }
+            }
+        });
+    }
+
     if (user.role === "branch_manager") {
-        if (branchTabBtn) branchTabBtn.classList.add("hidden");
         if (optSuperAdmin) optSuperAdmin.classList.add("hidden");
         if (optBranchManager) optBranchManager.classList.add("hidden");
         if (filterBranchSelect) {
@@ -273,7 +290,6 @@ export function openAdminPortalModal(initialTab = null) {
             filterBranchSelect.disabled = true;
         }
     } else {
-        if (branchTabBtn) branchTabBtn.classList.remove("hidden");
         if (optSuperAdmin) optSuperAdmin.classList.remove("hidden");
         if (optBranchManager) optBranchManager.classList.remove("hidden");
         if (filterBranchSelect) filterBranchSelect.disabled = false;
@@ -287,9 +303,9 @@ export function openAdminPortalModal(initialTab = null) {
     loadAdminBranches();
     onPriceLevelChange();
 
-    if (initialTab) {
-        switchAdminTab(initialTab);
-    }
+    const targetTab = initialTab || ((typeof getDefaultTabForRole === "function") ? getDefaultTabForRole(user.role, "cms") : "orders");
+    switchAdminTab(targetTab);
+
 }
 
 export function closeAdminPortalModal() {
@@ -406,6 +422,15 @@ export function switchAdminTab(tabName) {
 
     // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
     if (tabName === "users") tabName = "staff";
+
+    // Kiểm tra quyền truy cập tab theo config_layout.js
+    const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+    const checkFn = (typeof isTabAllowed === "function") ? isTabAllowed : (typeof window !== "undefined" ? window.isTabAllowed : null);
+    if (currentUser && typeof checkFn === "function" && !checkFn(tabName, currentUser.role)) {
+        console.warn(`[RBAC] Vai trò '${currentUser.role}' không có quyền truy cập tab '${tabName}'`);
+        if (typeof showToast === "function") showToast("Bạn không có quyền truy cập phân hệ này!", "warning");
+        return;
+    }
 
     const tabTitles = {
         orders: "Đơn Hàng",

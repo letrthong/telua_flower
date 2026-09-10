@@ -281,7 +281,9 @@ Hệ thống quản lý chặt chẽ 3 file tạo tự động từ script build
 | **Cấu Hình** | `payment` | Cổng Thanh Toán | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadPaymentGateways` | `#systemConfigModal` | Admin |
 | **Cấu Hình** | `addonvis` | Hiển Thị Phụ Kiện | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAddonVisibility` | `#systemConfigModal` | Admin |
 | **Cấu Hình** | `banners` | Banner Trình Chiếu | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAdminBanners` | `#systemConfigModal` | Admin |
-| **Cá Nhân** | `profile` | Hồ Sơ & Tài Khoản | [`customer_portal.js`](file:///d:/wmshare/telua_flower/js/customer_portal.js) | `openCustomerPortalModal` | `#customerPortalModal` | Tất cả người dùng |
+| **Hồ Sơ & Bảo Mật** | `profile_info` | Thông Tin Cá Nhân | [`user_profile.js`](file:///d:/wmshare/telua_flower/js/user_profile.js) | `openUserProfileModal` | `#userProfileModal` | Tất cả người dùng |
+| **Hồ Sơ & Bảo Mật** | `profile_password` | Đổi Mật Khẩu | [`user_profile.js`](file:///d:/wmshare/telua_flower/js/user_profile.js) | `openUserProfileModal` | `#userProfileModal` | Tất cả người dùng |
+| **Khách Hàng** | `my_orders` | Đơn Hàng Của Tôi | [`customer_portal.js`](file:///d:/wmshare/telua_flower/js/customer_portal.js) | `openCustomerPortalModal` | `#customerPortalModal` | Khách Hàng |
 
 ### 3. Quy Chuẩn 3 Bước Khi Bổ Sung Một Tab / Module Mới:
 Khi phát triển thêm tính năng mới trong tương lai:

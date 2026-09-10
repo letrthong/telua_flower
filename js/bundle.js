@@ -1022,20 +1022,48 @@ const ADMIN_NAVIGATION_CONFIG = [
   },
   {
     groupId: "profile",
-    title: "Thông Tin Cá Nhân",
-    icon: "fa-solid fa-user",
-    targetModal: "customerPortalModal",
-    action: "openCustomerPortalModal",
+    title: "Hồ Sơ & Bảo Mật",
+    icon: "fa-solid fa-user-gear",
+    targetModal: "userProfileModal",
+    action: "openUserProfileModal",
     roles: ["all"],
     children: [
       {
-        tabKey: "profile",
-        label: "Hồ Sơ & Tài Khoản",
+        tabKey: "profile_info",
+        label: "Thông Tin Cá Nhân",
         icon: "fa-solid fa-id-card",
+        module: "user_profile.js",
+        loadFn: "openUserProfileModal",
+        action: "openUserProfileModal('info')",
+        roles: ["all"]
+      },
+      {
+        tabKey: "profile_password",
+        label: "Đổi Mật Khẩu",
+        icon: "fa-solid fa-key",
+        module: "user_profile.js",
+        loadFn: "openUserProfileModal",
+        action: "openUserProfileModal('password')",
+        roles: ["all"]
+      }
+    ]
+  },
+  {
+    groupId: "customer_portal",
+    title: "Đơn Hàng Của Tôi",
+    icon: "fa-solid fa-clock-rotate-left",
+    targetModal: "customerPortalModal",
+    action: "openCustomerPortalModal",
+    roles: [ROLES.CUSTOMER],
+    children: [
+      {
+        tabKey: "my_orders",
+        label: "Lịch Sử Mua Hàng",
+        icon: "fa-solid fa-box-open",
         module: "customer_portal.js",
         loadFn: "openCustomerPortalModal",
         action: "openCustomerPortalModal()",
-        roles: ["all"]
+        roles: [ROLES.CUSTOMER]
       }
     ]
   }
@@ -1069,6 +1097,31 @@ function getTabConfig(tabKey) {
   return null;
 }
 
+/**
+ * Kiểm tra xem người dùng có vai trò userRole có quyền truy cập tabKey hay không
+ * @param {string} tabKey
+ * @param {string} userRole
+ * @returns {boolean}
+ */
+function isTabAllowed(tabKey, userRole) {
+  const config = getTabConfig(tabKey);
+  if (!config) return true;
+  return hasPermission(userRole, config.roles);
+}
+
+/**
+ * Lấy tabKey mặc định đầu tiên mà vai trò userRole được phép truy cập trong nhóm groupId
+ * @param {string} userRole
+ * @param {string} groupId
+ * @returns {string}
+ */
+function getDefaultTabForRole(userRole, groupId = "cms") {
+  const group = ADMIN_NAVIGATION_CONFIG.find(g => g.groupId === groupId);
+  if (!group || !Array.isArray(group.children)) return "orders";
+  const allowedTab = group.children.find(c => hasPermission(userRole, c.roles));
+  return allowedTab ? allowedTab.tabKey : (group.children[0]?.tabKey || "orders");
+}
+
 // Aliases tương thích với tên file config_layout.js
 const CONFIG_LAYOUT = ADMIN_NAVIGATION_CONFIG;
 const getAuthorizedLayout = getAuthorizedAdminLayout;
@@ -1080,6 +1133,8 @@ if (typeof window !== "undefined") {
   window.getAuthorizedAdminLayout = getAuthorizedAdminLayout;
   window.getAuthorizedLayout = getAuthorizedLayout;
   window.getTabConfig = getTabConfig;
+  window.isTabAllowed = isTabAllowed;
+  window.getDefaultTabForRole = getDefaultTabForRole;
 }
 
 ADMIN_NAVIGATION_CONFIG;
@@ -3003,9 +3058,6 @@ function updateAuthUI() {
                     <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                     </button>
-                    <button onclick="openSystemConfigModal('banners')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-rose-700 bg-rose-50/80 hover:bg-rose-100 transition rounded-xl border border-rose-200">
-                        <i class="fa-solid fa-images mr-2 text-rose-500"></i> Cấu Hình Banner (banners.json)
-                    </button>
                     ` : ''}
                 </div>
             `;
@@ -3065,7 +3117,11 @@ function updateAuthUI() {
                     
                     ${portalActionBtn}
 
-                    <button onclick="logout()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition">
+                    <button onclick="openUserProfileModal()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-pink-50/60 border-t border-gray-100 transition">
+                        <i class="fa-solid fa-user-gear mr-2 text-primary"></i> Hồ Sơ & Bảo Mật
+                    </button>
+
+                    <button onclick="logout()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 border-t border-gray-50 transition">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
                     </button>
                 </div>
@@ -3099,9 +3155,6 @@ function updateAuthUI() {
                             <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                                 <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                             </button>
-                            <button onclick="openSystemConfigModal('banners'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 transition rounded-xl border border-rose-200">
-                                <i class="fa-solid fa-images mr-2 text-rose-500"></i> Cấu Hình Banner (banners.json)
-                            </button>
                             ` : ''}
                         </div>
                     ` : isFlorist ? `
@@ -3132,7 +3185,11 @@ function updateAuthUI() {
                         </div>
                     `}
 
-                    <button onclick="logout()" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 bg-white border border-red-100 rounded-lg transition shadow-2xs">
+                    <button onclick="openUserProfileModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 transition rounded-xl border border-gray-200 shadow-2xs">
+                        <i class="fa-solid fa-user-gear mr-2 text-primary"></i> Hồ Sơ & Bảo Mật
+                    </button>
+
+                    <button onclick="logout(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-red-600 bg-red-50/70 hover:bg-red-100 transition rounded-xl border border-red-200 shadow-2xs">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
                     </button>
                 </div>
@@ -3426,6 +3483,290 @@ if (typeof window !== "undefined") {
     window.closeCustomerPortalModal = closeCustomerPortalModal;
     window.loadCustomerOrders = loadCustomerOrders;
 }
+
+
+// ==========================================================================
+// MODULE: user_profile.js
+// ==========================================================================
+/**
+ * TELUA FLOWER CONNECT - USER PROFILE & SECURITY MANAGEMENT
+ * Phân hệ Quản Lý Hồ Sơ Cá Nhân & Đổi Mật Khẩu (Dùng chung cho toàn bộ vai trò)
+ */
+
+
+let currentProfileData = null;
+
+/**
+ * Mở modal Hồ Sơ Cá Nhân
+ */
+async function openUserProfileModal(initialTab = "info") {
+    const user = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
+    if (!user) {
+        if (typeof openAuthModal === "function") openAuthModal("login");
+        return;
+    }
+
+    const modal = document.getElementById("userProfileModal");
+    if (!modal) return;
+
+    // Đóng dropdown menu tài khoản nếu đang mở
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    switchProfileTab(initialTab);
+    await loadUserProfileData();
+}
+
+/**
+ * Đóng modal Hồ Sơ Cá Nhân
+ */
+function closeUserProfileModal() {
+    const modal = document.getElementById("userProfileModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+/**
+ * Chuyển tab trong modal Hồ Sơ (Thông tin cá nhân / Đổi mật khẩu)
+ */
+function switchProfileTab(tabName = "info") {
+    const btnInfo = document.getElementById("tabProfileBtnInfo");
+    const btnPassword = document.getElementById("tabProfileBtnPassword");
+    const contentInfo = document.getElementById("tabProfileContentInfo");
+    const contentPassword = document.getElementById("tabProfileContentPassword");
+
+    const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center";
+    const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center";
+
+    if (tabName === "password") {
+        if (btnPassword) btnPassword.className = activeCls;
+        if (btnInfo) btnInfo.className = idleCls;
+        if (contentPassword) contentPassword.classList.remove("hidden");
+        if (contentInfo) contentInfo.classList.add("hidden");
+    } else {
+        if (btnInfo) btnInfo.className = activeCls;
+        if (btnPassword) btnPassword.className = idleCls;
+        if (contentInfo) contentInfo.classList.remove("hidden");
+        if (contentPassword) contentPassword.classList.add("hidden");
+    }
+}
+
+/**
+ * Nạp dữ liệu hồ sơ cá nhân từ API /auth/me
+ */
+async function loadUserProfileData() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const userFallback = typeof getCurrentUser === "function" ? getCurrentUser() : {};
+
+    let user = userFallback;
+    try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+            user = json.data;
+            currentProfileData = json.data;
+        }
+    } catch (err) {
+        console.warn("Không thể tải chi tiết /auth/me, sử dụng dữ liệu cục bộ:", err);
+    }
+
+    // Hiển thị Avatar & Tên Header
+    const avatarBadge = document.getElementById("profileAvatarBadge");
+    const headerName = document.getElementById("profileHeaderName");
+    const headerRole = document.getElementById("profileHeaderRole");
+    const branchBadge = document.getElementById("profileBranchBadge");
+
+    const displayName = user.fullName || user.phone || "Người dùng";
+    if (avatarBadge) avatarBadge.textContent = displayName.charAt(0).toUpperCase();
+    if (headerName) headerName.textContent = displayName;
+
+    // Role display meta
+    const roleMeta = ROLE_DISPLAY_MAP[user.role] || { label: user.role || "Thành viên", badge: "bg-gray-100 text-gray-700" };
+    if (headerRole) {
+        headerRole.textContent = roleMeta.label;
+        headerRole.className = `px-2.5 py-0.5 rounded-full text-xs font-bold ${roleMeta.badge}`;
+    }
+
+    // Chi nhánh công tác
+    if (branchBadge) {
+        if (user.role === ROLES.SUPER_ADMIN) {
+            branchBadge.textContent = "Toàn hệ thống";
+            branchBadge.className = "text-xs text-purple-700 font-semibold";
+        } else if (user.branchId) {
+            branchBadge.textContent = `Chi nhánh: ${user.branchId.toUpperCase()}`;
+            branchBadge.className = "text-xs text-blue-700 font-semibold";
+        } else {
+            branchBadge.textContent = user.role === ROLES.CUSTOMER ? "Khách hàng thân thiết" : "Văn phòng trung tâm";
+            branchBadge.className = "text-xs text-gray-500";
+        }
+    }
+
+    // Điền form thông tin
+    const nameInput = document.getElementById("profileFullNameInput");
+    const phoneInput = document.getElementById("profilePhoneInput");
+    const emailInput = document.getElementById("profileEmailInput");
+
+    if (nameInput) nameInput.value = user.fullName || "";
+    if (phoneInput) phoneInput.value = user.phone || "";
+    if (emailInput) emailInput.value = user.email || "";
+}
+
+/**
+ * Xử lý submit cập nhật thông tin cá nhân
+ */
+async function handleProfileFormSubmit(event) {
+    if (event) event.preventDefault();
+
+    const nameInput = document.getElementById("profileFullNameInput");
+    const phoneInput = document.getElementById("profilePhoneInput");
+    const emailInput = document.getElementById("profileEmailInput");
+    const btnSubmit = document.getElementById("btnSubmitProfile");
+
+    const fullName = nameInput ? nameInput.value.trim() : "";
+    const phone = phoneInput ? phoneInput.value.trim() : "";
+    const email = emailInput ? emailInput.value.trim() : "";
+
+    if (!fullName) {
+        if (typeof showToast === "function") showToast("Vui lòng nhập họ và tên của bạn", "warning");
+        return;
+    }
+
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang lưu...`;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/auth/profile`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ fullName, phone, email })
+        });
+
+        const json = await res.json();
+        if (json.success && json.data) {
+            // Cập nhật lại localStorage user
+            const currentStored = typeof getCurrentUser === "function" ? getCurrentUser() : {};
+            const updated = { ...currentStored, ...json.data };
+            if (typeof localStorage !== "undefined") {
+                localStorage.setItem("user", JSON.stringify(updated));
+            }
+
+            // Đồng bộ hiển thị lại Header Admin
+            const adminUserName = document.getElementById("adminUserName");
+            if (adminUserName) adminUserName.textContent = updated.fullName;
+
+            if (typeof showToast === "function") showToast("Cập nhật hồ sơ thành công!", "success");
+            await loadUserProfileData();
+        } else {
+            if (typeof showToast === "function") showToast(json.message || "Cập nhật thất bại", "error");
+        }
+    } catch (err) {
+        console.error("Lỗi khi cập nhật hồ sơ:", err);
+        if (typeof showToast === "function") showToast("Lỗi kết nối máy chủ", "error");
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = `<i class="fa-solid fa-check mr-1.5"></i> Lưu Thay Đổi`;
+        }
+    }
+}
+
+/**
+ * Xử lý submit đổi mật khẩu
+ */
+async function handlePasswordChangeSubmit(event) {
+    if (event) event.preventDefault();
+
+    const currentPwdInput = document.getElementById("profileCurrentPasswordInput");
+    const newPwdInput = document.getElementById("profileNewPasswordInput");
+    const confirmPwdInput = document.getElementById("profileConfirmPasswordInput");
+    const btnSubmit = document.getElementById("btnSubmitPassword");
+
+    const currentPassword = currentPwdInput ? currentPwdInput.value : "";
+    const newPassword = newPwdInput ? newPwdInput.value : "";
+    const confirmPassword = confirmPwdInput ? confirmPwdInput.value : "";
+
+    if (!currentPassword || !newPassword) {
+        if (typeof showToast === "function") showToast("Vui lòng nhập mật khẩu hiện tại và mật khẩu mới", "warning");
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        if (typeof showToast === "function") showToast("Mật khẩu mới phải có tối thiểu 6 ký tự", "warning");
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        if (typeof showToast === "function") showToast("Xác nhận mật khẩu mới không khớp", "warning");
+        return;
+    }
+
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang đổi mật khẩu...`;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/auth/change-password`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+
+        const json = await res.json();
+        if (json.success) {
+            if (typeof showToast === "function") showToast("Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.", "success");
+            // Reset form
+            if (currentPwdInput) currentPwdInput.value = "";
+            if (newPwdInput) newPwdInput.value = "";
+            if (confirmPwdInput) confirmPwdInput.value = "";
+            switchProfileTab("info");
+        } else {
+            if (typeof showToast === "function") showToast(json.message || "Đổi mật khẩu thất bại", "error");
+        }
+    } catch (err) {
+        console.error("Lỗi khi đổi mật khẩu:", err);
+        if (typeof showToast === "function") showToast("Lỗi kết nối máy chủ", "error");
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = `<i class="fa-solid fa-key mr-1.5"></i> Cập Nhật Mật Khẩu`;
+        }
+    }
+}
+
+// Global window bindings
+if (typeof window !== "undefined") {
+    window.openUserProfileModal = openUserProfileModal;
+    window.closeUserProfileModal = closeUserProfileModal;
+    window.switchProfileTab = switchProfileTab;
+    window.handleProfileFormSubmit = handleProfileFormSubmit;
+    window.handlePasswordChangeSubmit = handlePasswordChangeSubmit;
+}
+
+{
+    openUserProfileModal,
+    closeUserProfileModal,
+    switchProfileTab,
+    handleProfileFormSubmit,
+    handlePasswordChangeSubmit
+};
 
 
 // ==========================================================================
@@ -5800,12 +6141,6 @@ if (typeof window !== "undefined") {
 // 1. QUẢN LÝ NHÂN SỰ NỘI BỘ (STAFF & RBAC)
 // ==========================================
 
-const ROLE_DISPLAY_MAP = {
-    super_admin: { label: "👑 Tổng Quản Trị", badge: "bg-purple-100 text-purple-800" },
-    branch_manager: { label: "🏬 Quản Lý Chi Nhánh", badge: "bg-blue-100 text-blue-800" },
-    florist: { label: "🌸 Thợ Cắm Hoa", badge: "bg-pink-100 text-pink-800" },
-    sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" }
-};
 
 async function loadAdminUsers() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -10037,14 +10372,30 @@ function openAdminPortalModal(initialTab = null) {
     if (nameEl) nameEl.textContent = user.fullName || user.phone || "Quản trị viên";
     if (roleEl) roleEl.textContent = user.role;
 
-    // Phân quyền hiển thị Tab Chuỗi Cửa Hàng
-    const branchTabBtn = document.getElementById("tabBtnBranches");
+    // Đồng bộ phân quyền hiển thị các Tab trong Admin CMS theo config_layout.js
     const optSuperAdmin = document.getElementById("optRoleSuperAdmin");
     const optBranchManager = document.getElementById("optRoleBranchManager");
     const filterBranchSelect = document.getElementById("filterUserBranch");
 
+    const cmsGroup = (typeof CONFIG_LAYOUT !== "undefined" ? CONFIG_LAYOUT : (typeof window !== "undefined" ? window.CONFIG_LAYOUT : null))?.find(g => g.groupId === "cms");
+    if (cmsGroup && Array.isArray(cmsGroup.children)) {
+        cmsGroup.children.forEach(t => {
+            const btn = document.getElementById(`tabBtn${t.tabKey.charAt(0).toUpperCase() + t.tabKey.slice(1)}`);
+            if (btn) {
+                const checkAllowed = (typeof isTabAllowed === "function") 
+                    ? isTabAllowed 
+                    : ((typeof window !== "undefined" && typeof window.isTabAllowed === "function") ? window.isTabAllowed : null);
+                const allowed = checkAllowed ? checkAllowed(t.tabKey, user.role) : true;
+                if (allowed) {
+                    btn.classList.remove("hidden");
+                } else {
+                    btn.classList.add("hidden");
+                }
+            }
+        });
+    }
+
     if (user.role === "branch_manager") {
-        if (branchTabBtn) branchTabBtn.classList.add("hidden");
         if (optSuperAdmin) optSuperAdmin.classList.add("hidden");
         if (optBranchManager) optBranchManager.classList.add("hidden");
         if (filterBranchSelect) {
@@ -10052,7 +10403,6 @@ function openAdminPortalModal(initialTab = null) {
             filterBranchSelect.disabled = true;
         }
     } else {
-        if (branchTabBtn) branchTabBtn.classList.remove("hidden");
         if (optSuperAdmin) optSuperAdmin.classList.remove("hidden");
         if (optBranchManager) optBranchManager.classList.remove("hidden");
         if (filterBranchSelect) filterBranchSelect.disabled = false;
@@ -10066,9 +10416,9 @@ function openAdminPortalModal(initialTab = null) {
     loadAdminBranches();
     onPriceLevelChange();
 
-    if (initialTab) {
-        switchAdminTab(initialTab);
-    }
+    const targetTab = initialTab || ((typeof getDefaultTabForRole === "function") ? getDefaultTabForRole(user.role, "cms") : "orders");
+    switchAdminTab(targetTab);
+
 }
 
 function closeAdminPortalModal() {
@@ -10185,6 +10535,15 @@ function switchAdminTab(tabName) {
 
     // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
     if (tabName === "users") tabName = "staff";
+
+    // Kiểm tra quyền truy cập tab theo config_layout.js
+    const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+    const checkFn = (typeof isTabAllowed === "function") ? isTabAllowed : (typeof window !== "undefined" ? window.isTabAllowed : null);
+    if (currentUser && typeof checkFn === "function" && !checkFn(tabName, currentUser.role)) {
+        console.warn(`[RBAC] Vai trò '${currentUser.role}' không có quyền truy cập tab '${tabName}'`);
+        if (typeof showToast === "function") showToast("Bạn không có quyền truy cập phân hệ này!", "warning");
+        return;
+    }
 
     const tabTitles = {
         orders: "Đơn Hàng",

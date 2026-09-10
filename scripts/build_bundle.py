@@ -14,6 +14,7 @@ MODULE_ORDER = [
     "checkout.js",
     "auth.js",
     "customer_portal.js",
+    "user_profile.js",
     "staff_portal.js",
     "order_dashboard.js",
     "portal_admin_state.js",

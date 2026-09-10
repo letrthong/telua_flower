@@ -182,20 +182,48 @@ export const ADMIN_NAVIGATION_CONFIG = [
   },
   {
     groupId: "profile",
-    title: "Thông Tin Cá Nhân",
-    icon: "fa-solid fa-user",
-    targetModal: "customerPortalModal",
-    action: "openCustomerPortalModal",
+    title: "Hồ Sơ & Bảo Mật",
+    icon: "fa-solid fa-user-gear",
+    targetModal: "userProfileModal",
+    action: "openUserProfileModal",
     roles: ["all"],
     children: [
       {
-        tabKey: "profile",
-        label: "Hồ Sơ & Tài Khoản",
+        tabKey: "profile_info",
+        label: "Thông Tin Cá Nhân",
         icon: "fa-solid fa-id-card",
+        module: "user_profile.js",
+        loadFn: "openUserProfileModal",
+        action: "openUserProfileModal('info')",
+        roles: ["all"]
+      },
+      {
+        tabKey: "profile_password",
+        label: "Đổi Mật Khẩu",
+        icon: "fa-solid fa-key",
+        module: "user_profile.js",
+        loadFn: "openUserProfileModal",
+        action: "openUserProfileModal('password')",
+        roles: ["all"]
+      }
+    ]
+  },
+  {
+    groupId: "customer_portal",
+    title: "Đơn Hàng Của Tôi",
+    icon: "fa-solid fa-clock-rotate-left",
+    targetModal: "customerPortalModal",
+    action: "openCustomerPortalModal",
+    roles: [ROLES.CUSTOMER],
+    children: [
+      {
+        tabKey: "my_orders",
+        label: "Lịch Sử Mua Hàng",
+        icon: "fa-solid fa-box-open",
         module: "customer_portal.js",
         loadFn: "openCustomerPortalModal",
         action: "openCustomerPortalModal()",
-        roles: ["all"]
+        roles: [ROLES.CUSTOMER]
       }
     ]
   }
@@ -229,6 +257,31 @@ export function getTabConfig(tabKey) {
   return null;
 }
 
+/**
+ * Kiểm tra xem người dùng có vai trò userRole có quyền truy cập tabKey hay không
+ * @param {string} tabKey
+ * @param {string} userRole
+ * @returns {boolean}
+ */
+export function isTabAllowed(tabKey, userRole) {
+  const config = getTabConfig(tabKey);
+  if (!config) return true;
+  return hasPermission(userRole, config.roles);
+}
+
+/**
+ * Lấy tabKey mặc định đầu tiên mà vai trò userRole được phép truy cập trong nhóm groupId
+ * @param {string} userRole
+ * @param {string} groupId
+ * @returns {string}
+ */
+export function getDefaultTabForRole(userRole, groupId = "cms") {
+  const group = ADMIN_NAVIGATION_CONFIG.find(g => g.groupId === groupId);
+  if (!group || !Array.isArray(group.children)) return "orders";
+  const allowedTab = group.children.find(c => hasPermission(userRole, c.roles));
+  return allowedTab ? allowedTab.tabKey : (group.children[0]?.tabKey || "orders");
+}
+
 // Aliases tương thích với tên file config_layout.js
 export const CONFIG_LAYOUT = ADMIN_NAVIGATION_CONFIG;
 export const getAuthorizedLayout = getAuthorizedAdminLayout;
@@ -240,6 +293,9 @@ if (typeof window !== "undefined") {
   window.getAuthorizedAdminLayout = getAuthorizedAdminLayout;
   window.getAuthorizedLayout = getAuthorizedLayout;
   window.getTabConfig = getTabConfig;
+  window.isTabAllowed = isTabAllowed;
+  window.getDefaultTabForRole = getDefaultTabForRole;
 }
 
 export default ADMIN_NAVIGATION_CONFIG;
+

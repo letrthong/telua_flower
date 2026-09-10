@@ -481,3 +481,86 @@ def list_crm_customers(search: Optional[str] = None, tier: Optional[str] = None)
     return results
 
 
+def update_current_user_profile(user_id: str, profile_data: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Cập nhật thông tin cá nhân của người dùng hiện tại (Họ tên, Email, Số điện thoại).
+    """
+    if not user_id:
+        return False, None, "Thiếu định danh người dùng"
+
+    full_name = (profile_data.get("fullName") or "").strip()
+    email = (profile_data.get("email") or "").strip()
+    phone = (profile_data.get("phone") or "").strip()
+
+    if not full_name:
+        return False, None, "Họ và tên không được để trống"
+
+    from data_service import get_staff_users, save_staff_users, get_customers, save_customers
+
+    # 1. Kiểm tra trong nhân sự
+    staff_users = get_staff_users()
+    for i, u in enumerate(staff_users):
+        if str(u.get("id") or "").strip() == str(user_id).strip():
+            staff_users[i]["fullName"] = full_name
+            if email: staff_users[i]["email"] = email
+            if phone: staff_users[i]["phone"] = phone
+            staff_users[i]["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            save_staff_users(staff_users)
+            safe_info = {k: v for k, v in staff_users[i].items() if k != "passwordHash"}
+            return True, safe_info, None
+
+    # 2. Kiểm tra trong khách hàng CRM
+    customers = get_customers()
+    for i, c in enumerate(customers):
+        if str(c.get("id") or "").strip() == str(user_id).strip() or str(c.get("phone") or "").strip() == str(user_id).strip():
+            customers[i]["fullName"] = full_name
+            if email: customers[i]["email"] = email
+            if phone: customers[i]["phone"] = phone
+            customers[i]["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            save_customers(customers)
+            safe_info = {k: v for k, v in customers[i].items() if k != "passwordHash"}
+            return True, safe_info, None
+
+    return False, None, "Không tìm thấy thông tin người dùng"
+
+
+def change_user_password(user_id: str, current_password: str, new_password: str) -> Tuple[bool, Optional[str]]:
+    """
+    Đổi mật khẩu người dùng: kiểm tra mật khẩu hiện tại, sau đó băm và cập nhật mật khẩu mới.
+    """
+    if not user_id or not current_password or not new_password:
+        return False, "Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới"
+
+    if len(new_password) < 6:
+        return False, "Mật khẩu mới phải có tối thiểu 6 ký tự"
+
+    from data_service import get_staff_users, save_staff_users, get_customers, save_customers
+
+    # 1. Kiểm tra trong nhân sự
+    staff_users = get_staff_users()
+    for i, u in enumerate(staff_users):
+        if str(u.get("id") or "").strip() == str(user_id).strip():
+            old_hash = u.get("passwordHash") or ""
+            if not verify_password(current_password, old_hash):
+                return False, "Mật khẩu hiện tại không chính xác"
+            staff_users[i]["passwordHash"] = hash_password(new_password)
+            staff_users[i]["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            save_staff_users(staff_users)
+            return True, None
+
+    # 2. Kiểm tra trong khách hàng
+    customers = get_customers()
+    for i, c in enumerate(customers):
+        if str(c.get("id") or "").strip() == str(user_id).strip() or str(c.get("phone") or "").strip() == str(user_id).strip():
+            old_hash = c.get("passwordHash") or ""
+            if not verify_password(current_password, old_hash):
+                return False, "Mật khẩu hiện tại không chính xác"
+            customers[i]["passwordHash"] = hash_password(new_password)
+            customers[i]["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            save_customers(customers)
+            return True, None
+
+    return False, "Không tìm thấy người dùng"
+
+
+
