@@ -17,6 +17,6 @@
   },
   {
     "title": "Thời gian làm việc",
-    "children": [{"tab": "thông tin"}  ]
+    "children": [{"tab": "Bảng kê khai thời gian"} ,{"tab": "Nghỉ phép"}  ]
   }
 ]
