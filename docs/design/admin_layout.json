@@ -13,6 +13,6 @@
   },
    {
     "title": "Thông tin cá nhân",
-    "children": [{"tab": "thông tin"} , {"tab": "địa chỉ"}]
+    "children": [{"tab": "thông tin"} , {"tab": "địa chỉ"}, {"tab": "Dữ liệu ngân hàng"}]
   }
 ]
