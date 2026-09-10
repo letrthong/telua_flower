@@ -347,10 +347,11 @@ Khi khách hàng hoàn tất đặt đơn hàng trên Storefront:
    - Cập nhật `index.html` và `config/index.html`:
      - Xóa khối hardcode tồn kho trong `#productModal`, thay bằng container động `#productStockByBranchDynamicContainer`.
      - Thêm Tab Điều hướng `Kho & Hao Hụt` và màn hình `viewInventory` (Live Matrix + Báo hủy).
-   - Cập nhật `js/portal_admin.js`:
-     - Hàm `renderProductModalStockFields()` render động chi nhánh từ `branches.json`.
-     - Hàm `handleProductSubmit()` thu thập dữ liệu tồn kho động.
-     - Hàm `renderAdminInventoryTab()` tải ma trận tồn kho, hiển thị đèn 🟢/🟠/🔴, xử lý lưu batch và quản lý báo hủy.
+    - Cập nhật Module Quản Trị Admin (Modular Sub-modules & Bundler):
+      - `js/portal_admin_products.js`: Hàm `renderProductModalStockFields()` render động chi nhánh từ `branches.json`, hàm `handleProductSubmit()` thu thập dữ liệu tồn kho động.
+      - `js/portal_admin_inventory.js`: Hàm `renderAdminInventoryTab()` tải ma trận tồn kho, hiển thị đèn 🟢/🟠/🔴, xử lý lưu batch (`handleSaveBatchInventory`) và quản lý báo hủy hoa hỏng (`handleWastageSubmit`).
+      - `js/portal_admin.js`: Bộ điều phối trung tâm mở modal, chuyển tab `inventory` và re-export các hàm ra `window.*`.
+      - `scripts/build_bundle.py`: Đóng gói 10 sub-module vào `js/bundle.js`.
 3. **Backend Python:**
    - Tạo mới `src/inventory_service.py`: Cung cấp các hàm tính toán ma trận tồn kho (Nhập, Bán, Tồn, Hủy), ghi nhận phiếu báo hủy và cập nhật kho theo chi nhánh.
    - Bổ sung routes vào `src/restful_blueprint_flower_connect.py`: Các API `/admin/inventory/matrix`, `/admin/inventory/batch`, `/admin/inventory/wastage`.

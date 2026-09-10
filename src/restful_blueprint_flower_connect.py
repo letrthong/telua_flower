@@ -94,6 +94,14 @@ from flower_image import (
     save_flower_uploaded_image,
     create_flower_image_response
 )
+from inventory_service import (
+    get_inventory_matrix,
+    update_batch_inventory,
+    create_wastage_report,
+    get_wastage_reports_list,
+    get_product_stock_for_branch,
+    find_best_routing_branch
+)
 from auth_decorator import require_auth, require_role, can_access_branch
 
 # Khởi tạo Blueprint RESTful API Version 1 (Chuẩn hóa như Lu Quan /api/hotelconnect/v1)
@@ -1369,6 +1377,164 @@ def api_update_admin_banners():
         "message": "Đã cập nhật cấu hình banner trình chiếu thành công!",
         "data": updated
     }), 200
+
+
+# ==========================================
+# CÁC API ENDPOINTS QUẢN LÝ TỒN KHO & ĐIỀU PHỐI (INVENTORY & SMART ROUTING)
+# ==========================================
+
+@flower_connect_api.route("/admin/inventory/matrix", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_get_inventory_matrix():
+    """
+    Lấy ma trận tồn kho toàn chuỗi thời gian thực (Daily Matrix).
+    Query params: date (YYYY-MM-DD), branchId (optional).
+    """
+    date_str = request.args.get("date")
+    branch_id = request.args.get("branchId")
+
+    current_user = request.current_user
+    # Nếu là branch_manager hoặc florist, mặc định lọc hoặc xem chi nhánh của mình nếu không truyền
+    if current_user and current_user.get("role") in ["branch_manager", "florist"] and not branch_id:
+        branch_id = current_user.get("branchId")
+
+    matrix_data = get_inventory_matrix(date_str=date_str, branch_id=branch_id)
+    return jsonify({
+        "success": True,
+        "data": matrix_data
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/batch", methods=["PUT", "POST"])
+@require_role(["super_admin", "branch_manager"])
+def api_update_batch_inventory():
+    """
+    Cập nhật nhanh hạn mức tồn kho nhập đầu ca (Batch Quick Update).
+    Body: { "updates": [ { "productId": "...", "branchId": "...", "quota": 15 }, ... ] }
+    """
+    data = request.get_json(silent=True) or {}
+    updates = data.get("updates") if isinstance(data, dict) and "updates" in data else data
+    if not isinstance(updates, list):
+        return jsonify({
+            "success": False,
+            "message": "Dữ liệu updates phải là một danh sách các bản ghi tồn kho"
+        }), 400
+
+    current_user = request.current_user
+    is_super_admin = (current_user.get("role") == "super_admin")
+    user_branch_id = current_user.get("branchId")
+
+    success, res = update_batch_inventory(
+        updates=updates,
+        user_branch_id=user_branch_id,
+        is_super_admin=is_super_admin
+    )
+
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": res
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã cập nhật hạn mức tồn kho thành công!",
+        "data": res
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/wastage", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_get_wastage_reports():
+    """Lấy danh sách các phiếu báo hủy hoa hỏng / hao hụt."""
+    branch_id = request.args.get("branchId")
+    date_str = request.args.get("date")
+    limit = int(request.args.get("limit", 50))
+
+    current_user = request.current_user
+    if current_user and current_user.get("role") in ["branch_manager", "florist"] and not branch_id:
+        branch_id = current_user.get("branchId")
+
+    reports = get_wastage_reports_list(branch_id=branch_id, date_str=date_str, limit=limit)
+    return jsonify({
+        "success": True,
+        "data": reports
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/wastage", methods=["POST"])
+@require_role(["super_admin", "branch_manager", "florist"])
+def api_create_wastage_report():
+    """
+    Lập phiếu báo hủy hoa hỏng / hao hụt nguyên vật liệu mới.
+    Body: { "branchId": "...", "date": "...", "items": [ { "flowerType": "...", "damagedStems": 5, "reason": "...", "unitCost": 15000 } ], "notes": "..." }
+    """
+    data = request.get_json(silent=True) or {}
+    current_user = request.current_user
+
+    # Nếu không phải super_admin, ép branchId thành chi nhánh của user
+    if current_user.get("role") != "super_admin":
+        data["branchId"] = current_user.get("branchId")
+
+    success, res = create_wastage_report(data, user_dict=current_user)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": res
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã lưu phiếu báo hủy hoa hỏng thành công!",
+        "data": res
+    }), 201
+
+
+@flower_connect_api.route("/products/<product_id>/stock", methods=["GET"])
+def api_get_single_product_stock(product_id):
+    """Lấy số lượng tồn khả dụng thời gian thực của một sản phẩm tại chi nhánh."""
+    branch_id = request.args.get("branchId") or "branch_q10"
+    date_str = request.args.get("date")
+
+    prod = get_product_by_id(product_id)
+    if not prod:
+        return jsonify({
+            "success": False,
+            "message": "Không tìm thấy sản phẩm"
+        }), 404
+
+    stock_info = get_product_stock_for_branch(prod, branch_id, date_str=date_str)
+    return jsonify({
+        "success": True,
+        "data": stock_info
+    }), 200
+
+
+@flower_connect_api.route("/inventory/smart-route", methods=["POST"])
+def api_smart_route_order():
+    """
+    API Điều Phối Thông Minh (Smart Order Routing):
+    Đánh giá khoảng cách và tồn kho khả dụng để tự động chỉ định Showroom tối ưu.
+    Body: { "lat": 10.78, "lng": 106.69, "address": "Quận 1", "items": [ { "productId": "...", "quantity": 1 } ] }
+    """
+    data = request.get_json(silent=True) or {}
+    lat = data.get("lat")
+    lng = data.get("lng")
+    address = data.get("address") or data.get("district") or ""
+    items = data.get("items") or []
+
+    result = find_best_routing_branch(
+        customer_lat=float(lat) if lat is not None else None,
+        customer_lng=float(lng) if lng is not None else None,
+        district_or_address=str(address),
+        items=items
+    )
+
+    return jsonify({
+        "success": True,
+        "data": result
+    }), 200
+
 
 
 

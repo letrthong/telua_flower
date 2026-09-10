@@ -4430,7 +4430,7 @@ if (typeof window !== "undefined") {
 
 
 // ==========================================================================
-// MODULE: portal_admin.js
+// MODULE: portal_admin_state.js
 // ==========================================================================
 function lockScreen(msg) {
     if (typeof showScreenLock === 'function') showScreenLock(msg);
@@ -4471,250 +4471,17 @@ let allAdminTranslations = {};
 let allAdminUsers = [];
 let allAdminBranches = [];
 
-document.addEventListener("DOMContentLoaded", () => {
-    loadAdminCompanyInfo();
-    const path = (window.location.pathname || "").toLowerCase();
-    const hash = (window.location.hash || "").toLowerCase();
-    if (path.includes("/portal/admin") || path.includes("/portal/manager") || hash === "#admin") {
-        const user = typeof getCurrentUser === "function" ? getCurrentUser() : null;
-        if (user && (user.role === "super_admin" || user.role === "branch_manager")) {
-            setTimeout(() => openAdminPortalModal(), 100);
-        } else {
-            if (typeof openAuthModal === "function") {
-                setTimeout(() => openAuthModal("login"), 100);
-            }
-        }
-    }
-});
-
-if (typeof document !== "undefined" && document.readyState !== "loading") {
-    loadAdminCompanyInfo();
+if (typeof window !== "undefined") {
+    window.lockScreen = lockScreen;
+    window.unlockScreen = unlockScreen;
+    window.notifyUser = notifyUser;
+    window.PRICE_LEVEL_CONFIG = PRICE_LEVEL_CONFIG;
 }
 
-function openAdminPortalModal(initialTab = null) {
-    // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
-    if (initialTab === "company" || initialTab === "translations" || initialTab === "banners") {
-        openSystemConfigModal(initialTab);
-        return;
-    }
 
-    const dropdown = document.getElementById("userDropdownMenu");
-    if (dropdown) dropdown.classList.add("hidden");
-
-    const user = (typeof getCurrentUser === "function") 
-        ? getCurrentUser() 
-        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
-
-    if (!user || (user.role !== "super_admin" && user.role !== "branch_manager")) {
-        alert("Vui lòng đăng nhập bằng tài khoản Super Admin hoặc Quản Lý Chi Nhánh để truy cập Cổng Quản Trị!");
-        if (typeof openAuthModal === "function") openAuthModal("login");
-        else if (typeof window !== "undefined" && typeof window.openAuthModal === "function") window.openAuthModal("login");
-        return;
-    }
-
-    const modal = document.getElementById("adminPortalModal");
-    if (!modal) return;
-
-    const nameEl = document.getElementById("adminUserName");
-    const roleEl = document.getElementById("adminUserRole");
-    if (nameEl) nameEl.textContent = user.fullName || user.phone || "Quản trị viên";
-    if (roleEl) roleEl.textContent = user.role;
-
-    // Phân quyền hiển thị Tab Chuỗi Cửa Hàng
-    const branchTabBtn = document.getElementById("tabBtnBranches");
-    const optSuperAdmin = document.getElementById("optRoleSuperAdmin");
-    const optBranchManager = document.getElementById("optRoleBranchManager");
-    const filterBranchSelect = document.getElementById("filterUserBranch");
-
-    if (user.role === "branch_manager") {
-        if (branchTabBtn) branchTabBtn.classList.add("hidden");
-        if (optSuperAdmin) optSuperAdmin.classList.add("hidden");
-        if (optBranchManager) optBranchManager.classList.add("hidden");
-        if (filterBranchSelect) {
-            filterBranchSelect.value = user.branchId;
-            filterBranchSelect.disabled = true;
-        }
-    } else {
-        if (branchTabBtn) branchTabBtn.classList.remove("hidden");
-        if (optSuperAdmin) optSuperAdmin.classList.remove("hidden");
-        if (optBranchManager) optBranchManager.classList.remove("hidden");
-        if (filterBranchSelect) filterBranchSelect.disabled = false;
-    }
-
-    modal.style.display = "flex";
-    modal.classList.remove("hidden");
-
-    loadAdminCategories();
-    loadAdminProducts();
-    loadAdminBranches();
-    onPriceLevelChange();
-
-    if (initialTab) {
-        switchAdminTab(initialTab);
-    }
-}
-
-function closeAdminPortalModal() {
-    const modal = document.getElementById("adminPortalModal");
-    if (modal) {
-        modal.style.display = "none";
-        modal.classList.add("hidden");
-    }
-}
-
-// ==========================================
-// MODAL CẤU HÌNH HỆ THỐNG (DOANH NGHIỆP & ĐA NGÔN NGỮ)
-// ==========================================
-
-function openSystemConfigModal(initialTab = "company") {
-    const dropdown = document.getElementById("userDropdownMenu");
-    if (dropdown) dropdown.classList.add("hidden");
-
-    const user = (typeof getCurrentUser === "function") 
-        ? getCurrentUser() 
-        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
-
-    if (!user || user.role !== "super_admin") {
-        alert("Chức năng Cấu Hình Hệ Thống chỉ dành cho Tổng Quản Trị Viên (Super Admin)!");
-        if (!user && typeof openAuthModal === "function") openAuthModal("login");
-        return;
-    }
-
-    const modal = document.getElementById("systemConfigModal");
-    if (!modal) return;
-
-    modal.style.display = "flex";
-    modal.classList.remove("hidden");
-
-    switchSystemConfigTab(initialTab);
-}
-
-function closeSystemConfigModal() {
-    const modal = document.getElementById("systemConfigModal");
-    if (modal) {
-        modal.style.display = "none";
-        modal.classList.add("hidden");
-    }
-}
-
-function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners") tabName = "company";
-
-    const btnCompany = document.getElementById("tabSysBtnCompany");
-    const btnTranslations = document.getElementById("tabSysBtnTranslations");
-    const btnPayment = document.getElementById("tabSysBtnPayment");
-    const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
-    const btnBanners = document.getElementById("tabSysBtnBanners");
-    const contentCompany = document.getElementById("tabSysContentCompany");
-    const contentTranslations = document.getElementById("tabSysContentTranslations");
-    const contentPayment = document.getElementById("tabSysContentPayment");
-    const contentAddonVis = document.getElementById("tabSysContentAddonVis");
-    const contentBanners = document.getElementById("tabSysContentBanners");
-
-    const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
-    const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
-
-    // Ẩn toàn bộ, reset trạng thái nút
-    if (btnCompany) btnCompany.className = idleCls;
-    if (btnTranslations) btnTranslations.className = idleCls;
-    if (btnPayment) btnPayment.className = idleCls;
-    if (btnAddonVis) btnAddonVis.className = idleCls;
-    if (btnBanners) btnBanners.className = idleCls;
-    if (contentCompany) contentCompany.classList.add("hidden");
-    if (contentTranslations) contentTranslations.classList.add("hidden");
-    if (contentPayment) contentPayment.classList.add("hidden");
-    if (contentAddonVis) contentAddonVis.classList.add("hidden");
-    if (contentBanners) contentBanners.classList.add("hidden");
-
-    if (tabName === "company") {
-        if (btnCompany) btnCompany.className = activeCls;
-        if (contentCompany) contentCompany.classList.remove("hidden");
-        loadAdminCompanyInfo();
-    } else if (tabName === "payment") {
-        if (btnPayment) btnPayment.className = activeCls;
-        if (contentPayment) contentPayment.classList.remove("hidden");
-        loadAdminPaymentConfig();
-    } else if (tabName === "addonvis") {
-        if (btnAddonVis) btnAddonVis.className = activeCls;
-        if (contentAddonVis) contentAddonVis.classList.remove("hidden");
-        loadAdminAddonConfig();
-    } else if (tabName === "banners") {
-        if (btnBanners) btnBanners.className = activeCls;
-        if (contentBanners) contentBanners.classList.remove("hidden");
-        loadAdminBanners();
-    } else {
-        if (btnTranslations) btnTranslations.className = activeCls;
-        if (contentTranslations) contentTranslations.classList.remove("hidden");
-        loadAdminTranslations();
-    }
-}
-
-function checkAdminAccess() {
-    if (typeof getCurrentUser !== "function" || typeof getAuthToken !== "function") return;
-    const user = getCurrentUser();
-    const nameEl = document.getElementById("adminUserName");
-    const roleEl = document.getElementById("adminUserRole");
-    if (nameEl && user) nameEl.textContent = user.fullName || "Quản trị viên";
-    if (roleEl && user) roleEl.textContent = user.role;
-}
-
-function switchAdminTab(tabName) {
-    // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
-    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
-        closeAdminPortalModal();
-        openSystemConfigModal(tabName);
-        return;
-    }
-
-    // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
-    if (tabName === "users") tabName = "staff";
-
-    const tabTitles = {
-        orders: "Đơn Hàng",
-        products: "Mẫu Hoa & Bảng Giá",
-        categories: "Danh Mục Hoa",
-        staff: "Nhân Sự Nội Bộ",
-        customers: "Khách Hàng & CRM",
-        branches: "Chuỗi Showroom",
-        promotions: "Khuyến Mãi & Voucher",
-        addons: "Sản Phẩm Kèm Theo"
-    };
-
-    console.group(`%c🖥️ [GUI_VIEW] Đang hiển thị Tab: "${tabTitles[tabName] || tabName}" (#tabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)})`, "color: #0288d1; font-weight: bold; font-size: 12px;");
-    console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
-    console.log("📂 Tab Identifier:", tabName);
-
-    const tabs = ["orders", "products", "categories", "staff", "customers", "branches", "promotions", "addons"];
-    tabs.forEach((t) => {
-        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        if (btn && content) {
-            if (t === tabName) {
-                btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
-                content.classList.remove("hidden");
-                console.log(`  👁️ [GUI Hiển Thị] Element #${content.id} -> visible (class 'hidden' removed)`);
-                try {
-                    btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-                } catch (e) {}
-            } else {
-                btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
-                content.classList.add("hidden");
-            }
-        }
-    });
-
-    console.log(`  🚀 Bắt đầu nạp/đồng bộ dữ liệu phân hệ: ${tabTitles[tabName] || tabName}`);
-    if (tabName === "orders") loadAdminOrders();
-    if (tabName === "categories") loadAdminCategories();
-    if (tabName === "staff") loadAdminUsers();
-    if (tabName === "customers") loadAdminCustomers();
-    if (tabName === "branches") loadAdminBranches();
-    if (tabName === "promotions") loadAdminPromotions();
-    if (tabName === "addons") loadAdminAddons();
-
-    console.groupEnd();
-}
-
+// ==========================================================================
+// MODULE: portal_admin_categories.js
+// ==========================================================================
 // ==========================================
 // 0. QUẢN LÝ DANH MỤC HOA ĐỘNG (CATEGORIES CMS)
 // ==========================================
@@ -4737,6 +4504,7 @@ async function loadAdminCategories() {
 
         if (json.success && Array.isArray(json.data)) {
             allAdminCategories = json.data;
+            if (typeof window !== "undefined") window.allAdminCategories = allAdminCategories;
             renderCategoriesTable(allAdminCategories);
             populateCategoryDropdowns(allAdminCategories);
         } else if (!allAdminCategories || allAdminCategories.length === 0) {
@@ -4777,32 +4545,24 @@ function renderCategoriesTable(categories) {
     sortedCategories.forEach((cat) => {
         const isDeleted = cat.status === "deleted" || cat.isDeleted === true;
         const isActive = cat.isActive !== false && !isDeleted;
-
+        
         let statusBadge = "";
         if (isDeleted) {
-            statusBadge = `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-red-200">🔴 Đã Xóa Mềm</span>`;
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200"><i class="fa-solid fa-trash-can mr-1"></i> Đã xóa</span>`;
         } else if (isActive) {
-            statusBadge = `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2.5 py-1 rounded-full border border-green-200">🟢 Đang Bán (Active)</span>`;
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200"><i class="fa-solid fa-circle-check mr-1"></i> Đang hiển thị</span>`;
         } else {
-            statusBadge = `<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-full border border-gray-200">⚪ Đã Ẩn (Inactive)</span>`;
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200"><i class="fa-solid fa-eye-slash mr-1"></i> Tạm ẩn</span>`;
         }
 
-        const fallbackImg = "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
-        const catImg = cat.image || fallbackImg;
-        const iconClass = cat.icon || "fa-solid fa-spa";
-        const createdDate = cat.createdAt ? cat.createdAt.replace("T", " ").replace("Z", "") : "—";
-        const updatedDate = cat.updatedAt ? cat.updatedAt.replace("T", " ").replace("Z", "") : createdDate;
-
-        const rowBg = isDeleted ? "bg-red-50/20 opacity-75" : "hover:bg-pink-50/20";
+        const createdDate = cat.createdAt ? new Date(cat.createdAt).toLocaleDateString('vi-VN') : "—";
+        const updatedDate = cat.updatedAt ? new Date(cat.updatedAt).toLocaleDateString('vi-VN') : "—";
 
         html += `
-            <tr class="${rowBg} transition border-b border-gray-100">
-                <td class="p-3">
-                    <div class="flex items-center space-x-3">
-                        <img src="${catImg}" alt="${cat.name}" class="w-10 h-10 object-cover rounded-xl border border-gray-200 shadow-2xs ${isDeleted ? 'grayscale' : ''}">
-                        <div class="w-7 h-7 rounded-lg bg-pink-50 text-primary flex items-center justify-center text-xs">
-                            <i class="${iconClass}"></i>
-                        </div>
+            <tr class="hover:bg-pink-50/40 transition border-b border-gray-100 ${isDeleted ? 'bg-red-50/30 opacity-75' : ''}">
+                <td class="p-3 text-center">
+                    <div class="w-10 h-10 rounded-xl bg-pink-100/70 border border-pink-200 flex items-center justify-center text-primary text-lg shadow-2xs mx-auto overflow-hidden">
+                        ${cat.image ? `<img src="${cat.image}" class="w-full h-full object-cover" onerror="this.outerHTML='<i class=\\'${cat.icon || 'fa-solid fa-spa'}\\'></i>'"/>` : `<i class="${cat.icon || 'fa-solid fa-spa'}"></i>`}
                     </div>
                 </td>
                 <td class="p-3">
@@ -4960,7 +4720,7 @@ function openCategoryModal(isEdit = false) {
         if (descCustomContainer) descCustomContainer.classList.add("hidden");
         if (document.getElementById("catDescTextIdCustom")) document.getElementById("catDescTextIdCustom").value = "";
 
-        document.getElementById("catOrder").value = allAdminCategories.length + 1;
+        document.getElementById("catOrder").value = (allAdminCategories || []).length + 1;
         document.getElementById("catIsActive").checked = true;
         editingCategoryI18n = { en: {}, ja: {}, ko: {}, zh: {} };
         if (title) title.textContent = "Thêm Danh Mục Hoa Mới";
@@ -4995,7 +4755,7 @@ function closeCategoryModal() {
 }
 
 function editCategory(catId) {
-    const cat = allAdminCategories.find((c) => c.id === catId);
+    const cat = (allAdminCategories || []).find((c) => c.id === catId);
     if (!cat) return;
 
     document.getElementById("editCategoryId").value = cat.id;
@@ -5177,7 +4937,7 @@ async function handleCategorySubmit(event) {
 }
 
 async function toggleCategory(catId, catName, currentActive) {
-    const targetCat = allAdminCategories.find(c => c.id === catId);
+    const targetCat = (allAdminCategories || []).find(c => c.id === catId);
     const displayName = catName || (targetCat ? targetCat.name : catId);
     const isCurrentlyActive = currentActive !== undefined ? currentActive : (targetCat ? targetCat.isActive !== false : true);
     const actionText = isCurrentlyActive ? "Ẩn đi" : "Bật hiển thị";
@@ -5327,8 +5087,6 @@ async function moveCategory(catId, direction) {
     }
 }
 
-
-
 function populateCategoryDropdowns(categories) {
     if (!Array.isArray(categories)) return;
 
@@ -5360,17 +5118,30 @@ function populateCategoryDropdowns(categories) {
     }
 }
 
+if (typeof window !== "undefined") {
+    window.loadAdminCategories = loadAdminCategories;
+    window.openCategoryModal = openCategoryModal;
+    window.closeCategoryModal = closeCategoryModal;
+    window.onCategoryTextIdChange = onCategoryTextIdChange;
+    window.onCategoryDescTextIdChange = onCategoryDescTextIdChange;
+    window.switchCategoryLangTab = switchCategoryLangTab;
+    window.saveCurrentCatI18nDraft = saveCurrentCatI18nDraft;
+    window.editCategory = editCategory;
+    window.handleCategorySubmit = handleCategorySubmit;
+    window.toggleCategory = toggleCategory;
+    window.deleteCategory = deleteCategory;
+    window.restoreCategory = restoreCategory;
+    window.moveCategory = moveCategory;
+    window.populateCategoryDropdowns = populateCategoryDropdowns;
+}
 
-// ==========================================
-// 1. QUẢN LÝ NHÂN SỰ NỘI BỘ (STAFF & RBAC)
-// ==========================================
 
-const ROLE_DISPLAY_MAP = {
-    super_admin: { label: "👑 Tổng Quản Trị", badge: "bg-purple-100 text-purple-800" },
-    branch_manager: { label: "🏬 Quản Lý Chi Nhánh", badge: "bg-blue-100 text-blue-800" },
-    florist: { label: "🌸 Thợ Cắm Hoa", badge: "bg-pink-100 text-pink-800" },
-    sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" }
-};
+// ==========================================================================
+// MODULE: portal_admin_branches.js
+// ==========================================================================
+// ==========================================
+// QUẢN LÝ CHUỖI CỬA HÀNG (BRANCHES MANAGEMENT)
+// ==========================================
 
 const BRANCH_NAME_MAP = {
     branch_q10: "Showroom Q10",
@@ -5415,6 +5186,272 @@ function populateBranchDropdowns(branches) {
     }
 }
 
+async function loadAdminBranches() {
+    const tbody = document.getElementById("branchesTableBody");
+    if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh sách chuỗi cửa hàng...</td></tr>`;
+    }
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/branches`, { headers: { "Authorization": `Bearer ${token}` } });
+        const json = await res.json();
+
+        if (json.success && Array.isArray(json.data)) {
+            allAdminBranches = json.data;
+            if (typeof window !== "undefined") window.allAdminBranches = allAdminBranches;
+            if (tbody) renderBranchesTable(allAdminBranches);
+            populateBranchDropdowns(allAdminBranches);
+            if (allAdminUsers && allAdminUsers.length > 0 && typeof window.renderUsersTable === "function") {
+                window.renderUsersTable(allAdminUsers);
+            }
+        } else if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải chi nhánh"}</td></tr>`;
+        }
+    } catch (e) {
+        if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+        }
+    }
+}
+
+function renderBranchesTable(branches) {
+    const tbody = document.getElementById("branchesTableBody");
+    if (!tbody) return;
+
+    if (branches.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-12 text-center">
+                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                        <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                        <p class="font-bold text-gray-700 text-sm">Chưa có chi nhánh showroom nào</p>
+                        <p class="text-xs text-gray-400 mt-1">Bấm nút "Mở Thêm Chi Nhánh Mới" để mở rộng mạng lưới showroom.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : {};
+    const isSuperAdmin = currentUser.role === "super_admin";
+
+    let html = "";
+    branches.forEach((b) => {
+        const activeBadge = b.isActive !== false
+            ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Hoạt Động</span>`
+            : `<span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">⚪ Tạm Đóng Cửa</span>`;
+
+        html += `
+            <tr class="hover:bg-gray-50/80 transition">
+                <td class="p-3">
+                    <span class="font-bold text-xs bg-pink-50 text-primary border border-pink-200 px-2 py-1 rounded-md">${b.code || b.id}</span>
+                </td>
+                <td class="p-3">
+                    <span class="font-bold text-gray-800 text-sm block">${b.name}</span>
+                    <span class="text-[11px] text-gray-500">${b.openHours || "07:30 - 21:00"}</span>
+                </td>
+                <td class="p-3">
+                    <div class="font-medium text-gray-700 text-xs">${b.address}</div>
+                    <div class="text-[11px] text-primary font-bold"><i class="fa-solid fa-phone mr-1"></i> ${b.phone || "—"}</div>
+                </td>
+                <td class="p-3 font-mono text-[11px] text-gray-600">
+                    ${b.lat}, ${b.lng}
+                </td>
+                <td class="p-3 font-bold text-accent text-xs">
+                    ${b.deliveryRadiusKm || 10} km
+                </td>
+                <td class="p-3">${activeBadge}</td>
+                <td class="p-3 text-center">
+                    <div class="flex items-center justify-center space-x-2">
+                        ${isSuperAdmin ? `
+                            <button onclick="editBranch('${b.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-pen-to-square"></i> Sửa
+                            </button>
+                            <button onclick="toggleBranch('${b.id}')" class="px-2.5 py-1 ${b.isActive !== false ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'} rounded-lg text-xs font-bold transition">
+                                ${b.isActive !== false ? '⚪ Đóng' : '🟢 Mở'}
+                            </button>
+                        ` : `
+                            <span class="text-xs text-gray-400 font-semibold">Chỉ xem</span>
+                        `}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+function openBranchModal(isEdit = false) {
+    const modal = document.getElementById("branchModal");
+    const title = document.getElementById("branchModalTitle");
+    const form = document.getElementById("branchForm");
+    const errBox = document.getElementById("branchModalError");
+
+    if (!modal) return;
+    if (errBox) errBox.classList.add("hidden");
+
+    if (!isEdit && form) {
+        form.reset();
+        document.getElementById("editBranchId").value = "";
+        document.getElementById("branchRadius").value = 10;
+        document.getElementById("branchOpenHours").value = "07:30 - 21:00";
+        document.getElementById("branchLat").value = 10.7769;
+        document.getElementById("branchLng").value = 106.7009;
+        if (title) title.textContent = "Mở Thêm Chi Nhánh Showroom Mới";
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+function closeBranchModal() {
+    const modal = document.getElementById("branchModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+function editBranch(branchId) {
+    const b = (allAdminBranches || []).find((branch) => branch.id === branchId);
+    if (!b) return;
+
+    document.getElementById("editBranchId").value = b.id;
+    document.getElementById("branchName").value = b.name || "";
+    document.getElementById("branchCode").value = b.code || "";
+    document.getElementById("branchAddress").value = b.address || "";
+    document.getElementById("branchPhone").value = b.phone || "";
+    document.getElementById("branchOpenHours").value = b.openHours || "07:30 - 21:00";
+    document.getElementById("branchLat").value = b.lat || 10.7769;
+    document.getElementById("branchLng").value = b.lng || 106.7009;
+    document.getElementById("branchRadius").value = b.deliveryRadiusKm || 10;
+    document.getElementById("branchAmenities").value = b.amenities || "";
+    document.getElementById("branchIsActive").checked = b.isActive !== false;
+
+    const title = document.getElementById("branchModalTitle");
+    if (title) title.textContent = `Chỉnh Sửa Chi Nhánh: ${b.name}`;
+
+    openBranchModal(true);
+}
+
+async function handleBranchSubmit(event) {
+    if (event) event.preventDefault();
+
+    const editId = document.getElementById("editBranchId").value;
+    const name = document.getElementById("branchName").value.trim();
+    const code = document.getElementById("branchCode").value.trim().toUpperCase();
+    const address = document.getElementById("branchAddress").value.trim();
+    const phone = document.getElementById("branchPhone").value.trim();
+    const openHours = document.getElementById("branchOpenHours").value.trim();
+    const lat = parseFloat(document.getElementById("branchLat").value);
+    const lng = parseFloat(document.getElementById("branchLng").value);
+    const deliveryRadiusKm = parseInt(document.getElementById("branchRadius").value, 10) || 10;
+    const amenities = document.getElementById("branchAmenities").value.trim();
+    const isActive = document.getElementById("branchIsActive").checked;
+
+    const payload = { name, code, address, phone, openHours, lat, lng, deliveryRadiusKm, amenities, isActive };
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const isEdit = !!editId;
+    const url = isEdit ? `${API_BASE}/admin/branches/${editId}` : `${API_BASE}/admin/branches`;
+    const method = isEdit ? "PUT" : "POST";
+    const errBox = document.getElementById("branchModalError");
+
+    lockScreen(isEdit ? `Đang lưu chi nhánh "${name}"...` : `Đang mở thêm chi nhánh "${name}"...`);
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            closeBranchModal();
+            await loadAdminBranches();
+            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
+                window.reloadBranchesIfChanged(true).catch(() => {});
+            }
+            notifyUser(isEdit ? `Cập nhật chi nhánh "${name}" thành công!` : `Mở chi nhánh mới "${name}" thành công!`, 'success');
+        } else {
+            const msg = json.message || "Lỗi lưu thông tin chi nhánh";
+            if (errBox) {
+                errBox.textContent = "❌ " + msg;
+                errBox.classList.remove("hidden");
+            }
+            notifyUser(`Lỗi lưu chi nhánh: ${msg}`, 'error');
+        }
+    } catch (e) {
+        if (errBox) {
+            errBox.textContent = "❌ Lỗi kết nối: " + e.message;
+            errBox.classList.remove("hidden");
+        }
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+async function toggleBranch(branchId) {
+    lockScreen("Đang cập nhật trạng thái chi nhánh...");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/branches/${branchId}/toggle`, {
+            method: "PATCH",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            await loadAdminBranches();
+            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
+                window.reloadBranchesIfChanged(true).catch(() => {});
+            }
+            notifyUser("Đã cập nhật trạng thái chi nhánh thành công!", 'success');
+        } else {
+            notifyUser("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"), 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
+if (typeof window !== "undefined") {
+    window.BRANCH_NAME_MAP = BRANCH_NAME_MAP;
+    window.populateBranchDropdowns = populateBranchDropdowns;
+    window.loadAdminBranches = loadAdminBranches;
+    window.openBranchModal = openBranchModal;
+    window.closeBranchModal = closeBranchModal;
+    window.editBranch = editBranch;
+    window.handleBranchSubmit = handleBranchSubmit;
+    window.toggleBranch = toggleBranch;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin_users.js
+// ==========================================================================
+// ==========================================
+// 1. QUẢN LÝ NHÂN SỰ NỘI BỘ (STAFF & RBAC)
+// ==========================================
+
+const ROLE_DISPLAY_MAP = {
+    super_admin: { label: "👑 Tổng Quản Trị", badge: "bg-purple-100 text-purple-800" },
+    branch_manager: { label: "🏬 Quản Lý Chi Nhánh", badge: "bg-blue-100 text-blue-800" },
+    florist: { label: "🌸 Thợ Cắm Hoa", badge: "bg-pink-100 text-pink-800" },
+    sales_consultant: { label: "💼 Tư Vấn Viên", badge: "bg-amber-100 text-amber-800" }
+};
+
 async function loadAdminUsers() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
@@ -5425,6 +5462,7 @@ async function loadAdminUsers() {
             const bJson = await bRes.json();
             if (bJson.success && Array.isArray(bJson.data)) {
                 allAdminBranches = bJson.data;
+                if (typeof window !== "undefined") window.allAdminBranches = allAdminBranches;
                 populateBranchDropdowns(allAdminBranches);
             }
         } catch (err) {
@@ -5448,6 +5486,7 @@ async function loadAdminUsers() {
         if (json.success && Array.isArray(json.data)) {
             // Lọc chỉ lấy nhân viên nội bộ (loại bỏ khách hàng role='customer')
             allAdminUsers = json.data.filter((u) => u.role !== "customer");
+            if (typeof window !== "undefined") window.allAdminUsers = allAdminUsers;
             renderUsersTable(allAdminUsers);
         } else {
             tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải nhân sự"}</td></tr>`;
@@ -5556,6 +5595,7 @@ async function loadAdminCustomers() {
 
         if (json.success && Array.isArray(json.data)) {
             allAdminCustomers = json.data;
+            if (typeof window !== "undefined") window.allAdminCustomers = allAdminCustomers;
             renderCustomersTable(allAdminCustomers);
         } else {
             tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải khách hàng"}</td></tr>`;
@@ -5676,7 +5716,7 @@ function closeUserModal() {
 }
 
 function editUser(userId) {
-    const u = allAdminUsers.find((user) => user.id === userId);
+    const u = (allAdminUsers || []).find((user) => user.id === userId);
     if (!u) return;
 
     document.getElementById("editUserId").value = u.id;
@@ -5702,6 +5742,7 @@ async function handleUserSubmit(event) {
     if (event) event.preventDefault();
 
     const editId = document.getElementById("editUserId").value;
+    const isEdit = !!editId;
     const fullName = document.getElementById("staffFullName").value.trim();
     const phone = document.getElementById("staffPhone").value.trim();
     const email = document.getElementById("staffEmail").value.trim();
@@ -5709,6 +5750,8 @@ async function handleUserSubmit(event) {
     const branchSelect = document.getElementById("staffBranch");
     const branchId = branchSelect.value;
     const password = document.getElementById("staffPassword").value;
+    const isActiveInput = document.getElementById("staffIsActive");
+    const isActive = isActiveInput ? isActiveInput.checked : true;
     const errBox = document.getElementById("userModalError");
 
     if (!isEdit && !password) {
@@ -5735,7 +5778,6 @@ async function handleUserSubmit(event) {
     if (password) payload.password = password;
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-    const isEdit = !!editId;
     const url = isEdit ? `${API_BASE}/admin/users/${editId}` : `${API_BASE}/admin/users`;
     const method = isEdit ? "PUT" : "POST";
 
@@ -5807,249 +5849,25 @@ async function deleteUser(userId, fullName) {
     }
 }
 
-// ==========================================
-// QUẢN LÝ CHUỖI CỬA HÀNG (BRANCHES MANAGEMENT)
-// ==========================================
-
-async function loadAdminBranches() {
-    const tbody = document.getElementById("branchesTableBody");
-    if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh sách chuỗi cửa hàng...</td></tr>`;
-    }
-    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-
-    try {
-        const res = await fetch(`${API_BASE}/admin/branches`, { headers: { "Authorization": `Bearer ${token}` } });
-        const json = await res.json();
-
-        if (json.success && Array.isArray(json.data)) {
-            allAdminBranches = json.data;
-            if (tbody) renderBranchesTable(allAdminBranches);
-            populateBranchDropdowns(allAdminBranches);
-            if (allAdminUsers && allAdminUsers.length > 0) {
-                renderUsersTable(allAdminUsers);
-            }
-        } else if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
-            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải chi nhánh"}</td></tr>`;
-        }
-    } catch (e) {
-        if (tbody && (!allAdminBranches || allAdminBranches.length === 0)) {
-            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
-        }
-    }
+if (typeof window !== "undefined") {
+    window.ROLE_DISPLAY_MAP = ROLE_DISPLAY_MAP;
+    window.loadAdminUsers = loadAdminUsers;
+    window.loadAdminStaff = loadAdminUsers;
+    window.renderUsersTable = renderUsersTable;
+    window.allAdminCustomers = allAdminCustomers;
+    window.loadAdminCustomers = loadAdminCustomers;
+    window.renderCustomersTable = renderCustomersTable;
+    window.openUserModal = openUserModal;
+    window.closeUserModal = closeUserModal;
+    window.editUser = editUser;
+    window.handleUserSubmit = handleUserSubmit;
+    window.deleteUser = deleteUser;
 }
 
-function renderBranchesTable(branches) {
-    const tbody = document.getElementById("branchesTableBody");
-    if (!tbody) return;
 
-    if (branches.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="p-12 text-center">
-                    <div class="flex flex-col items-center justify-center py-10 text-gray-400">
-                        <div class="w-16 h-16 rounded-full bg-emerald-50 text-emerald-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
-                            <i class="fa-solid fa-store"></i>
-                        </div>
-                        <p class="font-bold text-gray-700 text-sm">Chưa có chi nhánh showroom nào</p>
-                        <p class="text-xs text-gray-400 mt-1">Bấm nút "Mở Thêm Chi Nhánh Mới" để mở rộng mạng lưới showroom.</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : {};
-    const isSuperAdmin = currentUser.role === "super_admin";
-
-    let html = "";
-    branches.forEach((b) => {
-        const activeBadge = b.isActive !== false
-            ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Hoạt Động</span>`
-            : `<span class="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">⚪ Tạm Đóng Cửa</span>`;
-
-        html += `
-            <tr class="hover:bg-gray-50/80 transition">
-                <td class="p-3">
-                    <span class="font-bold text-xs bg-pink-50 text-primary border border-pink-200 px-2 py-1 rounded-md">${b.code || b.id}</span>
-                </td>
-                <td class="p-3">
-                    <span class="font-bold text-gray-800 text-sm block">${b.name}</span>
-                    <span class="text-[11px] text-gray-500">${b.openHours || "07:30 - 21:00"}</span>
-                </td>
-                <td class="p-3">
-                    <div class="font-medium text-gray-700 text-xs">${b.address}</div>
-                    <div class="text-[11px] text-primary font-bold"><i class="fa-solid fa-phone mr-1"></i> ${b.phone || "—"}</div>
-                </td>
-                <td class="p-3 font-mono text-[11px] text-gray-600">
-                    ${b.lat}, ${b.lng}
-                </td>
-                <td class="p-3 font-bold text-accent text-xs">
-                    ${b.deliveryRadiusKm || 10} km
-                </td>
-                <td class="p-3">${activeBadge}</td>
-                <td class="p-3 text-center">
-                    <div class="flex items-center justify-center space-x-2">
-                        ${isSuperAdmin ? `
-                            <button onclick="editBranch('${b.id}')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
-                                <i class="fa-solid fa-pen-to-square"></i> Sửa
-                            </button>
-                            <button onclick="toggleBranch('${b.id}')" class="px-2.5 py-1 ${b.isActive !== false ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-green-700'} rounded-lg text-xs font-bold transition">
-                                ${b.isActive !== false ? '⚪ Đóng' : '🟢 Mở'}
-                            </button>
-                        ` : `
-                            <span class="text-xs text-gray-400 font-semibold">Chỉ xem</span>
-                        `}
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
-
-    tbody.innerHTML = html;
-}
-
-function openBranchModal(isEdit = false) {
-    const modal = document.getElementById("branchModal");
-    const title = document.getElementById("branchModalTitle");
-    const form = document.getElementById("branchForm");
-    const errBox = document.getElementById("branchModalError");
-
-    if (!modal) return;
-    if (errBox) errBox.classList.add("hidden");
-
-    if (!isEdit && form) {
-        form.reset();
-        document.getElementById("editBranchId").value = "";
-        document.getElementById("branchRadius").value = 10;
-        document.getElementById("branchOpenHours").value = "07:30 - 21:00";
-        document.getElementById("branchLat").value = 10.7769;
-        document.getElementById("branchLng").value = 106.7009;
-        if (title) title.textContent = "Mở Thêm Chi Nhánh Showroom Mới";
-    }
-
-    modal.style.display = "flex";
-    modal.classList.remove("hidden");
-}
-
-function closeBranchModal() {
-    const modal = document.getElementById("branchModal");
-    if (modal) {
-        modal.style.display = "none";
-        modal.classList.add("hidden");
-    }
-}
-
-function editBranch(branchId) {
-    const b = allAdminBranches.find((branch) => branch.id === branchId);
-    if (!b) return;
-
-    document.getElementById("editBranchId").value = b.id;
-    document.getElementById("branchName").value = b.name || "";
-    document.getElementById("branchCode").value = b.code || "";
-    document.getElementById("branchAddress").value = b.address || "";
-    document.getElementById("branchPhone").value = b.phone || "";
-    document.getElementById("branchOpenHours").value = b.openHours || "07:30 - 21:00";
-    document.getElementById("branchLat").value = b.lat || 10.7769;
-    document.getElementById("branchLng").value = b.lng || 106.7009;
-    document.getElementById("branchRadius").value = b.deliveryRadiusKm || 10;
-    document.getElementById("branchAmenities").value = b.amenities || "";
-    document.getElementById("branchIsActive").checked = b.isActive !== false;
-
-    const title = document.getElementById("branchModalTitle");
-    if (title) title.textContent = `Chỉnh Sửa Chi Nhánh: ${b.name}`;
-
-    openBranchModal(true);
-}
-
-async function handleBranchSubmit(event) {
-    if (event) event.preventDefault();
-
-    const editId = document.getElementById("editBranchId").value;
-    const name = document.getElementById("branchName").value.trim();
-    const code = document.getElementById("branchCode").value.trim().toUpperCase();
-    const address = document.getElementById("branchAddress").value.trim();
-    const phone = document.getElementById("branchPhone").value.trim();
-    const openHours = document.getElementById("branchOpenHours").value.trim();
-    const lat = parseFloat(document.getElementById("branchLat").value);
-    const lng = parseFloat(document.getElementById("branchLng").value);
-    const deliveryRadiusKm = parseInt(document.getElementById("branchRadius").value, 10) || 10;
-    const amenities = document.getElementById("branchAmenities").value.trim();
-    const isActive = document.getElementById("branchIsActive").checked;
-
-    const payload = { name, code, address, phone, openHours, lat, lng, deliveryRadiusKm, amenities, isActive };
-
-    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-    const isEdit = !!editId;
-    const url = isEdit ? `${API_BASE}/admin/branches/${editId}` : `${API_BASE}/admin/branches`;
-    const method = isEdit ? "PUT" : "POST";
-    const errBox = document.getElementById("branchModalError");
-
-    lockScreen(isEdit ? `Đang lưu chi nhánh "${name}"...` : `Đang mở thêm chi nhánh "${name}"...`);
-    try {
-        const res = await fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const json = await res.json();
-        if (res.ok && json.success) {
-            closeBranchModal();
-            await loadAdminBranches();
-            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
-                window.reloadBranchesIfChanged(true).catch(() => {});
-            }
-            notifyUser(isEdit ? `Cập nhật chi nhánh "${name}" thành công!` : `Mở chi nhánh mới "${name}" thành công!`, 'success');
-        } else {
-            const msg = json.message || "Lỗi lưu thông tin chi nhánh";
-            if (errBox) {
-                errBox.textContent = "❌ " + msg;
-                errBox.classList.remove("hidden");
-            }
-            notifyUser(`Lỗi lưu chi nhánh: ${msg}`, 'error');
-        }
-    } catch (e) {
-        if (errBox) {
-            errBox.textContent = "❌ Lỗi kết nối: " + e.message;
-            errBox.classList.remove("hidden");
-        }
-        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
-    } finally {
-        unlockScreen();
-    }
-}
-
-async function toggleBranch(branchId) {
-    lockScreen("Đang cập nhật trạng thái chi nhánh...");
-    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-    try {
-        const res = await fetch(`${API_BASE}/admin/branches/${branchId}/toggle`, {
-            method: "PATCH",
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-
-        const json = await res.json();
-        if (res.ok && json.success) {
-            await loadAdminBranches();
-            if (typeof window !== "undefined" && typeof window.reloadBranchesIfChanged === "function") {
-                window.reloadBranchesIfChanged(true).catch(() => {});
-            }
-            notifyUser("Đã cập nhật trạng thái chi nhánh thành công!", 'success');
-        } else {
-            notifyUser("Lỗi: " + (json.message || "Không thể cập nhật trạng thái chi nhánh"), 'error');
-        }
-    } catch (e) {
-        notifyUser("Lỗi kết nối máy chủ: " + e.message, 'error');
-    } finally {
-        unlockScreen();
-    }
-}
-
+// ==========================================================================
+// MODULE: portal_admin_products.js
+// ==========================================================================
 // ==========================================
 // QUẢN LÝ SẢN PHẨM & PRICE GOVERNANCE
 // ==========================================
@@ -6076,6 +5894,7 @@ async function loadAdminProducts() {
 
         if (json.success && json.data) {
             allAdminProducts = json.data;
+            if (typeof window !== "undefined") window.allAdminProducts = allAdminProducts;
             let displayProducts = allAdminProducts;
             if (status === "active") {
                 displayProducts = displayProducts.filter(p => p && p.isActive !== false);
@@ -6503,7 +6322,6 @@ async function handleGalleryFileUpload(event) {
     }
 }
 
-
 function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");
     const title = document.getElementById("productModalTitle");
@@ -6550,6 +6368,7 @@ function openProductModal(isEdit = false) {
             if (customBox) customBox.classList.add("hidden");
             if (customInp) customInp.value = "";
         });
+        renderProductModalStockFields({});
     }
 
     if (allAdminCategories && allAdminCategories.length > 0) {
@@ -6561,6 +6380,50 @@ function openProductModal(isEdit = false) {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
     onPriceLevelChange();
+}
+
+function updateProductModalTotalQuota() {
+    let total = 0;
+    const inputs = document.querySelectorAll(".prod-branch-stock-input");
+    inputs.forEach(inp => {
+        total += Math.max(0, parseInt(inp.value, 10) || 0);
+    });
+    const badge = document.getElementById("prodTotalQuotaBadge");
+    if (badge) badge.textContent = `Tổng Hạn Mức: ${total} cành/mẫu`;
+}
+
+function renderProductModalStockFields(stockByBranch = {}) {
+    const container = document.getElementById("productStockByBranchDynamicContainer");
+    if (!container) return;
+
+    const branches = (allAdminBranches && allAdminBranches.length > 0)
+        ? allAdminBranches.filter(b => b.isActive !== false)
+        : [
+            { id: "branch_q10", name: "Showroom Q.10 (Flagship)", code: "CN_Q10" },
+            { id: "branch_q1", name: "Showroom Bến Nghé Q.1", code: "CN_Q1" },
+            { id: "branch_thao_dien", name: "Showroom Thảo Điền", code: "CN_Q2" }
+        ];
+
+    let html = "";
+    branches.forEach(b => {
+        const val = stockByBranch[b.id] ?? 10;
+        const displayName = b.code ? `${b.code} - ${b.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : b.name;
+        html += `
+            <div class="bg-white p-2.5 rounded-xl border border-gray-200/80 shadow-2xs hover:border-pink-200 transition">
+                <label class="block text-[11px] font-bold text-gray-700 mb-1 flex items-center justify-between">
+                    <span class="truncate" title="${b.name}">${displayName}</span>
+                    <span class="text-[9px] text-gray-400 font-semibold">Quota</span>
+                </label>
+                <div class="relative">
+                    <input type="number" min="0" value="${val}" data-branch-id="${b.id}" class="prod-branch-stock-input w-full px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:bg-white focus:outline-none focus:border-primary transition" oninput="updateProductModalTotalQuota()">
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none">cành</span>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+    updateProductModalTotalQuota();
 }
 
 function populateProductTextIdDropdowns(transDict) {
@@ -6629,7 +6492,7 @@ function closeProductModal() {
 }
 
 async function editProduct(productId) {
-    let prod = allAdminProducts.find((p) => p.id === productId);
+    let prod = (allAdminProducts || []).find((p) => p.id === productId);
     if (!prod) return;
 
     openProductModal(true);
@@ -6711,9 +6574,7 @@ async function editProduct(productId) {
     document.getElementById("prodDescription").value = prod.description || "";
     document.getElementById("prodCareTips").value = prod.careTips || "";
 
-    document.getElementById("prodStockQ10").value = prod.stockByBranch?.branch_q10 ?? 10;
-    document.getElementById("prodStockQ1").value = prod.stockByBranch?.branch_q1 ?? 5;
-    document.getElementById("prodStockTD").value = prod.stockByBranch?.branch_thao_dien ?? 5;
+    renderProductModalStockFields(prod.stockByBranch || {});
 
     if (title) title.textContent = `Chỉnh Sửa Mẫu Hoa: ${prod.name}`;
     editingProductI18n = JSON.parse(JSON.stringify(prod.i18n || {}));
@@ -6756,9 +6617,20 @@ async function handleProductSubmit(event) {
     const compTextId = getFinalProductTextId("prodCompTextId", "prodCompTextIdCustom");
     const descTextId = getFinalProductTextId("prodDescTextId", "prodDescTextIdCustom");
 
-    const stockQ10 = parseInt(document.getElementById("prodStockQ10").value, 10) || 0;
-    const stockQ1 = parseInt(document.getElementById("prodStockQ1").value, 10) || 0;
-    const stockTD = parseInt(document.getElementById("prodStockTD").value, 10) || 0;
+    const stockByBranch = {};
+    const stockInputs = document.querySelectorAll(".prod-branch-stock-input");
+    stockInputs.forEach(inp => {
+        const bId = inp.getAttribute("data-branch-id");
+        if (bId) {
+            stockByBranch[bId] = Math.max(0, parseInt(inp.value, 10) || 0);
+        }
+    });
+    if (Object.keys(stockByBranch).length === 0) {
+        stockByBranch["branch_q10"] = 10;
+        stockByBranch["branch_q1"] = 5;
+        stockByBranch["branch_thao_dien"] = 5;
+    }
+    const dailyQuota = Object.values(stockByBranch).reduce((a, b) => a + b, 0);
 
     const payload = {
         name,
@@ -6776,11 +6648,8 @@ async function handleProductSubmit(event) {
         descTextId,
         careTips,
         i18n: editingProductI18n,
-        stockByBranch: {
-            branch_q10: stockQ10,
-            branch_q1: stockQ1,
-            branch_thao_dien: stockTD
-        }
+        stockByBranch,
+        dailyQuota
     };
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -6871,6 +6740,34 @@ async function toggleProduct(productId, productName, currentActive) {
     }
 }
 
+if (typeof window !== "undefined") {
+    window.loadAdminProducts = loadAdminProducts;
+    window.openProductModal = openProductModal;
+    window.closeProductModal = closeProductModal;
+    window.editProduct = editProduct;
+    window.handleProductSubmit = handleProductSubmit;
+    window.handleImageFileUpload = handleImageFileUpload;
+    window.compressAndConvertToBase64 = compressAndConvertToBase64;
+    window.toggleProduct = toggleProduct;
+    window.onPriceLevelChange = onPriceLevelChange;
+    window.validateLivePrice = validateLivePrice;
+    window.populateProductTextIdDropdowns = populateProductTextIdDropdowns;
+    window.onProductTextIdChange = onProductTextIdChange;
+    window.switchProductLangTab = switchProductLangTab;
+    window.saveCurrentProdI18nDraft = saveCurrentProdI18nDraft;
+    window.renderEditingProductGallery = renderEditingProductGallery;
+    window.addProductGalleryImage = addProductGalleryImage;
+    window.addProductGalleryImageFromInput = addProductGalleryImageFromInput;
+    window.removeProductGalleryImage = removeProductGalleryImage;
+    window.handleGalleryFileUpload = handleGalleryFileUpload;
+    window.updateProductModalTotalQuota = updateProductModalTotalQuota;
+    window.renderProductModalStockFields = renderProductModalStockFields;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin_promotions.js
+// ==========================================================================
 // ==========================================
 // QUẢN LÝ KHUYẾN MÃI & VOUCHER (PROMOTIONS - Timestamps & Soft Delete)
 // ==========================================
@@ -6888,6 +6785,7 @@ async function loadAdminPromotions() {
         const json = await res.json();
         if (json.success && json.data) {
             allAdminPromotions = json.data;
+            if (typeof window !== "undefined") window.allAdminPromotions = allAdminPromotions;
             renderPromotionsTable(allAdminPromotions);
         } else if (!allAdminPromotions || allAdminPromotions.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-red-500 font-bold">${json.message || "Không thể tải danh sách khuyến mãi"}</td></tr>`;
@@ -7206,6 +7104,7 @@ async function restorePromo(promoId, promoCode) {
 // ==========================================
 // QUẢN LÝ SẢN PHẨM KÈM THEO (ADD-ONS CMS)
 // ==========================================
+
 async function loadAdminAddons() {
     const tbody = document.getElementById("addonsTableBody");
     if (!tbody) return;
@@ -7222,6 +7121,7 @@ async function loadAdminAddons() {
         const json = await res.json();
         if (json.success && json.data) {
             allAdminAddons = json.data;
+            if (typeof window !== "undefined") window.allAdminAddons = allAdminAddons;
             renderAddonsTable(allAdminAddons);
         } else if (!allAdminAddons || allAdminAddons.length === 0) {
             tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-red-500 font-bold">${json.message || "Không thể tải danh sách sản phẩm kèm theo"}</td></tr>`;
@@ -7598,6 +7498,33 @@ async function restoreAddon(addonId) {
     }
 }
 
+if (typeof window !== "undefined") {
+    // Promotions & Vouchers
+    window.loadAdminPromotions = loadAdminPromotions;
+    window.openPromoModal = openPromoModal;
+    window.closePromoModal = closePromoModal;
+    window.editPromo = editPromo;
+    window.handlePromoSubmit = handlePromoSubmit;
+    window.togglePromo = togglePromo;
+    window.deletePromo = deletePromo;
+    window.restorePromo = restorePromo;
+
+    // Add-Ons (Sản Phẩm Kèm Theo)
+    window.loadAdminAddons = loadAdminAddons;
+    window.openAddonModal = openAddonModal;
+    window.closeAddonModal = closeAddonModal;
+    window.editAddon = editAddon;
+    window.handleAddonSubmit = handleAddonSubmit;
+    window.handleAddonImageFileUpload = handleAddonImageFileUpload;
+    window.toggleAddon = toggleAddon;
+    window.deleteAddon = deleteAddon;
+    window.restoreAddon = restoreAddon;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin_translations.js
+// ==========================================================================
 // ==========================================
 // BIÊN DỊCH ĐA NGÔN NGỮ ĐỘNG (Single Key Selector & Matrix View)
 // ==========================================
@@ -7617,6 +7544,7 @@ async function loadAdminTranslations() {
         const json = await res.json();
         if (json.success && json.data) {
             allAdminTranslations = json.data.translations || {};
+            if (typeof window !== "undefined") window.allAdminTranslations = allAdminTranslations;
             
             // Khởi tạo danh sách dropdown và bảng
             populateTranslationKeyDropdown(allAdminTranslations);
@@ -8078,6 +8006,27 @@ async function saveAllTranslations() {
     }
 }
 
+if (typeof window !== "undefined") {
+    window.loadAdminTranslations = loadAdminTranslations;
+    window.populateTranslationKeyDropdown = populateTranslationKeyDropdown;
+    window.onSelectTranslationKeyChange = onSelectTranslationKeyChange;
+    window.onFilterTransKeyDropdown = onFilterTransKeyDropdown;
+    window.navigateTransKey = navigateTransKey;
+    window.syncSingleKeyInputToDictionary = syncSingleKeyInputToDictionary;
+    window.saveCurrentSingleTranslationKey = saveCurrentSingleTranslationKey;
+    window.switchTransViewMode = switchTransViewMode;
+    window.openAddNewTranslationKeyModal = openAddNewTranslationKeyModal;
+    window.closeAddNewTranslationKeyModal = closeAddNewTranslationKeyModal;
+    window.handleAddNewTranslationKeySubmit = handleAddNewTranslationKeySubmit;
+    window.deleteCurrentTranslationKey = deleteCurrentTranslationKey;
+    window.filterTranslations = filterTranslations;
+    window.saveAllTranslations = saveAllTranslations;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin_sysconfig.js
+// ==========================================================================
 // ==========================================
 // CẤU HÌNH THÔNG TIN DOANH NGHIỆP (infoCompany.json)
 // ==========================================
@@ -8804,6 +8753,27 @@ async function handleCompanyInfoSubmit(event) {
     }
 }
 
+if (typeof window !== "undefined") {
+    window.DEFAULT_STATIC_COMPANY_INFO = DEFAULT_STATIC_COMPANY_INFO;
+    window.loadAdminCompanyInfo = loadAdminCompanyInfo;
+    window.handleCompanyInfoSubmit = handleCompanyInfoSubmit;
+    window.loadAdminPaymentConfig = loadAdminPaymentConfig;
+    window.onPaymentMethodToggle = onPaymentMethodToggle;
+    window.savePaymentConfig = savePaymentConfig;
+    window.loadAdminAddonConfig = loadAdminAddonConfig;
+    window.saveAddonConfig = saveAddonConfig;
+    window.loadAdminBanners = loadAdminBanners;
+    window.renderAdminBanners = renderAdminBanners;
+    window.updateAdminBannerField = updateAdminBannerField;
+    window.addAdminBannerItem = addAdminBannerItem;
+    window.removeAdminBannerItem = removeAdminBannerItem;
+    window.saveAdminBanners = saveAdminBanners;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin_orders.js
+// ==========================================================================
 // ==========================================
 // QUẢN LÝ ĐƠN HÀNG (ORDERS MANAGEMENT)
 // ==========================================
@@ -8964,7 +8934,953 @@ async function updateAdminOrderStatus(orderId, newStatus) {
     }
 }
 
-// Global binding
+if (typeof window !== "undefined") {
+    window.ADMIN_ORDER_STATUS_META = ADMIN_ORDER_STATUS_META;
+    window.ADMIN_PAYMENT_STATUS_META = ADMIN_PAYMENT_STATUS_META;
+    window.loadAdminOrders = loadAdminOrders;
+    window.updateAdminOrderStatus = updateAdminOrderStatus;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin_inventory.js
+// ==========================================================================
+// ==========================================
+// 9. QUẢN LÝ TỒN KHO & HAO HỤT (INVENTORY & WASTAGE - TASK 06)
+// ==========================================
+
+let currentInventoryData = null;
+let currentInventoryBranches = [];
+let allAdminWastageReports = [];
+
+async function loadAdminInventory() {
+    const dateInput = document.getElementById("filterInventoryDate");
+    const branchSelect = document.getElementById("filterInventoryBranch");
+    const tbody = document.getElementById("inventoryMatrixBody");
+    const syncBadge = document.getElementById("inventorySyncStatusBadge");
+
+    if (!dateInput) return;
+
+    if (!dateInput.value) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        dateInput.value = `${year}-${month}-${day}`;
+    }
+
+    const selectedDate = dateInput.value;
+    const selectedBranch = branchSelect ? branchSelect.value : "all";
+
+    if (tbody && (!currentInventoryData || !currentInventoryData.matrix || currentInventoryData.matrix.length === 0)) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải ma trận tồn kho chi nhánh...</td></tr>`;
+    }
+
+    if (syncBadge) {
+        syncBadge.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin mr-1 text-[8px] text-amber-500"></i> Đang đồng bộ...`;
+        syncBadge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200";
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    let url = `${API_BASE}/admin/inventory/matrix?date=${selectedDate}`;
+    if (selectedBranch && selectedBranch !== "all") {
+        url += `&branchId=${selectedBranch}`;
+    }
+
+    try {
+        const res = await fetch(url, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error("Không thể tải ma trận tồn kho");
+        const json = await res.json();
+        if (json.success && json.data) {
+            currentInventoryData = json.data;
+            currentInventoryBranches = json.data.branches || [];
+
+            if (branchSelect && branchSelect.options.length <= 1) {
+                currentInventoryBranches.forEach(b => {
+                    const opt = document.createElement("option");
+                    opt.value = b.id;
+                    opt.textContent = b.code ? `${b.code} - ${b.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : b.name;
+                    branchSelect.appendChild(opt);
+                });
+            }
+
+            renderInventoryKPIs(json.data.summary);
+            renderInventoryMatrixTable(json.data.matrix, currentInventoryBranches);
+
+            if (syncBadge) {
+                syncBadge.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Thời gian thực (${new Date().toLocaleTimeString('vi-VN')})`;
+                syncBadge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi load ma trận tồn kho:", err);
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Lỗi: ${err.message}</td></tr>`;
+        }
+        if (syncBadge) {
+            syncBadge.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1 text-[8px] text-rose-500"></i> Lỗi kết nối`;
+            syncBadge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200";
+        }
+    }
+}
+
+function renderInventoryKPIs(summary) {
+    if (!summary) return;
+    const elImp = document.getElementById("invKpiImported");
+    const elSold = document.getElementById("invKpiSold");
+    const elWast = document.getElementById("invKpiWastage");
+    const elLoss = document.getElementById("invKpiLossAmount");
+    const elAvail = document.getElementById("invKpiAvailable");
+    const elAlerts = document.getElementById("invKpiAlerts");
+
+    if (elImp) elImp.textContent = Number(summary.totalImported || 0).toLocaleString("vi-VN");
+    if (elSold) elSold.textContent = Number(summary.totalSold || 0).toLocaleString("vi-VN");
+    if (elWast) elWast.textContent = `${Number(summary.totalWastageStems || 0).toLocaleString("vi-VN")} cành`;
+    if (elLoss) elLoss.textContent = `${Number(summary.totalWastageLossAmount || 0).toLocaleString("vi-VN")}₫ vốn mất`;
+    if (elAvail) elAvail.textContent = Number(summary.totalAvailable || 0).toLocaleString("vi-VN");
+    if (elAlerts) {
+        const totalAlerts = (summary.lowStockCount || 0) + (summary.outOfStockCount || 0);
+        elAlerts.textContent = `${totalAlerts} mẫu (${summary.outOfStockCount || 0} hết)`;
+    }
+}
+
+function renderInventoryMatrixTable(matrix, branches) {
+    const thead = document.getElementById("inventoryMatrixHeader");
+    const tbody = document.getElementById("inventoryMatrixBody");
+    if (!tbody || !thead) return;
+
+    let headerHtml = `
+        <tr>
+            <th class="p-3 w-52">Mẫu Hoa</th>
+            <th class="p-3 w-28">Danh Mục</th>
+            <th class="p-3 w-24">Giá Bán</th>
+    `;
+    branches.forEach(b => {
+        const shortName = b.code || b.name.replace("Nở Hoa Thả Bình - Showroom ", "");
+        headerHtml += `
+            <th class="p-3 text-center border-l border-pink-100/80 bg-pink-50/70">
+                <div class="font-bold text-gray-800">${shortName}</div>
+                <div class="text-[9px] font-normal text-gray-500 tracking-normal flex justify-center gap-1.5 mt-0.5">
+                    <span title="Hạn mức nhập đầu ca">Nhập</span>•<span title="Đã bán">Bán</span>•<span title="Báo hủy hỏng">Hỏng</span>•<span title="Tồn khả dụng" class="font-bold text-primary">Tồn</span>
+                </div>
+            </th>
+        `;
+    });
+    headerHtml += `
+            <th class="p-3 text-center border-l border-gray-200 bg-gray-50/80 w-36">
+                <div>Tổng Chuỗi</div>
+                <div class="text-[9px] font-normal text-gray-400 mt-0.5">Nhập • Bán • Tồn</div>
+            </th>
+            <th class="p-3 text-center w-28">Trạng Thái</th>
+        </tr>
+    `;
+    thead.innerHTML = headerHtml;
+
+    if (!matrix || matrix.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${5 + branches.length}" class="p-8 text-center text-gray-400 font-medium">Không tìm thấy sản phẩm nào trong kho.</td></tr>`;
+        return;
+    }
+
+    const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+    const isSuperAdmin = currentUser?.role === "super_admin";
+    const userBranch = currentUser?.branchId;
+
+    let bodyHtml = "";
+    matrix.forEach(prod => {
+        const catObj = (allAdminCategories || []).find(c => c.id === prod.category);
+        const catName = catObj ? catObj.name : (prod.category || "Hoa tươi");
+        const priceFmt = Number(prod.priceNumber || 0).toLocaleString("vi-VN") + "₫";
+
+        bodyHtml += `
+            <tr class="hover:bg-pink-50/20 transition group" data-product-id="${prod.id}" data-product-name="${(prod.name || '').toLowerCase()}">
+                <td class="p-3">
+                    <div class="flex items-center space-x-2.5">
+                        <img src="${prod.image || 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=100'}" class="w-10 h-10 rounded-xl object-cover border border-gray-200 shadow-2xs flex-shrink-0" alt="${prod.name}">
+                        <div class="min-w-0">
+                            <div class="font-bold text-gray-800 text-xs truncate" title="${prod.name}">${prod.name}</div>
+                            <div class="text-[10px] font-mono text-gray-400">${prod.id}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-3 text-gray-600">${catName}</td>
+                <td class="p-3 font-bold text-gray-700">${priceFmt}</td>
+        `;
+
+        branches.forEach(b => {
+            const bStats = prod.branches ? prod.branches[b.id] : null;
+            const imported = bStats ? bStats.imported : 0;
+            const sold = bStats ? bStats.sold : 0;
+            const wastage = bStats ? bStats.wastage : 0;
+            const avail = bStats ? bStats.available : 0;
+
+            const canEdit = isSuperAdmin || (userBranch === b.id);
+            const disabledAttr = canEdit ? "" : "disabled";
+            const inputCls = canEdit 
+                ? "batch-inventory-input w-12 px-1 py-0.5 text-center font-bold text-xs bg-white border border-gray-200 rounded-md focus:border-primary focus:outline-none transition shadow-2xs" 
+                : "w-12 px-1 py-0.5 text-center font-bold text-xs bg-gray-100 text-gray-500 border border-gray-200 rounded-md cursor-not-allowed";
+
+            let availBadgeCls = "text-emerald-700 bg-emerald-50 border border-emerald-200";
+            if (avail === 0) availBadgeCls = "text-rose-700 bg-rose-50 border border-rose-200";
+            else if (avail < 5) availBadgeCls = "text-amber-700 bg-amber-50 border border-amber-200";
+
+            bodyHtml += `
+                <td class="p-2.5 text-center border-l border-pink-100/60">
+                    <div class="flex items-center justify-center space-x-1.5">
+                        <input type="number" min="0" value="${imported}" data-product-id="${prod.id}" data-branch-id="${b.id}" ${disabledAttr} class="${inputCls}" title="Hạn mức nhập đầu ngày">
+                        <span class="text-[10px] text-gray-500 font-semibold" title="Đã bán">${sold}</span>
+                        <span class="text-[10px] text-rose-500 font-semibold" title="Hao hụt">${wastage}</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${availBadgeCls}" title="Tồn khả dụng">${avail}</span>
+                    </div>
+                </td>
+            `;
+        });
+
+        let totalBadgeCls = "text-emerald-700 bg-emerald-50 border border-emerald-200";
+        if (prod.totalAvailable === 0) totalBadgeCls = "text-rose-700 bg-rose-50 border border-rose-200";
+        else if (prod.totalAvailable < 5) totalBadgeCls = "text-amber-700 bg-amber-50 border border-amber-200";
+
+        let statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full text-emerald-700 bg-emerald-50 border border-emerald-200">🟢 Còn hàng</span>`;
+        if (prod.totalAvailable === 0) {
+            statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full text-rose-700 bg-rose-50 border border-rose-200">🔴 Hết hàng</span>`;
+        } else if (prod.totalAvailable < 5) {
+            statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full text-amber-700 bg-amber-50 border border-amber-200">🟠 Sắp hết</span>`;
+        }
+
+        bodyHtml += `
+                <td class="p-3 text-center border-l border-gray-200 bg-gray-50/40">
+                    <div class="font-bold text-xs text-gray-800">
+                        <span>${prod.totalImported}</span>
+                        <span class="text-gray-300 mx-1">/</span>
+                        <span class="text-emerald-600">${prod.totalSold}</span>
+                        <span class="text-gray-300 mx-1">/</span>
+                        <span class="px-1.5 py-0.5 rounded font-bold ${totalBadgeCls}">${prod.totalAvailable}</span>
+                    </div>
+                </td>
+                <td class="p-3 text-center">
+                    ${statusBadge}
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = bodyHtml;
+}
+
+async function saveBatchInventory() {
+    const inputs = document.querySelectorAll(".batch-inventory-input");
+    if (!inputs || inputs.length === 0) {
+        notifyUser("Không có dữ liệu hạn mức tồn kho nào để lưu", "warning");
+        return;
+    }
+
+    const updates = [];
+    inputs.forEach(inp => {
+        const pId = inp.getAttribute("data-product-id");
+        const bId = inp.getAttribute("data-branch-id");
+        const val = Math.max(0, parseInt(inp.value, 10) || 0);
+        if (pId && bId) {
+            updates.push({
+                productId: pId,
+                branchId: bId,
+                quota: val
+            });
+        }
+    });
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    if (!token) {
+        notifyUser("Vui lòng đăng nhập quyền Quản Lý hoặc Super Admin để lưu hạn mức!", "error");
+        return;
+    }
+
+    lockScreen("Đang lưu hạn mức tồn kho chi nhánh...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/inventory/batch`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ updates })
+        });
+        const json = await res.json();
+        unlockScreen();
+        if (res.ok && json.success) {
+            notifyUser("Đã cập nhật hạn mức tồn kho thành công!", "success");
+            loadAdminInventory();
+        } else {
+            notifyUser(json.message || "Không thể lưu hạn mức tồn kho", "error");
+        }
+    } catch (e) {
+        unlockScreen();
+        notifyUser(`Lỗi kết nối: ${e.message}`, "error");
+    }
+}
+
+function switchInventorySubView(view) {
+    const btnMatrix = document.getElementById("subViewBtnMatrix");
+    const btnWastage = document.getElementById("subViewBtnWastage");
+    const subMatrix = document.getElementById("inventoryMatrixSubView");
+    const subWastage = document.getElementById("inventoryWastageSubView");
+
+    if (view === "matrix") {
+        if (btnMatrix) btnMatrix.className = "py-2.5 px-1 font-bold text-xs border-b-2 border-primary text-primary transition flex items-center gap-1.5";
+        if (btnWastage) btnWastage.className = "py-2.5 px-1 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5";
+        if (subMatrix) subMatrix.classList.remove("hidden");
+        if (subWastage) subWastage.classList.add("hidden");
+    } else {
+        if (btnMatrix) btnMatrix.className = "py-2.5 px-1 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5";
+        if (btnWastage) btnWastage.className = "py-2.5 px-1 font-bold text-xs border-b-2 border-primary text-primary transition flex items-center gap-1.5";
+        if (subMatrix) subMatrix.classList.add("hidden");
+        if (subWastage) subWastage.classList.remove("hidden");
+        loadAdminWastageHistory();
+    }
+}
+
+async function loadAdminWastageHistory() {
+    const tbody = document.getElementById("inventoryWastageBody");
+    const branchSelect = document.getElementById("filterInventoryBranch");
+    const dateInput = document.getElementById("filterInventoryDate");
+
+    const selectedBranch = branchSelect ? branchSelect.value : "all";
+    const selectedDate = dateInput ? dateInput.value : "";
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    let url = `${API_BASE}/admin/inventory/wastage?limit=100`;
+    if (selectedBranch && selectedBranch !== "all") url += `&branchId=${selectedBranch}`;
+
+    try {
+        const res = await fetch(url, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error("Không thể tải nhật ký báo hủy");
+        const json = await res.json();
+        if (json.success && json.data) {
+            allAdminWastageReports = json.data;
+            renderAdminWastageTable(allAdminWastageReports);
+        }
+    } catch (e) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-500">Lỗi: ${e.message}</td></tr>`;
+    }
+}
+
+function renderAdminWastageTable(reports) {
+    const tbody = document.getElementById("inventoryWastageBody");
+    if (!tbody) return;
+
+    if (!reports || reports.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Chưa có phiếu báo hủy nào được lập.</td></tr>`;
+        return;
+    }
+
+    let html = "";
+    reports.forEach(r => {
+        const bObj = (allAdminBranches || []).find(b => b.id === r.branchId);
+        const bName = bObj ? (bObj.code ? `${bObj.code} - ${bObj.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : bObj.name) : r.branchId;
+        const lossFmt = Number(r.totalLossAmount || 0).toLocaleString("vi-VN") + "₫";
+
+        let itemsSummary = (r.items || []).map(itm => 
+            `<div class="text-[11px]"><b class="text-rose-600">${itm.damagedStems} cành</b> ${itm.flowerType} <span class="text-gray-400 italic">(${itm.reason || "Hoa dập"})</span></div>`
+        ).join("");
+
+        html += `
+            <tr class="hover:bg-gray-50 transition">
+                <td class="p-3 font-mono text-xs font-bold text-gray-800">${r.id}</td>
+                <td class="p-3 font-semibold text-gray-700">${bName}</td>
+                <td class="p-3 text-gray-600">${r.date || r.createdAt?.slice(0, 10)}</td>
+                <td class="p-3 text-gray-600">${r.reportedBy || "Nhân viên"}</td>
+                <td class="p-3 space-y-1">${itemsSummary}</td>
+                <td class="p-3 font-bold text-rose-600 text-right">${lossFmt}</td>
+                <td class="p-3 text-gray-500 text-xs italic">${r.notes || "—"}</td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+function openWastageModal() {
+    const modal = document.getElementById("wastageModal");
+    const branchSelect = document.getElementById("wastageBranchSelect");
+    const dateInput = document.getElementById("wastageDateInput");
+    const notesInput = document.getElementById("wastageNotesInput");
+    const errBox = document.getElementById("wastageModalError");
+
+    if (!modal) return;
+    if (errBox) errBox.classList.add("hidden");
+    if (notesInput) notesInput.value = "";
+
+    if (dateInput) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        dateInput.value = `${year}-${month}-${day}`;
+    }
+
+    if (branchSelect) {
+        branchSelect.innerHTML = "";
+        const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+        const isSuperAdmin = currentUser?.role === "super_admin";
+        const userBranch = currentUser?.branchId;
+
+        const branches = (allAdminBranches && allAdminBranches.length > 0)
+            ? allAdminBranches.filter(b => b.isActive !== false)
+            : [
+                { id: "branch_q10", name: "Showroom Q.10 (Flagship)", code: "CN_Q10" },
+                { id: "branch_q1", name: "Showroom Bến Nghé Q.1", code: "CN_Q1" },
+                { id: "branch_thao_dien", name: "Showroom Thảo Điền", code: "CN_Q2" }
+            ];
+
+        branches.forEach(b => {
+            const opt = document.createElement("option");
+            opt.value = b.id;
+            opt.textContent = b.code ? `${b.code} - ${b.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : b.name;
+            branchSelect.appendChild(opt);
+        });
+
+        if (!isSuperAdmin && userBranch) {
+            branchSelect.value = userBranch;
+            branchSelect.disabled = true;
+        } else {
+            branchSelect.disabled = false;
+        }
+    }
+
+    const tbody = document.getElementById("wastageItemsTableBody");
+    if (tbody) tbody.innerHTML = "";
+    addWastageItemRow();
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+function closeWastageModal() {
+    const modal = document.getElementById("wastageModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+function addWastageItemRow() {
+    const tbody = document.getElementById("wastageItemsTableBody");
+    if (!tbody) return;
+
+    const rowId = "wastage_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+
+    let productOptions = `<option value="">-- Nhập tên hoa tự do hoặc chọn mẫu hoa --</option>`;
+    if (allAdminProducts && allAdminProducts.length > 0) {
+        allAdminProducts.forEach(p => {
+            productOptions += `<option value="${p.id}" data-name="${p.name}" data-price="${p.priceNumber || 0}">${p.name} (${Number(p.priceNumber || 0).toLocaleString('vi-VN')}₫)</option>`;
+        });
+    }
+
+    const tr = document.createElement("tr");
+    tr.id = rowId;
+    tr.className = "hover:bg-rose-50/30 transition";
+    tr.innerHTML = `
+        <td class="p-2">
+            <div class="space-y-1">
+                <select class="wastage-prod-select w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold focus:border-rose-400 focus:outline-none" onchange="onWastageProductSelect('${rowId}')">
+                    ${productOptions}
+                </select>
+                <input type="text" placeholder="Hoặc nhập tên hoa tươi (vd: Hồng Ecuador đỏ)..." class="wastage-flower-input w-full px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs font-medium focus:border-rose-400 focus:outline-none">
+            </div>
+        </td>
+        <td class="p-2 text-center">
+            <input type="number" min="1" value="1" class="wastage-stems-input w-20 px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs font-bold text-center focus:border-rose-400 focus:outline-none" oninput="recalculateWastageTotals()">
+        </td>
+        <td class="p-2">
+            <input type="number" min="0" step="5000" value="20000" class="wastage-cost-input w-24 px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs font-bold focus:border-rose-400 focus:outline-none" oninput="recalculateWastageTotals()">
+        </td>
+        <td class="p-2">
+            <select class="wastage-reason-select w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-medium focus:border-rose-400 focus:outline-none">
+                <option value="Dập cánh khi vận chuyển">🚚 Dập cánh khi vận chuyển</option>
+                <option value="Nở quá độ trong thời tiết nóng">☀️ Nở quá độ do thời tiết</option>
+                <option value="Gãy cành / dập lá khi cắm">✂️ Gãy cành / dập lá khi cắm</option>
+                <option value="Khách đổi ý không lấy mẫu đã cắm">❌ Khách hủy không nhận</option>
+                <option value="Héo úa cuối ca làm việc">🥀 Héo úa tồn cuối ca</option>
+                <option value="Khác">Khác...</option>
+            </select>
+        </td>
+        <td class="p-2 text-right font-bold text-rose-600 wastage-row-loss">20,000₫</td>
+        <td class="p-2 text-center">
+            <button type="button" onclick="removeWastageItemRow('${rowId}')" class="w-6 h-6 rounded-full hover:bg-rose-100 text-rose-500 hover:text-rose-700 inline-flex items-center justify-center transition">
+                <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    recalculateWastageTotals();
+}
+
+function onWastageProductSelect(rowId) {
+    const tr = document.getElementById(rowId);
+    if (!tr) return;
+    const sel = tr.querySelector(".wastage-prod-select");
+    const flowerInput = tr.querySelector(".wastage-flower-input");
+    const costInput = tr.querySelector(".wastage-cost-input");
+
+    if (sel && sel.value) {
+        const opt = sel.selectedOptions[0];
+        const pName = opt.getAttribute("data-name");
+        const pPrice = parseInt(opt.getAttribute("data-price"), 10) || 0;
+        if (flowerInput) flowerInput.value = pName;
+        if (costInput && pPrice > 0) costInput.value = Math.round(pPrice * 0.4 / 10000) * 10000;
+    }
+    recalculateWastageTotals();
+}
+
+function removeWastageItemRow(rowId) {
+    const tr = document.getElementById(rowId);
+    if (tr) tr.remove();
+    recalculateWastageTotals();
+}
+
+function recalculateWastageTotals() {
+    const rows = document.querySelectorAll("#wastageItemsTableBody tr");
+    let totalStems = 0;
+    let totalAmount = 0;
+
+    rows.forEach(tr => {
+        const stemsInp = tr.querySelector(".wastage-stems-input");
+        const costInp = tr.querySelector(".wastage-cost-input");
+        const lossEl = tr.querySelector(".wastage-row-loss");
+
+        const stems = Math.max(0, parseInt(stemsInp?.value, 10) || 0);
+        const cost = Math.max(0, parseInt(costInp?.value, 10) || 0);
+        const rowLoss = stems * cost;
+
+        totalStems += stems;
+        totalAmount += rowLoss;
+
+        if (lossEl) lossEl.textContent = rowLoss.toLocaleString("vi-VN") + "₫";
+    });
+
+    const stemsBadge = document.getElementById("wastageTotalStemsBadge");
+    const amountBadge = document.getElementById("wastageTotalAmountBadge");
+    if (stemsBadge) stemsBadge.textContent = totalStems.toLocaleString("vi-VN");
+    if (amountBadge) amountBadge.textContent = totalAmount.toLocaleString("vi-VN") + "₫";
+}
+
+async function handleWastageSubmit(event) {
+    if (event) event.preventDefault();
+    const branchSelect = document.getElementById("wastageBranchSelect");
+    const dateInput = document.getElementById("wastageDateInput");
+    const notesInput = document.getElementById("wastageNotesInput");
+    const errBox = document.getElementById("wastageModalError");
+
+    const rows = document.querySelectorAll("#wastageItemsTableBody tr");
+    if (!rows || rows.length === 0) {
+        if (errBox) {
+            errBox.textContent = "Vui lòng thêm ít nhất 1 dòng hoa hư hỏng cần báo hủy!";
+            errBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    const items = [];
+    rows.forEach(tr => {
+        const sel = tr.querySelector(".wastage-prod-select");
+        const flowerInput = tr.querySelector(".wastage-flower-input");
+        const stemsInp = tr.querySelector(".wastage-stems-input");
+        const costInp = tr.querySelector(".wastage-cost-input");
+        const reasonSel = tr.querySelector(".wastage-reason-select");
+
+        const pId = sel?.value || undefined;
+        const flowerType = (flowerInput?.value || "").trim() || (sel?.selectedOptions[0]?.getAttribute("data-name") || "Hoa tươi");
+        const damagedStems = Math.max(0, parseInt(stemsInp?.value, 10) || 0);
+        const unitCost = Math.max(0, parseInt(costInp?.value, 10) || 0);
+        const reason = reasonSel?.value || "Dập cánh khi vận chuyển";
+
+        if (damagedStems > 0) {
+            items.push({
+                productId: pId,
+                flowerType,
+                damagedStems,
+                unitCost,
+                reason
+            });
+        }
+    });
+
+    if (items.length === 0) {
+        if (errBox) {
+            errBox.textContent = "Số lượng cành hoa hư hỏng phải lớn hơn 0!";
+            errBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    const payload = {
+        branchId: branchSelect?.value,
+        date: dateInput?.value,
+        notes: (notesInput?.value || "").trim(),
+        items
+    };
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang ghi nhận phiếu báo hủy hoa hỏng...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/inventory/wastage`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        unlockScreen();
+
+        if (res.ok && json.success) {
+            notifyUser("Đã lưu phiếu báo hủy hoa hỏng thành công!", "success");
+            closeWastageModal();
+            loadAdminInventory();
+            loadAdminWastageHistory();
+        } else {
+            if (errBox) {
+                errBox.textContent = json.message || "Lỗi khi lưu phiếu báo hủy";
+                errBox.classList.remove("hidden");
+            }
+        }
+    } catch (e) {
+        unlockScreen();
+        if (errBox) {
+            errBox.textContent = `Lỗi mạng: ${e.message}`;
+            errBox.classList.remove("hidden");
+        }
+    }
+}
+
+function filterInventoryMatrixTable() {
+    const input = document.getElementById("searchInventoryInput");
+    if (!input) return;
+    const term = (input.value || "").toLowerCase().trim();
+    const rows = document.querySelectorAll("#inventoryMatrixBody tr");
+
+    rows.forEach(tr => {
+        const pName = tr.getAttribute("data-product-name") || "";
+        const pId = tr.getAttribute("data-product-id") || "";
+        if (!term || pName.includes(term) || pId.toLowerCase().includes(term)) {
+            tr.style.display = "";
+        } else {
+            tr.style.display = "none";
+        }
+    });
+}
+
+if (typeof window !== "undefined") {
+    window.loadAdminInventory = loadAdminInventory;
+    window.saveBatchInventory = saveBatchInventory;
+    window.renderInventoryKPIs = renderInventoryKPIs;
+    window.renderInventoryMatrixTable = renderInventoryMatrixTable;
+    window.filterInventoryMatrixTable = filterInventoryMatrixTable;
+    window.switchInventorySubView = switchInventorySubView;
+    window.loadAdminWastageHistory = loadAdminWastageHistory;
+    window.openWastageModal = openWastageModal;
+    window.closeWastageModal = closeWastageModal;
+    window.addWastageItemRow = addWastageItemRow;
+    window.removeWastageItemRow = removeWastageItemRow;
+    window.onWastageProductSelect = onWastageProductSelect;
+    window.recalculateWastageTotals = recalculateWastageTotals;
+    window.handleWastageSubmit = handleWastageSubmit;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin.js
+// ==========================================================================
+/**
+ * TELUA FLOWER CONNECT - ADMIN PORTAL ORCHESTRATOR
+ * Phân hệ Quản Trị Hệ Thống (TASK 07 - Admin Portal, Product CMS & Price Governance)
+ * Modular Architecture: Extracted into specialized sub-modules:
+ *  - portal_admin_state.js
+ *  - portal_admin_categories.js
+ *  - portal_admin_branches.js
+ *  - portal_admin_users.js
+ *  - portal_admin_products.js
+ *  - portal_admin_promotions.js
+ *  - portal_admin_translations.js
+ *  - portal_admin_sysconfig.js
+ *  - portal_admin_orders.js
+ *  - portal_admin_inventory.js
+ */
+
+
+// Re-export state & helpers
+
+// Re-export Categories
+
+// Re-export Branches
+
+// Re-export Users & Customers
+
+// Re-export Products
+
+// Re-export Promotions & Addons
+
+// Re-export Translations
+
+// Re-export Sysconfig
+
+// Re-export Orders
+
+// Re-export Inventory & Wastage
+
+// Import local references for shell functions
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadAdminCompanyInfo();
+    const path = (window.location.pathname || "").toLowerCase();
+    const hash = (window.location.hash || "").toLowerCase();
+    if (path.includes("/portal/admin") || path.includes("/portal/manager") || hash === "#admin") {
+        const user = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+        if (user && (user.role === "super_admin" || user.role === "branch_manager")) {
+            setTimeout(() => openAdminPortalModal(), 100);
+        } else {
+            if (typeof openAuthModal === "function") {
+                setTimeout(() => openAuthModal("login"), 100);
+            }
+        }
+    }
+});
+
+if (typeof document !== "undefined" && document.readyState !== "loading") {
+    loadAdminCompanyInfo();
+}
+
+function openAdminPortalModal(initialTab = null) {
+    // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
+    if (initialTab === "company" || initialTab === "translations" || initialTab === "banners") {
+        openSystemConfigModal(initialTab);
+        return;
+    }
+
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+
+    const user = (typeof getCurrentUser === "function") 
+        ? getCurrentUser() 
+        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+
+    if (!user || (user.role !== "super_admin" && user.role !== "branch_manager")) {
+        alert("Vui lòng đăng nhập bằng tài khoản Super Admin hoặc Quản Lý Chi Nhánh để truy cập Cổng Quản Trị!");
+        if (typeof openAuthModal === "function") openAuthModal("login");
+        else if (typeof window !== "undefined" && typeof window.openAuthModal === "function") window.openAuthModal("login");
+        return;
+    }
+
+    const modal = document.getElementById("adminPortalModal");
+    if (!modal) return;
+
+    const nameEl = document.getElementById("adminUserName");
+    const roleEl = document.getElementById("adminUserRole");
+    if (nameEl) nameEl.textContent = user.fullName || user.phone || "Quản trị viên";
+    if (roleEl) roleEl.textContent = user.role;
+
+    // Phân quyền hiển thị Tab Chuỗi Cửa Hàng
+    const branchTabBtn = document.getElementById("tabBtnBranches");
+    const optSuperAdmin = document.getElementById("optRoleSuperAdmin");
+    const optBranchManager = document.getElementById("optRoleBranchManager");
+    const filterBranchSelect = document.getElementById("filterUserBranch");
+
+    if (user.role === "branch_manager") {
+        if (branchTabBtn) branchTabBtn.classList.add("hidden");
+        if (optSuperAdmin) optSuperAdmin.classList.add("hidden");
+        if (optBranchManager) optBranchManager.classList.add("hidden");
+        if (filterBranchSelect) {
+            filterBranchSelect.value = user.branchId;
+            filterBranchSelect.disabled = true;
+        }
+    } else {
+        if (branchTabBtn) branchTabBtn.classList.remove("hidden");
+        if (optSuperAdmin) optSuperAdmin.classList.remove("hidden");
+        if (optBranchManager) optBranchManager.classList.remove("hidden");
+        if (filterBranchSelect) filterBranchSelect.disabled = false;
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    loadAdminCategories();
+    loadAdminProducts();
+    loadAdminBranches();
+    onPriceLevelChange();
+
+    if (initialTab) {
+        switchAdminTab(initialTab);
+    }
+}
+
+function closeAdminPortalModal() {
+    const modal = document.getElementById("adminPortalModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+// ==========================================
+// MODAL CẤU HÌNH HỆ THỐNG (DOANH NGHIỆP & ĐA NGÔN NGỮ)
+// ==========================================
+
+function openSystemConfigModal(initialTab = "company") {
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+
+    const user = (typeof getCurrentUser === "function") 
+        ? getCurrentUser() 
+        : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
+
+    if (!user || user.role !== "super_admin") {
+        alert("Chức năng Cấu Hình Hệ Thống chỉ dành cho Tổng Quản Trị Viên (Super Admin)!");
+        if (!user && typeof openAuthModal === "function") openAuthModal("login");
+        return;
+    }
+
+    const modal = document.getElementById("systemConfigModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    switchSystemConfigTab(initialTab);
+}
+
+function closeSystemConfigModal() {
+    const modal = document.getElementById("systemConfigModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+function switchSystemConfigTab(tabName) {
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners") tabName = "company";
+
+    const btnCompany = document.getElementById("tabSysBtnCompany");
+    const btnTranslations = document.getElementById("tabSysBtnTranslations");
+    const btnPayment = document.getElementById("tabSysBtnPayment");
+    const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
+    const btnBanners = document.getElementById("tabSysBtnBanners");
+    const contentCompany = document.getElementById("tabSysContentCompany");
+    const contentTranslations = document.getElementById("tabSysContentTranslations");
+    const contentPayment = document.getElementById("tabSysContentPayment");
+    const contentAddonVis = document.getElementById("tabSysContentAddonVis");
+    const contentBanners = document.getElementById("tabSysContentBanners");
+
+    const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
+    const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+
+    // Ẩn toàn bộ, reset trạng thái nút
+    if (btnCompany) btnCompany.className = idleCls;
+    if (btnTranslations) btnTranslations.className = idleCls;
+    if (btnPayment) btnPayment.className = idleCls;
+    if (btnAddonVis) btnAddonVis.className = idleCls;
+    if (btnBanners) btnBanners.className = idleCls;
+    if (contentCompany) contentCompany.classList.add("hidden");
+    if (contentTranslations) contentTranslations.classList.add("hidden");
+    if (contentPayment) contentPayment.classList.add("hidden");
+    if (contentAddonVis) contentAddonVis.classList.add("hidden");
+    if (contentBanners) contentBanners.classList.add("hidden");
+
+    if (tabName === "company") {
+        if (btnCompany) btnCompany.className = activeCls;
+        if (contentCompany) contentCompany.classList.remove("hidden");
+        loadAdminCompanyInfo();
+    } else if (tabName === "payment") {
+        if (btnPayment) btnPayment.className = activeCls;
+        if (contentPayment) contentPayment.classList.remove("hidden");
+        loadAdminPaymentConfig();
+    } else if (tabName === "addonvis") {
+        if (btnAddonVis) btnAddonVis.className = activeCls;
+        if (contentAddonVis) contentAddonVis.classList.remove("hidden");
+        loadAdminAddonConfig();
+    } else if (tabName === "banners") {
+        if (btnBanners) btnBanners.className = activeCls;
+        if (contentBanners) contentBanners.classList.remove("hidden");
+        loadAdminBanners();
+    } else {
+        if (btnTranslations) btnTranslations.className = activeCls;
+        if (contentTranslations) contentTranslations.classList.remove("hidden");
+        loadAdminTranslations();
+    }
+}
+
+function checkAdminAccess() {
+    if (typeof getCurrentUser !== "function" || typeof getAuthToken !== "function") return;
+    const user = getCurrentUser();
+    const nameEl = document.getElementById("adminUserName");
+    const roleEl = document.getElementById("adminUserRole");
+    if (nameEl && user) nameEl.textContent = user.fullName || "Quản trị viên";
+    if (roleEl && user) roleEl.textContent = user.role;
+}
+
+function switchAdminTab(tabName) {
+    // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
+    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
+        closeAdminPortalModal();
+        openSystemConfigModal(tabName);
+        return;
+    }
+
+    // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
+    if (tabName === "users") tabName = "staff";
+
+    const tabTitles = {
+        orders: "Đơn Hàng",
+        products: "Mẫu Hoa & Bảng Giá",
+        inventory: "Kho & Hao Hụt",
+        categories: "Danh Mục Hoa",
+        staff: "Nhân Sự Nội Bộ",
+        customers: "Khách Hàng & CRM",
+        branches: "Chuỗi Showroom",
+        promotions: "Khuyến Mãi & Voucher",
+        addons: "Sản Phẩm Kèm Theo"
+    };
+
+    console.group(`%c🖥️ [GUI_VIEW] Đang hiển thị Tab: "${tabTitles[tabName] || tabName}" (#tabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)})`, "color: #0288d1; font-weight: bold; font-size: 12px;");
+    console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
+    console.log("📂 Tab Identifier:", tabName);
+
+    const tabs = ["orders", "products", "inventory", "categories", "staff", "customers", "branches", "promotions", "addons"];
+    tabs.forEach((t) => {
+        const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn && content) {
+            if (t === tabName) {
+                btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
+                content.classList.remove("hidden");
+                console.log(`  👁️ [GUI Hiển Thị] Element #${content.id} -> visible (class 'hidden' removed)`);
+                try {
+                    btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                } catch (e) {}
+            } else {
+                btn.className = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+                content.classList.add("hidden");
+            }
+        }
+    });
+
+    console.log(`  🚀 Bắt đầu nạp/đồng bộ dữ liệu phân hệ: ${tabTitles[tabName] || tabName}`);
+    if (tabName === "orders") loadAdminOrders();
+    if (tabName === "products") loadAdminProducts();
+    if (tabName === "inventory") loadAdminInventory();
+    if (tabName === "categories") loadAdminCategories();
+    if (tabName === "staff") loadAdminUsers();
+    if (tabName === "customers") loadAdminCustomers();
+    if (tabName === "branches") loadAdminBranches();
+    if (tabName === "promotions") loadAdminPromotions();
+    if (tabName === "addons") loadAdminAddons();
+
+    console.groupEnd();
+}
+
+// Global window binding
 if (typeof window !== "undefined") {
     window.openAdminPortalModal = openAdminPortalModal;
     window.closeAdminPortalModal = closeAdminPortalModal;
@@ -8972,114 +9888,10 @@ if (typeof window !== "undefined") {
     window.openSystemConfigModal = openSystemConfigModal;
     window.closeSystemConfigModal = closeSystemConfigModal;
     window.switchSystemConfigTab = switchSystemConfigTab;
-    window.loadAdminPaymentConfig = loadAdminPaymentConfig;
-    window.onPaymentMethodToggle = onPaymentMethodToggle;
-    window.savePaymentConfig = savePaymentConfig;
-    window.loadAdminAddonConfig = loadAdminAddonConfig;
-    window.saveAddonConfig = saveAddonConfig;
-    window.loadAdminBanners = loadAdminBanners;
-    window.renderAdminBanners = renderAdminBanners;
-    window.updateAdminBannerField = updateAdminBannerField;
-    window.addAdminBannerItem = addAdminBannerItem;
-    window.removeAdminBannerItem = removeAdminBannerItem;
-    window.saveAdminBanners = saveAdminBanners;
-    window.loadAdminProducts = loadAdminProducts;
-    window.openProductModal = openProductModal;
-    window.closeProductModal = closeProductModal;
-    window.editProduct = editProduct;
-    window.handleProductSubmit = handleProductSubmit;
-    window.handleImageFileUpload = handleImageFileUpload;
-    window.compressAndConvertToBase64 = compressAndConvertToBase64;
-    window.toggleProduct = toggleProduct;
-    window.onPriceLevelChange = onPriceLevelChange;
-    window.validateLivePrice = validateLivePrice;
-    window.populateProductTextIdDropdowns = populateProductTextIdDropdowns;
-    window.onProductTextIdChange = onProductTextIdChange;
-    window.switchProductLangTab = switchProductLangTab;
+    window.checkAdminAccess = checkAdminAccess;
     window.saveCurrentProdI18nDraft = saveCurrentProdI18nDraft;
-    window.renderEditingProductGallery = renderEditingProductGallery;
-    window.addProductGalleryImage = addProductGalleryImage;
-    window.addProductGalleryImageFromInput = addProductGalleryImageFromInput;
-    window.removeProductGalleryImage = removeProductGalleryImage;
-    window.handleGalleryFileUpload = handleGalleryFileUpload;
-    window.filterTranslations = filterTranslations;
-    window.saveAllTranslations = saveAllTranslations;
-    window.populateTranslationKeyDropdown = populateTranslationKeyDropdown;
-    window.onSelectTranslationKeyChange = onSelectTranslationKeyChange;
-    window.onFilterTransKeyDropdown = onFilterTransKeyDropdown;
-    window.navigateTransKey = navigateTransKey;
     window.syncSingleKeyInputToDictionary = syncSingleKeyInputToDictionary;
-    window.saveCurrentSingleTranslationKey = saveCurrentSingleTranslationKey;
-    window.switchTransViewMode = switchTransViewMode;
-    window.openAddNewTranslationKeyModal = openAddNewTranslationKeyModal;
-    window.closeAddNewTranslationKeyModal = closeAddNewTranslationKeyModal;
-    window.handleAddNewTranslationKeySubmit = handleAddNewTranslationKeySubmit;
-    window.deleteCurrentTranslationKey = deleteCurrentTranslationKey;
-
-    // Company Info
-    window.loadAdminCompanyInfo = loadAdminCompanyInfo;
-    window.handleCompanyInfoSubmit = handleCompanyInfoSubmit;
-
-    // Promotions & Vouchers
-    window.loadAdminPromotions = loadAdminPromotions;
-    window.openPromoModal = openPromoModal;
-    window.closePromoModal = closePromoModal;
-    window.editPromo = editPromo;
-    window.handlePromoSubmit = handlePromoSubmit;
-    window.togglePromo = togglePromo;
-    window.deletePromo = deletePromo;
-    window.restorePromo = restorePromo;
-
-    // Add-Ons (Sản Phẩm Kèm Theo)
-    window.loadAdminAddons = loadAdminAddons;
-    window.openAddonModal = openAddonModal;
-    window.closeAddonModal = closeAddonModal;
-    window.editAddon = editAddon;
-    window.handleAddonSubmit = handleAddonSubmit;
-    window.handleAddonImageFileUpload = handleAddonImageFileUpload;
-    window.toggleAddon = toggleAddon;
-    window.deleteAddon = deleteAddon;
-    window.restoreAddon = restoreAddon;
-
-    // Categories
-    window.loadAdminCategories = loadAdminCategories;
-    window.openCategoryModal = openCategoryModal;
-    window.closeCategoryModal = closeCategoryModal;
-    window.onCategoryTextIdChange = onCategoryTextIdChange;
-    window.onCategoryDescTextIdChange = onCategoryDescTextIdChange;
-    window.switchCategoryLangTab = switchCategoryLangTab;
     window.saveCurrentCatI18nDraft = saveCurrentCatI18nDraft;
-    window.editCategory = editCategory;
-    window.handleCategorySubmit = handleCategorySubmit;
-    window.toggleCategory = toggleCategory;
-    window.deleteCategory = deleteCategory;
-    window.restoreCategory = restoreCategory;
-    window.moveCategory = moveCategory;
-    window.populateCategoryDropdowns = populateCategoryDropdowns;
-
-    // Staff & Customers
-    window.loadAdminUsers = loadAdminUsers;
-    window.loadAdminStaff = loadAdminUsers;
-    window.loadAdminCustomers = loadAdminCustomers;
-    window.openUserModal = openUserModal;
-    window.closeUserModal = closeUserModal;
-    window.editUser = editUser;
-    window.handleUserSubmit = handleUserSubmit;
-    window.deleteUser = deleteUser;
-
-    // Branches
-    window.loadAdminBranches = loadAdminBranches;
-    window.openBranchModal = openBranchModal;
-    window.closeBranchModal = closeBranchModal;
-    window.editBranch = editBranch;
-    window.handleBranchSubmit = handleBranchSubmit;
-    window.toggleBranch = toggleBranch;
-    window.populateBranchDropdowns = populateBranchDropdowns;
-    window.notifyUser = notifyUser;
-
-    // Orders
-    window.loadAdminOrders = loadAdminOrders;
-    window.updateAdminOrderStatus = updateAdminOrderStatus;
 }
 
 
@@ -9249,17 +10061,29 @@ function renderProducts(products, containerId) {
         const prodImg = product.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
         const nameTextId = product.nameTextId || product.textId || "";
 
+        const isOutOfStock = (product.dailyQuota !== undefined && product.dailyQuota <= 0) ||
+            (product.stockByBranch && Object.values(product.stockByBranch).length > 0 && Object.values(product.stockByBranch).every(v => v <= 0));
+        const stockBadgeHtml = isOutOfStock
+            ? `<span class="absolute top-2 right-2 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 flex items-center gap-1"><i class="fa-solid fa-clock text-[8px] text-amber-400"></i> Tạm hết hàng</span>`
+            : '';
+
         html += `
-            <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100">
+            <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100 ${isOutOfStock ? 'opacity-85' : ''}">
                 ${badgeHtml}
+                ${stockBadgeHtml}
                 <div onclick="openProductQuickDetail('${prodId}')" class="relative h-48 md:h-64 overflow-hidden cursor-pointer">
                     <img src="${prodImg}" alt="${prodDisplayName}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="handleImageErrorFallback(this)" class="product-img w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     
                     <!-- Nút Thêm vào giỏ hàng (Hiển thị khi hover) -->
                     <div class="absolute inset-0 bg-black/30 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4" onclick="event.stopPropagation()">
-                        <button onclick="addToCart('${prodId}', '${safeName}', ${numericPrice}, '${prodImg}')" class="bg-primary hover:bg-primaryHover text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-md flex items-center justify-center">
-                            <i class="fa-solid fa-cart-plus mr-1.5"></i> <span data-i18n="btn_add_to_cart">${btnText}</span>
-                        </button>
+                        ${isOutOfStock 
+                            ? `<button disabled class="bg-gray-400 text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm cursor-not-allowed shadow-md flex items-center justify-center">
+                                   <i class="fa-solid fa-ban mr-1.5"></i> <span>Tạm hết hôm nay</span>
+                               </button>`
+                            : `<button onclick="addToCart('${prodId}', '${safeName}', ${numericPrice}, '${prodImg}')" class="bg-primary hover:bg-primaryHover text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-md flex items-center justify-center">
+                                   <i class="fa-solid fa-cart-plus mr-1.5"></i> <span data-i18n="btn_add_to_cart">${btnText}</span>
+                               </button>`
+                        }
                     </div>
                 </div>
                 <div class="p-4 flex flex-col flex-grow text-center">
@@ -10703,10 +11527,6 @@ function applyStorefrontCompanyInfo(info) {
 
     // Bản đồ và chỉ đường khu vực Showroom do Showroom Locator (branches.json) quản lý
     // Ưu tiên hiển thị chi nhánh đang chọn (từ cache), không để infoCompany ghi đè
-    const activeBranch = (typeof window !== 'undefined' && typeof window.getCurrentSelectedBranch === 'function') 
-        ? window.getCurrentSelectedBranch() 
-        : null;
-
     if (activeBranch && typeof window.selectShowroomBranch === 'function') {
         window.selectShowroomBranch(activeBranch.id, false);
     } else {

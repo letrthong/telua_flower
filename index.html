@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
     <title>Nở Hoa Thả Bình - Đặt Hoa Online Giao Tận Nơi</title>
 
     <!-- Favicon -->
@@ -1741,6 +1742,9 @@
                 <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-spa mr-1.5 text-base"></i> Mẫu Hoa & Bảng Giá
                 </button>
+                <button onclick="switchAdminTab('inventory')" id="tabBtnInventory" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-boxes-stacked mr-1.5 text-base text-amber-600"></i> Kho & Hao Hụt
+                </button>
                 <button onclick="switchAdminTab('categories')" id="tabBtnCategories" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-layer-group mr-1.5 text-base text-pink-600"></i> Danh Mục Hoa
                 </button>
@@ -1870,6 +1874,166 @@
                                 </thead>
                                 <tbody id="productsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
                                     <!-- Render qua JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= TAB: QUẢN LÝ TỒN KHO & HAO HỤT (TASK 06) ================= -->
+                <section id="tabContentInventory" class="space-y-5 hidden">
+                    <!-- Top Control & Filter Bar -->
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-sm font-bold text-gray-800">Ma Trận Tồn Kho Thời Gian Thực & Quản Lý Hao Hụt</h4>
+                                <span id="inventorySyncStatusBadge" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Thời gian thực
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-gray-500">Vòng đời tồn kho: Nhập (Daily Quota) → Bán (Sold) → Hao hụt (Wastage) → Khả dụng (Available)</p>
+                        </div>
+                        <div class="flex items-center gap-2 w-full lg:w-auto flex-wrap justify-end">
+                            <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
+                                <i class="fa-solid fa-calendar-day text-xs text-gray-400"></i>
+                                <input type="date" id="filterInventoryDate" onchange="loadAdminInventory()" class="bg-transparent text-xs font-semibold text-gray-700 focus:outline-none">
+                            </div>
+                            <select id="filterInventoryBranch" onchange="loadAdminInventory()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
+                                <option value="all">Toàn bộ chi nhánh</option>
+                            </select>
+                            <div class="relative w-full sm:w-44">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                                <input type="text" id="searchInventoryInput" oninput="filterInventoryMatrixTable()" placeholder="Tìm mẫu hoa..." class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary">
+                            </div>
+                            <button type="button" onclick="openWastageModal()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Báo Hủy Hoa Hỏng
+                            </button>
+                            <button type="button" onclick="saveBatchInventory()" id="btnSaveBatchInventory" class="px-4 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu Hạn Mức Tồn Kho
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 5 KPI Summary Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                        <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-2xs flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-truck-ramp-box"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Hạn Mức Nhập</span>
+                                <div id="invKpiImported" class="text-base sm:text-lg font-bold text-blue-600 leading-tight">--</div>
+                                <span class="text-[10px] text-gray-400">cành/bình đầu ngày</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-basket-shopping"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Đã Bán Hôm Nay</span>
+                                <div id="invKpiSold" class="text-base sm:text-lg font-bold text-emerald-600 leading-tight">--</div>
+                                <span class="text-[10px] text-gray-400">sản phẩm đã đặt</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-rose-100 shadow-2xs flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Hao Hụt / Hỏng</span>
+                                <div id="invKpiWastage" class="text-base sm:text-lg font-bold text-rose-600 leading-tight">--</div>
+                                <span id="invKpiLossAmount" class="text-[10px] text-rose-400 font-semibold line-clamp-1">0₫ vốn mất</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-boxes-stacked"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Tồn Khả Dụng</span>
+                                <div id="invKpiAvailable" class="text-base sm:text-lg font-bold text-indigo-600 leading-tight">--</div>
+                                <span class="text-[10px] text-gray-400">có thể bán tiếp</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3.5 rounded-xl border border-amber-100 shadow-2xs flex items-center space-x-3 col-span-2 sm:col-span-1">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg flex-shrink-0">
+                                <i class="fa-solid fa-bell"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Cảnh Báo Tồn</span>
+                                <div id="invKpiAlerts" class="text-base sm:text-lg font-bold text-amber-600 leading-tight">--</div>
+                                <span class="text-[10px] text-amber-500 font-medium">sắp hết / hết hàng</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-navigation: Matrix View vs Wastage History View -->
+                    <div class="flex items-center justify-between border-b border-gray-200">
+                        <div class="flex space-x-4">
+                            <button type="button" onclick="switchInventorySubView('matrix')" id="subViewBtnMatrix" class="py-2.5 px-1 font-bold text-xs border-b-2 border-primary text-primary transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-table-cells"></i> Ma Trận Tồn Kho Chi Nhánh
+                            </button>
+                            <button type="button" onclick="switchInventorySubView('wastage')" id="subViewBtnWastage" class="py-2.5 px-1 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Phiếu Báo Hủy
+                            </button>
+                        </div>
+                        <div class="text-xs text-gray-400 italic hidden sm:block">
+                            * Công thức: Khả dụng = Hạn mức nhập - Đã bán - Báo hủy
+                        </div>
+                    </div>
+
+                    <!-- VIEW 1: MATRIX TABLE CONTAINER -->
+                    <div id="inventoryMatrixSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs" id="inventoryMatrixTable">
+                                <thead id="inventoryMatrixHeader" class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Mẫu Hoa</th>
+                                        <th class="p-3">Danh Mục</th>
+                                        <th class="p-3">Giá Bán</th>
+                                        <!-- Dynamic branch headers inserted by JS -->
+                                        <th class="p-3 text-center">Tổng Toàn Chuỗi</th>
+                                        <th class="p-3 text-center">Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryMatrixBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải ma trận tồn kho chi nhánh...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: WASTAGE REPORTS HISTORY CONTAINER -->
+                    <div id="inventoryWastageSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-4 p-4 sm:p-5">
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider">Nhật Ký Phiếu Báo Hủy Hoa Hỏng & Thiệt Hại</h5>
+                                <p class="text-[11px] text-gray-400">Ghi nhận hoa dập gãy khi vận chuyển hoặc héo úa cuối ca làm việc</p>
+                            </div>
+                            <button type="button" onclick="openWastageModal()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                                <i class="fa-solid fa-plus"></i> Tạo Phiếu Mới
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Mã Phiếu</th>
+                                        <th class="p-3">Chi Nhánh</th>
+                                        <th class="p-3">Ngày Lập</th>
+                                        <th class="p-3">Người Báo Cáo</th>
+                                        <th class="p-3">Chi Tiết Hao Hụt</th>
+                                        <th class="p-3">Thiệt Hại Chi Phí</th>
+                                        <th class="p-3">Ghi Chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryWastageBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Đang tải nhật ký báo hủy...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -2832,19 +2996,19 @@
                     </div>
                 </div>
 
-                <!-- 6. TỒN KHO TỪNG CHI NHÁNH -->
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Kho Q.10</label>
-                        <input type="number" id="prodStockQ10" value="10" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                <!-- 6. HẠN MỨC TỒN KHO THEO CHI NHÁNH (DYNAMIC TỪ BRANCHES.JSON) -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[11px] font-bold text-gray-700 flex items-center">
+                            <i class="fa-solid fa-boxes-stacked text-primary mr-1.5 text-xs"></i>
+                            Hạn Mức Nhập Đầu Ca Theo Chi Nhánh (Daily Quota)
+                        </label>
+                        <span id="prodTotalQuotaBadge" class="text-[10px] font-bold text-primary bg-pink-50 px-2.5 py-0.5 rounded-full border border-pink-100">
+                            Tổng Hạn Mức: 0 cành/mẫu
+                        </span>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Kho Q.1</label>
-                        <input type="number" id="prodStockQ1" value="5" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 mb-1">Kho Thảo Điền</label>
-                        <input type="number" id="prodStockTD" value="5" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold">
+                    <div id="productStockByBranchDynamicContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 p-3 bg-gray-50/80 border border-gray-200 rounded-xl max-h-48 overflow-y-auto">
+                        <!-- Populated dynamically from branches.json via JS renderProductModalStockFields -->
                     </div>
                 </div>
 
@@ -3441,7 +3605,97 @@
         </div>
     </div>
 
+    <!-- ================= MODAL LẬP PHIẾU BÁO HỦY HOA HỎNG (TASK 06) ================= -->
+    <div id="wastageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden border border-rose-100 max-h-[92vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-rose-50/60 border-b border-rose-100 flex justify-between items-center">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-gray-800">Lập Phiếu Báo Hủy Hoa Hỏng & Hao Hụt</h3>
+                        <p class="text-[11px] text-gray-500">Ghi nhận hoa dập gãy khi vận chuyển hoặc héo úa cuối ca làm việc</p>
+                    </div>
+                </div>
+                <button onclick="closeWastageModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="wastageForm" onsubmit="handleWastageSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                <div id="wastageModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Chi Nhánh Phát Sinh Hao Hụt *</label>
+                        <select id="wastageBranchSelect" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white" required>
+                            <!-- Render dynamic branches -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Ngày Báo Hủy *</label>
+                        <input type="date" id="wastageDateInput" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white" required>
+                    </div>
+                </div>
+
+                <!-- Danh Sách Các Mục Hoa Hỏng -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-check text-rose-500"></i>
+                            Chi Tiết Hoa Hư Hỏng Cần Hủy *
+                        </label>
+                        <button type="button" onclick="addWastageItemRow()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold rounded-lg border border-rose-200 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Thêm Dòng
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
+                                <tr>
+                                    <th class="p-2.5">Loại Hoa / Mẫu Hoa</th>
+                                    <th class="p-2.5 w-24 text-center">Số Cành</th>
+                                    <th class="p-2.5 w-28">Đơn Giá Vốn (₫)</th>
+                                    <th class="p-2.5">Lý Do Hư Hỏng</th>
+                                    <th class="p-2.5 w-28 text-right">Thiệt Hại</th>
+                                    <th class="p-2.5 w-10 text-center">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wastageItemsTableBody" class="divide-y divide-gray-100">
+                                <!-- Dynamic rows via addWastageItemRow() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Ghi Chú Kiểm Kê / Bàn Giao Ca</label>
+                    <textarea id="wastageNotesInput" rows="2" placeholder="Ví dụ: Kiểm kê hoa dập cuối ca chiều ngày hôm nay..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white resize-none"></textarea>
+                </div>
+
+                <!-- Tổng Thiệt Hại Summary Bar -->
+                <div class="p-3.5 bg-rose-50/70 rounded-xl border border-rose-100 flex items-center justify-between">
+                    <div class="text-xs text-rose-800">
+                        <span>Tổng cành hủy: <b id="wastageTotalStemsBadge" class="font-bold">0</b> cành</span>
+                    </div>
+                    <div class="text-xs text-rose-800">
+                        <span>Tổng giá trị thiệt hại: <b id="wastageTotalAmountBadge" class="font-bold text-sm text-rose-600">0₫</b></span>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+                    <button type="button" onclick="closeWastageModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                    <button type="submit" id="btnSubmitWastage" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-check"></i> Xác Nhận Hủy Hoa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="js/bundle.js"></script>
+    <script src="/js/bundle.js?v=20260910_02"></script>
 </body>
 </html>

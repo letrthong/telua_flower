@@ -281,7 +281,17 @@ def create_order(
             else:
                 assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
     else:
-        assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+        try:
+            from inventory_service import find_best_routing_branch
+            route_res = find_best_routing_branch(
+                customer_lat=float(recipient_lat) if recipient_lat is not None else None,
+                customer_lng=float(recipient_lng) if recipient_lng is not None else None,
+                district_or_address=recipient_address,
+                items=valid_items
+            )
+            assigned_branch_id = route_res.get("assignedBranchId") or assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+        except Exception:
+            assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
 
     # 6b. Gán người xử lý (assignedTo):
     #     - Nếu đơn thuộc 1 chi nhánh cụ thể -> gán cho Quản lý chi nhánh đó.

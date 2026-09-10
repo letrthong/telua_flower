@@ -185,6 +185,70 @@ Dùng chung cho Khách Hàng (Customer Portal), Nhân Viên (Staff Portal), Qu�
 
 ---
 
+## 4d. Kiến Trúc Phân Tách Module Bảng Quản Trị Admin (`js/portal_admin_*.js`)
+
+Trước đây, file `js/portal_admin.js` có độ dài vượt quá **5.350 dòng (> 254 KB)**, kết hợp quá nhiều trách nhiệm nghiệp vụ gây khó khăn cho việc bảo trì và nâng cấp. Hệ thống đã được tái cấu trúc triệt để theo kiến trúc **Domain-Driven Modular Sub-modules**:
+
+```mermaid
+graph TD
+    A[Shell Orchestrator: js/portal_admin.js] --> S[js/portal_admin_state.js]
+    A --> C[js/portal_admin_categories.js]
+    A --> B[js/portal_admin_branches.js]
+    A --> U[js/portal_admin_users.js]
+    A --> P[js/portal_admin_products.js]
+    A --> PR[js/portal_admin_promotions.js]
+    A --> T[js/portal_admin_translations.js]
+    A --> SC[js/portal_admin_sysconfig.js]
+    A --> O[js/portal_admin_orders.js]
+    A --> I[js/portal_admin_inventory.js]
+    
+    subgraph Build Pipeline
+        S & C & B & U & P & PR & T & SC & O & I & A --> BD[scripts/build_bundle.py]
+        BD --> BN[js/bundle.js]
+    end
+```
+
+### Chi Tiết 10 Sub-Module Chuyên Biệt:
+
+| STT | File Module | Số dòng | Trách Nhiệm Nghiệp Vụ & API Chính |
+| :---: | :--- | :---: | :--- |
+| **01** | [`js/portal_admin_state.js`](file:///d:/wmshare/telua_flower/js/portal_admin_state.js) | 48 | Khai báo State chia sẻ chung (`allAdminCategories`, `allAdminBranches`, `allAdminStaff`,...), cấu hình phân tầng giá `PRICE_LEVEL_CONFIG`, các tiện ích `lockScreen`, `unlockScreen`, `notifyUser`. |
+| **02** | [`js/portal_admin_categories.js`](file:///d:/wmshare/telua_flower/js/portal_admin_categories.js) | 656 | Quản lý danh mục hoa & phụ kiện (CRUD, kéo thả sắp xếp thứ tự hiển thị, draft đa ngữ nhãn danh mục, đổ dữ liệu vào các dropdown danh mục). |
+| **03** | [`js/portal_admin_branches.js`](file:///d:/wmshare/telua_flower/js/portal_admin_branches.js) | 301 | Quản lý hệ thống Showroom/Chi nhánh, tọa độ GPS (vĩ độ, kinh độ), bán kính giao hàng (km), trạng thái kích hoạt `isActive` và đổ dropdown chi nhánh (`populateBranchDropdowns`). |
+| **04** | [`js/portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js) | 427 | Quản trị phân quyền tài khoản nhân sự nội bộ (RBAC - 5 vai trò) và bảng khách hàng CRM (điểm tích lũy, chi tiêu trọn đời, xếp hạng thành viên VIP). |
+| **05** | [`js/portal_admin_products.js`](file:///d:/wmshare/telua_flower/js/portal_admin_products.js) | 909 | CMS quản lý mẫu hoa, kiểm tra hàng rào giá an toàn theo Price Levels, tải ảnh Base64 & upload ảnh thật, bộ sưu tập gallery, render động định ngạch tồn kho (`renderProductModalStockFields`). |
+| **06** | [`js/portal_admin_promotions.js`](file:///d:/wmshare/telua_flower/js/portal_admin_promotions.js) | 757 | Quản lý mã giảm giá (Vouchers), chính sách xóa mềm/khôi phục, cấu hình phụ kiện mua kèm (Add-ons) và upload hình ảnh phụ kiện. |
+| **07** | [`js/portal_admin_translations.js`](file:///d:/wmshare/telua_flower/js/portal_admin_translations.js) | 501 | Quản lý từ điển 5 ngôn ngữ (VI, EN, FR, JA, KO), bảng ma trận dịch thuật toàn hệ thống, tìm kiếm nhanh theo mã Text ID và cập nhật trực tiếp xuống server. |
+| **08** | [`js/portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | 746 | Cấu hình thông tin công ty (`infoCompany.json`), công tắc bật/tắt các phương thức thanh toán, chính sách hiển thị phụ kiện và trình quản lý ảnh Slider Banner trang chủ. |
+| **09** | [`js/portal_admin_orders.js`](file:///d:/wmshare/telua_flower/js/portal_admin_orders.js) | 170 | Quản lý danh sách đơn hàng phía Admin, bộ lọc trạng thái, tra cứu đơn hàng và thực hiện chuyển trạng thái đơn hàng (xác nhận, giao hàng, hủy). |
+| **10** | [`js/portal_admin_inventory.js`](file:///d:/wmshare/telua_flower/js/portal_admin_inventory.js) | 655 | Ma trận tồn kho thời gian thực đa chi nhánh (Live Inventory Matrix 🟢/🟠/🔴), cập nhật hạn mức hàng loạt (Batch Quick Stock), modal lập phiếu báo hủy hoa hỏng cuối ca và tính toán chi phí hao hụt. |
+| **Shell** | [`js/portal_admin.js`](file:///d:/wmshare/telua_flower/js/portal_admin.js) | 468 | File điều phối trung tâm (Shell Orchestrator): Lắng nghe `DOMContentLoaded`, kiểm tra phiên đăng nhập & phân quyền truy cập, chuyển tab giao diện, đóng/mở modal Admin và re-export/gán `window.*` bảo toàn tính tương thích HTML 100%. |
+
+### Quy Chuẩn Tương Thích & Vòng Đời Các File Tạo Tự Động (Generated Artifacts Lifecycle):
+
+Hệ thống quản lý chặt chẽ 3 file tạo tự động từ script build và container pipeline:
+
+1. **Trình Đóng Gói [`scripts/build_bundle.py`](file:///d:/wmshare/telua_flower/scripts/build_bundle.py):**
+   - **Mục đích:** Script Python tự động quét và gộp toàn bộ **20 modular JavaScript components** (bao gồm `utils.js`, `i18n.js`, `products.js`, `checkout.js`, `auth.js`, `customer_portal.js`, `staff_portal.js`, `order_dashboard.js`, 10 sub-modules `portal_admin_*.js`, `portal_admin.js`, và `flower_app.js`) theo đúng thứ tự phụ thuộc (dependency order).
+   - **Nguyên lý hoạt động:** 
+     - Loại bỏ các câu lệnh `import` và `export` ES6 cục bộ.
+     - Bao bọc toàn bộ mã nguồn bên trong một IIFE khép kín `(function() { 'use strict'; ... })();` nhằm bảo vệ namespace và tối ưu hóa hiệu năng 0ms import.
+     - Sinh ra file đích [`js/bundle.js`](file:///d:/wmshare/telua_flower/js/bundle.js).
+   - **Quy tắc bắt buộc đối với Lập trình viên:** Khi chỉnh sửa bất kỳ logic JS nào trong các file con thuộc `js/`, **phải chạy lại** `python scripts/build_bundle.py` (hoặc `npm run build`) để đồng bộ mã nguồn vào `js/bundle.js`.
+
+2. **File Đóng Gói Hợp Nhất [`js/bundle.js`](file:///d:/wmshare/telua_flower/js/bundle.js):**
+   - **Mục đích:** File bundle JavaScript duy nhất phục vụ toàn bộ giao diện Storefront & Admin Portal trên môi trường Production/SPA.
+   - **Đặc tính:** Là **Generated File** được tạo hoàn toàn bởi `scripts/build_bundle.py`. Lập trình viên **không chỉnh sửa trực tiếp** file này mà chỉnh sửa tại các sub-module nguồn tương ứng.
+   - **Cơ chế Binding Global Scope:** Do mã nguồn nằm trong IIFE, toàn bộ hàm được gọi từ inline HTML event handlers (`onclick`, `oninput`, `onchange`, `onsubmit` - ví dụ: `saveCurrentProdI18nDraft()`, `syncSingleKeyInputToDictionary()`, `openProductModal()`,...) đều được gắn tường minh vào đối tượng `window.*` ở cuối mỗi sub-module và re-export tại Shell Orchestrator `portal_admin.js`.
+   - **Chống Cache Trình Duyệt (Cache Busting):** `index.html` gọi bundle với tham số phiên bản `js/bundle.js?v=...`, đồng thời backend Flask (`src/app.py`) gửi kèm headers `Cache-Control: no-cache, no-store, must-revalidate` để ngăn chặn trình duyệt lưu cache cũ gây lỗi `ReferenceError`.
+
+3. **File Sao Lưu & Trích Xuất Container [`config/index.html`](file:///d:/wmshare/telua_flower/config/index.html):**
+   - **Mục đích:** Bản sao lưu index.html và là artifact trích xuất từ container Docker phục vụ dự phòng (fallback).
+   - **Cơ chế phát sinh:** Được tạo ra tự động bởi lệnh `docker cp telua_python_flower:/app/dist/index.html ./config/index.html` trong script [`cli_docker.sh`](file:///d:/wmshare/telua_flower/cli_docker.sh) (hàm `start`) sau khi container hoàn thành build Vite SingleFile (`dist/index.html`).
+   - **Độ ưu tiên nạp file trong Flask:** Trong `src/app.py`, hàm `get_index_file()` ưu tiên phục vụ file nguồn đang phát triển trực tiếp `index.html` ở thư mục gốc trước, và chỉ fallback về `config/index.html` nếu các file trên không tồn tại.
+
+---
+
 ## 5. Bảng Màu Sắc & Typography Quy Chuẩn (Design Tokens)
 
 - **Màu sắc chủ đạo:**

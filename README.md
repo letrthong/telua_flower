@@ -38,9 +38,9 @@
 ```text
 telua_flower/
 │
-├── index.html                   # Giao diện Web chính của Nở Hoa Thả Bình
+├── index.html                   # Giao diện Web chính của Nở Hoa Thả Bình (gốc phát triển)
 ├── package.json                 # Cấu hình frontend dependencies & Vite scripts
-├── vite.config.js               # Cấu hình Vite build bundle
+├── vite.config.js               # Cấu hình Vite build bundle (SingleFile)
 ├── tailwind.config.js           # Cấu hình bảng màu & font chữ Tailwind
 ├── postcss.config.js            # Cấu hình PostCSS
 ├── requirements.txt             # Python backend dependencies (Flask, Flask-CORS...)
@@ -48,27 +48,35 @@ telua_flower/
 ├── docker-compose.yml           # Docker Compose service cấu hình container
 ├── cli_docker.sh                # Script CLI quản lý build, chạy, test trên Ubuntu/Docker
 │
-├── js/                          # Mã nguồn JavaScript module hóa
-│   ├── products.js              # Dữ liệu mock danh mục sản phẩm hoa & bình
-│   ├── translations.js          # Từ điển đa ngôn ngữ (vi, en, ja, ko, zh)
-│   ├── i18n.js                  # Logic chuyển đổi ngôn ngữ & Web Cache
-│   ├── utils.js                 # Tiện ích: Lazy loading, Toast, Google Maps, Clipboard
-│   └── flower_app.js            # Ứng dụng chính: Render sản phẩm, giỏ hàng, menu mobile
+├── scripts/                     # Scripts tự động hóa & đóng gói
+│   └── build_bundle.py          # Trình đóng gói 20 modular JS thành file duy nhất js/bundle.js
+│
+├── js/                          # Mã nguồn JavaScript module hóa (Domain-Driven)
+│   ├── bundle.js                # [Generated Artifact] File bundle JS duy nhất phục vụ Production/SPA
+│   ├── flower_app.js            # Ứng dụng Storefront: Render sản phẩm, giỏ hàng, menu mobile
+│   ├── portal_admin.js          # Shell Orchestrator điều phối toàn bộ Cổng Quản Trị
+│   ├── portal_admin_*.js        # 10 sub-modules quản trị: products, categories, branches, users...
+│   ├── products.js              # Quản lý catalogue sản phẩm Storefront & Cache RAM
+│   ├── i18n.js                  # Logic chuyển đổi đa ngôn ngữ (VI, EN, JA, KO, ZH)
+│   ├── checkout.js              # Giỏ hàng & luồng thanh toán VietQR
+│   ├── auth.js                  # Xác thực người dùng, JWT & phân quyền RBAC
+│   └── utils.js                 # Tiện ích: Lazy loading, Toast, Google Maps, ScreenLock
 │
 ├── src/                         # Backend Flask
-│   ├── app.py                   # Flask server phục vụ index.html & static files
-│   └── unittest/                # Bộ kiểm thử tự động
-│       └── test_app_routing.py  # Unit test kiểm tra routing, root discovery & static assets
+│   ├── app.py                   # Flask server phục vụ index.html & static files (no-cache in dev)
+│   └── unittest/                # Bộ kiểm thử tự động Python
 │
-├── config/                      # Thư mục cấu hình & backup
-│   └── index.html               # Bản sao index.html dự phòng
+├── config/                      # Thư mục cấu hình dữ liệu & backup artifacts
+│   ├── index.html               # [Generated Artifact] Bản sao index.html trích xuất từ container (cli_docker.sh)
+│   └── anne/                    # Dữ liệu JSON tĩnh: products, branches, categories, users...
 │
 └── docs/                        # Tài liệu kỹ thuật chi tiết
     ├── README.md                # Mục lục tài liệu kỹ thuật
     ├── DOCKER_UBUNTU_GUIDE.md   # Hướng dẫn build & chạy Docker trên Ubuntu
-    └── requirements/            # Tài liệu phân tích yêu cầu nghiệp vụ
-        ├── README.md
-        └── PRODUCT_REQUIREMENTS.md  # Đặc tả yêu cầu sản phẩm (PRD), CRM, nhân sự, chi nhánh
+    ├── design/                  # Tài liệu phân tích kiến trúc & thiết kế hệ thống
+    │   └── FRONTEND_LAYOUT_DESIGN.md # Kiến trúc layout, sub-modules & quy chuẩn bundle
+    └── requirements/            # Đặc tả yêu cầu nghiệp vụ
+        └── PRODUCT_REQUIREMENTS.md
 ```
 
 ---
@@ -113,9 +121,26 @@ npm install --legacy-peer-deps
 # 2. Chạy dev server
 npm run dev
 
-# 3. Build bundle sản phẩm
+# 3. Build bundle sản phẩm (tự động chạy python scripts/build_bundle.py trước khi build Vite)
 npm run build
 ```
+
+---
+
+### 📦 Quy Trình Đóng Gói JavaScript Bundle (`scripts/build_bundle.py`)
+
+Khi phát triển giao diện hoặc chỉnh sửa các module JavaScript trong thư mục `js/` (ví dụ: `portal_admin_products.js`, `portal_admin_translations.js`, `portal_admin.js`...):
+
+1. **Sinh file bundle:** Hệ thống sử dụng script [`scripts/build_bundle.py`](file:///d:/wmshare/telua_flower/scripts/build_bundle.py) để gộp 20 sub-modules thành file [`js/bundle.js`](file:///d:/wmshare/telua_flower/js/bundle.js).
+   ```bash
+   # Chạy thủ công khi chỉnh sửa file modular js/:
+   python scripts/build_bundle.py
+   ```
+2. **Gắn hàm ra `window.*`:** Mọi hàm được gọi trực tiếp từ thuộc tính HTML (`onclick`, `oninput`, `onchange`... như `saveCurrentProdI18nDraft()`, `syncSingleKeyInputToDictionary()`) đều được gắn vào `window.*` trong từng module và re-export tại `portal_admin.js`.
+3. **Cơ chế chống cache trình duyệt:**
+   - Trong `index.html`: Gắn version `js/bundle.js?v=...`.
+   - Trong Flask (`src/app.py`): Tự động đính kèm header `Cache-Control: no-cache, no-store, must-revalidate` đối với `.js` và `.html` khi chạy server local/LAN.
+4. **Về file `config/index.html`:** Đây là artifact trích xuất tự động từ container Docker (`cli_docker.sh start`), dùng làm bản sao lưu dự phòng. Trong quá trình phát triển code, lập trình viên chỉnh sửa trực tiếp trên file gốc [`index.html`](file:///d:/wmshare/telua_flower/index.html).
 
 ---
 

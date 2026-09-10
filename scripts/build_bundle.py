@@ -14,16 +14,31 @@ MODULE_ORDER = [
     "customer_portal.js",
     "staff_portal.js",
     "order_dashboard.js",
+    "portal_admin_state.js",
+    "portal_admin_categories.js",
+    "portal_admin_branches.js",
+    "portal_admin_users.js",
+    "portal_admin_products.js",
+    "portal_admin_promotions.js",
+    "portal_admin_translations.js",
+    "portal_admin_sysconfig.js",
+    "portal_admin_orders.js",
+    "portal_admin_inventory.js",
     "portal_admin.js",
     "flower_app.js"
 ]
 
 def clean_module_code(filename, code):
-    # Remove local imports e.g. import ... from './...js';
-    cleaned = re.sub(r'import\s+.*?from\s+[\'"]\.\/.*?\.js[\'"];?\n?', '', code)
+    # Remove local re-exports e.g. export { ... } from './...js';
+    cleaned = re.sub(r'export\s*\{[\s\S]*?\}\s*from\s*[\'"]\.\/.*?\.js[\'"];?\n?', '', code)
+    cleaned = re.sub(r'export\s*\*\s*from\s*[\'"]\.\/.*?\.js[\'"];?\n?', '', cleaned)
+
+    # Remove local imports e.g. import ... from './...js'; (supports single and multiline)
+    cleaned = re.sub(r'import\s+[\s\S]*?from\s+[\'"]\.\/.*?\.js[\'"];?\n?', '', cleaned)
     
     # Remove export default or export { ... }
-    cleaned = re.sub(r'export\s*\{\s*[^}]*\};?\n?', '', cleaned)
+    cleaned = re.sub(r'export\s*\{[\s\S]*?\};?\n?', '', cleaned)
+    cleaned = re.sub(r'export\s+default\s+.*?;?\n?', '', cleaned)
     
     # Convert 'export const/let/var/function/async function/class' to just 'const/let/var/function/async function/class'
     cleaned = re.sub(r'export\s+(const|let|var|function|async\s+function|class)\b', r'\1', cleaned)

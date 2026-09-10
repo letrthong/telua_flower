@@ -65,6 +65,13 @@ def resolve_static_file(relative_path):
         full_path = os.path.abspath(os.path.join(TELUA_ROOT, sub, relative_path))
         if os.path.isfile(full_path):
             return full_path
+    # Hỗ trợ tự động chuẩn hóa URL tài nguyên tĩnh nếu request đi kèm tiền tố /portal/
+    if relative_path.startswith("portal/"):
+        stripped = relative_path[len("portal/"):]
+        cand = resolve_static_file(stripped)
+        if cand:
+            return cand
+
     return None
 
 
@@ -81,9 +88,17 @@ def resolve_static_file(relative_path):
 @cross_origin()
 def index(subpath=None):
     """Phục vụ file index.html cho trang chủ và các route SPA (/portal/admin...)"""
+    # Nếu subpath là tài nguyên tĩnh (.js, .css, images, fonts...), chuyển tiếp sang static_files
+    if subpath and ("." in subpath or subpath.startswith("js/") or subpath.startswith("css/") or subpath.startswith("images/")):
+        return static_files(subpath)
+
     index_path = get_index_file()
     if index_path:
-        return send_file(index_path)
+        resp = send_file(index_path)
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+        return resp
     abort(404, description="index.html not found")
 
 
@@ -110,17 +125,26 @@ def static_files(filename):
 
     file_path = resolve_static_file(filename)
     if file_path:
-        return send_file(file_path)
+        resp = send_file(file_path)
+        if filename.endswith(".js") or filename.endswith(".html"):
+            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
+            resp.headers["Expires"] = "0"
+        return resp
 
     # Nếu không có đuôi mở rộng, kiểm tra xem có file .html tương ứng không
     if "." not in filename:
         html_file = resolve_static_file(f"{filename}.html")
         if html_file:
-            return send_file(html_file)
+            resp = send_file(html_file)
+            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            return resp
         # Fallback SPA về index.html
         index_path = get_index_file()
         if index_path:
-            return send_file(index_path)
+            resp = send_file(index_path)
+            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            return resp
 
     abort(404, description=f"File not found: {filename}")
 

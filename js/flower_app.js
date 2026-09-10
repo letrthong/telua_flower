@@ -166,17 +166,29 @@ export function renderProducts(products, containerId) {
         const prodImg = product.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=500";
         const nameTextId = product.nameTextId || product.textId || "";
 
+        const isOutOfStock = (product.dailyQuota !== undefined && product.dailyQuota <= 0) ||
+            (product.stockByBranch && Object.values(product.stockByBranch).length > 0 && Object.values(product.stockByBranch).every(v => v <= 0));
+        const stockBadgeHtml = isOutOfStock
+            ? `<span class="absolute top-2 right-2 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-10 flex items-center gap-1"><i class="fa-solid fa-clock text-[8px] text-amber-400"></i> Tạm hết hàng</span>`
+            : '';
+
         html += `
-            <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100">
+            <div class="product-card bg-white rounded-xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden flex flex-col group relative border border-gray-100 ${isOutOfStock ? 'opacity-85' : ''}">
                 ${badgeHtml}
+                ${stockBadgeHtml}
                 <div onclick="openProductQuickDetail('${prodId}')" class="relative h-48 md:h-64 overflow-hidden cursor-pointer">
                     <img src="${prodImg}" alt="${prodDisplayName}" loading="lazy" decoding="async" onload="this.classList.add('loaded')" onerror="handleImageErrorFallback(this)" class="product-img w-full h-full object-cover group-hover:scale-105 transition duration-500">
                     
                     <!-- Nút Thêm vào giỏ hàng (Hiển thị khi hover) -->
                     <div class="absolute inset-0 bg-black/30 flex items-end justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4" onclick="event.stopPropagation()">
-                        <button onclick="addToCart('${prodId}', '${safeName}', ${numericPrice}, '${prodImg}')" class="bg-primary hover:bg-primaryHover text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-md flex items-center justify-center">
-                            <i class="fa-solid fa-cart-plus mr-1.5"></i> <span data-i18n="btn_add_to_cart">${btnText}</span>
-                        </button>
+                        ${isOutOfStock 
+                            ? `<button disabled class="bg-gray-400 text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm cursor-not-allowed shadow-md flex items-center justify-center">
+                                   <i class="fa-solid fa-ban mr-1.5"></i> <span>Tạm hết hôm nay</span>
+                               </button>`
+                            : `<button onclick="addToCart('${prodId}', '${safeName}', ${numericPrice}, '${prodImg}')" class="bg-primary hover:bg-primaryHover text-white w-full py-2.5 rounded-xl font-bold text-xs sm:text-sm transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-md flex items-center justify-center">
+                                   <i class="fa-solid fa-cart-plus mr-1.5"></i> <span data-i18n="btn_add_to_cart">${btnText}</span>
+                               </button>`
+                        }
                     </div>
                 </div>
                 <div class="p-4 flex flex-col flex-grow text-center">
@@ -1620,10 +1632,6 @@ export function applyStorefrontCompanyInfo(info) {
 
     // Bản đồ và chỉ đường khu vực Showroom do Showroom Locator (branches.json) quản lý
     // Ưu tiên hiển thị chi nhánh đang chọn (từ cache), không để infoCompany ghi đè
-    const activeBranch = (typeof window !== 'undefined' && typeof window.getCurrentSelectedBranch === 'function') 
-        ? window.getCurrentSelectedBranch() 
-        : null;
-
     if (activeBranch && typeof window.selectShowroomBranch === 'function') {
         window.selectShowroomBranch(activeBranch.id, false);
     } else {

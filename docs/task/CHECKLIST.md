@@ -6,7 +6,7 @@
 ## 📊 Tiến Độ Tổng Thể (Overall Progress)
 
 ```text
-Tiến độ: [████████████░░░░] 50.0% (4/8 Task hoàn thành)
+Tiến độ: [███████████████░] 62.5% (5/8 Task hoàn thành)
 ```
 
 | Task | Tên Phân Hệ | Trạng Thái | Ngày Hoàn Thành | Kết Quả Unit Test |
@@ -16,7 +16,7 @@ Tiến độ: [████████████░░░░] 50.0% (4/8 Task
 | **03** | Giao Diện Bán Hàng, Hẹn Giờ, Thiệp & Banner | 🟢 **DONE** | 2026-08-22 | Pass 7 Python + 4 JS Tests |
 | **04** | Cổng Thanh Toán VietQR & Báo Tin Zalo | 🔴 **TODO** | -- | Chưa chạy |
 | **05** | Cổng Thợ Cắm Hoa, Upload Ảnh Thật & In Bill K80 | 🔴 **TODO** | -- | Chưa chạy |
-| **06** | Quản Lý Tồn Kho Theo Ngày, Ma Trận & Điều Phối | 🔴 **TODO** | -- | Chưa chạy |
+| **06** | Quản Lý Tồn Kho Theo Ngày, Ma Trận & Điều Phối | 🟢 **DONE** | 2026-09-09 | Pass 5/5 Test cases (`test_inventory_service.py`) |
 | **07** | Phân Tầng Giá (Price Levels), CMS Hoa & Voucher | 🟢 **DONE** | 2026-08-22 | Pass 7 Python + 3 JS Tests |
 | **08** | Kiểm Thử Toàn Diện, Tối Ưu RAM & Docker Ubuntu | 🔴 **TODO** | -- | Chưa chạy |
 
@@ -76,12 +76,17 @@ Tiến độ: [████████████░░░░] 50.0% (4/8 Task
 
 ---
 
-### [ ] TASK 06: Quản Lý Tồn Kho Theo Ngày, Ma Trận 🟢/🟠/🔴 & Điều Phối Đơn
-- [ ] Tạo giao diện `/portal/inventory` cập nhật nhanh hạn mức bán trong ngày (Daily Quota).
-- [ ] Cập nhật thẻ sản phẩm trên web hiển thị đèn 🟢 Còn nhiều / 🟠 Sắp hết / 🔴 Hết hàng.
-- [ ] Viết thuật toán tự động điều phối đơn sang chi nhánh gần nhất còn hàng.
-- [ ] Tạo form nhập phiếu báo hủy cành hoa hỏng cuối ca (`POST /api/branch/<id>/wastage`).
-- [ ] Viết `src/unittest/test_inventory_service.py` và test thành công.
+### [x] TASK 06: Quản Lý Tồn Kho Theo Ngày, Ma Trận Tồn Kho Chi Nhánh & Báo Hủy Hao Hụt
+- [x] Xóa bỏ triệt để hardcode chi nhánh Catalogue (`#productModal`), tự động render động từ `branches.json`.
+- [x] Xây dựng Tab `Kho & Hao Hụt` trong Admin Portal với Bảng Ma trận tồn kho thời gian thực (Live Matrix).
+- [x] Tính toán chính xác 4 chỉ số tồn kho: $\text{Tồn khả dụng} = \text{Hàng nhập (Quota)} - \text{Đã bán (Sold)} - \text{Hao hụt (Wastage)}$.
+- [x] Tính năng Cập nhật nhanh hạn mức hàng loạt (**Batch Quick Stock Update**) lưu vào `stockByBranch`.
+- [x] Phân hệ Báo Hủy Hoa Hỏng cuối ca (`POST /api/flower/v1/admin/inventory/wastage`), hỗ trợ hủy thành phẩm (trừ kho) và hủy cành nguyên liệu (tính thất thoát vốn).
+- [x] Phân quyền vai trò RBAC: Super Admin toàn chuỗi, Quản lý chi nhánh chỉ sửa kho chi nhánh mình (`user.branchId`), Thợ cắm hoa tạo phiếu báo hủy.
+- [x] Cập nhật thẻ sản phẩm Storefront hiển thị đèn tín hiệu 🟢 Còn nhiều / 🟠 Sắp hết / 🔴 Hết hàng theo showroom khách chọn.
+- [x] Thuật toán tự động điều phối đơn hàng thông minh (Smart Order Routing) sang chi nhánh gần nhất còn hàng.
+- [x] Viết `src/inventory_service.py` và các RESTful endpoints trong `restful_blueprint_flower_connect.py`.
+- [x] Viết `src/unittest/test_inventory_service.py` và chạy test Pass 100%.
 
 ---
 
@@ -91,33 +96,20 @@ Tiến độ: [████████████░░░░] 50.0% (4/8 Task
 - [x] Viết `src/services/translation_service.py` (Biên dịch động 5 ngôn ngữ VI, EN, JA, KO, ZH).
 - [x] Cập nhật giao diện Admin Portal phân tách rõ ràng: **👔 Nhân Sự Nội Bộ** và **👑 Khách Hàng & CRM**.
 - [x] Thêm API endpoint `GET /api/admin/customers` tra cứu điểm thưởng & hạng VIP.
-- [x] Tạo giao diện `portal_admin.html` và `js/portal_admin.js`.
+- [x] Tạo giao diện `portal_admin.html` và tái cấu trúc `js/portal_admin.js` thành 10 sub-modules chuyên biệt (`js/portal_admin_state.js`, `_categories.js`, `_branches.js`, `_users.js`, `_products.js`, `_promotions.js`, `_translations.js`, `_sysconfig.js`, `_orders.js`, `_inventory.js`) + file điều phối `portal_admin.js`.
+- [x] Tích hợp bộ đóng gói `scripts/build_bundle.py` sinh `js/bundle.js` hoàn chỉnh.
+- [x] Đồng bộ hóa toàn bộ hàm HTML inline ra `window.*` trong `portal_admin.js` (`saveCurrentProdI18nDraft`, `syncSingleKeyInputToDictionary`...) và cấu hình chống cache trong `src/app.py` & `index.html`.
+- [x] Cập nhật tài liệu kỹ thuật (`FRONTEND_LAYOUT_DESIGN.md`, `README.md`) về vòng đời các file sinh tự động (`scripts/build_bundle.py`, `js/bundle.js`, `config/index.html`).
 - [x] Viết `src/unittest/test_price_governance.py` và `js/unittest/test-portal-governance.js`.
-
-
----
-
-### [ ] TASK 08: Kiểm Thử Toàn Diện, Tối Ưu RAM < 15MB & Đóng Gói Docker
-- [ ] Chạy kiểm thử tải (Stress test) 100 requests đồng thời.
-- [ ] Kiểm tra đo đạc RAM tiêu thụ dưới 15MB.
-- [ ] Tối ưu SEO (Meta Tags, Semantic HTML, Lighthouse > 90).
-- [ ] Hoàn thiện tài liệu nghiệm thu toàn dự án.
-
----
-
-### [ ] TASK 07: Hàng Rào Giá An Toàn (Price Levels), CMS Sửa Hoa, Khuyến Mãi & Biên Dịch Đa Ngôn Ngữ Động
-- [ ] Viết logic ràng buộc giá: $\text{minPrice} \le \text{Giá} \le \text{maxPrice}$ theo 4 Price Levels.
-- [ ] Chặn báo lỗi đỏ khi nhân viên nhập giá phá giá hoặc gõ nhầm số 0.
-- [ ] Tạo giao diện `/portal/products` cho nhân viên sửa nhanh giá bán & nội dung hoa.
-- [ ] Tạo giao diện `/portal/promotions` với công tắc Bật/Tắt (ON/OFF) 1-chạm cho Voucher & Banner.
-- [ ] **Tạo giao diện `/portal/translations` cho Admin/Quản lý chỉnh sửa trực tiếp bản dịch 5 ngôn ngữ (Việt, Anh, Nhật, Hàn, Trung) và nội dung các khối trang (Slogan, Hotline, Showroom, Giờ mở cửa, Chính sách)**.
-- [ ] Viết `src/services/translation_service.py` đọc/ghi `config/translations.json` và API `PUT /api/admin/translations`.
-- [ ] Viết `src/unittest/test_price_governance.py` và `src/unittest/test_translation_service.py` chạy Pass 100%.
+- [x] Bổ sung Unit Tests kiểm tra tính toàn vẹn Bundle & Global Event Bindings: `src/unittest/test_bundle_integrity.py` (Python) và `js/unittest/test-bundle-integrity.js` (JavaScript Node runner).
 
 ---
 
 ### [ ] TASK 08: Kiểm Thử Toàn Diện, Tối Ưu RAM < 150MB & Docker Ubuntu
-- [ ] Chạy `./cli_docker.sh run_unittest` $\rightarrow$ Đạt 100% Pass bộ test Python Backend.
+- [ ] Chạy `./cli_docker.sh run_unittest` $\rightarrow$ Đạt 100% Pass bộ test Python Backend (121/121 tests).
 - [ ] Chạy `./cli_docker.sh js_unittest` $\rightarrow$ Đạt 100% Pass bộ test JS Frontend.
+- [ ] Chạy kiểm thử tải (Stress test) 100 requests đồng thời.
 - [ ] Đo lường kiểm tra mức tiêu thụ RAM container luôn < 150MB.
+- [ ] Tối ưu SEO (Meta Tags, Semantic HTML, Lighthouse > 90).
 - [ ] Khởi chạy và kiểm thử thực tế 1-lệnh qua `./cli_docker.sh start` trên Ubuntu.
+- [ ] Hoàn thiện tài liệu nghiệm thu toàn dự án.
