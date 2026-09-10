@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Quản trị hệ thống (CMS)",
+    "children": [{"title": "a"}, {"title": "b"}, {"title": "c"}]
+  },
+  {
+    "title": "Bảng điều khiển đơn hàng",
+    "children": [{"title": "ab"}]
+  },
+  {
+    "title": "Cấu hình hệ thống",
+    "children": [{"title": "cd"}]
+  }
+]
