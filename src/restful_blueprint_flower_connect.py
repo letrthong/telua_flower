@@ -104,7 +104,7 @@ from inventory_service import (
 )
 from auth_decorator import require_auth, require_role, can_access_branch
 
-# Khởi tạo Blueprint RESTful API Version 1 (Chuẩn hóa như Lu Quan /api/hotelconnect/v1)
+# Khởi tạo Blueprint RESTful API Version 1 with '/api/flower/v1
 flower_connect_api = Blueprint('flower_connect_api', __name__, url_prefix='/api/flower/v1')
 
 # ==========================================
