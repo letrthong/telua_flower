@@ -218,8 +218,25 @@ function handleCheckoutWithAccount() {
 
 ---
 
-## 6. Tổng Kết Ưu Điểm Thiết Kế
+## 6. Phân Hệ Hồ Sơ Cá Nhân & Đổi Mật Khẩu (User Profile & Security)
+
+Hệ thống cung cấp giao diện quản trị hồ sơ tập trung (`#userProfileModal`) dùng chung cho toàn bộ 5 vai trò (`super_admin`, `branch_manager`, `florist`, `sales_consultant`, `customer`):
+
+### 6.1. Chính Sách Bảo Mật Định Danh (Read-only Profile)
+- **Thông tin Họ và Tên, Số Điện Thoại, Email:** Được hiển thị ở chế độ **Chỉ xem (Read-only)** trên giao diện `tabProfileContentInfo` nhằm bảo vệ tính toàn vẹn danh tính và phòng chống giả mạo tài khoản.
+- Người dùng không được tự ý sửa các trường này trên giao diện người dùng. Mọi yêu cầu thay đổi thông tin định danh cần được xác minh qua Bộ phận Kỹ thuật / Quản trị viên hệ thống.
+
+### 6.2. Cơ Chế Đổi Mật Khẩu An Toàn (`PUT /auth/change-password`)
+- **Xác thực mật khẩu cũ:** Sử dụng `check_password_hash` đối chiếu với mật khẩu đã lưu trong CSDL.
+- **Yêu cầu mật khẩu mới:** Tối thiểu 6 ký tự.
+- **Băm bảo mật:** Mật khẩu mới được băm bằng thuật toán `generate_password_hash(new_pass, method="pbkdf2:sha256")`.
+- **Cập nhật phiên:** Lưu dữ liệu an toàn vào `staff_users.json` (đối với nhân sự) hoặc `customers.json` (đối với khách hàng) và thông báo thành công.
+
+---
+
+## 7. Tổng Kết Ưu Điểm Thiết Kế
 
 1. **Trải nghiệm mượt mà:** Khách hàng lẫn nhân viên chỉ cần nhớ 1 nút bấm "Đăng nhập", hệ thống tự động làm toàn bộ phần còn lại.
 2. **Không phân mảnh hệ thống:** Tối ưu hóa API và tài nguyên máy chủ.
 3. **An toàn bảo mật tuyệt đối:** Kết hợp JWT có chữ ký số bí mật, Route Guards ở client và Role Decorators ở backend.
+4. **Quản trị định danh chuẩn mực:** Thông tin định danh được bảo vệ cố định (Read-only), đổi mật khẩu an toàn theo chuẩn mã hóa hiện đại.

@@ -133,23 +133,49 @@ Thiết kế **Dashboard 2 Cột Chuẩn (Responsive Sidebar + Main Content)**:
 
 ---
 
-## 4b. Bảng Điều Khiển Đơn Hàng Nội Bộ (`#orderDashboardModal`)
+## 4b. Phân Hệ Bảng Điều Khiển Đơn Hàng Nội Bộ (TabKey: `order_dashboard_view` - `#orderDashboardModal`)
 
-Modal tổng quan đơn hàng **read-only** dành cho toàn bộ vai trò nội bộ (super_admin, branch_manager, florist, sales_consultant), mô phỏng Dashboard "Đơn Hàng Của Tôi" của khách hàng để mọi nhân sự nắm nhanh tình hình đơn.
+Phân hệ **Bảng Điều Khiển Đơn Hàng (Order Dashboard)** với định danh duy nhất `tabKey: "order_dashboard_view"` được thiết kế dưới dạng Dashboard **giám sát & phân tích trực quan dạng Thẻ (Cards)** theo thời gian thực (**Read-only**). 
 
-- **Điểm vào:** Nút "📊 Bảng Điều Khiển Đơn Hàng" trong dropdown tài khoản (cả desktop `#userDropdownMenu` và mobile `#mobileAccountBtn`), hiển thị cho mọi vai trò nội bộ.
-- **Phân quyền phạm vi dữ liệu:**
-  - `super_admin`: Toàn chuỗi cửa hàng.
-  - `branch_manager`: Đơn của chi nhánh mình (backend `query_admin_orders` tự ép theo `branchId`).
-  - `florist` / `sales_consultant`: Đơn của chi nhánh mình (frontend truyền `branchId`).
-- **Nguồn dữ liệu:** `GET /api/flower/v1/admin/orders?timeframe=all[&branchId=...]` → `data.orders`.
-- **Nội dung:** 4 thẻ thống kê (Tổng đơn, Đang xử lý, Hoàn thành, Doanh thu) + danh sách đơn read-only kèm bộ lọc tháng, lọc trạng thái, ô tìm kiếm tức thì và **Dropdown Sắp xếp đa tiêu chí (`#dashSortSelect`)**:
-  - *Mới cập nhật gần nhất* (`updatedAt_desc` - mặc định)
-  - *Mới đặt nhất* (`createdAt_desc`)
-  - *Giá trị cao nhất* (`totalAmount_desc`)
-  - *Giá trị thấp nhất* (`totalAmount_asc`)
-- Mỗi thẻ đơn hàng hiển thị huy hiệu thời điểm cập nhật mới nhất (`<i class="fa-solid fa-clock-rotate-left"></i> Cập nhật: ...`), giúp nhân viên theo dõi sát sao đơn vừa có biến động.
-- **Module:** `js/order_dashboard.js` (bundled sau `staff_portal.js`).
+Mục tiêu cốt lõi là cung cấp cho toàn bộ nhân sự nội bộ (Super Admin, Quản Lý Chi Nhánh, Thợ Cắm Hoa, Nhân Viên Tư Vấn) một cái nhìn toàn cảnh về tình hình kinh doanh, tiến độ xử lý đơn hàng và doanh số mà không có rủi ro thao tác nhầm lẫn làm thay đổi dữ liệu đơn.
+
+### 1. Phân Biệt Rõ Rệt Giữa 3 Màn Hình Đơn Hàng Trong Hệ Thống:
+
+| Tiêu Chí | Tab Đơn Hàng CMS (`orders`) | Order Dashboard (`order_dashboard_view`) | Bàn Làm Việc (`my_tasks`) |
+| :--- | :--- | :--- | :--- |
+| **Giao diện** | Dạng Bảng (**Table**) nghiệp vụ | Dạng Thẻ (**Cards**) trực quan | Dạng Danh sách tác vụ (**Task List**) |
+| **Bản chất** | **Thao tác & Điều phối**: Trực tiếp đổi trạng thái đơn, gán thợ | **Giám sát & Báo cáo**: Theo dõi 4 KPI, tiến độ realtime (Read-only) | **Thực thi ca trực**: Chụp ảnh hoa, gọi xác nhận đơn mới |
+| **Phân quyền** | Chỉ Super Admin & Quản lý Showroom | **Toàn bộ nhân sự nội bộ (4 vai trò)** | Thợ cắm hoa (`florist`) & Tư vấn viên (`sales`) |
+| **File phụ trách** | [`js/portal_admin_orders.js`](file:///d:/wmshare/telua_flower/js/portal_admin_orders.js) | [`js/order_dashboard.js`](file:///d:/wmshare/telua_flower/js/order_dashboard.js) | [`js/staff_portal.js`](file:///d:/wmshare/telua_flower/js/staff_portal.js) |
+
+### 2. Phân Quyền & Giới Hạn Phạm Vi Dữ Liệu (Data Isolation Matrix):
+- **Super Admin (`super_admin`)**: Giám sát dữ liệu toàn bộ hệ thống chuỗi. Tiêu đề hiển thị: *"Phạm vi: Toàn chuỗi"*.
+- **Quản lý chi nhánh (`branch_manager`)**: Backend Flask tự động ép lọc theo `user.branchId`. Phụ đề hiển thị: *"Phạm vi: Chi nhánh [Tên CN]"*.
+- **Thợ cắm hoa (`florist`) & Tư vấn (`sales_consultant`)**: Frontend tự động truyền tham số `branchId=...` theo chi nhánh trực thuộc, ngăn chặn việc xem chéo dữ liệu chi nhánh khác.
+
+### 3. Nguồn Dữ Liệu & API Backend:
+- **Endpoint**: `GET /api/flower/v1/admin/orders?timeframe=all[&branchId=...]` $\rightarrow$ `data.orders`.
+- **Cơ chế nạp**: Gọi qua `openOrderDashboardModal()` trong [`order_dashboard.js`](file:///d:/wmshare/telua_flower/js/order_dashboard.js).
+
+### 4. Bốn Chỉ Số KPI Doanh Số & Vận Hành Thời Gian Thực:
+1. **Tổng đơn hàng (`#dashTotalOrders`)**: Tổng số lượng đơn hàng phát sinh trong khoảng thời gian đã chọn.
+2. **Đang xử lý (`#dashPendingOrders`)**: Số lượng đơn đang ở các trạng thái *Chờ xác nhận, Đã xác nhận, Đang cắm hoa, Đang vận chuyển*.
+3. **Hoàn thành (`#dashCompletedOrders`)**: Số lượng đơn đã giao thành công và hoàn tất (`delivered`, `completed`).
+4. **Doanh thu (`#dashTotalRevenue`)**: Tổng giá trị tiền tệ các đơn hàng hợp lệ đã ghi nhận trong kỳ (VNĐ).
+
+### 5. Bộ Lọc, Tìm Kiếm & Sắp Xếp Đa Tiêu Chí:
+- **Lọc theo tháng (`#dashMonthSelect`)**: Chọn xem dữ liệu theo từng tháng trong năm hoặc mốc toàn thời gian (`all`).
+- **Lọc trạng thái đơn (`#dashStatusSelect`)**: Hỗ trợ lọc 9 trạng thái nghiệp vụ (*pending, confirmed, arranging, shipping, delivered, ready_for_pickup, completed, cancelled, returned*).
+- **Dropdown Sắp xếp đa chiều (`#dashSortSelect`)**:
+  - *Mới cập nhật gần nhất* (`updatedAt_desc` - mặc định): Ưu tiên đơn hàng vừa có sự thay đổi trạng thái hoặc chỉnh sửa gần nhất lên đầu.
+  - *Mới đặt nhất* (`createdAt_desc`): Sắp xếp theo ngày giờ khách đặt hàng.
+  - *Giá trị cao nhất* (`totalAmount_desc`): Đơn hàng có giá trị tiền cao nhất lên đầu.
+  - *Giá trị thấp nhất* (`totalAmount_asc`): Đơn hàng giá trị thấp nhất lên đầu.
+- **Tìm kiếm tức thì (`#dashSearchInput`)**: Tìm nhanh theo mã đơn hàng, tên khách hàng hoặc số điện thoại.
+- **Huy hiệu cập nhật (`dashGetOrderUpdatedAt`)**: Hiển thị nhãn thời gian cập nhật mới nhất kèm biểu tượng xoay thời gian (`<i class="fa-solid fa-clock-rotate-left"></i> Cập nhật: ...`), giúp nhân viên theo dõi sát sao đơn vừa có biến động.
+
+### 6. Tương Tác Xem Chi Tiết Đơn Hàng:
+- Nhấp chuột vào bất kỳ thẻ đơn hàng nào trong Dashboard sẽ lập tức mở **Modal Chi Tiết Đơn Hàng (`#orderDetailModal`)** để xem toàn bộ thông tin người gửi, người nhận, thông điệp thiệp, sản phẩm hoa và **thanh tiến trình trực quan 5 bước**.
 
 ```text
 +-------------------------------------------------------------+
@@ -261,29 +287,37 @@ Hệ thống quản lý chặt chẽ 3 file tạo tự động từ script build
 - Bảng metadata hiển thị `ROLE_DISPLAY_MAP` (nhãn tiếng Việt, class Tailwind badge, icon).
 
 ### 2. File Schema Điều Hướng [`js/config_layout.js`](file:///d:/wmshare/telua_flower/js/config_layout.js)
-Định nghĩa toàn bộ 4 nhóm phân hệ (`cms`, `order_dashboard`, `system_config`, `profile`) cùng **16 Tab nghiệp vụ**. Mỗi tab được định danh bằng một `tabKey` duy nhất và ánh xạ 1:1 sang file module JS chịu trách nhiệm cùng hàm tải dữ liệu (`loadFn`):
+Định nghĩa toàn bộ **7 nhóm phân hệ** (`workspace`, `cms`, `user_management`, `order_dashboard`, `system_config`, `profile`, `customer_portal`) cùng **19 Tab nghiệp vụ**. Mỗi tab được định danh bằng một `tabKey` duy nhất và ánh xạ 1:1 sang file module JS chịu trách nhiệm cùng hàm tải dữ liệu (`loadFn`):
 
-| Nhóm Phân Hệ | TabKey | Tên Hiển Thị | Module JS Phụ Trách | Hàm Nạp Dữ Liệu | Modal Đích | Vai Trò Cho Phép (Roles) |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **CMS** | `orders` | Đơn Hàng | [`portal_admin_orders.js`](file:///d:/wmshare/telua_flower/js/portal_admin_orders.js) | `loadAdminOrders` | `#adminPortalModal` | Admin, Manager, Florist, Sales |
-| **CMS** | `products` | Mẫu Hoa & Bảng Giá | [`portal_admin_products.js`](file:///d:/wmshare/telua_flower/js/portal_admin_products.js) | `loadAdminProducts` | `#adminPortalModal` | Admin, Manager |
-| **CMS** | `inventory` | Kho & Hao Hụt | [`portal_admin_inventory.js`](file:///d:/wmshare/telua_flower/js/portal_admin_inventory.js) | `loadAdminInventory` | `#adminPortalModal` | Admin, Manager, Florist |
-| **CMS** | `categories` | Danh Mục Hoa | [`portal_admin_categories.js`](file:///d:/wmshare/telua_flower/js/portal_admin_categories.js) | `loadAdminCategories` | `#adminPortalModal` | Admin |
-| **CMS** | `staff` | Nhân Sự Nội Bộ | [`portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js) | `loadAdminUsers` | `#adminPortalModal` | Admin, Manager |
-| **CMS** | `customers` | Khách Hàng CRM | [`portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js) | `loadAdminCustomers` | `#adminPortalModal` | Admin, Manager, Sales |
-| **CMS** | `branches` | Chuỗi Showroom | [`portal_admin_branches.js`](file:///d:/wmshare/telua_flower/js/portal_admin_branches.js) | `loadAdminBranches` | `#adminPortalModal` | Admin |
-| **CMS** | `promotions` | Khuyến Mãi | [`portal_admin_promotions.js`](file:///d:/wmshare/telua_flower/js/portal_admin_promotions.js) | `loadAdminPromotions` | `#adminPortalModal` | Admin |
-| **CMS** | `addons` | Sản Phẩm Kèm Theo | [`portal_admin_promotions.js`](file:///d:/wmshare/telua_flower/js/portal_admin_promotions.js) | `loadAdminAddons` | `#adminPortalModal` | Admin |
-| **CMS** | `banners` | Banner Trang Chủ | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAdminBanners` | `#adminPortalModal` | Admin |
-| **Order Dashboard** | `order_dashboard_view` | Tổng Quan Đơn Hàng | [`order_dashboard.js`](file:///d:/wmshare/telua_flower/js/order_dashboard.js) | `openOrderDashboardModal` | `#orderDashboardModal` | Tất cả nhân sự nội bộ |
-| **Cấu Hình** | `company` | Thông Tin Doanh Nghiệp | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadCompanyInfo` | `#systemConfigModal` | Admin |
-| **Cấu Hình** | `translations` | Biên Dịch Đa Ngữ | [`portal_admin_translations.js`](file:///d:/wmshare/telua_flower/js/portal_admin_translations.js) | `loadAdminTranslations` | `#systemConfigModal` | Admin |
-| **Cấu Hình** | `payment` | Cổng Thanh Toán | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadPaymentGateways` | `#systemConfigModal` | Admin |
-| **Cấu Hình** | `addonvis` | Hiển Thị Phụ Kiện | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAddonVisibility` | `#systemConfigModal` | Admin |
-| **Cấu Hình** | `banners` | Banner Trình Chiếu | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAdminBanners` | `#systemConfigModal` | Admin |
-| **Hồ Sơ & Bảo Mật** | `profile_info` | Thông Tin Cá Nhân | [`user_profile.js`](file:///d:/wmshare/telua_flower/js/user_profile.js) | `openUserProfileModal` | `#userProfileModal` | Tất cả người dùng |
-| **Hồ Sơ & Bảo Mật** | `profile_password` | Đổi Mật Khẩu | [`user_profile.js`](file:///d:/wmshare/telua_flower/js/user_profile.js) | `openUserProfileModal` | `#userProfileModal` | Tất cả người dùng |
-| **Khách Hàng** | `my_orders` | Đơn Hàng Của Tôi | [`customer_portal.js`](file:///d:/wmshare/telua_flower/js/customer_portal.js) | `openCustomerPortalModal` | `#customerPortalModal` | Khách Hàng |
+| Nhóm Phân Hệ | TabKey | Tên Hiển Thị | Module JS Phụ Trách | Hàm Nạp Dữ Liệu | Modal Đích | Vai Trò Cho Phép (Roles) | Ghi Chú Hành Vi |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **💼 Công Việc Của Tôi (`workspace`)** | `my_tasks` | Nhiệm Vụ Trong Ca | [`staff_portal.js`](file:///d:/wmshare/telua_flower/js/staff_portal.js) | `openStaffPortalModal` | `#staffPortalModal` | Florist, Sales | Bàn làm việc ca trực: đơn cần cắm / xác nhận |
+| **💼 Công Việc Của Tôi (`workspace`)** | `dispatch_orders` | Điều Phối & Xử Lý Đơn | [`portal_admin_orders.js`](file:///d:/wmshare/telua_flower/js/portal_admin_orders.js) | `loadAdminOrders` | `#adminPortalModal` | Admin, Manager | Mở tab Đơn Hàng xử lý ngay đơn chờ duyệt |
+| **CMS (Hàng Hóa & Vận Hành)** | `orders` | Đơn Hàng | [`portal_admin_orders.js`](file:///d:/wmshare/telua_flower/js/portal_admin_orders.js) | `loadAdminOrders` | `#adminPortalModal` | Admin, Manager, Florist, Sales | Quản lý vòng đời đơn hàng |
+| **CMS (Hàng Hóa & Vận Hành)** | `products` | Mẫu Hoa & Bảng Giá | [`portal_admin_products.js`](file:///d:/wmshare/telua_flower/js/portal_admin_products.js) | `loadAdminProducts` | `#adminPortalModal` | Admin, Manager | 4 tầng giá & Đa ngôn ngữ |
+| **CMS (Hàng Hóa & Vận Hành)** | `inventory` | Kho & Hao Hụt | [`portal_admin_inventory.js`](file:///d:/wmshare/telua_flower/js/portal_admin_inventory.js) | `loadAdminInventory` | `#adminPortalModal` | Admin, Manager, Florist | Tồn kho từng showroom |
+| **CMS (Hàng Hóa & Vận Hành)** | `categories` | Danh Mục Hoa | [`portal_admin_categories.js`](file:///d:/wmshare/telua_flower/js/portal_admin_categories.js) | `loadAdminCategories` | `#adminPortalModal` | Admin | Bật/tắt 1-chạm |
+| **CMS (Hàng Hóa & Vận Hành)** | `branches` | Chuỗi Showroom | [`portal_admin_branches.js`](file:///d:/wmshare/telua_flower/js/portal_admin_branches.js) | `loadAdminBranches` | `#adminPortalModal` | Admin | Showroom & cấu hình |
+| **CMS (Hàng Hóa & Vận Hành)** | `promotions` | Khuyến Mãi | [`portal_admin_promotions.js`](file:///d:/wmshare/telua_flower/js/portal_admin_promotions.js) | `loadAdminPromotions` | `#adminPortalModal` | Admin | Mã giảm giá Voucher |
+| **CMS (Hàng Hóa & Vận Hành)** | `addons` | Sản Phẩm Kèm Theo | [`portal_admin_promotions.js`](file:///d:/wmshare/telua_flower/js/portal_admin_promotions.js) | `loadAdminAddons` | `#adminPortalModal` | Admin | Thiệp, ruy băng, gấu bông |
+| **CMS (Hàng Hóa & Vận Hành)** | `banners` | Banner Trang Chủ | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAdminBanners` | `#adminPortalModal` | Admin | Slide trang chủ |
+| **Quản Lý Người Dùng (`user_management`)** | `staff` | Nhân Sự Nội Bộ | [`portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js) | `loadAdminUsers` | `#adminPortalModal` | Admin, Manager | Quản lý tài khoản & phân quyền 5 vai trò |
+| **Quản Lý Người Dùng (`user_management`)** | `customers` | Khách Hàng & CRM | [`portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js) | `loadAdminCustomers` | `#adminPortalModal` | Admin, Manager, Sales | Quản lý thông tin khách, phân hạng thành viên & chi tiêu |
+| **Order Dashboard (`order_dashboard`)** | `order_dashboard_view` | Tổng Quan Đơn Hàng | [`order_dashboard.js`](file:///d:/wmshare/telua_flower/js/order_dashboard.js) | `openOrderDashboardModal` | `#orderDashboardModal` | Tất cả nhân sự nội bộ (4 vai trò) | Giám sát 4 KPI realtime & danh sách đơn dạng Thẻ (Read-only), lọc tháng & sắp xếp đa chiều |
+| **Cấu Hình Hệ Thống** | `company` | Thông Tin Doanh Nghiệp | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadCompanyInfo` | `#systemConfigModal` | Admin | Tên, hotline, MST |
+| **Cấu Hình Hệ Thống** | `translations` | Biên Dịch Đa Ngữ | [`portal_admin_translations.js`](file:///d:/wmshare/telua_flower/js/portal_admin_translations.js) | `loadAdminTranslations` | `#systemConfigModal` | Admin | Từ điển giao diện |
+| **Cấu Hình Hệ Thống** | `payment` | Cổng Thanh Toán | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadPaymentGateways` | `#systemConfigModal` | Admin | QR, MoMo, COD, v.v. |
+| **Cấu Hình Hệ Thống** | `addonvis` | Hiển Thị Phụ Kiện | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAddonVisibility` | `#systemConfigModal` | Admin | Cấu hình giỏ hàng |
+| **Cấu Hình Hệ Thống** | `banners` | Banner Trình Chiếu | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAdminBanners` | `#systemConfigModal` | Admin | Thuộc tab cấu hình |
+| **Hồ Sơ & Bảo Mật** | `profile_info` | Thông Tin Cá Nhân | [`user_profile.js`](file:///d:/wmshare/telua_flower/js/user_profile.js) | `openUserProfileModal` | `#userProfileModal` | Tất cả người dùng | **Chỉ xem (Read-only)**: Cố định Họ tên, SĐT, Email bảo vệ an toàn định danh |
+| **Hồ Sơ & Bảo Mật** | `profile_password` | Đổi Mật Khẩu | [`user_profile.js`](file:///d:/wmshare/telua_flower/js/user_profile.js) | `openUserProfileModal` | `#userProfileModal` | Tất cả người dùng | Tự đổi mật khẩu (min 6 ký tự, kiểm tra mật khẩu cũ) |
+| **Khách Hàng** | `my_orders` | Đơn Hàng Của Tôi | [`customer_portal.js`](file:///d:/wmshare/telua_flower/js/customer_portal.js) | `openCustomerPortalModal` | `#customerPortalModal` | Khách Hàng | Lịch sử mua hàng |
+
+> **Quy Chuẩn Giao Diện & Điều Hướng:**
+> - **Vị trí nút "💼 Công Việc Của Tôi":** Đặt ở **vị trí số 1 (TRÊN HẾT)**, ngay phía trên nút "CMS (Hàng Hóa & Vận Hành)" trong menu tài khoản. Khi nhân sự nội bộ vào ca, nút này là điểm chạm trực tiếp giúp nhân viên biết ngay hôm nay mình cần làm gì (đơn cần cắm, đơn cần gọi xác nhận, đơn cần duyệt).
+> - **Phân hệ "Quản Lý Người Dùng" (`user_management`):** Tách bạch rõ ràng khối quản trị con người (`staff` và `customers`) ra khỏi khối hàng hóa (`cms`), giúp cấu trúc phân quyền và quản lý khoa học, mở rộng trong tương lai.
+> - **Modal `#userProfileModal`:** Chiều cao tối đa (`h-[92vh] max-h-[92vh]`), độ rộng `max-w-2xl` đồng bộ chuẩn với các Portal lớn (`#adminPortalModal`, `#customerPortalModal`).
+> - **Menu Dropdown Tài Khoản:** Tuân thủ phân cấp chặt chẽ theo `config_layout.js` — không hiển thị nút riêng độc lập cho các tab con (như "Cấu Hình Banner"), tất cả đều được truy cập thống nhất qua nút phân hệ mẹ tương ứng ("Cấu Hình Hệ Thống").
 
 ### 3. Quy Chuẩn 3 Bước Khi Bổ Sung Một Tab / Module Mới:
 Khi phát triển thêm tính năng mới trong tương lai:

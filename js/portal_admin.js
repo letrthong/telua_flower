@@ -264,23 +264,26 @@ export function openAdminPortalModal(initialTab = null) {
     const optBranchManager = document.getElementById("optRoleBranchManager");
     const filterBranchSelect = document.getElementById("filterUserBranch");
 
-    const cmsGroup = (typeof CONFIG_LAYOUT !== "undefined" ? CONFIG_LAYOUT : (typeof window !== "undefined" ? window.CONFIG_LAYOUT : null))?.find(g => g.groupId === "cms");
-    if (cmsGroup && Array.isArray(cmsGroup.children)) {
-        cmsGroup.children.forEach(t => {
-            const btn = document.getElementById(`tabBtn${t.tabKey.charAt(0).toUpperCase() + t.tabKey.slice(1)}`);
-            if (btn) {
-                const checkAllowed = (typeof isTabAllowed === "function") 
-                    ? isTabAllowed 
-                    : ((typeof window !== "undefined" && typeof window.isTabAllowed === "function") ? window.isTabAllowed : null);
-                const allowed = checkAllowed ? checkAllowed(t.tabKey, user.role) : true;
-                if (allowed) {
-                    btn.classList.remove("hidden");
-                } else {
-                    btn.classList.add("hidden");
+    const layout = (typeof CONFIG_LAYOUT !== "undefined" ? CONFIG_LAYOUT : (typeof window !== "undefined" ? window.CONFIG_LAYOUT : null));
+    const adminGroups = layout ? layout.filter(g => g.targetModal === "adminPortalModal") : [];
+    adminGroups.forEach(group => {
+        if (Array.isArray(group.children)) {
+            group.children.forEach(t => {
+                const btn = document.getElementById(`tabBtn${t.tabKey.charAt(0).toUpperCase() + t.tabKey.slice(1)}`);
+                if (btn) {
+                    const checkAllowed = (typeof isTabAllowed === "function") 
+                        ? isTabAllowed 
+                        : ((typeof window !== "undefined" && typeof window.isTabAllowed === "function") ? window.isTabAllowed : null);
+                    const allowed = checkAllowed ? checkAllowed(t.tabKey, user.role) : true;
+                    if (allowed) {
+                        btn.classList.remove("hidden");
+                    } else {
+                        btn.classList.add("hidden");
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
+    });
 
     if (user.role === "branch_manager") {
         if (optSuperAdmin) optSuperAdmin.classList.add("hidden");

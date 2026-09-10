@@ -3,12 +3,12 @@
   "orderCode": "NHTB-260904-U6IU",
   "createdAt": "2026-09-04T23:59:57Z",
   "orderDate": "2026-09-04T23:59:57Z",
-  "updatedAt": "2026-09-04T23:59:57Z",
+  "updatedAt": "2026-09-10T14:23:14Z",
   "branchId": "branch_q1",
   "customerId": null,
   "assignedTo": "staff_004",
   "assignedBy": "system",
-  "status": "pending",
+  "status": "confirmed",
   "cardMessage": "Chúc mừng khai trương đại hồng phát!",
   "ribbonBanner": "Khai Trương Hồng Phát",
   "sender": {
@@ -79,6 +79,12 @@
       "updatedAt": "2026-09-04T23:59:57Z",
       "note": "Khách hàng tạo đơn hàng trực tuyến",
       "updatedBy": "0988112233"
+    },
+    {
+      "status": "confirmed",
+      "updatedAt": "2026-09-10T14:23:08Z",
+      "note": "Cập nhật trạng thái bởi super_admin",
+      "updatedBy": "staff_admin"
     }
   ]
 }

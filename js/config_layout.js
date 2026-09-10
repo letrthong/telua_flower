@@ -7,8 +7,36 @@ import { ROLES, hasPermission } from './roles_const.js';
 
 export const ADMIN_NAVIGATION_CONFIG = [
   {
+    groupId: "workspace",
+    title: "Công Việc Của Tôi",
+    icon: "fa-solid fa-briefcase",
+    targetModal: "staffPortalModal",
+    action: "openMyWorkspace",
+    roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT],
+    children: [
+      {
+        tabKey: "my_tasks",
+        label: "Nhiệm Vụ Trong Ca",
+        icon: "fa-solid fa-list-check",
+        module: "staff_portal.js",
+        loadFn: "openStaffPortalModal",
+        action: "openStaffPortalModal()",
+        roles: [ROLES.FLORIST, ROLES.SALES_CONSULTANT]
+      },
+      {
+        tabKey: "dispatch_orders",
+        label: "Điều Phối & Xử Lý Đơn",
+        icon: "fa-solid fa-clipboard-check",
+        module: "portal_admin_orders.js",
+        loadFn: "loadAdminOrders",
+        action: "openAdminPortalModal('orders')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
+      }
+    ]
+  },
+  {
     groupId: "cms",
-    title: "Quản Trị Hệ Thống (CMS)",
+    title: "CMS (Hàng Hóa & Vận Hành)",
     icon: "fa-solid fa-gauge-high",
     targetModal: "adminPortalModal",
     action: "openAdminPortalModal",
@@ -51,24 +79,6 @@ export const ADMIN_NAVIGATION_CONFIG = [
         roles: [ROLES.SUPER_ADMIN]
       },
       {
-        tabKey: "staff",
-        label: "Nhân Sự Nội Bộ",
-        icon: "fa-solid fa-user-tie",
-        module: "portal_admin_users.js",
-        loadFn: "loadAdminUsers",
-        action: "switchAdminTab('staff')",
-        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
-      },
-      {
-        tabKey: "customers",
-        label: "Khách Hàng & CRM",
-        icon: "fa-solid fa-crown",
-        module: "portal_admin_users.js",
-        loadFn: "loadAdminCustomers",
-        action: "switchAdminTab('customers')",
-        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.SALES_CONSULTANT]
-      },
-      {
         tabKey: "branches",
         label: "Chuỗi Showroom",
         icon: "fa-solid fa-store",
@@ -103,6 +113,34 @@ export const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminBanners",
         action: "switchAdminTab('banners')",
         roles: [ROLES.SUPER_ADMIN]
+      }
+    ]
+  },
+  {
+    groupId: "user_management",
+    title: "Quản Lý Người Dùng",
+    icon: "fa-solid fa-users-gear",
+    targetModal: "adminPortalModal",
+    action: "openAdminPortalModal",
+    roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.SALES_CONSULTANT],
+    children: [
+      {
+        tabKey: "staff",
+        label: "Nhân Sự Nội Bộ",
+        icon: "fa-solid fa-user-tie",
+        module: "portal_admin_users.js",
+        loadFn: "loadAdminUsers",
+        action: "switchAdminTab('staff')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
+      },
+      {
+        tabKey: "customers",
+        label: "Khách Hàng & CRM",
+        icon: "fa-solid fa-crown",
+        module: "portal_admin_users.js",
+        loadFn: "loadAdminCustomers",
+        action: "switchAdminTab('customers')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.SALES_CONSULTANT]
       }
     ]
   },
@@ -282,6 +320,25 @@ export function getDefaultTabForRole(userRole, groupId = "cms") {
   return allowedTab ? allowedTab.tabKey : (group.children[0]?.tabKey || "orders");
 }
 
+/**
+ * Điều hướng thông minh đến Bàn Làm Việc / Công Việc Của Tôi dựa trên vai trò
+ */
+export function openMyWorkspace() {
+  const user = (typeof window !== "undefined" && typeof window.getCurrentUser === "function") 
+    ? window.getCurrentUser() 
+    : null;
+  if (!user) return;
+  if (user.role === "florist" || user.role === "sales_consultant") {
+    if (typeof window.openStaffPortalModal === "function") {
+      window.openStaffPortalModal();
+    }
+  } else if (user.role === "super_admin" || user.role === "branch_manager") {
+    if (typeof window.openAdminPortalModal === "function") {
+      window.openAdminPortalModal("orders");
+    }
+  }
+}
+
 // Aliases tương thích với tên file config_layout.js
 export const CONFIG_LAYOUT = ADMIN_NAVIGATION_CONFIG;
 export const getAuthorizedLayout = getAuthorizedAdminLayout;
@@ -295,6 +352,7 @@ if (typeof window !== "undefined") {
   window.getTabConfig = getTabConfig;
   window.isTabAllowed = isTabAllowed;
   window.getDefaultTabForRole = getDefaultTabForRole;
+  window.openMyWorkspace = openMyWorkspace;
 }
 
 export default ADMIN_NAVIGATION_CONFIG;

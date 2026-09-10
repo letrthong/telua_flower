@@ -26,7 +26,7 @@
 
 ## 2. Danh Sách Các Nhóm API Chi Tiết
 
-### 🔐 1. Nhóm Xác Thực & Đăng Nhập (`/api/auth`)
+### 🔐 1. Nhóm Xác Thực, Tài Khoản & Bảo Mật (`/api/auth`)
 
 | Method | Endpoint | Quyền hạn | Mô tả |
 | :--- | :--- | :---: | :--- |
@@ -34,6 +34,8 @@
 | `POST` | `/api/auth/register` | Public | Đăng ký tài khoản khách hàng mới |
 | `GET` | `/api/auth/me` | Logged In | Lấy thông tin tài khoản hiện tại từ JWT Token |
 | `POST` | `/api/auth/logout` | Logged In | Đăng xuất và hủy phiên làm việc |
+| `PUT` | `/api/flower/v1/auth/profile` | Logged In | Cập nhật hồ sơ tài khoản (Họ tên, SĐT, Email - có xác thực phân quyền) |
+| `PUT` | `/api/flower/v1/auth/change-password` | Logged In | Đổi mật khẩu người dùng (Xác thực mật khẩu cũ + kiểm tra độ dài min 6 ký tự) |
 
 ---
 

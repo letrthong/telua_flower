@@ -984,6 +984,28 @@
                     </div>
                 </div>
 
+                <!-- 3b. DỊCH VỤ CẮM HOA NGHỆ THUẬT (+50% PHÍ) -->
+                <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-600 mr-1.5"></i> <span>Hỗ Trợ Cắm Hoa Nghệ Thuật</span>
+                        </span>
+                        <label class="inline-flex items-center cursor-pointer text-xs font-bold text-amber-900">
+                            <input type="checkbox" id="checkoutRequestArranging" onchange="toggleRequestArranging()" class="sr-only peer">
+                            <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-600"></div>
+                            <span class="ms-2 font-bold text-amber-800">+50% Phí Cắm</span>
+                        </label>
+                    </div>
+                    <p class="text-[11px] text-amber-800/90 leading-relaxed">
+                        Tùy chọn: Đánh dấu nếu bạn muốn nghệ nhân cắm hoa thiết kế thành bình/lẵng/giỏ nghệ thuật riêng theo yêu cầu (+50% trên tổng giá trị hoa). Nếu không chọn, hoa sẽ giao nguyên cành tươi/bó tiêu chuẩn.
+                    </p>
+                    <div id="arrangingNotesSection" class="hidden space-y-1 pt-2 border-t border-amber-200/80">
+                        <label class="block text-[11px] font-bold text-amber-900">Yêu cầu / Ghi chú phong cách cắm hoa:</label>
+                        <textarea id="checkoutArrangingNotes" rows="2" placeholder="Ví dụ: Cắm dáng tròn tỏa đều, tone pastel hồng kem, cắm kèm bình gốm/giỏ mây..." class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-xs focus:outline-none focus:border-amber-500 transition resize-none"></textarea>
+                        <p class="text-[10px] text-amber-700 italic">✨ Nghệ nhân tại chi nhánh sẽ cắm theo đúng yêu cầu và gửi ảnh thật cho bạn xác nhận trước khi giao.</p>
+                    </div>
+                </div>
+
                 <!-- 4. THÔNG TIN NGƯỜI GỬI & TÙY CHỌN ẨN DANH -->
                 <div class="space-y-3">
                     <div class="flex items-center justify-between">
@@ -1024,6 +1046,10 @@
 
                     <div class="pt-2 border-t border-gray-200 space-y-1.5 text-xs text-gray-600">
                         <div class="flex justify-between"><span data-i18n="checkout_lbl_subtotal">Tiền hàng:</span><span id="summarySubtotal" class="font-bold text-gray-800">0₫</span></div>
+                        <div id="summaryArrangingFeeRow" class="hidden flex justify-between text-amber-800 font-semibold">
+                            <span>Phí cắm hoa nghệ thuật (+50%):</span>
+                            <span id="summaryArrangingFee">+0₫</span>
+                        </div>
                         <div class="flex justify-between"><span data-i18n="checkout_lbl_shipping">Phí vận chuyển:</span><span id="summaryShipping" class="font-bold text-gray-800">35.000₫</span></div>
                         <div class="flex justify-between text-green-600 font-bold"><span data-i18n="checkout_lbl_discount">Giảm giá voucher:</span><span id="summaryDiscount">0₫</span></div>
                         <div class="flex justify-between text-sm sm:text-base font-extrabold text-primary pt-2 border-t border-gray-200">

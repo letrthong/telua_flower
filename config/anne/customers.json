@@ -4070,5 +4070,21 @@
     "savedAddresses": [],
     "isActive": true,
     "createdAt": "2026-09-04T16:59:53Z"
+  },
+  {
+    "id": "cust_1789052024",
+    "phone": "0910052024",
+    "email": "test_0910052024@gmail.com",
+    "fullName": "Khách Hàng Mới Test",
+    "passwordHash": "pbkdf2:sha256:1000000$dfJ3eqNVGVXwrsqO$90da29bb0fe91ccf133dd7e3ab2b733ecb21a664e9a77216ea19603670974f16",
+    "role": "customer",
+    "branchId": null,
+    "tier": "standard",
+    "loyaltyPoints": 50,
+    "totalSpent": 0,
+    "orderCount": 0,
+    "savedAddresses": [],
+    "isActive": true,
+    "createdAt": "2026-09-10T14:53:44Z"
   }
 ]

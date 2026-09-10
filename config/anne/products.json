@@ -12,8 +12,8 @@
     "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg",
     "i18n": null,
     "stockByBranch": {
-      "branch_q10": 10,
-      "branch_q1": 5,
+      "branch_q10": 18,
+      "branch_q1": 12,
       "branch_thao_dien": 5
     },
     "dailyQuota": 15,

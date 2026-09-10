@@ -9,22 +9,22 @@ import { API_BASE, showToast } from './utils.js';
  */
 
 const STAFF_ORDER_STATUS_META = {
-    pending:        { label: "Chờ xác nhận",   color: "bg-amber-100 text-amber-700 border-amber-200",   icon: "fa-clock" },
-    confirmed:      { label: "Đã xác nhận",    color: "bg-blue-100 text-blue-700 border-blue-200",       icon: "fa-check" },
-    arranging:      { label: "Đang cắm hoa",   color: "bg-purple-100 text-purple-700 border-purple-200", icon: "fa-scissors" },
-    shipping:       { label: "Đang vận chuyển", color: "bg-cyan-100 text-cyan-700 border-cyan-200",      icon: "fa-truck" },
-    delivered:      { label: "Giao thành công", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
-    ready_for_pickup: { label: "Sẵn sàng nhận", color: "bg-teal-100 text-teal-700 border-teal-200",      icon: "fa-store" },
-    completed:      { label: "Hoàn thành",     color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
-    cancelled:      { label: "Đã hủy",         color: "bg-red-100 text-red-700 border-red-200",          icon: "fa-ban" },
-    returned:       { label: "Trả hàng",       color: "bg-orange-100 text-orange-700 border-orange-200", icon: "fa-rotate-left" }
+    pending: { label: "Chờ xác nhận", color: "bg-amber-100 text-amber-700 border-amber-200", icon: "fa-clock" },
+    confirmed: { label: "Đã xác nhận", color: "bg-blue-100 text-blue-700 border-blue-200", icon: "fa-check" },
+    arranging: { label: "Đang cắm hoa", color: "bg-purple-100 text-purple-700 border-purple-200", icon: "fa-scissors" },
+    shipping: { label: "Đang vận chuyển", color: "bg-cyan-100 text-cyan-700 border-cyan-200", icon: "fa-truck" },
+    delivered: { label: "Giao thành công", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    ready_for_pickup: { label: "Sẵn sàng nhận", color: "bg-teal-100 text-teal-700 border-teal-200", icon: "fa-store" },
+    completed: { label: "Hoàn thành", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    cancelled: { label: "Đã hủy", color: "bg-red-100 text-red-700 border-red-200", icon: "fa-ban" },
+    returned: { label: "Trả hàng", color: "bg-orange-100 text-orange-700 border-orange-200", icon: "fa-rotate-left" }
 };
 
 const STAFF_PAYMENT_STATUS_META = {
-    unpaid:   { label: "Chưa thanh toán", color: "bg-gray-100 text-gray-600 border-gray-200",   icon: "fa-credit-card" },
-    paid:     { label: "Đã thanh toán",   color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
-    refunded: { label: "Đã hoàn tiền",    color: "bg-blue-100 text-blue-700 border-blue-200",   icon: "fa-rotate-left" },
-    failed:   { label: "Thanh toán lỗi",  color: "bg-red-100 text-red-700 border-red-200",      icon: "fa-circle-xmark" }
+    unpaid: { label: "Chưa thanh toán", color: "bg-gray-100 text-gray-600 border-gray-200", icon: "fa-credit-card" },
+    paid: { label: "Đã thanh toán", color: "bg-emerald-100 text-emerald-700 border-emerald-200", icon: "fa-circle-check" },
+    refunded: { label: "Đã hoàn tiền", color: "bg-blue-100 text-blue-700 border-blue-200", icon: "fa-rotate-left" },
+    failed: { label: "Thanh toán lỗi", color: "bg-red-100 text-red-700 border-red-200", icon: "fa-circle-xmark" }
 };
 
 function staffFormatVND(amount) {
