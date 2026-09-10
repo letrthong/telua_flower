@@ -1,22 +1,22 @@
 [
   {
-    "title": "Quản trị hệ thống (CMS)",
+    "item": "Quản trị hệ thống (CMS)",
     "children": [{"tab": "a"}, {"tab": "b"}, {"tab": "c"}]
   },
   {
-    "title": "Bảng điều khiển đơn hàng",
+    "item": "Bảng điều khiển đơn hàng",
     "children": [{"tab": "ab"}]
   },
   {
-    "title": "Cấu hình hệ thống",
+    "item": "Cấu hình hệ thống",
     "children": [{"tab": "cd"}]
   },
    {
-    "title": "Thông tin cá nhân",
+    "item": "Thông tin cá nhân",
     "children": [{"tab": "thông tin"} , {"tab": "địa chỉ"}, {"tab": "Dữ liệu ngân hàng"}]
   },
   {
-    "title": "Thời gian làm việc",
+    "item": "Thời gian làm việc",
     "children": [{"tab": "Bảng kê khai thời gian"} ,{"tab": "Nghỉ phép"}  ]
   }
 ]
