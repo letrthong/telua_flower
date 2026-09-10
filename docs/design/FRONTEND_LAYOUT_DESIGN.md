@@ -229,7 +229,7 @@ graph TD
 Hệ thống quản lý chặt chẽ 3 file tạo tự động từ script build và container pipeline:
 
 1. **Trình Đóng Gói [`scripts/build_bundle.py`](file:///d:/wmshare/telua_flower/scripts/build_bundle.py):**
-   - **Mục đích:** Script Python tự động quét và gộp toàn bộ **20 modular JavaScript components** (bao gồm `utils.js`, `i18n.js`, `products.js`, `checkout.js`, `auth.js`, `customer_portal.js`, `staff_portal.js`, `order_dashboard.js`, 10 sub-modules `portal_admin_*.js`, `portal_admin.js`, và `flower_app.js`) theo đúng thứ tự phụ thuộc (dependency order).
+   - **Mục đích:** Script Python tự động quét và gộp toàn bộ **22 modular JavaScript components** (bao gồm `utils.js`, `roles_const.js`, `config_layout.js`, `i18n.js`, `products.js`, `checkout.js`, `auth.js`, `customer_portal.js`, `staff_portal.js`, `order_dashboard.js`, 10 sub-modules `portal_admin_*.js`, `portal_admin.js`, và `flower_app.js`) theo đúng thứ tự phụ thuộc (dependency order).
    - **Nguyên lý hoạt động:** 
      - Loại bỏ các câu lệnh `import` và `export` ES6 cục bộ.
      - Bao bọc toàn bộ mã nguồn bên trong một IIFE khép kín `(function() { 'use strict'; ... })();` nhằm bảo vệ namespace và tối ưu hóa hiệu năng 0ms import.
@@ -246,6 +246,48 @@ Hệ thống quản lý chặt chẽ 3 file tạo tự động từ script build
    - **Mục đích:** Bản sao lưu index.html và là artifact trích xuất từ container Docker phục vụ dự phòng (fallback).
    - **Cơ chế phát sinh:** Được tạo ra tự động bởi lệnh `docker cp telua_python_flower:/app/dist/index.html ./config/index.html` trong script [`cli_docker.sh`](file:///d:/wmshare/telua_flower/cli_docker.sh) (hàm `start`) sau khi container hoàn thành build Vite SingleFile (`dist/index.html`).
    - **Độ ưu tiên nạp file trong Flask:** Trong `src/app.py`, hàm `get_index_file()` ưu tiên phục vụ file nguồn đang phát triển trực tiếp `index.html` ở thư mục gốc trước, và chỉ fallback về `config/index.html` nếu các file trên không tồn tại.
+
+---
+
+## 4e. Kiến Trúc Cấu Hình Điều Hướng & Ánh Xạ TabKey (Centralized Navigation & TabKey-to-Module Mapping)
+
+Để loại bỏ hoàn toàn việc hardcode menu điều hướng trong HTML và đảm bảo khả năng mở rộng dạng **Micro-Module**, hệ thống sử dụng 2 file cấu hình trung tâm:
+
+### 1. File Hằng Số Phân Quyền [`js/roles_const.js`](file:///d:/wmshare/telua_flower/js/roles_const.js)
+Đóng vai trò là **Single Source of Truth** cho toàn bộ RBAC Frontend:
+- Khai báo hằng số `ROLES`: `SUPER_ADMIN`, `BRANCH_MANAGER`, `FLORIST`, `SALES_CONSULTANT`, `CUSTOMER`.
+- Khai báo nhóm quyền `ROLE_GROUPS`: `INTERNAL_STAFF`, `ADMIN_MANAGERS`, `ROOT_ADMIN`.
+- Cung cấp tiện ích kiểm tra quyền: `isSuperAdmin()`, `isInternalStaff()`, `isAdminOrManager()`, `hasPermission(role, allowedRoles)`.
+- Bảng metadata hiển thị `ROLE_DISPLAY_MAP` (nhãn tiếng Việt, class Tailwind badge, icon).
+
+### 2. File Schema Điều Hướng [`js/config_layout.js`](file:///d:/wmshare/telua_flower/js/config_layout.js)
+Định nghĩa toàn bộ 4 nhóm phân hệ (`cms`, `order_dashboard`, `system_config`, `profile`) cùng **16 Tab nghiệp vụ**. Mỗi tab được định danh bằng một `tabKey` duy nhất và ánh xạ 1:1 sang file module JS chịu trách nhiệm cùng hàm tải dữ liệu (`loadFn`):
+
+| Nhóm Phân Hệ | TabKey | Tên Hiển Thị | Module JS Phụ Trách | Hàm Nạp Dữ Liệu | Modal Đích | Vai Trò Cho Phép (Roles) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **CMS** | `orders` | Đơn Hàng | [`portal_admin_orders.js`](file:///d:/wmshare/telua_flower/js/portal_admin_orders.js) | `loadAdminOrders` | `#adminPortalModal` | Admin, Manager, Florist, Sales |
+| **CMS** | `products` | Mẫu Hoa & Bảng Giá | [`portal_admin_products.js`](file:///d:/wmshare/telua_flower/js/portal_admin_products.js) | `loadAdminProducts` | `#adminPortalModal` | Admin, Manager |
+| **CMS** | `inventory` | Kho & Hao Hụt | [`portal_admin_inventory.js`](file:///d:/wmshare/telua_flower/js/portal_admin_inventory.js) | `loadAdminInventory` | `#adminPortalModal` | Admin, Manager, Florist |
+| **CMS** | `categories` | Danh Mục Hoa | [`portal_admin_categories.js`](file:///d:/wmshare/telua_flower/js/portal_admin_categories.js) | `loadAdminCategories` | `#adminPortalModal` | Admin |
+| **CMS** | `staff` | Nhân Sự Nội Bộ | [`portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js) | `loadAdminUsers` | `#adminPortalModal` | Admin, Manager |
+| **CMS** | `customers` | Khách Hàng CRM | [`portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js) | `loadAdminCustomers` | `#adminPortalModal` | Admin, Manager, Sales |
+| **CMS** | `branches` | Chuỗi Showroom | [`portal_admin_branches.js`](file:///d:/wmshare/telua_flower/js/portal_admin_branches.js) | `loadAdminBranches` | `#adminPortalModal` | Admin |
+| **CMS** | `promotions` | Khuyến Mãi | [`portal_admin_promotions.js`](file:///d:/wmshare/telua_flower/js/portal_admin_promotions.js) | `loadAdminPromotions` | `#adminPortalModal` | Admin |
+| **CMS** | `addons` | Sản Phẩm Kèm Theo | [`portal_admin_promotions.js`](file:///d:/wmshare/telua_flower/js/portal_admin_promotions.js) | `loadAdminAddons` | `#adminPortalModal` | Admin |
+| **CMS** | `banners` | Banner Trang Chủ | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAdminBanners` | `#adminPortalModal` | Admin |
+| **Order Dashboard** | `order_dashboard_view` | Tổng Quan Đơn Hàng | [`order_dashboard.js`](file:///d:/wmshare/telua_flower/js/order_dashboard.js) | `openOrderDashboardModal` | `#orderDashboardModal` | Tất cả nhân sự nội bộ |
+| **Cấu Hình** | `company` | Thông Tin Doanh Nghiệp | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadCompanyInfo` | `#systemConfigModal` | Admin |
+| **Cấu Hình** | `translations` | Biên Dịch Đa Ngữ | [`portal_admin_translations.js`](file:///d:/wmshare/telua_flower/js/portal_admin_translations.js) | `loadAdminTranslations` | `#systemConfigModal` | Admin |
+| **Cấu Hình** | `payment` | Cổng Thanh Toán | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadPaymentGateways` | `#systemConfigModal` | Admin |
+| **Cấu Hình** | `addonvis` | Hiển Thị Phụ Kiện | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAddonVisibility` | `#systemConfigModal` | Admin |
+| **Cấu Hình** | `banners` | Banner Trình Chiếu | [`portal_admin_sysconfig.js`](file:///d:/wmshare/telua_flower/js/portal_admin_sysconfig.js) | `loadAdminBanners` | `#systemConfigModal` | Admin |
+| **Cá Nhân** | `profile` | Hồ Sơ & Tài Khoản | [`customer_portal.js`](file:///d:/wmshare/telua_flower/js/customer_portal.js) | `openCustomerPortalModal` | `#customerPortalModal` | Tất cả người dùng |
+
+### 3. Quy Chuẩn 3 Bước Khi Bổ Sung Một Tab / Module Mới:
+Khi phát triển thêm tính năng mới trong tương lai:
+1. **Bước 1 (Tạo Module JS):** Tạo file JS chuyên biệt (ví dụ: `js/portal_admin_reports.js`) xử lý logic và giao diện tab đó.
+2. **Bước 2 (Đăng ký vào `config_layout.js`):** Khai báo một object tab mới gồm `tabKey`, `label`, `icon`, `module`, `loadFn`, `action` và danh sách `roles` được phép truy cập.
+3. **Bước 3 (Đồng bộ Bundle):** Thêm tên file vào mảng `MODULE_ORDER` trong [`scripts/build_bundle.py`](file:///d:/wmshare/telua_flower/scripts/build_bundle.py) và chạy `python scripts/build_bundle.py` để đóng gói tự động.
 
 ---
 
