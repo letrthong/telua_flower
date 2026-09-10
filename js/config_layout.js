@@ -1,0 +1,245 @@
+/**
+ * TELUA FLOWER CONNECT - ADMIN NAVIGATION & LAYOUT CONFIG
+ * Cấu trúc định nghĩa menu điều hướng đa cấp, ánh xạ modal/tab, module JS phụ trách và phân quyền người dùng.
+ */
+
+import { ROLES, hasPermission } from './roles_const.js';
+
+export const ADMIN_NAVIGATION_CONFIG = [
+  {
+    groupId: "cms",
+    title: "Quản Trị Hệ Thống (CMS)",
+    icon: "fa-solid fa-gauge-high",
+    targetModal: "adminPortalModal",
+    action: "openAdminPortalModal",
+    roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER],
+    children: [
+      {
+        tabKey: "orders",
+        label: "Đơn Hàng",
+        icon: "fa-solid fa-box-open",
+        module: "portal_admin_orders.js",
+        loadFn: "loadAdminOrders",
+        action: "switchAdminTab('orders')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT]
+      },
+      {
+        tabKey: "products",
+        label: "Mẫu Hoa & Bảng Giá",
+        icon: "fa-solid fa-spa",
+        module: "portal_admin_products.js",
+        loadFn: "loadAdminProducts",
+        action: "switchAdminTab('products')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
+      },
+      {
+        tabKey: "inventory",
+        label: "Kho & Hao Hụt",
+        icon: "fa-solid fa-boxes-stacked",
+        module: "portal_admin_inventory.js",
+        loadFn: "loadAdminInventory",
+        action: "switchAdminTab('inventory')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST]
+      },
+      {
+        tabKey: "categories",
+        label: "Danh Mục Hoa",
+        icon: "fa-solid fa-layer-group",
+        module: "portal_admin_categories.js",
+        loadFn: "loadAdminCategories",
+        action: "switchAdminTab('categories')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "staff",
+        label: "Nhân Sự Nội Bộ",
+        icon: "fa-solid fa-user-tie",
+        module: "portal_admin_users.js",
+        loadFn: "loadAdminUsers",
+        action: "switchAdminTab('staff')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
+      },
+      {
+        tabKey: "customers",
+        label: "Khách Hàng & CRM",
+        icon: "fa-solid fa-crown",
+        module: "portal_admin_users.js",
+        loadFn: "loadAdminCustomers",
+        action: "switchAdminTab('customers')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.SALES_CONSULTANT]
+      },
+      {
+        tabKey: "branches",
+        label: "Chuỗi Showroom",
+        icon: "fa-solid fa-store",
+        module: "portal_admin_branches.js",
+        loadFn: "loadAdminBranches",
+        action: "switchAdminTab('branches')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "promotions",
+        label: "Khuyến Mãi & Voucher",
+        icon: "fa-solid fa-ticket-simple",
+        module: "portal_admin_promotions.js",
+        loadFn: "loadAdminPromotions",
+        action: "switchAdminTab('promotions')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "addons",
+        label: "Sản Phẩm Kèm Theo",
+        icon: "fa-solid fa-gift",
+        module: "portal_admin_promotions.js",
+        loadFn: "loadAdminAddons",
+        action: "switchAdminTab('addons')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "banners",
+        label: "Banner Trang Chủ",
+        icon: "fa-solid fa-images",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminBanners",
+        action: "switchAdminTab('banners')",
+        roles: [ROLES.SUPER_ADMIN]
+      }
+    ]
+  },
+  {
+    groupId: "order_dashboard",
+    title: "Bảng Điều Khiển Đơn Hàng",
+    icon: "fa-solid fa-chart-line",
+    targetModal: "orderDashboardModal",
+    action: "openOrderDashboardModal",
+    roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT],
+    children: [
+      {
+        tabKey: "order_dashboard_view",
+        label: "Tổng Quan Đơn Hàng",
+        icon: "fa-solid fa-table-columns",
+        module: "order_dashboard.js",
+        loadFn: "openOrderDashboardModal",
+        action: "openOrderDashboardModal()",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT]
+      }
+    ]
+  },
+  {
+    groupId: "system_config",
+    title: "Cấu Hình Hệ Thống",
+    icon: "fa-solid fa-sliders",
+    targetModal: "systemConfigModal",
+    action: "openSystemConfigModal",
+    roles: [ROLES.SUPER_ADMIN],
+    children: [
+      {
+        tabKey: "company",
+        label: "Thông Tin Doanh Nghiệp",
+        icon: "fa-solid fa-building",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadCompanyInfo",
+        action: "switchSystemConfigTab('company')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "translations",
+        label: "Biên Dịch Đa Ngôn Ngữ",
+        icon: "fa-solid fa-language",
+        module: "portal_admin_translations.js",
+        loadFn: "loadAdminTranslations",
+        action: "switchSystemConfigTab('translations')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "payment",
+        label: "Phương Thức Thanh Toán",
+        icon: "fa-solid fa-credit-card",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadPaymentGateways",
+        action: "switchSystemConfigTab('payment')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "addonvis",
+        label: "Hiển Thị Phụ Kiện Giỏ Hàng",
+        icon: "fa-solid fa-eye",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAddonVisibility",
+        action: "switchSystemConfigTab('addonvis')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "banners",
+        label: "Banner Trình Chiếu",
+        icon: "fa-solid fa-images",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminBanners",
+        action: "switchSystemConfigTab('banners')",
+        roles: [ROLES.SUPER_ADMIN]
+      }
+    ]
+  },
+  {
+    groupId: "profile",
+    title: "Thông Tin Cá Nhân",
+    icon: "fa-solid fa-user",
+    targetModal: "customerPortalModal",
+    action: "openCustomerPortalModal",
+    roles: ["all"],
+    children: [
+      {
+        tabKey: "profile",
+        label: "Hồ Sơ & Tài Khoản",
+        icon: "fa-solid fa-id-card",
+        module: "customer_portal.js",
+        loadFn: "openCustomerPortalModal",
+        action: "openCustomerPortalModal()",
+        roles: ["all"]
+      }
+    ]
+  }
+];
+
+/**
+ * Lọc cây menu điều hướng dựa trên vai trò của người dùng hiện tại
+ * @param {string} userRole - Vai trò của người dùng (ví dụ: 'super_admin', 'branch_manager', 'florist')
+ * @returns {Array} - Cây menu đã được lọc quyền
+ */
+export function getAuthorizedAdminLayout(userRole) {
+  return ADMIN_NAVIGATION_CONFIG
+    .filter(group => !group.roles || hasPermission(userRole, group.roles))
+    .map(group => ({
+      ...group,
+      children: group.children.filter(child => hasPermission(userRole, child.roles))
+    }))
+    .filter(group => group.children.length > 0);
+}
+
+/**
+ * Tìm cấu hình chi tiết của một tabKey cụ thể
+ * @param {string} tabKey 
+ * @returns {Object|null}
+ */
+export function getTabConfig(tabKey) {
+  for (const group of ADMIN_NAVIGATION_CONFIG) {
+    const found = group.children.find(c => c.tabKey === tabKey);
+    if (found) return { ...found, groupId: group.groupId, targetModal: group.targetModal };
+  }
+  return null;
+}
+
+// Aliases tương thích với tên file config_layout.js
+export const CONFIG_LAYOUT = ADMIN_NAVIGATION_CONFIG;
+export const getAuthorizedLayout = getAuthorizedAdminLayout;
+
+// Global window binding for browser compatibility
+if (typeof window !== "undefined") {
+  window.ADMIN_NAVIGATION_CONFIG = ADMIN_NAVIGATION_CONFIG;
+  window.CONFIG_LAYOUT = CONFIG_LAYOUT;
+  window.getAuthorizedAdminLayout = getAuthorizedAdminLayout;
+  window.getAuthorizedLayout = getAuthorizedLayout;
+  window.getTabConfig = getTabConfig;
+}
+
+export default ADMIN_NAVIGATION_CONFIG;

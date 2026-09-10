@@ -7,6 +7,8 @@ JS_DIR = os.path.join(ROOT_DIR, "js")
 
 MODULE_ORDER = [
     "utils.js",
+    "roles_const.js",
+    "config_layout.js",
     "i18n.js",
     "products.js",
     "checkout.js",
