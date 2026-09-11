@@ -16,7 +16,8 @@ from  data_service import (
     get_user_by_id,
     get_user_by_phone_or_email,
     get_customers,
-    save_customers
+    save_customers,
+    get_branch_by_id
 )
 
 # Khóa bí mật ký JWT Token (lấy từ ENV hoặc giá trị mặc định bảo mật)
@@ -175,7 +176,20 @@ def authenticate_user(
 
     role = user.get("role", "customer")
     branch_id = user.get("branchId")
-    print(f"[AUTH] Login SUCCESS for user: '{identifier}' (Role: {role}, Branch: {branch_id})", flush=True)
+    branch_name = None
+    branch_address = None
+    branch_phone = None
+
+    if branch_id:
+        branch_obj = get_branch_by_id(branch_id)
+        if branch_obj:
+            branch_name = branch_obj.get("name")
+            branch_address = branch_obj.get("address")
+            branch_phone = branch_obj.get("phone")
+    elif role == "super_admin":
+        branch_name = "Tổng Quản Trị Hệ Thống / Toàn Chuỗi"
+
+    print(f"[AUTH] Login SUCCESS for user: '{identifier}' (Role: {role}, Branch: {branch_id} - {branch_name})", flush=True)
 
     # Sinh JWT Token
     payload = {
@@ -184,7 +198,8 @@ def authenticate_user(
         "email": user.get("email"),
         "fullName": user.get("fullName"),
         "role": role,
-        "branchId": branch_id
+        "branchId": branch_id,
+        "branchName": branch_name
     }
     token = generate_jwt_token(payload)
     redirect_url = get_redirect_url_for_role(role)
@@ -196,7 +211,10 @@ def authenticate_user(
         "email": user.get("email"),
         "fullName": user.get("fullName"),
         "role": role,
-        "branchId": branch_id
+        "branchId": branch_id,
+        "branchName": branch_name,
+        "branchAddress": branch_address,
+        "branchPhone": branch_phone
     }
 
     return True, {

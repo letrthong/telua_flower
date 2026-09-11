@@ -76,12 +76,13 @@ export function openStaffPortalModal() {
         }
     }
     if (subtitleEl) {
+        const storeBadge = user.branchName ? ` • 📍 ${user.branchName}` : (user.branchId ? ` • 📍 Showroom (${user.branchId})` : "");
         if (user.role === "florist") {
-            subtitleEl.textContent = "Danh sách đơn hoa cần cắm trong ca trực";
+            subtitleEl.textContent = `Danh sách đơn hoa cần cắm trong ca trực${storeBadge}`;
         } else if (user.role === "sales_consultant") {
-            subtitleEl.textContent = "Danh sách đơn mới & tiếp nhận xử lý ca trực";
+            subtitleEl.textContent = `Danh sách đơn mới & tiếp nhận xử lý ca trực${storeBadge}`;
         } else {
-            subtitleEl.textContent = "Theo dõi đơn hàng và tiến độ thực hiện ca trực chi nhánh";
+            subtitleEl.textContent = `Theo dõi đơn hàng và tiến độ thực hiện ca trực chi nhánh${storeBadge}`;
         }
     }
 
