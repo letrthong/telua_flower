@@ -201,38 +201,25 @@ async function loadStaffOrders() {
 
             orders = (json.data && Array.isArray(json.data.orders)) ? json.data.orders : (Array.isArray(json.data) ? json.data : []);
         } else {
-            // Nhân viên chi nhánh: bắt buộc phải có vị trí cửa hàng (branchId) hợp lệ
-            if (!user.branchId) {
-                throw new Error("Tài khoản của bạn chưa được phân bổ vị trí cửa hàng / chi nhánh.");
+            // Nhân viên chi nhánh: gọi endpoint Task API chuyên trách (/staff/my-tasks)
+            let url = `${API_BASE}/staff/my-tasks?mode=auto`;
+            if (status && status !== "all") {
+                url += `&status=${encodeURIComponent(status)}`;
             }
-            const branchId = user.branchId;
-            const res = await fetch(`${API_BASE}/branch/${branchId}/orders`, {
+            if (search) {
+                url += `&search=${encodeURIComponent(search)}`;
+            }
+
+            const res = await fetch(url, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const json = await res.json();
 
             if (!res.ok || !json.success) {
-                throw new Error(json.message || "Không tải được đơn hàng");
+                throw new Error(json.message || "Không tải được danh sách nhiệm vụ");
             }
 
             orders = Array.isArray(json.data) ? json.data : [];
-
-            // Lọc theo trạng thái
-            if (status && status !== "all") {
-                orders = orders.filter(o => o.status === status);
-            }
-
-            // Lọc theo từ khóa
-            if (search) {
-                const s = search.toLowerCase();
-                orders = orders.filter(o => {
-                    const code = (o.orderCode || o.id || "").toLowerCase();
-                    const senderPhone = (o.sender?.phone || "").toLowerCase();
-                    const senderName = (o.sender?.name || "").toLowerCase();
-                    const recipientName = (o.recipient?.name || "").toLowerCase();
-                    return code.includes(s) || senderPhone.includes(s) || senderName.includes(s) || recipientName.includes(s);
-                });
-            }
         }
 
         renderStaffOrders(orders, user.role);
@@ -446,6 +433,30 @@ export async function updateStaffOrderStatus(orderId, newStatus) {
     }
 }
 
+export async function claimStaffTask(orderId) {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    if (!token) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/staff/tasks/${orderId}/claim`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            }
+        });
+        const json = await res.json();
+        if (json.success) {
+            if (typeof showToast === "function") showToast("Bạn đã nhận nhiệm vụ thành công!", 'success');
+            loadStaffOrders();
+        } else {
+            if (typeof showToast === "function") showToast(json.message || "Lỗi nhận việc", 'error');
+        }
+    } catch (e) {
+        if (typeof showToast === "function") showToast("Lỗi kết nối: " + e.message, 'error');
+    }
+}
+
 // Global binding
 if (typeof window !== "undefined") {
     window.openStaffPortalModal = openStaffPortalModal;
@@ -454,4 +465,5 @@ if (typeof window !== "undefined") {
     window.updateStaffOrderStatus = updateStaffOrderStatus;
     window.dispatchStaffOrder = dispatchStaffOrder;
     window.populateStaffBranchFilter = populateStaffBranchFilter;
+    window.claimStaffTask = claimStaffTask;
 }

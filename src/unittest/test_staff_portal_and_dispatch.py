@@ -311,6 +311,55 @@ class TestStaffPortalAndDispatch(unittest.TestCase):
         )
         self.assertEqual(res_admin_cross.status_code, 403)
 
+    def test_07_staff_task_api_and_claim(self):
+        """
+        Kiểm tra chuyên biệt bộ Task API độc lập dành cho nhân viên ca trực tác nghiệp:
+        1. GET /api/flower/v1/staff/my-tasks: Không cần truyền branchId, tự nạp đúng chi nhánh và việc của nhân viên.
+        2. GET /api/flower/v1/staff/tasks/summary: Thống kê nhanh số lượng task theo ca trực.
+        3. POST /api/flower/v1/staff/tasks/<order_id>/claim: Nhân viên nhận việc thành công, cập nhật assignedTo & history.
+        4. Chặn nhận việc nếu nhân viên khác chi nhánh (403).
+        """
+        # Tạo đơn cắm hoa mới tại Showroom Q10
+        order = self._create_test_order(branch_id="branch_q10", requires_arranging=True)
+        update_order_status(order["id"], "confirmed")
+
+        # 1. Florist Showroom Q10 gọi /staff/my-tasks
+        headers_fl = {"Authorization": f"Bearer {self.florist_token}"}
+        res_tasks = self.client.get("/api/flower/v1/staff/my-tasks", headers=headers_fl)
+        self.assertEqual(res_tasks.status_code, 200)
+        tasks_json = res_tasks.get_json()
+        self.assertTrue(tasks_json["success"])
+        self.assertEqual(tasks_json["branchId"], "branch_q10")
+        self.assertEqual(tasks_json["staffId"], "staff_002")
+        task_ids = [t["id"] for t in tasks_json["data"]]
+        self.assertIn(order["id"], task_ids)
+
+        # 2. Kiểm tra thống kê ca trực /staff/tasks/summary
+        res_sum = self.client.get("/api/flower/v1/staff/tasks/summary", headers=headers_fl)
+        self.assertEqual(res_sum.status_code, 200)
+        sum_data = res_sum.get_json()["data"]
+        self.assertGreaterEqual(sum_data["total"], 1)
+        self.assertIn("pending", sum_data)
+        self.assertIn("arranging", sum_data)
+
+        # 3. Florist bấm nhận việc (claim task)
+        res_claim = self.client.post(
+            f"/api/flower/v1/staff/tasks/{order['id']}/claim",
+            headers=headers_fl
+        )
+        self.assertEqual(res_claim.status_code, 200)
+        claim_data = res_claim.get_json()["data"]
+        self.assertEqual(claim_data["assignedTo"], "staff_002")
+        self.assertTrue(any("đã nhận nhiệm vụ" in h.get("note", "") for h in claim_data.get("history", [])))
+
+        # 4. Nhân viên Showroom Q1 cố tình nhận đơn của Showroom Q10 -> 403 Forbidden
+        florist_q1_token = generate_jwt_token({"userId": "staff_005", "role": "florist", "branchId": "branch_q1"})
+        res_claim_blocked = self.client.post(
+            f"/api/flower/v1/staff/tasks/{order['id']}/claim",
+            headers={"Authorization": f"Bearer {florist_q1_token}"}
+        )
+        self.assertEqual(res_claim_blocked.status_code, 403)
+
 
 if __name__ == "__main__":
     unittest.main()

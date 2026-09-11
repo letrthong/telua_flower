@@ -51,7 +51,8 @@ from   data_service import (
     save_uploaded_image,
     find_image_file,
     update_order_status,
-    enrich_order_display_names
+    enrich_order_display_names,
+    save_order
 )
 from order_service import (
     get_available_delivery_slots,
@@ -424,6 +425,163 @@ def api_branch_orders(branch_id):
         "success": True,
         "data": tasks
     }), 200
+
+
+@flower_connect_api.route("/staff/my-tasks", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant", "shipper"])
+def api_staff_my_tasks():
+    """
+    Dedicated Task Execution API dành riêng cho nhân viên ca trực tác nghiệp.
+    Tách biệt hoàn toàn khỏi Order API quản lý kinh doanh & kế toán:
+    - Nhân viên không cần truyền branchId: Hệ thống tự động xác định danh tính và vị trí cửa hàng từ token.
+    - Trừ super_admin không bị ràng buộc vị trí (có thể truyền ?branchId=... để soi việc theo Showroom).
+    - Trả về chính xác các nhiệm vụ tác nghiệp tương ứng với vai trò của nhân viên.
+    Query params:
+    - status: 'all', 'pending', 'confirmed', 'arranging', 'photo_sent', 'shipping', 'ready_for_pickup', 'completed'
+    - mode: 'auto' (mặc định), 'my_tasks', 'all'
+    - search: từ khóa tìm kiếm (mã đơn, SĐT, tên khách)
+    """
+    current_user = request.current_user
+    role = current_user.get("role")
+    user_branch = current_user.get("branchId")
+
+    # Xác thực vị trí cửa hàng: Trừ super_admin, nhân viên bắt buộc phải có branchId hợp lệ
+    if role != "super_admin":
+        if not user_branch:
+            return jsonify({
+                "success": False,
+                "message": "Tài khoản của bạn chưa được phân bổ vị trí cửa hàng / chi nhánh"
+            }), 403
+        target_branch = user_branch
+    else:
+        # Super Admin có thể chọn xem một chi nhánh hoặc xem toàn bộ
+        req_branch = request.args.get("branchId")
+        target_branch = req_branch if req_branch and req_branch != "all" else None
+
+    all_orders = read_orders_by_month()
+    if target_branch:
+        branch_orders = [
+            o for o in all_orders
+            if (o.get("branchId") == target_branch or o.get("assignedBranchId") == target_branch)
+        ]
+    else:
+        branch_orders = all_orders
+
+    for o in branch_orders:
+        enrich_order_display_names(o)
+
+    mode = request.args.get("mode", "auto")
+    tasks = filter_tasks_for_staff(branch_orders, current_user, mode=mode)
+
+    # Bộ lọc trạng thái tùy chọn
+    status_filter = request.args.get("status")
+    if status_filter and status_filter != "all":
+        tasks = [t for t in tasks if t.get("status") == status_filter]
+
+    # Bộ lọc tìm kiếm nhanh
+    search_query = (request.args.get("search") or "").strip().lower()
+    if search_query:
+        tasks = [
+            t for t in tasks
+            if search_query in (t.get("orderCode") or t.get("id") or "").lower()
+            or search_query in (t.get("sender", {}).get("phone") or "").lower()
+            or search_query in (t.get("sender", {}).get("name") or "").lower()
+            or search_query in (t.get("recipient", {}).get("name") or "").lower()
+        ]
+
+    return jsonify({
+        "success": True,
+        "data": tasks,
+        "totalTasks": len(tasks),
+        "branchId": target_branch or "all",
+        "staffId": current_user.get("userId")
+    }), 200
+
+
+@flower_connect_api.route("/staff/tasks/<order_id>/claim", methods=["POST"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant", "shipper"])
+def api_staff_claim_task(order_id):
+    """
+    Nhân viên ca trực bấm 'Nhận việc' (Claim task) để gán đích danh đơn hàng cho mình.
+    """
+    current_user = request.current_user
+    order = get_order_by_id(order_id)
+    if not order:
+        return jsonify({"success": False, "message": "Không tìm thấy nhiệm vụ / đơn hàng"}), 404
+
+    order_branch = order.get("branchId") or order.get("assignedBranchId") or ""
+    if not can_access_branch(current_user, order_branch):
+        return jsonify({
+            "success": False,
+            "message": "Bạn không có quyền nhận nhiệm vụ tại vị trí cửa hàng này"
+        }), 403
+
+    user_id = current_user.get("userId")
+    user_name = current_user.get("fullName") or user_id
+    role = current_user.get("role")
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # Cập nhật người phụ trách
+    order["assignedTo"] = user_id
+    order["updatedAt"] = now_iso
+
+    history = order.get("history") or []
+    if not isinstance(history, list):
+        history = []
+    history.append({
+        "status": order.get("status"),
+        "assignedTo": user_id,
+        "updatedAt": now_iso,
+        "note": f"Nhân viên {user_name} ({role}) đã nhận nhiệm vụ",
+        "updatedBy": f"{user_name} ({user_id})"
+    })
+    order["history"] = history
+
+    enrich_order_display_names(order)
+    saved = save_order(order)
+    if not saved:
+        return jsonify({"success": False, "message": "Lỗi khi lưu thông tin nhận việc"}), 500
+
+    return jsonify({
+        "success": True,
+        "message": "Nhận việc thành công",
+        "data": order
+    }), 200
+
+
+@flower_connect_api.route("/staff/tasks/summary", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant", "shipper"])
+def api_staff_tasks_summary():
+    """
+    Thống kê nhanh số lượng task theo ca trực cho nhân viên (Quick counters for badges).
+    """
+    current_user = request.current_user
+    role = current_user.get("role")
+    user_branch = current_user.get("branchId")
+
+    if role != "super_admin":
+        if not user_branch:
+            return jsonify({"success": False, "message": "Tài khoản chưa có vị trí cửa hàng"}), 403
+        target_branch = user_branch
+    else:
+        req_branch = request.args.get("branchId")
+        target_branch = req_branch if req_branch and req_branch != "all" else None
+
+    all_orders = read_orders_by_month()
+    branch_orders = [o for o in all_orders if not target_branch or o.get("branchId") == target_branch or o.get("assignedBranchId") == target_branch]
+
+    tasks = filter_tasks_for_staff(branch_orders, current_user, mode="auto")
+
+    summary = {
+        "total": len(tasks),
+        "pending": len([t for t in tasks if t.get("status") in ["pending", "confirmed"]]),
+        "arranging": len([t for t in tasks if t.get("status") == "arranging"]),
+        "photoSent": len([t for t in tasks if t.get("status") == "photo_sent"]),
+        "shipping": len([t for t in tasks if t.get("status") == "shipping"]),
+        "completed": len([t for t in tasks if t.get("status") in ["completed", "delivered"]])
+    }
+
+    return jsonify({"success": True, "data": summary}), 200
 
 
 @flower_connect_api.route("/admin/orders", methods=["GET"])

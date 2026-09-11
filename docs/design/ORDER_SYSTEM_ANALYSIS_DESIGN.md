@@ -463,7 +463,10 @@ pie title Tỷ trọng Doanh Thu Theo Chi Nhánh (Tháng 09/2026)
 | `GET` | `/api/orders/<order_id>` | RBAC Guard | Tra cứu chi tiết đơn hàng (Kiểm tra quyền sở hữu của khách hoặc phân quyền chi nhánh của nhân viên). |
 | `GET` | `/api/orders/<order_id>/payment-qr` | Public / Auth | Lấy mã VietQR động, QuickLink URL và thông tin chuyển khoản ngân hàng. |
 | `GET` | `/api/orders/my-orders` | Customer (JWT) | Lấy danh sách lịch sử đơn hàng của tài khoản đang đăng nhập. |
-| `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager / Admin | Lấy danh sách công việc ca trực. Backend kiểm tra an toàn vị trí cửa hàng (trừ Super Admin) và lọc trả về đúng công việc theo vai trò (Florist, Sales, Shipper, Manager). |
+| `GET` | `/api/staff/my-tasks` | Staff / Manager / Admin | **[MỚI - Task API]** Lấy danh sách công việc tác nghiệp ca trực theo vai trò. Tự động xác định Showroom từ JWT. |
+| `POST` | `/api/staff/tasks/<order_id>/claim` | Staff / Manager | **[MỚI - Task API]** Nhân viên bấm "Nhận việc" (Claim task) để gán đơn đích danh cho mình. |
+| `GET` | `/api/staff/tasks/summary` | Staff / Manager / Admin | **[MỚI - Task API]** Thống kê nhanh số lượng task theo ca trực (chờ cắm, đang cắm, giao hàng). |
+| `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager / Admin | Lấy danh sách công việc / đơn hàng ca trực của chi nhánh. |
 | `GET` | `/api/admin/orders` | Staff / Manager / Admin | Quản lý, tìm kiếm và thống kê doanh thu đơn hàng. Tự động khóa chi nhánh theo nhân viên (trừ Super Admin toàn quyền). |
 | `PUT` | `/api/admin/orders/<order_id>/status` | Staff / Manager / Admin | Cập nhật trạng thái tiến độ đơn (`confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`). |
 | `PUT` | `/api/admin/orders/<order_id>/payment` | Staff / Manager / Admin | Cập nhật trạng thái thanh toán tiền mặt/COD/POS (chặn sửa đơn thanh toán online). |

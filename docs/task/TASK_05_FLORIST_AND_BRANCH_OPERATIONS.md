@@ -53,6 +53,9 @@ Xây dựng không gian làm việc chuyên biệt dành cho Thợ cắm hoa, Nh
 1. [`src/auth_decorator.py`](file:///d:/wmshare/telua_flower/src/auth_decorator.py):
    - Hàm `can_access_branch(user, branch_id)`: Super Admin không giới hạn vị trí; nhân viên khác bắt buộc kiểm tra `user.branchId == branch_id`.
 2. [`src/restful_blueprint_flower_connect.py`](file:///d:/wmshare/telua_flower/src/restful_blueprint_flower_connect.py):
+   - `GET /api/flower/v1/staff/my-tasks`: **[MỚI]** Endpoint tác nghiệp chuyên biệt cho nhân viên (tự nạp chi nhánh từ token).
+   - `POST /api/flower/v1/staff/tasks/<order_id>/claim`: **[MỚI]** Thợ cắm hoa / Shipper nhận việc trực tiếp.
+   - `GET /api/flower/v1/staff/tasks/summary`: **[MỚI]** Thống kê nhanh số lượng task theo ca trực.
    - `GET /api/flower/v1/branch/<branch_id>/orders`: Xác thực vị trí cửa hàng và lọc công việc đúng vai trò.
    - `GET /api/flower/v1/admin/orders`: Khóa cứng `branch_id` về chi nhánh của nhân viên nếu không phải super_admin.
    - `PUT /api/flower/v1/admin/orders/<order_id>/status`: Cập nhật trạng thái tiến độ đơn hàng (có kiểm tra chi nhánh).
