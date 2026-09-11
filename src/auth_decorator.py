@@ -95,12 +95,19 @@ def require_auth(f):
 
 def can_access_branch(user: Dict[str, Any], branch_id: str) -> bool:
     """
-    Kiểm tra phân lập dữ liệu chi nhánh (Data Isolation).
-    - Super Admin: Toàn quyền truy cập mọi chi nhánh.
-    - Quản lý / Florist / Sales: Chỉ được truy cập chi nhánh trực thuộc.
+    Kiểm tra phân lập dữ liệu chi nhánh & vị trí cửa hàng (Data Isolation & Store Location Guard).
+    - Super Admin: Toàn quyền truy cập mọi chi nhánh (không bị giới hạn vị trí cửa hàng).
+    - Quản lý chi nhánh / Florist / Sales / Shipper:
+      + Bắt buộc phải được phân bổ vị trí cửa hàng (branchId hợp lệ).
+      + Tuyệt đối chỉ được phép truy cập đúng chi nhánh trực thuộc của mình.
     """
     if not user:
         return False
     if user.get("role") == "super_admin":
         return True
-    return user.get("branchId") == branch_id
+
+    user_branch = user.get("branchId")
+    if not user_branch or not branch_id:
+        return False
+
+    return str(user_branch).strip().lower() == str(branch_id).strip().lower()

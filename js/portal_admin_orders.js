@@ -85,14 +85,24 @@ function renderAdminOrdersTable(orders) {
         return;
     }
 
+    const branches = (typeof window !== "undefined" && Array.isArray(window.allAdminBranches)) ? window.allAdminBranches : [];
+
     tbody.innerHTML = orders.map(order => {
         const statusMeta = adminGetStatusMeta(order.status, ADMIN_ORDER_STATUS_META);
         const payMeta = adminGetStatusMeta(order.payment?.status, ADMIN_PAYMENT_STATUS_META);
         const total = Number(order.totalAmount) || Number(order.financials?.totalAmount) || 0;
         const sender = order.sender || {};
         const recipient = order.recipient || {};
-        const branchId = order.branchId || order.assignedBranchId || "";
-        const assignedTo = order.assignedTo || "—";
+        const branchId = order.branchId || order.assignedBranchId || "admin";
+        const branchName = order.branchName || (branchId === "admin" ? "Trung Tâm (Admin)" : branchId);
+        const creatorName = order.creatorName || sender.name || "Khách đặt online";
+        const assigneeName = order.assigneeName || order.assignedTo || "Super Admin (staff_admin)";
+        const isAssignedToAdmin = (branchId === "admin");
+
+        // Chi nhánh tùy chọn cho dropdown điều phối
+        const branchOptions = branches.filter(b => b.isActive !== false).map(b => `
+            <option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${b.name || b.id}</option>
+        `).join("");
 
         return `
             <tr class="hover:bg-pink-50/30 transition">
@@ -101,15 +111,23 @@ function renderAdminOrdersTable(orders) {
                     <div class="text-[10px] text-gray-400">${adminFormatDate(order.createdAt || order.orderDate)}</div>
                 </td>
                 <td class="p-3">
-                    <div class="text-xs font-bold text-gray-800">${sender.name || "—"}</div>
+                    <div class="text-xs font-bold text-gray-800">${creatorName}</div>
                     <div class="text-[10px] text-gray-400">${sender.phone || ""}</div>
                 </td>
                 <td class="p-3">
                     <div class="text-xs text-gray-700">${recipient.name || "—"}</div>
-                    <div class="text-[10px] text-gray-400 truncate max-w-[140px]">${recipient.address || ""}</div>
+                    <div class="text-[10px] text-gray-400 truncate max-w-[130px]">${recipient.address || ""}</div>
                 </td>
-                <td class="p-3"><span class="text-[11px] font-semibold text-gray-600">${branchId}</span></td>
-                <td class="p-3"><span class="text-[11px] text-gray-600">${assignedTo}</span></td>
+                <td class="p-3">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-[11px] font-semibold ${isAssignedToAdmin ? 'text-amber-700 font-bold' : 'text-gray-700'}">${branchName}</span>
+                        ${isAssignedToAdmin ? '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[9px] font-bold border border-amber-200 animate-pulse"><i class="fa-solid fa-bolt"></i> Chờ điều phối</span>' : ''}
+                    </div>
+                </td>
+                <td class="p-3">
+                    <div class="text-[11px] font-semibold text-gray-800">${assigneeName}</div>
+                    <div class="text-[10px] text-gray-400">Người thực hiện</div>
+                </td>
                 <td class="p-3 font-bold text-gray-800">${adminFormatVND(total)}</td>
                 <td class="p-3">
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${payMeta.color}">
@@ -122,14 +140,21 @@ function renderAdminOrdersTable(orders) {
                     </span>
                 </td>
                 <td class="p-3 text-center">
-                    <select onchange="updateAdminOrderStatus('${order.id}', this.value)" class="px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-semibold focus:outline-none focus:border-primary">
-                        <option value="">Cập nhật...</option>
-                        <option value="confirmed">✅ Xác nhận</option>
-                        <option value="arranging">🌸 Đang cắm</option>
-                        <option value="shipping">🚚 Vận chuyển</option>
-                        <option value="delivered">🎉 Giao xong</option>
-                        <option value="cancelled">❌ Hủy</option>
-                    </select>
+                    <div class="flex flex-col gap-1.5 items-center">
+                        <select onchange="updateAdminOrderStatus('${order.id}', this.value)" class="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-semibold focus:outline-none focus:border-primary">
+                            <option value="">Cập nhật trạng thái...</option>
+                            <option value="confirmed">✅ Xác nhận</option>
+                            <option value="arranging">🌸 Đang cắm</option>
+                            <option value="shipping">🚚 Vận chuyển</option>
+                            <option value="delivered">🎉 Giao xong</option>
+                            <option value="cancelled">❌ Hủy</option>
+                        </select>
+                        <select onchange="dispatchAdminOrder('${order.id}', this.value)" class="w-full px-2 py-1 bg-pink-50/50 border border-pink-200 text-primary rounded-lg text-[10px] font-bold focus:outline-none focus:border-primary">
+                            <option value="">⚡ Gán cửa hàng...</option>
+                            <option value="admin" ${branchId === 'admin' ? 'selected' : ''}>🏢 Trung Tâm Admin</option>
+                            ${branchOptions}
+                        </select>
+                    </div>
                 </td>
             </tr>
         `;
@@ -162,9 +187,38 @@ export async function updateAdminOrderStatus(orderId, newStatus) {
     }
 }
 
+export async function dispatchAdminOrder(orderId, targetBranchId) {
+    if (!orderId || !targetBranchId) return;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders/${orderId}/dispatch`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ targetBranchId: targetBranchId })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+            notifyUser(json.message || "Đã điều phối đơn hàng thành công!", 'success');
+            loadAdminOrders();
+        } else {
+            notifyUser(json.message || "Lỗi điều phối đơn hàng", 'error');
+            loadAdminOrders();
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối điều phối: " + e.message, 'error');
+    }
+}
+
 if (typeof window !== "undefined") {
     window.ADMIN_ORDER_STATUS_META = ADMIN_ORDER_STATUS_META;
     window.ADMIN_PAYMENT_STATUS_META = ADMIN_PAYMENT_STATUS_META;
     window.loadAdminOrders = loadAdminOrders;
     window.updateAdminOrderStatus = updateAdminOrderStatus;
+    window.dispatchAdminOrder = dispatchAdminOrder;
 }
+

@@ -676,11 +676,47 @@ export async function handleApplyVoucher() {
 }
 
 /**
+ * Bật/tắt yêu cầu cắm hoa nghệ thuật (+50% phí)
+ */
+export function toggleRequestArranging() {
+    const reqArrangingCheckbox = document.getElementById("checkoutRequestArranging");
+    const isReqArranging = reqArrangingCheckbox ? reqArrangingCheckbox.checked : false;
+    const notesSec = document.getElementById("arrangingNotesSection");
+    if (notesSec) {
+        notesSec.classList.toggle("hidden", !isReqArranging);
+        if (isReqArranging) {
+            const notesInput = document.getElementById("checkoutArrangingNotes");
+            if (notesInput) notesInput.focus();
+        }
+    }
+    updateOrderSummary();
+}
+
+/**
  * Cập nhật bảng tổng kết chi phí
  */
 export function updateOrderSummary() {
     const items = getCartItems();
     const subtotal = calculateSubtotal(items);
+
+    // Dịch vụ cắm hoa nghệ thuật (+50% phí trên tiền hàng)
+    const reqArrangingCheckbox = document.getElementById("checkoutRequestArranging");
+    const isReqArranging = reqArrangingCheckbox ? reqArrangingCheckbox.checked : false;
+    const arrangingFee = isReqArranging ? Math.round(subtotal * 0.5) : 0;
+
+    const notesSec = document.getElementById("arrangingNotesSection");
+    if (notesSec) {
+        notesSec.classList.toggle("hidden", !isReqArranging);
+    }
+
+    const arrangingFeeRow = document.getElementById("summaryArrangingFeeRow");
+    const arrangingFeeEl = document.getElementById("summaryArrangingFee");
+    if (arrangingFeeRow) {
+        arrangingFeeRow.classList.toggle("hidden", !isReqArranging);
+    }
+    if (arrangingFeeEl) {
+        arrangingFeeEl.textContent = `+${formatVND(arrangingFee)}`;
+    }
 
     const isExpressCheckbox = document.getElementById("checkoutIsExpress2H");
     const isExpress = isExpressCheckbox ? isExpressCheckbox.checked : false;
@@ -709,7 +745,7 @@ export function updateOrderSummary() {
         }
     }
 
-    const finalTotal = Math.max(0, subtotal + shippingFee - discount);
+    const finalTotal = Math.max(0, subtotal + arrangingFee + shippingFee - discount);
 
     const lang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
     const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
@@ -756,6 +792,10 @@ export async function handleCheckoutSubmit(event) {
 
     const cardMessage = document.getElementById("checkoutCardMessage")?.value.trim() || "";
     const ribbonBanner = document.getElementById("checkoutRibbonBanner")?.value.trim() || "";
+    const requestArranging = document.getElementById("checkoutRequestArranging")?.checked || false;
+    const arrangingNotes = document.getElementById("checkoutArrangingNotes")?.value.trim() || "";
+    const subtotal = calculateSubtotal(items);
+    const arrangingFee = requestArranging ? Math.round(subtotal * 0.5) : 0;
     const paymentMethod = document.querySelector("input[name='paymentMethod']:checked")?.value || "vietqr";
 
     // Phương thức nhận hàng (delivery / pickup)
@@ -818,9 +858,16 @@ export async function handleCheckoutSubmit(event) {
         },
         fulfillmentType: fulfillmentType,
         branchId: fulfillmentType === "pickup" ? pickupBranchId : "",
+        requestArranging: requestArranging,
+        arrangingNotes: arrangingNotes,
+        arrangingFee: arrangingFee,
+        requiresArranging: requestArranging,
         customization: {
             cardMessage: cardMessage,
-            ribbonBanner: ribbonBanner
+            ribbonBanner: ribbonBanner,
+            requestArranging: requestArranging,
+            arrangingNotes: arrangingNotes,
+            arrangingFee: arrangingFee
         },
         items: items.map((i) => ({
             productId: i.productId,
@@ -897,6 +944,7 @@ if (typeof window !== "undefined") {
         onDeliveryDateChange,
         toggleExpress2H,
         handleApplyVoucher,
+        toggleRequestArranging,
         updateOrderSummary,
         handleCheckoutSubmit
     };
@@ -912,6 +960,7 @@ if (typeof window !== "undefined") {
     window.onDeliveryDateChange = onDeliveryDateChange;
     window.toggleExpress2H = toggleExpress2H;
     window.handleApplyVoucher = handleApplyVoucher;
+    window.toggleRequestArranging = toggleRequestArranging;
     window.updateOrderSummary = updateOrderSummary;
     window.handleCheckoutSubmit = handleCheckoutSubmit;
     window.onFulfillmentTypeChange = onFulfillmentTypeChange;

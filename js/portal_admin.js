@@ -76,7 +76,10 @@ export {
     closeUserModal,
     editUser,
     handleUserSubmit,
-    deleteUser
+    deleteUser,
+    openUserManagementModal,
+    closeUserManagementModal,
+    switchUserManagementTab
 } from './portal_admin_users.js';
 
 // Re-export Products
@@ -204,7 +207,7 @@ import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loa
 import { loadAdminCategories, saveCurrentCatI18nDraft } from './portal_admin_categories.js';
 import { loadAdminProducts, onPriceLevelChange, saveCurrentProdI18nDraft, openProductModal, closeProductModal } from './portal_admin_products.js';
 import { loadAdminBranches } from './portal_admin_branches.js';
-import { loadAdminUsers, loadAdminCustomers } from './portal_admin_users.js';
+import { loadAdminUsers, loadAdminCustomers, openUserManagementModal, closeUserManagementModal, switchUserManagementTab } from './portal_admin_users.js';
 import { loadAdminPromotions, loadAdminAddons } from './portal_admin_promotions.js';
 import { loadAdminTranslations, syncSingleKeyInputToDictionary } from './portal_admin_translations.js';
 import { loadAdminOrders } from './portal_admin_orders.js';
@@ -234,6 +237,12 @@ export function openAdminPortalModal(initialTab = null) {
     // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
     if (initialTab === "company" || initialTab === "translations" || initialTab === "banners") {
         openSystemConfigModal(initialTab);
+        return;
+    }
+
+    // Nếu yêu cầu tab quản lý người dùng, chuyển hướng trực tiếp sang modal Quản Lý Người Dùng
+    if (initialTab === "staff" || initialTab === "customers" || initialTab === "users") {
+        openUserManagementModal(initialTab === "customers" ? "customers" : "staff");
         return;
     }
 
@@ -423,6 +432,13 @@ export function switchAdminTab(tabName) {
         return;
     }
 
+    // Nếu yêu cầu tab quản lý người dùng, tự động mở User Management Dialog độc lập
+    if (tabName === "staff" || tabName === "customers" || tabName === "users") {
+        closeAdminPortalModal();
+        openUserManagementModal(tabName === "customers" ? "customers" : "staff");
+        return;
+    }
+
     // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
     if (tabName === "users") tabName = "staff";
 
@@ -496,4 +512,7 @@ if (typeof window !== "undefined") {
     window.saveCurrentProdI18nDraft = saveCurrentProdI18nDraft;
     window.syncSingleKeyInputToDictionary = syncSingleKeyInputToDictionary;
     window.saveCurrentCatI18nDraft = saveCurrentCatI18nDraft;
+    window.openUserManagementModal = openUserManagementModal;
+    window.closeUserManagementModal = closeUserManagementModal;
+    window.switchUserManagementTab = switchUserManagementTab;
 }

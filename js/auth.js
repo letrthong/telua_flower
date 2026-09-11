@@ -502,13 +502,13 @@ function updateAuthUI() {
         if (isAdminOrManager) {
             portalActionBtn = `
                 <div class="p-2 space-y-1.5 border-b border-gray-100">
-                    <button onclick="openAdminPortalModal('orders')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 transition rounded-xl border border-amber-200 shadow-2xs">
+                    <button onclick="openStaffPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 transition rounded-xl border border-amber-200 shadow-2xs">
                         <i class="fa-solid fa-briefcase mr-2 text-amber-600"></i> Công Việc Của Tôi
                     </button>
                     <button onclick="openAdminPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                         <i class="fa-solid fa-gauge-high mr-2"></i> CMS (Hàng Hóa & Vận Hành)
                     </button>
-                    <button onclick="openAdminPortalModal('staff')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50/80 hover:bg-purple-100 transition rounded-xl border border-purple-200">
+                    <button onclick="openUserManagementModal('staff')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50/80 hover:bg-purple-100 transition rounded-xl border border-purple-200">
                         <i class="fa-solid fa-users-gear mr-2 text-purple-600"></i> Quản Lý Người Dùng
                     </button>
                     ${orderDashboardBtn}
@@ -603,13 +603,13 @@ function updateAuthUI() {
 
                     ${isAdminOrManager ? `
                         <div class="space-y-2">
-                            <button onclick="openAdminPortalModal('orders'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 transition rounded-xl border border-amber-200">
+                            <button onclick="openStaffPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 transition rounded-xl border border-amber-200">
                                 <i class="fa-solid fa-briefcase mr-2 text-amber-600"></i> Công Việc Của Tôi
                             </button>
                             <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                                 <i class="fa-solid fa-gauge-high mr-2"></i> CMS (Hàng Hóa & Vận Hành)
                             </button>
-                            <button onclick="openAdminPortalModal('staff'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition rounded-xl border border-purple-200">
+                            <button onclick="openUserManagementModal('staff'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition rounded-xl border border-purple-200">
                                 <i class="fa-solid fa-users-gear mr-2 text-purple-600"></i> Quản Lý Người Dùng
                             </button>
                             <button onclick="openOrderDashboardModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">

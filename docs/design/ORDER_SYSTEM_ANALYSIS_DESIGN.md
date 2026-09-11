@@ -72,6 +72,7 @@ graph TD
   "customerId": "cust_1725300000",
   "assignedTo": "staff_manager_q10",
   "assignedBy": "system",
+  "requiresArranging": true,
   "status": "pending",
   "cardMessage": "Chúc em tuổi mới luôn xinh đẹp và rạng rỡ như những đóa hoa!",
   "ribbonBanner": "Mừng Khai Trương Hồng Phát - Cty Alpha Tech",
@@ -102,7 +103,9 @@ graph TD
   
   "customization": {
     "cardMessage": "Chúc em tuổi mới luôn xinh đẹp và rạng rỡ như những đóa hoa!",
-    "ribbonBanner": "Mừng Khai Trương Hồng Phát - Cty Alpha Tech"
+    "ribbonBanner": "Mừng Khai Trương Hồng Phát - Cty Alpha Tech",
+    "requiresArranging": true,
+    "arrangingNotes": "Cắm tone hồng pastel, bình gốm cao, hoa phụ lá bạc"
   },
   
   "items": [
@@ -126,9 +129,10 @@ graph TD
   
   "financials": {
     "subtotal": 730000,
+    "arrangingFee": 365000,
     "shippingFee": 0,
     "discountAmount": 50000,
-    "totalAmount": 680000,
+    "totalAmount": 1045000,
     "appliedVoucher": {
       "code": "FLOWERNEW",
       "title": "Ưu đãi khách hàng mới giảm 50K",
@@ -136,7 +140,7 @@ graph TD
     }
   },
   
-  "totalAmount": 680000,
+  "totalAmount": 1045000,
   
   "payment": {
     "method": "vietqr",
@@ -184,14 +188,25 @@ graph TD
 
 ## 3. Mô Hình Hai Chuỗi Trạng Thái Độc Lập (Dual-State Lifecycle Engine)
 
-Hệ thống quản lý đơn hàng sử dụng kiến trúc **Hai Chuỗi Trạng Thái Độc Lập (Decoupled State Machine)** nhằm phản ánh trung thực thực tế vận hành logistics và tài chính:
+Hệ thống quản lý đơn hàng sử dụng kiến trúc **Hai Chuỗi Trạng Thái Độc Lập (Decoupled State Machine)** nhằm phản ánh trung thực thực tế vận hành logistics và tài chính. Đặc biệt, hệ thống phân nhánh rõ ràng giữa **Đơn Cắm Hoa Nghệ Thuật** (`requiresArranging: true`) và **Đơn Fast-Track Tiêu Chuẩn** (`requiresArranging: false`):
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
 │                                   1. ORDER FULFILLMENT STATUS                                   │
+│                                                                                                 │
+│  [A. Luồng Cắm Hoa Nghệ Thuật (+50% Phí, requiresArranging: true)]                              │
 │  pending ──> confirmed ──> arranging ──> photo_sent ──> shipping / ready_for_pickup ──> delivered ──> completed
-│     │            │             │                           │                                │
-│     └────────────┴─────────────┴───────────────────────────┴──> cancelled                   └──> returned
+│     │            │             │                           │                                │   │
+│     │            │             │                           │                                └───┼──> returned
+│     │            │             │                           │                                    │
+│     │            │             │                           └────────────────────────────────────┤
+│     │            │             └────────────────────────────────────────────────────────────────┤
+│     │            └──────────────────────────────────────────────────────────────────────────────┤
+│     └───────────────────────────────────────────────────────────────────────────────────────────┴──> cancelled
+│                                                                                                 │
+│  [B. Luồng Fast-Track: Hoa Nguyên Cành / Bó Tiêu Chuẩn (requiresArranging: false)]              │
+│  pending ──> confirmed ───────────────────────────────> shipping / ready_for_pickup ──> delivered ──> completed
+│  (Bỏ qua khâu cắm hoa 'arranging'; nhân viên đóng gói chuyển thẳng sang vận chuyển / nhận quầy)   │
 └─────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
@@ -209,13 +224,13 @@ Hệ thống quản lý đơn hàng sử dụng kiến trúc **Hai Chuỗi Trạ
 | :--- | :--- | :--- | :--- |
 | `pending` | **Chờ xác nhận** | Khách hàng / Hệ thống | Đơn mới tạo trên Web, chưa có nhân viên tiếp nhận. |
 | `confirmed` | **Đã duyệt / Xác nhận** | Quản lý / CSKH | Quản lý chi nhánh kiểm tra hoa nguyên liệu, chấp nhận đơn. |
-| `arranging` / `in_progress` | **Đang cắm hoa** | Thợ cắm hoa (`florist`) | Thợ chọn hoa tươi, thực hiện cắm bó/lẵng theo mẫu. |
+| `arranging` / `in_progress` | **Đang cắm hoa** | Thợ cắm hoa (`florist`) | Thợ cắm hoa nhận đơn nghệ thuật, thực hiện cắm bó/lẵng/bình theo ghi chú của khách. |
 | `photo_sent` | **Đã gửi ảnh thành phẩm** | Thợ hoa / CSKH | Chụp ảnh hoa thực tế thành phẩm gửi khách hàng duyệt trước khi giao. |
-| `ready_for_pickup`| **Sẵn sàng nhận hoa** | Thợ / Quản lý | Áp dụng cho đơn nhận tại quầy (`pickup`), hoa đã cắm xong. |
+| `ready_for_pickup`| **Sẵn sàng nhận hoa** | Thợ / Quản lý | Áp dụng cho đơn nhận tại quầy (`pickup`), hoa đã cắm xong hoặc đã đóng gói xong. |
 | `shipping` | **Đang vận chuyển** | Quản lý / Shipper | Bàn giao shipper mang hoa đi giao cho người nhận. |
 | `delivered` | **Giao thành công** | Shipper / Quản lý | Khách/Người nhận đã nhận hoa nguyên vẹn. |
-| `completed` | **Hoàn tất đơn** | Quản lý / Hệ thống | Đơn đã nhận tại quầy hoặc hoàn tất đối soát tài chính, cộng điểm. |
-| `cancelled` | **Đã hủy** | Khách / Quản lý / Admin | Hủy đơn theo quy định (trước khi cắm hoa). |
+| `completed` | **Hoàn tất đơn** | Quản lý / Hệ thống | Đơn đã nhận tại quầy hoặc hoàn tất đối soát tài chính, cộng điểm CRM. |
+| `cancelled` | **Đã hủy** | Khách / Quản lý / Admin | Hủy đơn theo quy định (trước khi bắt đầu cắm hoa). |
 | `returned` | **Đổi trả / Khiếu nại**| CSKH / Quản lý | Tiếp nhận khiếu nại hoa dập hỏng để đổi mẫu mới hoặc hoàn tiền. |
 
 #### B. Trạng Thái Thanh Toán (`payment.status`):
@@ -238,27 +253,31 @@ Hệ thống quản lý đơn hàng sử dụng kiến trúc **Hai Chuỗi Trạ
 
 ### 3.3 Giao Diện Thanh Tiến Trình Đơn Hàng (Order Progress Stepper & Timeline UX)
 
-Trong Modal Chi Tiết Đơn Hàng (`#orderDetailModal`), hệ thống trang bị khối **Thanh Tiến Trình Trực Quan (`#ordDetailProgressCard`)** gồm 5 bước chuẩn hóa, tự động điều chỉnh theo hình thức nhận hàng (`fulfillmentType`):
+Trong Modal Chi Tiết Đơn Hàng (`#orderDetailModal`), hệ thống trang bị khối **Thanh Tiến Trình Trực Quan (`#ordDetailProgressCard`)** tự động thích ứng linh hoạt theo cả hình thức nhận hàng (`fulfillmentType`) lẫn tính chất cắm hoa (`requiresArranging`):
 
-1. **Luồng Giao Hàng Tận Nơi (`delivery`):**
+1. **Luồng Cắm Hoa Nghệ Thuật (`requiresArranging: true`):**
    - Bước 1: `pending` — **Chờ xác nhận** (Tiếp nhận đơn)
-   - Bước 2: `confirmed` — **Đã xác nhận** (Chuẩn bị hoa & nguyên liệu)
+   - Bước 2: `confirmed` — **Đã xác nhận** (Chuẩn bị hoa & phụ kiện theo ghi chú)
    - Bước 3: `arranging` / `photo_sent` — **Đang cắm hoa** (Florist cắm & chụp ảnh thành phẩm)
-   - Bước 4: `shipping` — **Đang vận chuyển** (Shipper đang giao tới nơi)
-   - Bước 5: `delivered` / `completed` — **Giao thành công** (Người nhận đã nhận hoa)
+   - Bước 4: `shipping` (hoặc `ready_for_pickup`) — **Đang vận chuyển** / **Sẵn sàng nhận**
+   - Bước 5: `delivered` / `completed` — **Hoàn tất giao hàng**
 
-2. **Luồng Nhận Tại Quầy Showroom (`pickup`):**
-   - Bước 1: `pending` — **Chờ xác nhận** (Tiếp nhận đơn)
-   - Bước 2: `confirmed` — **Đã xác nhận** (Chuẩn bị hoa)
-   - Bước 3: `arranging` / `photo_sent` — **Đang cắm hoa** (Florist cắm mẫu tại quầy)
-   - Bước 4: `ready_for_pickup` — **Sẵn sàng nhận** (Hoa đã hoàn thiện chờ khách đến)
-   - Bước 5: `completed` — **Đã nhận hoa** (Khách đã nhận hoa tại quầy)
+2. **Luồng Fast-Track Tiêu Chuẩn (`requiresArranging: false` - Bỏ qua khâu cắm):**
+   - Bước 1: `pending` — **Chờ xác nhận**
+   - Bước 2: `confirmed` — **Đã xác nhận & Đóng gói hoa** (Nhân viên kiểm tra chất lượng cành hoa)
+   - Bước 3: `shipping` (hoặc `ready_for_pickup`) — **Bàn giao Shipper** / **Chờ nhận tại quầy**
+   - Bước 4: `delivered` / `completed` — **Hoàn tất đơn hàng**
 
 #### Quy Chuẩn Hiển Thị 3 Trạng Thái Bước:
 - **Bước đã hoàn thành (Done):** Vòng tròn xanh ngọc kèm icon check `fa-check`, hiển thị chính xác ngày giờ hoàn thành trích xuất từ `order.history` (định dạng `HH:mm DD/MM`).
 - **Bước hiện tại (Active):** Vòng tròn xanh sáng viền sáng nhấp nháy (Pulse animation), hiển thị mốc thời gian cập nhật gần nhất và nhãn *"Hiện tại / Đang xử lý"*.
 - **Bước tương lai còn lại (Upcoming):** Vòng tròn số thứ tự nét đứt màu xám nhẹ (`Chưa tới`), giúp khách hàng và nhân viên biết rõ **còn bao nhiêu bước nữa đơn hàng sẽ hoàn tất**.
 - **Xử lý đơn hủy (`cancelled` / `returned`):** Thanh tiến trình đổi sang dải màu cảnh báo (Đỏ/Cam) và hiển thị thời điểm kèm ghi chú lý do hủy.
+
+### 3.4 Không Gian Làm Việc Ca Trực (Dedicated Workspace Dialog)
+Bàn làm việc của nhân sự nội bộ (Florist, Sales, Branch Manager, Super Admin) được thiết kế vận hành tại **Dialog độc lập "Công Việc Của Tôi" (`#staffPortalModal`)**:
+- **Chiều cao tối đa:** `h-[96vh] max-h-[96vh] sm:h-[98vh] sm:max-h-[98vh] max-w-6xl flex-col` giúp hiển thị danh sách đơn trong ca trực rõ ràng, không bị chèn ép khung nhìn.
+- **Phân tách hoàn toàn:** Hoạt động độc lập với **CMS Admin (`#adminPortalModal`)** và **Quản Lý Người Dùng (`#userManagementModal`)**, nâng cao hiệu suất làm việc của thợ cắm hoa và nhân viên trực quầy.
 
 ---
 
@@ -308,17 +327,25 @@ $$d = 2R \cdot \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta \text{lat}}{2}\right)
 - **Giao hỏa tốc 2H (Express 2-Hour Delivery)**:
   - Phí hỏa tốc ưu tiên: **$50.000$ VNĐ** (Áp dụng cho mọi giá trị đơn hàng để đảm bảo shipper ưu tiên riêng).
 
-### 5.2 Quy Tắc Áp Dụng Mã Khuyến Mãi (Voucher & Promotions):
+### 5.2 Quy Tắc Tính Phí Cắm Hoa Nghệ Thuật (Arranging Fee Policy):
+- Nhằm phục vụ linh hoạt nhu cầu của khách hàng (người mua hoa cành đơn giản vs khách đặt lẵng/bình nghệ thuật cầu kỳ):
+  - Khách hàng có quyền chủ động bật/tắt checkbox **"Hỗ trợ cắm hoa nghệ thuật (+50% phí)"** tại bước Checkout.
+  - Khi bật `checked`: Khách nhập ghi chú dáng hoa, tone màu, bình gốm (`checkoutArrangingNotes`), và hệ thống áp dụng phụ phí:
+    $$\text{arrangingFee} = \begin{cases} \text{round}(\text{subtotal} \times 0.5) & \text{khi } \text{requestArranging} = \text{true} \\ 0 & \text{khi } \text{requestArranging} = \text{false} \end{cases}$$
+  - Phí này được ghi nhận minh bạch vào `financials.arrangingFee` và hiển thị thành dòng riêng trong bảng tóm tắt chi phí đơn hàng.
+
+### 5.3 Quy Tắc Áp Dụng Mã Khuyến Mãi (Voucher & Promotions):
 1. **Kiểm tra điều kiện đơn hàng tối thiểu (`minOrderAmount`)**:
    - Nếu `subtotal < minOrderAmount` $\rightarrow$ Từ chối áp dụng voucher.
 2. **Chiết khấu theo phần trăm (`discountType = 'percentage'`)**:
    $$\text{discountAmount} = \min\left(\left\lfloor \frac{\text{subtotal} \times \text{discountValue}}{100} \right\rfloor, \text{maxDiscountAmount}\right)$$
 3. **Chiết khấu số tiền cố định (`discountType = 'fixed'`)**:
    $$\text{discountAmount} = \min(\text{discountValue}, \text{subtotal})$$
-4. **Tổng thanh toán cuối cùng (`finalTotal`)**:
-   $$\text{totalAmount} = \max(0, \text{subtotal} + \text{shippingFee} - \text{discountAmount})$$
 
-### 5.3 Tích Lũy Điểm Khách Hàng Thân Thiết (CRM Loyalty Points):
+### 5.4 Công Thức Tổng Thanh Toán Cuối Cùng (`finalTotal`):
+$$\text{totalAmount} = \max(0, \text{subtotal} + \text{arrangingFee} + \text{shippingFee} - \text{discountAmount})$$
+
+### 5.5 Tích Lũy Điểm Khách Hàng Thân Thiết (CRM Loyalty Points):
 - Tỷ lệ quy đổi: **$10.000$ VNĐ chi tiêu $= 1$ điểm tích lũy**.
 - Tự động cộng dồn `loyaltyPoints`, `totalSpent` và số lần mua `orderCount` vào hồ sơ khách hàng tại `config/anne/customers.json`.
 - Phân tầng hạng thành viên:
@@ -436,11 +463,24 @@ pie title Tỷ trọng Doanh Thu Theo Chi Nhánh (Tháng 09/2026)
 | `GET` | `/api/orders/<order_id>` | RBAC Guard | Tra cứu chi tiết đơn hàng (Kiểm tra quyền sở hữu của khách hoặc phân quyền chi nhánh của nhân viên). |
 | `GET` | `/api/orders/<order_id>/payment-qr` | Public / Auth | Lấy mã VietQR động, QuickLink URL và thông tin chuyển khoản ngân hàng. |
 | `GET` | `/api/orders/my-orders` | Customer (JWT) | Lấy danh sách lịch sử đơn hàng của tài khoản đang đăng nhập. |
-| `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager | Lấy danh sách đơn hàng được gán cho một chi nhánh cụ thể. |
-| `GET` | `/api/admin/orders` | Staff / Manager / Admin | Quản lý, tìm kiếm và thống kê doanh thu đơn hàng theo tuần, tháng, quý. |
+| `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager / Admin | Lấy danh sách công việc ca trực. Backend kiểm tra an toàn vị trí cửa hàng (trừ Super Admin) và lọc trả về đúng công việc theo vai trò (Florist, Sales, Shipper, Manager). |
+| `GET` | `/api/admin/orders` | Staff / Manager / Admin | Quản lý, tìm kiếm và thống kê doanh thu đơn hàng. Tự động khóa chi nhánh theo nhân viên (trừ Super Admin toàn quyền). |
 | `PUT` | `/api/admin/orders/<order_id>/status` | Staff / Manager / Admin | Cập nhật trạng thái tiến độ đơn (`confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`). |
 | `PUT` | `/api/admin/orders/<order_id>/payment` | Staff / Manager / Admin | Cập nhật trạng thái thanh toán tiền mặt/COD/POS (chặn sửa đơn thanh toán online). |
 | `POST` | `/api/orders/<order_id>/photo` | `florist` / Manager | Thợ cắm hoa upload ảnh hoa thực tế sau khi cắm để gửi khách duyệt. |
+
+---
+
+### 8.1 Ma Trận Phân Bổ Công Việc Ca Trực Tại Backend (Backend Role Task Routing)
+Nhằm bảo mật thông tin đơn hàng và tuân thủ nguyên tắc đặc quyền tối thiểu (Least Privilege), Backend không trả về toàn bộ đơn của chi nhánh mà kiểm tra danh tính và vai trò người gọi để trả về đúng công việc:
+1. **Kiểm Tra Vị Trí Cửa Hàng (Store Location):**
+   - **Super Admin:** Không bị ràng buộc vị trí cửa hàng (`Branch: None`), có thể xem toàn chuỗi, bất kỳ Showroom nào hoặc các đơn chờ phân bổ tại Tổng bộ (`branchId == 'admin'`).
+   - **Nhân viên cửa hàng (`branch_manager`, `florist`, `sales_consultant`, `shipper`):** Bắt buộc phải có `branchId` hợp lệ được quản trị cấp. Truy cập sai showroom sẽ lập tức bị chặn bằng `HTTP 403 Forbidden`.
+2. **Quy Tắc Lọc Công Việc Theo Vai Trò:**
+   - **`florist` (Thợ cắm hoa nghệ thuật):** Chỉ nhận đơn có `requiresArranging != False`, trạng thái `confirmed`, `arranging`, `photo_sent`. Nếu đơn đã gán đích danh cho thợ khác, hệ thống ẩn khỏi danh sách.
+   - **`sales_consultant` (Tư vấn / Thu ngân):** Chỉ nhận đơn mới cần gọi xác nhận (`pending`) hoặc đơn chưa thanh toán tiền mặt (`unpaid`).
+   - **`shipper` (Giao hàng):** Chỉ nhận đơn giao tận nơi (`fulfillmentType == 'delivery'`) sẵn sàng bốc hàng hoặc đang trên đường giao.
+   - **`branch_manager` (Quản lý Showroom):** Nhận toàn bộ đơn của chi nhánh để phân công nhân sự (`assignedTo`), giám sát ca trực.
 
 ---
 

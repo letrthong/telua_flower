@@ -341,3 +341,84 @@ Khi phát triển thêm tính năng mới trong tương lai:
 - **Typography:**
   - Tiêu đề & Tên thương hiệu: **Playfair Display** (Serif quý phái, thanh lịch).
   - Nội dung & Bảng điều khiển: **Quicksand** kết hợp **Noto Sans đa ngữ** (Việt, Anh, Nhật, Hàn, Trung mềm mại, dễ đọc).
+
+---
+
+## 6. Quy Chuẩn Modal Đặt Hàng & Tùy Chọn Dịch Vụ Cắm Hoa Nghệ Thuật (`#checkoutModal`)
+
+Giao diện Đặt Hàng (Checkout Modal) được thiết kế theo luồng phân đoạn trực quan (Step-by-step Sections), tích hợp tính năng quyết định cắm hoa linh hoạt cho khách hàng:
+
+```text
++-------------------------------------------------------------------------+
+| 🌸 HOÀN TẤT ĐƠN HÀNG                                                [✕] |
++-------------------------------------------------------------------------+
+| 1. Thời Gian Giao Hoa (Hẹn ngày / Chọn khung giờ / ⚡ Hỏa tốc 2H)         |
+| 1b. Phương Thức Nhận (🚚 Giao tận nơi  /  🏬 Nhận tại cửa hàng)        |
+| 2. Thông Tin Người Nhận (Họ tên, SĐT, Địa chỉ, Chỉ dẫn giao hàng)       |
+| 3. Lời Chúc Viết Thiệp & Banner Ruy-băng (Miễn phí)                     |
+|                                                                         |
+| 3b. ✨ HỖ TRỢ CẮM HOA NGHỆ THUẬT (+50% PHÍ)                 [Toggle ON] |
+|     Tùy chọn: Bật để yêu cầu nghệ nhân cắm hoa nghệ thuật theo yêu cầu  |
+|     [ Ghi chú kiểu dáng, tone màu: Cắm tone hồng pastel, bình cao... ]  |
+|                                                                         |
+| 4. Thông Tin Người Gửi & [🎭 Gửi hoa bí mật (Ẩn danh)]                  |
+| 5. Mã Giảm Giá Voucher (PHUNU15, FREESHIP...)                           |
+|    - Tiền hàng:                                           420.000₫      |
+|    - Phí cắm hoa nghệ thuật (+50%):                      +210.000₫      |
+|    - Phí vận chuyển:                                      +35.000₫      |
+|    - Tổng thanh toán:                                     665.000₫      |
+| 6. Phương Thức Thanh Toán (⚡ VietQR Tự Động / 💵 Tiền Mặt COD)          |
+| [ 🌸 HOÀN TẤT ĐẶT HOA ➔ ]                                               |
++-------------------------------------------------------------------------+
+```
+
+### Cơ chế kỹ thuật:
+- **Checkbox & Collapsible Notes:** `#checkoutRequestArranging` (trigger `toggleRequestArranging()`). Khi bật `checked`, hiển thị khung nhập `#arrangingNotesSection` (`#checkoutArrangingNotes`) và tự động focus.
+- **Tính toán tài chính động (`updateOrderSummary()`):**
+  $$\text{arrangingFee} = \begin{cases} \text{round}(\text{subtotal} \times 0.5) & \text{khi bật check} \\ 0 & \text{khi tắt check} \end{cases}$$
+  Dòng hiển thị `#summaryArrangingFeeRow` tự động ẩn/hiện và cộng trực tiếp vào `finalTotal`.
+- **Đồng bộ dữ liệu Backend (`src/order_service.py`):**
+  Lưu `requiresArranging: true/false`, `arrangingFee`, `arrangingNotes` trong cả `financials` và `customization` của đơn hàng, phục vụ phân luồng ca trực cho Thợ cắm hoa (`TASK_05_FLORIST_AND_BRANCH_OPERATIONS`).
+
+---
+
+## 7. Kiến Trúc 2 Dialog Độc Lập: "Công Việc Của Tôi" & "Quản Lý Người Dùng" (Chiều Cao Tối Đa)
+
+Nhằm tối ưu hóa trải nghiệm vận hành không gian làm việc (Workspace) và quản trị nhân sự/khách hàng, hệ thống tách biệt hoàn toàn thành **2 Dialog độc lập (Standalone Dialogs)** thay vì nhúng lồng vào CMS Admin, đồng thời thiết lập **chiều cao tối đa (Maximum Viewport Height)**:
+
+```text
++==================================================================================================+
+| DIALOG 1: CÔNG VIỆC CỦA TÔI (BÀN LÀM VIỆC CA TRỰC) - [#staffPortalModal]                          |
+| Header: [ 💼 ] Công Việc Của Tôi (Bàn Làm Việc Ca Trực)                     [ Hỗ trợ 4 Roles ] [✕]|
+| Body: [h-[96vh] sm:h-[98vh] max-w-6xl flex-col]                                                  |
+| - Điều phối/tiếp nhận đơn hàng chi nhánh theo ca trực (Sales / Florist / Manager / Super Admin)  |
+| - Danh sách tác vụ, cập nhật trạng thái đơn hàng thời gian thực                                  |
++==================================================================================================+
+
++==================================================================================================+
+| DIALOG 2: QUẢN LÝ NGƯỜI DÙNG & PHÂN QUYỀN - [#userManagementModal]                                |
+| Header: [ 👥 ] Quản Lý Người Dùng & Phân Quyền                                               [✕] |
+| Tabs: [ 👔 Nhân Sự Nội Bộ (RBAC) ]        [ 👑 Khách Hàng & CRM ]                                |
+| Body: [h-[96vh] sm:h-[98vh] max-w-6xl flex-col]                                                  |
+| - Tab 1 (Nhân sự): Thêm mới nhân sự, gán vai trò RBAC, chọn showroom làm việc, bảng nhân viên     |
+| - Tab 2 (CRM): Tìm kiếm khách hàng, bộ lọc hạng thẻ (VIP/Vàng/Bạc/Chuẩn), điểm tích lũy, chi tiêu|
++==================================================================================================+
+```
+
+### 1. Thông Số Thiết Kế Chiều Cao Tối Đa (Maximized Viewport Height):
+- **Class vùng chứa (Container):**
+  `w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden h-[96vh] max-h-[96vh] sm:h-[98vh] sm:max-h-[98vh] flex flex-col`
+- **Tối ưu hiển thị:**
+  - Header & Tab navigation cố định (`flex-shrink-0`), không bị che khuất khi cuộn.
+  - Vùng nội dung Body (`overflow-y-auto flex-1`) tận dụng 96%–98% chiều cao màn hình trình duyệt, cho phép cuộn xem danh sách dài mà không tạo thêm thanh cuộn kép cho toàn trang web.
+
+### 2. Module & Hàm Điều Khiển Độc Lập:
+- **Dialog "Công Việc Của Tôi":**
+  - File điều khiển: [`js/staff_portal.js`](file:///d:/wmshare/telua_flower/js/staff_portal.js)
+  - Hàm mở/đóng: `openStaffPortalModal()`, `closeStaffPortalModal()`, `loadStaffOrders()`
+  - Phân quyền: Tự động nhận diện vai trò `florist`, `sales_consultant`, `branch_manager`, `super_admin`.
+- **Dialog "Quản Lý Người Dùng":**
+  - File điều khiển: [`js/portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js)
+  - Hàm mở/đóng/chuyển tab: `openUserManagementModal(tab = 'staff')`, `closeUserManagementModal()`, `switchUserManagementTab(tab)`
+  - Điều hướng: Menu Dropdown máy tính & Mobile Drawer gọi trực tiếp `openUserManagementModal('staff')`. Nếu người dùng đang trong CMS Admin (`adminPortalModal`) nhấp vào tab "Nhân Sự" hoặc "Khách Hàng", hệ thống tự động chuyển tiếp sang Dialog Quản Lý Người Dùng độc lập.
+

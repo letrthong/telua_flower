@@ -764,27 +764,25 @@ DEFAULT_STAFF_USERS = [
 
 
 # 3. Nhân Sự & Người Dùng Nội Bộ (Staff & Users)
-def get_staff_users() -> List[Dict[str, Any]]:
+def get_staff_users(use_cache: bool = True) -> List[Dict[str, Any]]:
     staff_file = get_config_path("staff_users.json")
     if os.path.exists(staff_file):
-        data = read_json(staff_file, default=[])
+        data = read_json_cached(staff_file, default=[]) if use_cache else read_json(staff_file, default=[])
         used_path = staff_file
     else:
         # Nếu chưa có file staff_users.json, tự động khởi tạo dữ liệu mẫu
         data = DEFAULT_STAFF_USERS
         used_path = staff_file
         save_staff_users(DEFAULT_STAFF_USERS)
-        print(f"[DATA_SERVICE] Auto-seeded default staff users into: {staff_file}", flush=True)
 
     normalized = _normalize_list_of_dicts(data)
-    print(f"[DATA_SERVICE] get_staff_users() | Path: {used_path} | Found {len(normalized)} users", flush=True)
     return normalized
 
 
 def save_staff_users(staff_users: List[Dict[str, Any]]) -> bool:
     target_path = get_config_path("staff_users.json")
     success = write_json(target_path, staff_users)
-    print(f"[DATA_SERVICE] save_staff_users() -> Saved {len(staff_users)} users to: {target_path}", flush=True)
+    invalidate_file_cache(target_path)
     return success
 
 
@@ -1437,16 +1435,14 @@ def add_wastage_report(report: Dict[str, Any]) -> bool:
 
 
 # 8. Khách Hàng CRM (Customers CRM)
-def get_customers() -> List[Dict[str, Any]]:
+def get_customers(use_cache: bool = True) -> List[Dict[str, Any]]:
     cust_file = get_config_path("customers.json")
     if os.path.exists(cust_file):
-        used_path = cust_file
-        data = read_json(cust_file, default=[])
+        data = read_json_cached(cust_file, default=[]) if use_cache else read_json(cust_file, default=[])
     else:
         used_path = get_config_path("customers_crm.json")
-        data = read_json(used_path, default=[])
+        data = read_json_cached(used_path, default=[]) if use_cache else read_json(used_path, default=[])
     normalized = _normalize_list_of_dicts(data)
-    print(f"[DATA_SERVICE] get_customers() | Path: {used_path} | Found {len(normalized)} customers", flush=True)
     return normalized
 
 
@@ -1464,9 +1460,13 @@ def get_customer_by_phone(phone: str) -> Optional[Dict[str, Any]]:
 
 
 def save_customers(customers: List[Dict[str, Any]]) -> bool:
-    success = write_json(get_config_path("customers.json"), customers)
+    cust_path = get_config_path("customers.json")
+    success = write_json(cust_path, customers)
+    invalidate_file_cache(cust_path)
     # Đồng bộ sang customers_crm.json cho tương thích ngược
-    write_json(get_config_path("customers_crm.json"), customers)
+    crm_path = get_config_path("customers_crm.json")
+    write_json(crm_path, customers)
+    invalidate_file_cache(crm_path)
     return success
 
 
@@ -1808,6 +1808,9 @@ def save_order(order: Dict[str, Any]) -> bool:
     order["status"] = status
     if not order.get("updatedAt"):
         order["updatedAt"] = order.get("createdAt") or order.get("orderDate") or datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # Bổ sung tên hiển thị người tạo, người thực hiện, tên cửa hàng
+    enrich_order_display_names(order)
 
     # 1. Đường dẫn tệp mới
     new_file_path = get_order_file_path(order_id, year_month, branch_id, status)
@@ -2581,6 +2584,82 @@ def save_banners_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dic
     if success:
         return True, current, None
     return False, None, "Không thể ghi file cấu hình banners.json"
+
+
+def enrich_order_display_names(order: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Bổ sung tên hiển thị người tạo (creatorName), người thực hiện (assigneeName)
+    và tên cửa hàng xử lý (branchName) vào đối tượng đơn hàng để hiển thị trực quan trên giao diện.
+    Nếu không có cửa hàng hoặc là 'admin' -> hiển thị 'Tổng Quản Trị / Trung Tâm (Admin)'.
+    """
+    if not order or not isinstance(order, dict):
+        return order
+
+    # 1. Tên cửa hàng xử lý (branchName)
+    raw_branch = order.get("branchId") or order.get("assignedBranchId") or "admin"
+    branch_id = normalize_branch_id(raw_branch)
+    order["branchId"] = branch_id
+
+    if branch_id == "admin":
+        order["branchName"] = "Tổng Quản Trị / Trung Tâm (Admin)"
+    else:
+        branch_obj = get_branch_by_id(branch_id)
+        if branch_obj and branch_obj.get("name"):
+            order["branchName"] = branch_obj.get("name")
+        else:
+            order["branchName"] = f"Chi nhánh ({branch_id})"
+
+    # 2. Tên người tạo đơn (creatorName / createdBy)
+    created_by_id = order.get("createdBy")
+    creator_name = None
+    if created_by_id:
+        user_obj = get_user_by_id(created_by_id)
+        if user_obj:
+            creator_name = user_obj.get("fullName") or user_obj.get("name") or user_obj.get("phone")
+
+    if not creator_name:
+        # Nếu chưa có createdBy hoặc là khách đặt online
+        cust_id = order.get("customerId") or order.get("userId")
+        if cust_id:
+            cust_obj = get_user_by_id(cust_id)
+            if cust_obj:
+                creator_name = cust_obj.get("fullName") or cust_obj.get("name") or cust_obj.get("phone")
+
+        if not creator_name:
+            sender = order.get("sender") or {}
+            creator_name = sender.get("realName") or sender.get("name") or sender.get("phone") or "Khách Đặt Trực Tuyến"
+
+    order["creatorName"] = creator_name
+    if not order.get("createdBy"):
+        order["createdBy"] = created_by_id or order.get("customerId") or (order.get("sender") or {}).get("phone") or "online_customer"
+
+    # 3. Tên người thực hiện / người xử lý (assigneeName / assignedTo)
+    assigned_to_id = order.get("assignedTo")
+    assignee_name = None
+    if assigned_to_id:
+        if assigned_to_id == "staff_admin":
+            assignee_name = "Super Admin (staff_admin)"
+        else:
+            staff_obj = get_user_by_id(assigned_to_id)
+            if staff_obj:
+                assignee_name = f"{staff_obj.get('fullName') or staff_obj.get('name')} ({staff_obj.get('id')})"
+            else:
+                assignee_name = assigned_to_id
+    else:
+        # Fallback nếu chưa có assignedTo
+        if branch_id == "admin":
+            assignee_name = "Super Admin (staff_admin)"
+            order["assignedTo"] = "staff_admin"
+        else:
+            branch_obj = get_branch_by_id(branch_id)
+            mgr_id = (branch_obj.get("managerId") if branch_obj else None) or "staff_admin"
+            order["assignedTo"] = mgr_id
+            staff_obj = get_user_by_id(mgr_id)
+            assignee_name = f"{staff_obj.get('fullName') or staff_obj.get('name')} ({mgr_id})" if staff_obj else mgr_id
+
+    order["assigneeName"] = assignee_name
+    return order
+
 
 
 

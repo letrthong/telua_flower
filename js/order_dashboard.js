@@ -504,20 +504,39 @@ export function renderOrderProgressStepper(order) {
 
     const fulfillment = String(order.fulfillmentType || order.delivery?.fulfillmentType || "delivery").toLowerCase();
     const isPickup = fulfillment === "pickup";
+    const requiresArranging = order.requiresArranging !== false && 
+                              order.customization?.requestArranging !== false && 
+                              order.customization?.requiresArranging !== false;
 
-    const steps = isPickup ? [
-        { key: "pending", label: "Chờ xác nhận", sub: "Tiếp nhận đơn", icon: "fa-receipt" },
-        { key: "confirmed", label: "Đã xác nhận", sub: "Chuẩn bị hoa", icon: "fa-check" },
-        { key: "arranging", label: "Đang cắm hoa", sub: "Florist cắm mẫu", icon: "fa-scissors" },
-        { key: "ready_for_pickup", label: "Sẵn sàng nhận", sub: "Tại quầy chi nhánh", icon: "fa-store" },
-        { key: "completed", label: "Đã nhận hoa", sub: "Hoàn tất đơn", icon: "fa-box-open" }
-    ] : [
-        { key: "pending", label: "Chờ xác nhận", sub: "Tiếp nhận đơn", icon: "fa-receipt" },
-        { key: "confirmed", label: "Đã xác nhận", sub: "Chuẩn bị hoa", icon: "fa-check" },
-        { key: "arranging", label: "Đang cắm hoa", sub: "Florist cắm mẫu", icon: "fa-scissors" },
-        { key: "shipping", label: "Đang vận chuyển", sub: "Shipper đang giao", icon: "fa-truck-fast" },
-        { key: "delivered", label: "Giao thành công", sub: "Hoàn tất đơn", icon: "fa-box-open" }
-    ];
+    let steps = [];
+    if (requiresArranging) {
+        steps = isPickup ? [
+            { key: "pending", label: "Chờ xác nhận", sub: "Tiếp nhận đơn", icon: "fa-receipt" },
+            { key: "confirmed", label: "Đã xác nhận", sub: "Chuẩn bị hoa", icon: "fa-check" },
+            { key: "arranging", label: "Đang cắm hoa", sub: "Florist cắm mẫu", icon: "fa-scissors" },
+            { key: "ready_for_pickup", label: "Sẵn sàng nhận", sub: "Tại quầy chi nhánh", icon: "fa-store" },
+            { key: "completed", label: "Đã nhận hoa", sub: "Hoàn tất đơn", icon: "fa-box-open" }
+        ] : [
+            { key: "pending", label: "Chờ xác nhận", sub: "Tiếp nhận đơn", icon: "fa-receipt" },
+            { key: "confirmed", label: "Đã xác nhận", sub: "Chuẩn bị hoa", icon: "fa-check" },
+            { key: "arranging", label: "Đang cắm hoa", sub: "Florist cắm mẫu", icon: "fa-scissors" },
+            { key: "shipping", label: "Đang vận chuyển", sub: "Shipper đang giao", icon: "fa-truck-fast" },
+            { key: "delivered", label: "Giao thành công", sub: "Hoàn tất đơn", icon: "fa-box-open" }
+        ];
+    } else {
+        // Luồng Fast-Track: hoa nguyên cành / bó tiêu chuẩn không yêu cầu cắm nghệ thuật (4 bước)
+        steps = isPickup ? [
+            { key: "pending", label: "Chờ xác nhận", sub: "Tiếp nhận đơn", icon: "fa-receipt" },
+            { key: "confirmed", label: "Đã xác nhận", sub: "Đóng gói cành hoa", icon: "fa-box" },
+            { key: "ready_for_pickup", label: "Sẵn sàng nhận", sub: "Tại quầy chi nhánh", icon: "fa-store" },
+            { key: "completed", label: "Đã nhận hoa", sub: "Hoàn tất đơn", icon: "fa-box-open" }
+        ] : [
+            { key: "pending", label: "Chờ xác nhận", sub: "Tiếp nhận đơn", icon: "fa-receipt" },
+            { key: "confirmed", label: "Đã xác nhận", sub: "Đóng gói cành hoa", icon: "fa-box" },
+            { key: "shipping", label: "Đang vận chuyển", sub: "Shipper đang giao", icon: "fa-truck-fast" },
+            { key: "delivered", label: "Giao thành công", sub: "Hoàn tất đơn", icon: "fa-box-open" }
+        ];
+    }
 
     const currentStatus = String(order.status || "pending").toLowerCase();
     const isCancelled = currentStatus === "cancelled";
@@ -531,11 +550,18 @@ export function renderOrderProgressStepper(order) {
         activeIndex = steps.findIndex(s => s.key === lastStatus);
         if (activeIndex === -1) activeIndex = 0;
     } else {
-        if (currentStatus === "pending") activeIndex = 0;
-        else if (currentStatus === "confirmed") activeIndex = 1;
-        else if (currentStatus === "arranging" || currentStatus === "photo_sent") activeIndex = 2;
-        else if (currentStatus === "shipping" || currentStatus === "ready_for_pickup") activeIndex = 3;
-        else if (currentStatus === "delivered" || currentStatus === "completed") activeIndex = 4;
+        if (requiresArranging) {
+            if (currentStatus === "pending") activeIndex = 0;
+            else if (currentStatus === "confirmed") activeIndex = 1;
+            else if (currentStatus === "arranging" || currentStatus === "photo_sent") activeIndex = 2;
+            else if (currentStatus === "shipping" || currentStatus === "ready_for_pickup") activeIndex = 3;
+            else if (currentStatus === "delivered" || currentStatus === "completed") activeIndex = 4;
+        } else {
+            if (currentStatus === "pending") activeIndex = 0;
+            else if (currentStatus === "confirmed" || currentStatus === "arranging" || currentStatus === "photo_sent") activeIndex = 1;
+            else if (currentStatus === "shipping" || currentStatus === "ready_for_pickup") activeIndex = 2;
+            else if (currentStatus === "delivered" || currentStatus === "completed") activeIndex = 3;
+        }
     }
 
     const isFinished = !isCancelled && !isReturned && (currentStatus === "delivered" || currentStatus === "completed");
@@ -685,8 +711,41 @@ function populateOrderDetail(order) {
         staffActionsEl.classList.toggle("hidden", !isInternal);
 
         if (isInternal) {
+            // Dropdown điều phối chi nhánh (Chỉ hiển thị cho Super Admin)
+            const dispatchSelect = document.getElementById("ordDetailDispatchBranchSelect");
+            const isSuperAdmin = user.role === "super_admin";
+            if (dispatchSelect) {
+                dispatchSelect.classList.toggle("hidden", !isSuperAdmin);
+                if (isSuperAdmin) {
+                    const currentBranch = order.branchId || order.assignedBranchId || "admin";
+                    const branches = (typeof window !== "undefined" && Array.isArray(window.allAdminBranches)) ? window.allAdminBranches : [];
+                    const branchOptions = branches.filter(b => b.isActive !== false).map(b => 
+                        `<option value="${b.id}" ${b.id === currentBranch ? 'selected' : ''}>📍 ${b.name || b.id}</option>`
+                    ).join("");
+                    dispatchSelect.innerHTML = `
+                        <option value="">⚡ Gán Showroom...</option>
+                        <option value="admin" ${currentBranch === 'admin' ? 'selected' : ''}>🏢 Trung Tâm Admin</option>
+                        ${branchOptions}
+                    `;
+                }
+            }
+
             const nextStatusSelect = document.getElementById("ordDetailNextStatusSelect");
-            if (nextStatusSelect) nextStatusSelect.value = order.status || "";
+            if (nextStatusSelect) {
+                nextStatusSelect.value = order.status || "";
+
+                // Lọc ẩn/hiện trạng thái theo phương thức nhận hàng pickup / delivery
+                const fulfillment = String(order.fulfillmentType || order.delivery?.fulfillmentType || "delivery").toLowerCase();
+                const isPickup = fulfillment === "pickup";
+                const optReady = nextStatusSelect.querySelector('option[value="ready_for_pickup"]');
+                const optCompleted = nextStatusSelect.querySelector('option[value="completed"]');
+                const optShipping = nextStatusSelect.querySelector('option[value="shipping"]');
+                const optDelivered = nextStatusSelect.querySelector('option[value="delivered"]');
+                if (optReady) optReady.style.display = isPickup ? "" : "none";
+                if (optCompleted) optCompleted.style.display = isPickup ? "" : "none";
+                if (optShipping) optShipping.style.display = isPickup ? "none" : "";
+                if (optDelivered) optDelivered.style.display = isPickup ? "none" : "";
+            }
 
             const cashBtn = document.getElementById("ordDetailConfirmCashBtn");
             if (cashBtn) {
@@ -1027,6 +1086,45 @@ export async function handleOrderQuickStatusChange(newStatus) {
 }
 
 /**
+ * Xử lý điều phối / gán Showroom từ Modal Chi Tiết Đơn Hàng (Super Admin)
+ */
+export async function handleOrderDetailDispatchBranch(targetBranchId) {
+    if (!targetBranchId || !currentOpenOrderId) return;
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    const selectEl = document.getElementById("ordDetailDispatchBranchSelect");
+    if (selectEl) selectEl.disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders/${encodeURIComponent(currentOpenOrderId)}/dispatch`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ targetBranchId: targetBranchId })
+        });
+        const json = await res.json();
+
+        if (res.ok && json.success) {
+            if (typeof showToast === "function") {
+                showToast(json.message || "Đã điều phối đơn hàng thành công!", "success");
+            }
+            openOrderDetailModal(currentOpenOrderId);
+            if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadStaffOrders === "function") loadStaffOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
+        } else {
+            throw new Error(json.message || "Điều phối đơn hàng thất bại");
+        }
+    } catch (e) {
+        alert("Lỗi điều phối: " + e.message);
+    } finally {
+        if (selectEl) selectEl.disabled = false;
+    }
+}
+
+/**
  * In thông tin đơn hàng
  */
 export function printOrderDetail() {
@@ -1043,6 +1141,7 @@ if (typeof window !== "undefined") {
     window.handleOrderPhotoUpload = handleOrderPhotoUpload;
     window.handleConfirmCashPayment = handleConfirmCashPayment;
     window.handleOrderQuickStatusChange = handleOrderQuickStatusChange;
+    window.handleOrderDetailDispatchBranch = handleOrderDetailDispatchBranch;
     window.onDashboardMonthChange = onDashboardMonthChange;
     window.onDashboardSortChange = onDashboardSortChange;
     window.onDashboardFilterChange = onDashboardFilterChange;

@@ -120,8 +120,8 @@ export const ADMIN_NAVIGATION_CONFIG = [
     groupId: "user_management",
     title: "Quản Lý Người Dùng",
     icon: "fa-solid fa-users-gear",
-    targetModal: "adminPortalModal",
-    action: "openAdminPortalModal",
+    targetModal: "userManagementModal",
+    action: "openUserManagementModal",
     roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.SALES_CONSULTANT],
     children: [
       {
@@ -130,7 +130,7 @@ export const ADMIN_NAVIGATION_CONFIG = [
         icon: "fa-solid fa-user-tie",
         module: "portal_admin_users.js",
         loadFn: "loadAdminUsers",
-        action: "switchAdminTab('staff')",
+        action: "switchUserManagementTab('staff')",
         roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
       },
       {
@@ -139,7 +139,7 @@ export const ADMIN_NAVIGATION_CONFIG = [
         icon: "fa-solid fa-crown",
         module: "portal_admin_users.js",
         loadFn: "loadAdminCustomers",
-        action: "switchAdminTab('customers')",
+        action: "switchUserManagementTab('customers')",
         roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.SALES_CONSULTANT]
       }
     ]
@@ -328,14 +328,8 @@ export function openMyWorkspace() {
     ? window.getCurrentUser() 
     : null;
   if (!user) return;
-  if (user.role === "florist" || user.role === "sales_consultant") {
-    if (typeof window.openStaffPortalModal === "function") {
-      window.openStaffPortalModal();
-    }
-  } else if (user.role === "super_admin" || user.role === "branch_manager") {
-    if (typeof window.openAdminPortalModal === "function") {
-      window.openAdminPortalModal("orders");
-    }
+  if (typeof window.openStaffPortalModal === "function") {
+    window.openStaffPortalModal();
   }
 }
 

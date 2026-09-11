@@ -25,7 +25,8 @@ from data_service import (
     update_order_status,
     sync_order_to_user_folder,
     get_user_orders,
-    get_system_current_and_prev_ym
+    get_system_current_and_prev_ym,
+    enrich_order_display_names
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -260,11 +261,25 @@ def create_order(
                     "discountAmount": discount_amount
                 }
 
-    final_total = max(0, subtotal + shipping_fee - discount_amount)
+    # 5b. Tính phí dịch vụ cắm hoa nghệ thuật nếu khách yêu cầu (+50% trên tổng tiền hoa)
+    customization = order_data.get("customization") or {}
+    request_arranging = bool(
+        order_data.get("requestArranging")
+        or (customization.get("requestArranging") if isinstance(customization, dict) else False)
+        or order_data.get("requiresArranging")
+    )
+    arranging_notes = (
+        order_data.get("arrangingNotes")
+        or (customization.get("arrangingNotes") if isinstance(customization, dict) else "")
+        or ""
+    ).strip()
+    arranging_fee = int(round(subtotal * 0.5)) if request_arranging else 0
+
+    final_total = max(0, subtotal + arranging_fee + shipping_fee - discount_amount)
 
     # 6. Xác định chi nhánh xử lý đơn hàng
-    #    - Nếu khách chọn chi nhánh cụ thể (pickup hoặc giao từ chi nhánh) -> dùng chi nhánh đó.
-    #    - Ngược lại -> tự động gán chi nhánh gần nhất theo địa chỉ người nhận.
+    #    - Nếu khách chọn chi nhánh cụ thể (pickup hoặc giao từ chi nhánh hợp lệ) -> dùng chi nhánh đó.
+    #    - Nếu không có chi nhánh (đơn đặt online giao hàng) -> gán về 'admin' để Tổng Quản Trị tiếp nhận & điều phối sau.
     fulfillment_type = (order_data.get("fulfillmentType") or delivery.get("fulfillmentType") or "delivery").strip().lower()
     requested_branch_id = (order_data.get("branchId") or delivery.get("branchId") or "").strip()
 
@@ -279,23 +294,15 @@ def create_order(
             if requested_branch and requested_branch.get("isActive", True):
                 assigned_branch_id = requested_branch_id
             else:
-                assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+                # Không tìm thấy chi nhánh hợp lệ -> gán về Admin điều phối
+                assigned_branch_id = "admin"
     else:
-        try:
-            from inventory_service import find_best_routing_branch
-            route_res = find_best_routing_branch(
-                customer_lat=float(recipient_lat) if recipient_lat is not None else None,
-                customer_lng=float(recipient_lng) if recipient_lng is not None else None,
-                district_or_address=recipient_address,
-                items=valid_items
-            )
-            assigned_branch_id = route_res.get("assignedBranchId") or assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
-        except Exception:
-            assigned_branch_id = assign_nearest_branch(recipient_address, recipient_lat, recipient_lng)
+        # Đơn trực tuyến không chọn chi nhánh -> Tạm thời giao về cho Admin điều phối
+        assigned_branch_id = "admin"
 
     # 6b. Gán người xử lý (assignedTo):
+    #     - Nếu đơn thuộc 'admin' -> gán cho Super Admin (staff_admin).
     #     - Nếu đơn thuộc 1 chi nhánh cụ thể -> gán cho Quản lý chi nhánh đó.
-    #     - Nếu đơn thuộc 'admin' (hoặc đơn toàn chuỗi) -> gán cho Super Admin (staff_admin).
     assigned_manager_id = None
     if assigned_branch_id == "admin":
         assigned_manager_id = "staff_admin"
@@ -329,6 +336,7 @@ def create_order(
     created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     customer_id = (authenticated_user.get("id") or authenticated_user.get("userId")) if authenticated_user else None
+    created_by_id = customer_id or sender_phone or "online_guest"
 
     is_anonymous = bool(sender.get("isAnonymous", False)) or bool(order_data.get("isAnonymous", False))
     card_msg = (customization.get("cardMessage") or order_data.get("cardMessage") or "").strip()
@@ -342,6 +350,7 @@ def create_order(
         "updatedAt": created_at,
         "branchId": assigned_branch_id,
         "customerId": customer_id,
+        "createdBy": created_by_id,
         "assignedTo": assigned_manager_id,
         "assignedBy": "system",
         "status": "pending",
@@ -368,13 +377,20 @@ def create_order(
             "isExpress2H": is_express,
             "fulfillmentType": fulfillment_type
         },
+        "requiresArranging": request_arranging,
+        "arrangingFee": arranging_fee,
+        "arrangingNotes": arranging_notes,
         "customization": {
             "cardMessage": card_msg,
-            "ribbonBanner": ribbon_msg
+            "ribbonBanner": ribbon_msg,
+            "requestArranging": request_arranging,
+            "arrangingNotes": arranging_notes,
+            "arrangingFee": arranging_fee
         },
         "items": valid_items,
         "financials": {
             "subtotal": subtotal,
+            "arrangingFee": arranging_fee,
             "shippingFee": shipping_fee,
             "discountAmount": discount_amount,
             "totalAmount": final_total,
@@ -546,10 +562,17 @@ def query_admin_orders(
         filter_start = None
         filter_end = None
 
-    # 3. Phân quyền chi nhánh
+    # 3. Phân quyền vị trí cửa hàng & an toàn đơn hàng:
+    # - Super Admin: Không có vị trí cửa hàng cố định, xem được toàn chuỗi hoặc bất kỳ chi nhánh nào.
+    # - Tất cả các vai trò khác (branch_manager, florist, sales_consultant, shipper):
+    #   BẮT BUỘC bị khóa vào đúng vị trí cửa hàng trực thuộc (user_branch).
     target_branch = branch_id
-    if role == "branch_manager" and user_branch:
-        target_branch = user_branch
+    if role != "super_admin":
+        if user_branch:
+            target_branch = user_branch
+        else:
+            # Chưa phân bổ vị trí cửa hàng -> chặn hoàn toàn
+            target_branch = "__STORE_LOCATION_REQUIRED__"
 
     # 4. Thực hiện lọc đơn hàng
     filtered_orders: List[Dict[str, Any]] = []
@@ -599,6 +622,8 @@ def query_admin_orders(
                 clean_search not in recipient_phone):
                 continue
 
+        # Bổ sung thông tin hiển thị (tên người tạo, người thực hiện, cửa hàng xử lý)
+        enrich_order_display_names(o)
         filtered_orders.append(o)
 
     # Sắp xếp theo tiêu chí sortBy và sortOrder
@@ -679,3 +704,175 @@ def query_admin_orders(
         "revenueByDay": dict(sorted(revenue_by_day.items())),
         "orders": filtered_orders
     }
+
+
+def dispatch_order_to_branch(
+    order_id: str,
+    target_branch_id: str,
+    current_user: Dict[str, Any],
+    note: Optional[str] = None
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Điều phối / gán đơn hàng từ Tổng Quản Trị (Admin) sang chi nhánh Showroom cụ thể:
+    - Kiểm tra đơn hàng tồn tại.
+    - Kiểm tra chi nhánh mục tiêu tồn tại và đang hoạt động (nếu target_branch_id != 'admin').
+    - Tự động gán người thực hiện xử lý (assignedTo) là Quản lý chi nhánh mục tiêu.
+    - Cập nhật branchId, assignedBranchId, assignedTo, assignedBy.
+    - Di chuyển file JSON nguyên tử qua save_order sang thư mục Kanban của chi nhánh mới.
+    - Ghi nhận vết lịch sử xử lý (History) và đồng bộ sổ đơn của khách.
+    """
+    if not order_id or not target_branch_id:
+        return False, None, "Thiếu mã đơn hàng hoặc mã chi nhánh điều phối"
+
+    order = get_order_by_id(order_id)
+    if not order:
+        return False, None, f"Không tìm thấy đơn hàng '{order_id}'"
+
+    clean_target = target_branch_id.strip().lower()
+    target_manager_id = "staff_admin"
+    target_branch_name = "Tổng Quản Trị / Trung Tâm (Admin)"
+
+    if clean_target != "admin":
+        branch_obj = get_branch_by_id(clean_target)
+        if not branch_obj:
+            return False, None, f"Chi nhánh mục tiêu '{target_branch_id}' không tồn tại"
+        if not branch_obj.get("isActive", True):
+            return False, None, f"Chi nhánh '{branch_obj.get('name')}' hiện đang tạm ngưng hoạt động"
+        target_manager_id = branch_obj.get("managerId") or "staff_admin"
+        target_branch_name = branch_obj.get("name") or clean_target
+
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    dispatcher_id = current_user.get("userId") or current_user.get("id") or "staff_admin"
+    dispatcher_name = current_user.get("fullName") or current_user.get("name") or "Tổng Quản Trị"
+
+    dispatch_note = (note or "").strip() or f"Admin điều phối đơn hàng sang '{target_branch_name}' cho quản lý phụ trách"
+
+    # Cập nhật thông tin phân bổ
+    order["branchId"] = clean_target
+    order["assignedBranchId"] = clean_target
+    order["assignedTo"] = target_manager_id
+    order["assignedBy"] = dispatcher_id
+    order["updatedAt"] = now_iso
+
+    # Ghi nhận lịch sử điều phối
+    history_entry = {
+        "status": order.get("status", "pending"),
+        "branchId": clean_target,
+        "assignedTo": target_manager_id,
+        "updatedAt": now_iso,
+        "note": dispatch_note,
+        "updatedBy": f"{dispatcher_name} ({dispatcher_id})"
+    }
+    history = order.get("history") or []
+    if not isinstance(history, list):
+        history = []
+    history.append(history_entry)
+    order["history"] = history
+
+    # Bổ sung tên hiển thị người tạo, người thực hiện, cửa hàng
+    enrich_order_display_names(order)
+
+    # Lưu đơn hàng -> tự động di chuyển file sang thư mục chi nhánh mới
+    saved = save_order(order)
+    if not saved:
+        return False, None, "Lỗi khi lưu đơn hàng và chuyển nhượng thư mục chi nhánh"
+
+    return True, order, None
+
+
+def filter_tasks_for_staff(
+    orders: List[Dict[str, Any]],
+    current_user: Dict[str, Any],
+    mode: str = "auto"
+) -> List[Dict[str, Any]]:
+    """
+    Lọc danh sách công việc chính xác theo thông tin người dùng, vai trò & vị trí cửa hàng.
+    Đảm bảo an toàn đơn hàng và nguyên tắc đặc quyền tối thiểu (Least Privilege):
+    - super_admin: Không bị giới hạn vị trí cửa hàng, xem được toàn bộ đơn hàng (hoặc mode='my_tasks').
+    - branch_manager: Xem toàn bộ đơn hàng thuộc chi nhánh phụ trách để điều phối, phân công (assignedTo)
+      và giám sát ca trực. Nếu mode='my_tasks', chỉ lọc các đơn gán trực tiếp cho quản lý.
+    - florist (Thợ cắm hoa nghệ thuật):
+      + Chỉ nhận các đơn CẦN CẮM HOA NGHỆ THUẬT: requiresArranging is not False.
+        (Đơn hoa cành / bó sẵn fast-track requiresArranging: false được đóng gói sẵn, thợ cắm hoa không cần làm).
+      + Trạng thái nằm trong tiến trình cắm hoa: ['confirmed', 'arranging', 'photo_sent'].
+      + Nếu đơn đã gán đích danh cho thợ khác (assignedTo), chỉ thợ đó mới thấy;
+        nếu chưa gán hoặc gán chung cho quản lý chi nhánh/admin, hiển thị để thợ có thể nhận việc.
+    - sales_consultant (Nhân viên tư vấn / Thu ngân):
+      + Đơn mới cần gọi điện xác nhận: status == 'pending'.
+      + Đơn cần thu tiền mặt tại quầy / COD: payment.status == 'unpaid'.
+    - shipper (Nhân viên giao hàng):
+      + Chỉ nhận các đơn giao tận nơi: fulfillmentType == 'delivery'.
+      + Đơn sẵn sàng giao: status in ['photo_sent', 'ready_for_pickup'] hoặc (status == 'confirmed' và not requiresArranging).
+      + Đơn đang giao của mình: status == 'shipping' và (not assignedTo or assignedTo == userId).
+    """
+    if not current_user:
+        return []
+
+    role = current_user.get("role")
+    user_id = current_user.get("userId") or current_user.get("id")
+
+    # 1. Super Admin: Toàn quyền, không bị giới hạn vị trí cửa hàng
+    if role == "super_admin":
+        if mode == "my_tasks" and user_id:
+            return [o for o in orders if o.get("assignedTo") == user_id]
+        return orders
+
+    # 2. Branch Manager: Quản lý toàn bộ đơn trong chi nhánh phụ trách
+    if role == "branch_manager":
+        if mode == "my_tasks" and user_id:
+            return [o for o in orders if o.get("assignedTo") == user_id]
+        return orders
+
+    # 3. Florist: Thợ cắm hoa nghệ thuật
+    if role == "florist":
+        tasks = []
+        for o in orders:
+            # Loại bỏ đơn fast-track tiêu chuẩn (hoa cành/bó sẵn không cần cắm)
+            if o.get("requiresArranging") is False:
+                continue
+            # Chỉ lấy trạng thái trong quy trình cắm hoa
+            st = o.get("status")
+            if st not in ["confirmed", "arranging", "photo_sent"]:
+                continue
+            # Kiểm tra phân công: nếu đã gán đích danh cho thợ khác -> ẩn đi
+            assigned_to = o.get("assignedTo")
+            if assigned_to and user_id and assigned_to != user_id:
+                # Nếu được gán cho quản lý chi nhánh hoặc admin chung -> hiển thị trong pool nhận việc
+                if not (assigned_to.startswith("staff_manager") or assigned_to.startswith("staff_admin")):
+                    continue
+            tasks.append(o)
+        return tasks
+
+    # 4. Sales Consultant: Tư vấn & Thu ngân
+    if role == "sales_consultant":
+        tasks = []
+        for o in orders:
+            st = o.get("status")
+            pay_status = (o.get("payment") or {}).get("status", "unpaid")
+            if st == "pending" or pay_status == "unpaid":
+                tasks.append(o)
+        return tasks
+
+    # 5. Shipper: Nhân viên giao hàng
+    if role == "shipper":
+        tasks = []
+        for o in orders:
+            delivery = o.get("delivery") or {}
+            fulfillment = o.get("fulfillmentType") or delivery.get("fulfillmentType")
+            if fulfillment != "delivery":
+                continue
+            st = o.get("status")
+            req_arr = o.get("requiresArranging", True)
+            assigned_to = o.get("assignedTo")
+
+            if st in ["photo_sent", "ready_for_pickup"]:
+                tasks.append(o)
+            elif st == "confirmed" and req_arr is False:
+                tasks.append(o)
+            elif st == "shipping":
+                if not assigned_to or not user_id or assigned_to == user_id or assigned_to.startswith("staff_manager") or assigned_to.startswith("staff_admin"):
+                    tasks.append(o)
+        return tasks
+
+    return orders
+

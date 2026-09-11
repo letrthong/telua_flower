@@ -50,13 +50,16 @@ from   data_service import (
     save_banners_config,
     save_uploaded_image,
     find_image_file,
-    update_order_status
+    update_order_status,
+    enrich_order_display_names
 )
 from order_service import (
     get_available_delivery_slots,
     create_order,
     assign_nearest_branch,
-    query_admin_orders
+    query_admin_orders,
+    dispatch_order_to_branch,
+    filter_tasks_for_staff
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -383,21 +386,43 @@ def api_my_orders():
 
 
 @flower_connect_api.route("/branch/<branch_id>/orders", methods=["GET"])
-@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant", "shipper"])
 def api_branch_orders(branch_id):
     """
-    Lấy danh sách đơn hàng được gán cho chi nhánh.
+    Lấy danh sách đơn hàng & phân bổ công việc của chi nhánh.
+    Kiểm tra an toàn đơn hàng:
+    - Vị trí cửa hàng: Trừ super_admin (không có vị trí cửa hàng cố định, xem được mọi chi nhánh),
+      các vai trò khác bắt buộc phải có branchId hợp lệ và khớp với chi nhánh được truy cập.
+    - Phân bổ công việc: Kiểm tra ai sẽ làm (role, userId) để trả về chính xác các công việc phù hợp:
+      + florist: Chỉ nhận đơn cần cắm nghệ thuật (requiresArranging != False), status in [confirmed, arranging, photo_sent].
+      + sales_consultant: Đơn mới chờ xác nhận (pending), đơn chưa thanh toán (unpaid).
+      + shipper: Đơn giao tận nơi (delivery) sẵn sàng giao hoặc đang giao.
+      + branch_manager: Xem toàn bộ đơn của chi nhánh mình để điều phối, phân công.
     """
     current_user = request.current_user
     if not can_access_branch(current_user, branch_id):
-        return jsonify({"success": False, "message": "Bạn không có quyền truy cập chi nhánh này"}), 403
+        return jsonify({
+            "success": False,
+            "message": "Bạn không có quyền truy cập đơn hàng tại vị trí cửa hàng này"
+        }), 403
 
     all_orders = read_orders_by_month()
-    branch_orders = [o for o in all_orders if o.get("branchId") == branch_id]
+    branch_orders = [
+        o for o in all_orders
+        if (o.get("branchId") == branch_id or o.get("assignedBranchId") == branch_id)
+    ]
+
+    # Bổ sung thông tin hiển thị (tên chi nhánh, tên người nhận việc)
+    for o in branch_orders:
+        enrich_order_display_names(o)
+
+    # Lọc danh sách công việc chính xác theo vai trò và định danh người làm
+    mode = request.args.get("mode", "auto")
+    tasks = filter_tasks_for_staff(branch_orders, current_user, mode=mode)
 
     return jsonify({
         "success": True,
-        "data": branch_orders
+        "data": tasks
     }), 200
 
 
@@ -415,8 +440,29 @@ def api_admin_orders():
     - startDate / endDate: YYYY-MM-DD (khi timeframe='custom')
     - month: YYYY_MM (ví dụ: '2026_08')
     """
-    timeframe = request.args.get("timeframe", "this_month")
+    current_user = request.current_user
+    user_role = current_user.get("role")
+    user_branch = current_user.get("branchId")
     branch_id = request.args.get("branchId")
+
+    # Kiểm tra an toàn vị trí cửa hàng:
+    # Trừ super_admin không bị ràng buộc vị trí, tất cả nhân viên khác bắt buộc phải có branchId
+    # và chỉ được truy xuất dữ liệu của chi nhánh mình trực thuộc.
+    if user_role != "super_admin":
+        if not user_branch:
+            return jsonify({
+                "success": False,
+                "message": "Tài khoản chưa được phân bổ vị trí cửa hàng / chi nhánh"
+            }), 403
+        if branch_id and branch_id not in ["all", "", user_branch]:
+            return jsonify({
+                "success": False,
+                "message": "Bạn không có quyền truy cập dữ liệu của chi nhánh khác"
+            }), 403
+        # Khóa cứng branch_id theo vị trí cửa hàng trực thuộc
+        branch_id = user_branch
+
+    timeframe = request.args.get("timeframe", "this_month")
     status = request.args.get("status")
     payment_status = request.args.get("paymentStatus")
     search = request.args.get("search")
@@ -591,6 +637,38 @@ def api_update_order_payment(order_id):
         return jsonify({"success": False, "message": "Không thể cập nhật thanh toán đơn hàng"}), 500
 
     return jsonify({"success": True, "message": "Cập nhật trạng thái thanh toán thành công", "data": updated}), 200
+
+
+@flower_connect_api.route("/admin/orders/<order_id>/dispatch", methods=["POST"])
+@require_role(["super_admin"])
+def api_dispatch_order(order_id):
+    """
+    Điều phối đơn hàng từ Admin sang cửa hàng showroom cụ thể (Chỉ Super Admin).
+    Body: { "targetBranchId": "branch_q10" | "branch_q1" | "branch_thao_dien", "note"?: str }
+    """
+    payload = request.get_json(silent=True) or {}
+    target_branch_id = (payload.get("targetBranchId") or payload.get("branchId") or "").strip()
+    note = (payload.get("note") or "").strip()
+
+    if not target_branch_id:
+        return jsonify({"success": False, "message": "Vui lòng chọn chi nhánh cửa hàng cần điều phối đơn"}), 400
+
+    success, dispatched_order, err_msg = dispatch_order_to_branch(
+        order_id=order_id,
+        target_branch_id=target_branch_id,
+        current_user=request.current_user,
+        note=note
+    )
+
+    if not success:
+        return jsonify({"success": False, "message": err_msg or "Không thể điều phối đơn hàng"}), 400
+
+    return jsonify({
+        "success": True,
+        "message": f"Điều phối đơn hàng sang '{dispatched_order.get('branchName', target_branch_id)}' thành công",
+        "data": dispatched_order
+    }), 200
+
 
 
 @flower_connect_api.route("/admin/orders/<order_id>/photo", methods=["POST", "PUT"])

@@ -407,6 +407,56 @@ export async function deleteUser(userId, fullName) {
     }
 }
 
+// ==========================================
+// 3. DIALOG ĐỘC LẬP: QUẢN LÝ NGƯỜI DÙNG & PHÂN QUYỀN
+// ==========================================
+
+export function openUserManagementModal(initialTab = 'staff') {
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+
+    const modal = document.getElementById("userManagementModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+    switchUserManagementTab(initialTab);
+}
+
+export function closeUserManagementModal() {
+    const modal = document.getElementById("userManagementModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function switchUserManagementTab(tabName) {
+    if (tabName !== "staff" && tabName !== "customers") tabName = "staff";
+
+    const btnStaff = document.getElementById("tabBtnUserMgmtStaff");
+    const btnCustomers = document.getElementById("tabBtnUserMgmtCustomers");
+    const secStaff = document.getElementById("tabContentStaff");
+    const secCustomers = document.getElementById("tabContentCustomers");
+
+    const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-purple-600 text-purple-600 transition flex items-center flex-shrink-0";
+    const inactiveCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+
+    if (btnStaff) btnStaff.className = inactiveCls;
+    if (btnCustomers) btnCustomers.className = inactiveCls;
+    if (secStaff) secStaff.classList.add("hidden");
+    if (secCustomers) secCustomers.classList.add("hidden");
+
+    if (tabName === "customers") {
+        if (btnCustomers) btnCustomers.className = activeCls;
+        if (secCustomers) secCustomers.classList.remove("hidden");
+        loadAdminCustomers();
+    } else {
+        if (btnStaff) btnStaff.className = activeCls;
+        if (secStaff) secStaff.classList.remove("hidden");
+        loadAdminUsers();
+    }
+}
+
 if (typeof window !== "undefined") {
     window.ROLE_DISPLAY_MAP = ROLE_DISPLAY_MAP;
     window.loadAdminUsers = loadAdminUsers;
@@ -420,4 +470,8 @@ if (typeof window !== "undefined") {
     window.editUser = editUser;
     window.handleUserSubmit = handleUserSubmit;
     window.deleteUser = deleteUser;
+    window.openUserManagementModal = openUserManagementModal;
+    window.closeUserManagementModal = closeUserManagementModal;
+    window.switchUserManagementTab = switchUserManagementTab;
 }
+

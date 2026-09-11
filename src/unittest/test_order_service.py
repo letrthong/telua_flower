@@ -345,6 +345,93 @@ class TestOrderService(unittest.TestCase):
         delete_order(order1["id"])
         delete_order(order2["id"])
 
+    def test_10_request_arranging_fee_calculation(self):
+        """Kiểm tra tùy chọn Hỗ trợ cắm hoa nghệ thuật: tính phí 50% tiền hàng và lưu ghi chú"""
+        from data_service import delete_order
+        order_payload = {
+            "sender": {"name": "Khách Đặt Cắm Hoa", "phone": "0988667788"},
+            "recipient": {"name": "Người Nhận Bình Hoa", "phone": "0977665544", "address": "Quận 1, TP.HCM"},
+            "requestArranging": True,
+            "arrangingNotes": "Cắm tone hồng pastel, dáng tròn tỏa đều vào bình cao",
+            "items": [{"productId": "bo_hoa_01", "quantity": 1, "price": 420000}]
+        }
+        success, order, err = create_order(order_payload)
+        self.assertTrue(success, f"Tạo đơn lỗi: {err}")
+        self.assertTrue(order["requiresArranging"])
+        # Subtotal: 420,000đ -> Phí cắm hoa 50% = 210,000đ
+        self.assertEqual(order["financials"]["subtotal"], 420000)
+        self.assertEqual(order["financials"]["arrangingFee"], 210000)
+        # Shipping fee cho đơn dưới 500k = 35,000đ
+        # Total = 420,000 + 210,000 + 35,000 = 665,000đ
+        self.assertEqual(order["financials"]["totalAmount"], 665000)
+        self.assertEqual(order["totalAmount"], 665000)
+        self.assertEqual(order["arrangingNotes"], "Cắm tone hồng pastel, dáng tròn tỏa đều vào bình cao")
+        self.assertEqual(order["customization"]["requestArranging"], True)
+
+        # Dọn dẹp
+        delete_order(order["id"])
+
+    def test_11_dispatch_order_to_branch_and_display_names(self):
+        """Kiểm tra điều phối đơn hàng online qua Admin: tự động gán admin, lưu tên người tạo, người xử lý, và gán sang quản lý showroom"""
+        from order_service import dispatch_order_to_branch
+        from data_service import delete_order, read_orders_by_month, get_order_by_id
+
+        # 1. Đặt đơn online không truyền chi nhánh -> tự động gán branchId = 'admin' và assignedTo = 'staff_admin'
+        online_order_req = {
+            "sender": {"name": "Nguyễn Hoàng Minh", "phone": "0938123456", "email": "minh.nguyen@gmail.com"},
+            "recipient": {"name": "Lê Thu Thảo", "phone": "0988776655", "address": "123 Cách Mạng Tháng 8, Q.10, TP.HCM"},
+            "items": [{"productId": "bo_hoa_01", "quantity": 1, "price": 420000}]
+        }
+        success, order, err = create_order(online_order_req)
+        self.assertTrue(success, f"Tạo đơn online lỗi: {err}")
+        order_id = order["id"]
+
+        # Kiểm tra chi nhánh và người xử lý mặc định
+        self.assertEqual(order["branchId"], "admin")
+        self.assertEqual(order["assignedTo"], "staff_admin")
+        self.assertIn("creatorName", order)
+        self.assertEqual(order["creatorName"], "Nguyễn Hoàng Minh")
+        self.assertIn("assigneeName", order)
+        self.assertIn("staff_admin", order["assigneeName"])
+        self.assertEqual(order["branchName"], "Tổng Quản Trị / Trung Tâm (Admin)")
+
+        # 2. Super Admin thực hiện điều phối đơn hàng sang chi nhánh Showroom Quận 10 (branch_q10)
+        admin_user = {"userId": "staff_admin", "fullName": "Tổng Quản Trị Hệ Thống", "role": "super_admin"}
+        dispatch_ok, dispatched_order, err_disp = dispatch_order_to_branch(
+            order_id=order_id,
+            target_branch_id="branch_q10",
+            current_user=admin_user,
+            note="Điều phối cho showroom Q10 cắm và giao hoa"
+        )
+        self.assertTrue(dispatch_ok, f"Lỗi điều phối: {err_disp}")
+        self.assertEqual(dispatched_order["branchId"], "branch_q10")
+        self.assertEqual(dispatched_order["assignedTo"], "staff_001")  # Quản lý Showroom Q10
+        self.assertIn("Trần Thị Mai", dispatched_order["assigneeName"])
+        self.assertIn("Showroom Quận 10", dispatched_order["branchName"])
+
+        # Kiểm tra file vật lý: đơn phải biến mất khỏi orders/admin/ và xuất hiện trong orders/branch_q10/
+        admin_orders = read_orders_by_month(branch_id="admin")
+        q10_orders = read_orders_by_month(branch_id="branch_q10")
+        self.assertFalse(any(o["id"] == order_id for o in admin_orders))
+        self.assertTrue(any(o["id"] == order_id for o in q10_orders))
+
+        # 3. Kiểm tra gọi qua RESTful endpoint POST /api/flower/v1/admin/orders/<order_id>/dispatch
+        admin_token = generate_jwt_token(admin_user)
+        res_disp = self.client.post(
+            f"/api/flower/v1/admin/orders/{order_id}/dispatch",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={"targetBranchId": "branch_q1", "note": "Chuyển tiếp cho showroom Q1"}
+        )
+        self.assertEqual(res_disp.status_code, 200)
+        res_json = res_disp.get_json()
+        self.assertTrue(res_json["success"])
+        self.assertEqual(res_json["data"]["branchId"], "branch_q1")
+        self.assertEqual(res_json["data"]["assignedTo"], "staff_004")  # Quản lý Showroom Q1
+
+        # Dọn dẹp
+        delete_order(order_id)
+
 
 if __name__ == "__main__":
     unittest.main()
+
