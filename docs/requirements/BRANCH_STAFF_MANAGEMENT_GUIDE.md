@@ -127,6 +127,12 @@ Hệ thống có thể lưu trữ dưới dạng JSON tĩnh hoặc Database quan
 - `PUT /api/staff/<staff_id>/role`: Thay đổi vai trò nhân sự (`florist`, `sales_consultant`...)
 - `PUT /api/staff/<staff_id>/status`: Khóa / Kích hoạt lại tài khoản nhân viên
 
+### 📋 Tác Nghiệp Ca Trực Nhân Viên (Task API Độc Lập):
+- `GET /api/flower/v1/staff/my-tasks`: Lấy việc theo ca trực (Backend tự lấy showroom và vai trò từ Token, không cần truyền branchId)
+- `POST /api/flower/v1/staff/tasks/<id>/claim`: Nhân viên nhận việc trực tiếp vào ca
+- `GET /api/flower/v1/staff/tasks/summary`: Thống kê nhanh số lượng task theo ca trực
+- `POST /api/orders/<order_id>/photo`: Thợ cắm hoa upload ảnh hoa thực tế sau khi cắm xong
+
 ---
 
 ## 5. Luồng Thao Tác Sau Khi Nhân Viên Đăng Nhập

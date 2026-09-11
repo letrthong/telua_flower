@@ -78,11 +78,24 @@
 | `GET` | `/api/orders/<id>/payment-qr` | Public / Customer | **Lấy chi tiết mã QR VietQR (chuẩn Napas EMVCo + QuickLink URL)** để thanh toán đơn hàng |
 | `GET` | `/api/user/orders` | Customer | **Xem lịch sử đơn hàng cá nhân (nạp trực tiếp từ `users/{user_id}/orders.json` siêu tốc)** |
 | `GET` | `/api/customers/<user_id>/orders` | Admin, Manager | **Admin/CRM tra cứu sổ đơn hàng cá nhân của 1 khách hàng cụ thể** |
-| `GET` | `/api/branch/<branch_id>/orders` | Staff / Manager | Lấy danh sách đơn hàng được gán cho chi nhánh |
-| `GET` | `/api/admin/orders` | Staff / Manager / Admin | Quản lý, thống kê & lọc đơn hàng đa chiều (`sortBy=updatedAt/createdAt/totalAmount`, `sortOrder=desc/asc`, `dateFilterBy=createdAt/updatedAt`, `timeframe`, `branchId`, `status`) |
-| `PUT` | `/api/orders/<id>/status` hoặc `/api/admin/orders/<id>/status` | Staff / Manager | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`; pickup: `ready_for_pickup` $\rightarrow$ `completed`) |
+| `GET` | `/api/branch/<branch_id>/orders` | Manager / Admin | Lấy danh sách đơn hàng được gán cho chi nhánh (kiểm tra an toàn vị trí cửa hàng) |
+| `GET` | `/api/admin/orders` | Staff / Manager / Admin | Quản lý, thống kê & lọc đơn hàng đa chiều. Nhân viên bị khóa cứng chi nhánh, Super Admin xem toàn chuỗi |
+| `POST`| `/api/admin/orders/<id>/dispatch` | **Chỉ `super_admin`** | **Điều phối / gán Showroom xử lý đơn hàng**: Cập nhật `branchId`, chuyển giao `assignedTo = managerId` |
+| `PUT` | `/api/orders/<id>/status` hoặc `/api/admin/orders/<id>/status` | Staff / Manager / Admin | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`) |
 | `PUT` | `/api/admin/orders/<id>/payment` | Staff / Manager / Admin | **Xác nhận thanh toán tiền mặt (COD / Pickup)** cho đơn hàng chi nhánh mình |
-| `POST` | `/api/orders/<id>/photo` | `florist` / Manager | **Thợ cắm hoa upload ảnh hoa thực tế** để gửi khách duyệt |
+| `POST` | `/api/orders/<id>/photo` | `florist` / Manager | **Thợ cắm hoa upload ảnh hoa thực tế** sau khi cắm để gửi khách duyệt |
+
+---
+
+### 📋 4a. Nhóm Tác Nghiệp Ca Trực Nhân Viên (`/api/staff`) — Task API Độc Lập
+
+Nhóm API độc lập dành riêng cho nhân viên thừa hành tác nghiệp ca trực (Florist, Shipper, Thu ngân). Không để lộ dữ liệu nhạy cảm kế toán:
+
+| Method | Endpoint | Quyền hạn | Mô tả |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/flower/v1/staff/my-tasks` | Staff / Manager / Admin | **Lấy danh sách nhiệm vụ ca trực:** Tự động nhận diện Showroom & Vai trò từ JWT. Thợ cắm chỉ nhận đơn hoa nghệ thuật; Thu ngân nhận đơn chưa thanh toán; Shipper nhận đơn giao hàng |
+| `POST` | `/api/flower/v1/staff/tasks/<id>/claim` | Staff / Manager | **Nhận việc (Claim task):** Nhân viên nhận nhiệm vụ vào ca của mình (`assignedTo = user.userId`). Chặn nhân viên chi nhánh khác nhận việc |
+| `GET` | `/api/flower/v1/staff/tasks/summary` | Staff / Manager / Admin | Thống kê nhanh số lượng task theo ca trực (`pending`, `arranging`, `shipping`, `completed`) để hiển thị badge |
 
 #### Request mẫu `POST /api/orders` đầy đủ tính năng:
 ```json

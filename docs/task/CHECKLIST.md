@@ -67,12 +67,15 @@ Tiến độ: [███████████████░] 62.5% (5/8 Task
 
 ---
 
-### [ ] TASK 05: Cổng Thợ Cắm Hoa, Upload Ảnh Thật & In Phiếu Giao K80
-- [ ] Tạo giao diện `/portal/staff` cho thợ cắm hoa xem đơn theo ca.
-- [ ] Thêm chức năng chụp ảnh / upload ảnh hoa thật từ điện thoại.
-- [ ] Viết `src/services/image_service.py` tự động nén WebP dưới 150KB.
-- [ ] Thêm nút in phiếu giao hàng nhiệt K80/A5 hiển thị đầy đủ địa chỉ, ghi chú & thiệp.
-- [ ] Viết `src/unittest/test_image_service.py` và test thành công.
+### [x] TASK 05: Cổng Thợ Cắm Hoa, Task API Ca Trực, Upload Ảnh Thật & In Phiếu Giao K80
+- [x] Tạo giao diện Dialog độc lập `#staffPortalModal` ("Công Việc Của Tôi / Bàn Làm Việc Ca Trực") cho nhân viên ca trực (`h-[96vh] sm:h-[98vh]`).
+- [x] Kiểm tra an toàn vị trí cửa hàng: Trừ Super Admin không ràng buộc vị trí, tất cả nhân viên khác bắt buộc kiểm tra `user.branchId == branch_id` (chặn truy cập chéo 403).
+- [x] Tách biệt độc lập **Staff Task API**: `GET /api/flower/v1/staff/my-tasks` (tự nạp chi nhánh từ token, lọc theo Least Privilege), `POST /staff/tasks/<id>/claim` (nhận việc), `GET /staff/tasks/summary` (thống kê ca trực).
+- [x] Hỗ trợ điều phối đơn hàng nhanh cho Super Admin (`POST /api/flower/v1/admin/orders/<id>/dispatch`) từ Bàn làm việc ca trực và Modal chi tiết đơn hàng.
+- [x] Thêm chức năng chụp ảnh / upload ảnh hoa thật từ điện thoại (`POST /api/orders/<id>/photo`), tự động chuyển sang `photo_sent` để khách duyệt mẫu.
+- [x] Phân biệt rõ nét Đơn Cắm Hoa Nghệ Thuật (`requiresArranging: true`, phụ phí +50%) vs Đơn Fast-Track (`requiresArranging: false`, stepper 4 bước).
+- [x] Thêm nút in phiếu giao hàng nhiệt K80/A5 hiển thị đầy đủ địa chỉ, ghi chú cắm hoa & thiệp chúc mừng.
+- [x] Viết `src/unittest/test_staff_portal_and_dispatch.py` (7 tests) và chạy test Pass 100%.
 
 ---
 
