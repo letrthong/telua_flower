@@ -157,17 +157,39 @@ def require_role(allowed_roles):
         return decorated_function
     return decorator
 
-# Ví dụ bảo vệ API duyệt đơn chỉ cho Quản lý chi nhánh & Admin:
+# Bảo vệ API quản lý ca trực và phân bổ công việc:
 @app.route('/api/branch/<branch_id>/orders', methods=['GET'])
-@require_role(['branch_manager', 'super_admin'])
+@require_role(['super_admin', 'branch_manager', 'florist', 'sales_consultant', 'shipper'])
 def get_branch_orders(branch_id):
     user = request.current_user
-    # Phân lập dữ liệu: Quản lý chi nhánh chỉ được xem chi nhánh của mình
-    if user['role'] == 'branch_manager' and user['branchId'] != branch_id:
-        return jsonify({"success": False, "message": "Không có quyền xem chi nhánh khác"}), 403
-        
-    return jsonify({"success": true, "data": []})
+    # An toàn vị trí cửa hàng:
+    # - Trừ Super Admin: Không có vị trí cửa hàng cố định, toàn quyền truy xuất mọi chi nhánh.
+    # - Nhân viên khác: Bắt buộc phải có branchId và chỉ được truy cập đúng chi nhánh trực thuộc.
+    if not can_access_branch(user, branch_id):
+        return jsonify({"success": False, "message": "Bạn không có quyền truy cập đơn hàng tại vị trí cửa hàng này"}), 403
+
+    # Phân bổ công việc chuẩn Least Privilege tại Backend:
+    # Backend kiểm tra vai trò (role, userId) và chỉ trả về đúng tệp công việc của người đó:
+    # - florist: Chỉ nhận đơn hoa nghệ thuật (requiresArranging: true) trong tiến trình cắm (confirmed, arranging, photo_sent).
+    # - sales_consultant: Chỉ nhận đơn mới (pending) và đơn chưa thu tiền (unpaid).
+    # - shipper: Chỉ nhận đơn giao hàng (delivery) sẵn sàng hoặc đang giao.
+    # - branch_manager: Xem toàn bộ đơn của chi nhánh để phân công (assignedTo).
+    tasks = filter_tasks_for_staff(branch_orders, user)
+    return jsonify({"success": True, "data": tasks})
 ```
+
+---
+
+## 5.1 Kiểm Tra An Toàn Vị Trí Cửa Hàng & Phân Bổ Công Việc (Store Location & Task Isolation)
+
+| Nhóm Tài Khoản | Ràng Buộc Vị Trí Cửa Hàng (`branchId`) | Phạm Vi Dữ Liệu Được Trả Về |
+| :--- | :--- | :--- |
+| **Super Admin** | **Không ràng buộc** (`Branch: None` / Toàn chuỗi) | Xem mọi chi nhánh (`all`, `admin`, các showroom), điều phối đơn sang chi nhánh khác. |
+| **Quản Lý Chi Nhánh** | **Bắt buộc** trùng khớp với chi nhánh quản lý | Toàn bộ đơn hàng của chi nhánh để phân công nhân sự (`assignedTo`) và giám sát ca trực. |
+| **Thợ Cắm Hoa (`florist`)** | **Bắt buộc** trùng khớp với showroom trực thuộc | Chỉ các đơn **cắm hoa nghệ thuật** (`requiresArranging != False`) ở trạng thái chờ cắm/đang cắm/chờ duyệt ảnh. |
+| **Tư Vấn (`sales_consultant`)** | **Bắt buộc** trùng khớp với showroom trực thuộc | Chỉ đơn mới chờ duyệt (`pending`) và đơn chưa thanh toán (`unpaid`). |
+| **Giao Hàng (`shipper`)** | **Bắt buộc** trùng khớp với showroom trực thuộc | Chỉ đơn giao tận nơi (`delivery`) đã sẵn sàng giao hoặc đang trên đường giao. |
+
 
 ---
 

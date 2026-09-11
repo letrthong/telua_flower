@@ -26,7 +26,8 @@ from data_service import (
     sync_order_to_user_folder,
     get_user_orders,
     get_system_current_and_prev_ym,
-    enrich_order_display_names
+    enrich_order_display_names,
+    get_user_by_id
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -837,8 +838,9 @@ def filter_tasks_for_staff(
             # Kiểm tra phân công: nếu đã gán đích danh cho thợ khác -> ẩn đi
             assigned_to = o.get("assignedTo")
             if assigned_to and user_id and assigned_to != user_id:
-                # Nếu được gán cho quản lý chi nhánh hoặc admin chung -> hiển thị trong pool nhận việc
-                if not (assigned_to.startswith("staff_manager") or assigned_to.startswith("staff_admin")):
+                assignee = get_user_by_id(assigned_to)
+                # Nếu người được gán là một thợ cắm hoa khác -> ẩn đi
+                if assignee and assignee.get("role") == "florist":
                     continue
             tasks.append(o)
         return tasks
@@ -870,8 +872,11 @@ def filter_tasks_for_staff(
             elif st == "confirmed" and req_arr is False:
                 tasks.append(o)
             elif st == "shipping":
-                if not assigned_to or not user_id or assigned_to == user_id or assigned_to.startswith("staff_manager") or assigned_to.startswith("staff_admin"):
-                    tasks.append(o)
+                if assigned_to and user_id and assigned_to != user_id:
+                    assignee = get_user_by_id(assigned_to)
+                    if assignee and assignee.get("role") == "shipper":
+                        continue
+                tasks.append(o)
         return tasks
 
     return orders
