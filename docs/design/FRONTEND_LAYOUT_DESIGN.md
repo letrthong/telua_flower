@@ -382,17 +382,19 @@ Giao diện Đặt Hàng (Checkout Modal) được thiết kế theo luồng ph�
 
 ---
 
-## 7. Kiến Trúc 2 Dialog Độc Lập: "Công Việc Của Tôi" & "Quản Lý Người Dùng" (Chiều Cao Tối Đa)
+## 7. Kiến Trúc Các Dialog Nghiệp Vụ Độc Lập (Chiều Cao Tối Đa & Cố Định)
 
-Nhằm tối ưu hóa trải nghiệm vận hành không gian làm việc (Workspace) và quản trị nhân sự/khách hàng, hệ thống tách biệt hoàn toàn thành **2 Dialog độc lập (Standalone Dialogs)** thay vì nhúng lồng vào CMS Admin, đồng thời thiết lập **chiều cao tối đa (Maximum Viewport Height)**:
+Nhằm tối ưu hóa trải nghiệm vận hành không gian làm việc (Workspace), quản trị nhân sự/khách hàng và tra cứu đơn hàng, hệ thống thiết lập **chiều cao tối đa và cố định (Maximized & Fixed Viewport Height)** cho các Modal chính để tránh giật giao diện khi nạp dữ liệu:
 
 ```text
 +==================================================================================================+
 | DIALOG 1: CÔNG VIỆC CỦA TÔI (BÀN LÀM VIỆC CA TRỰC) - [#staffPortalModal]                          |
-| Header: [ 💼 ] Công Việc Của Tôi (Bàn Làm Việc Ca Trực)                     [ Hỗ trợ 4 Roles ] [✕]|
+| Header: [ 💼 ] Bàn Làm Việc Ca Trực (Điều Phối Đơn Hàng)                   [ Hỗ trợ 4 Roles ] [✕]|
 | Body: [h-[96vh] sm:h-[98vh] max-w-6xl flex-col]                                                  |
-| - Điều phối/tiếp nhận đơn hàng chi nhánh theo ca trực (Sales / Florist / Manager / Super Admin)  |
-| - Danh sách tác vụ, cập nhật trạng thái đơn hàng thời gian thực                                  |
+| - Super Admin: Tự động tải đơn hàng chờ Admin điều phối (branchId='admin') để gán Showroom.       |
+|   Không dùng selectBox chi nhánh rườm rà (việc soi toàn chuỗi đã có tại CMS Admin Đơn Hàng).     |
+| - Florist/Sales/Manager: Nhận đúng tác vụ ca trực của Showroom mình (cắm hoa, xác nhận, giao)     |
+| - Tích hợp badge điều phối, dropdown gán showroom trực tiếp trên từng thẻ đơn hàng               |
 +==================================================================================================+
 
 +==================================================================================================+
@@ -403,22 +405,38 @@ Nhằm tối ưu hóa trải nghiệm vận hành không gian làm việc (Works
 | - Tab 1 (Nhân sự): Thêm mới nhân sự, gán vai trò RBAC, chọn showroom làm việc, bảng nhân viên     |
 | - Tab 2 (CRM): Tìm kiếm khách hàng, bộ lọc hạng thẻ (VIP/Vàng/Bạc/Chuẩn), điểm tích lũy, chi tiêu|
 +==================================================================================================+
+
++==================================================================================================+
+| DIALOG 3: CHI TIẾT ĐƠN HÀNG - [#orderDetailModal]                                                |
+| Header: [ 🧾 ] Chi Tiết Đơn Hàng [ Mã đơn ] [ Thời gian ]                  [ 🖨️ In ] [ ✕ Đóng ] |
+| Body: [h-[94vh] sm:h-[96vh] max-w-3xl flex flex-col] (Chiều cao CỐ ĐỊNH & TỐI ĐA)                |
+| - Header & Footer ghim cố định (flex-shrink-0), không co giật lúc Loading Skeleton               |
+| - Vùng nội dung cuộn mượt (flex-1 overflow-y-auto): Stepper 5 bước, người nhận/gửi, bảng hoa,     |
+|   thanh toán VietQR, ảnh hoa thực tế florist chụp, tổng kết tài chính, timeline lịch sử          |
++==================================================================================================+
 ```
 
-### 1. Thông Số Thiết Kế Chiều Cao Tối Đa (Maximized Viewport Height):
-- **Class vùng chứa (Container):**
+### 1. Thông Số Thiết Kế Chiều Cao Tối Đa & Cố Định (Maximized Fixed Height):
+- **Dialog Bàn Làm Việc & Quản Trị (#staffPortalModal, #userManagementModal):**
   `w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden h-[96vh] max-h-[96vh] sm:h-[98vh] sm:max-h-[98vh] flex flex-col`
-- **Tối ưu hiển thị:**
-  - Header & Tab navigation cố định (`flex-shrink-0`), không bị che khuất khi cuộn.
-  - Vùng nội dung Body (`overflow-y-auto flex-1`) tận dụng 96%–98% chiều cao màn hình trình duyệt, cho phép cuộn xem danh sách dài mà không tạo thêm thanh cuộn kép cho toàn trang web.
+- **Dialog Chi Tiết Đơn Hàng (#orderDetailModal):**
+  `bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden border border-emerald-100 h-[94vh] max-h-[94vh] sm:h-[96vh] sm:max-h-[96vh] flex flex-col animate-fadeIn relative`
+- **Tối ưu hiển thị & Trải nghiệm người dùng (UX):**
+  - **Cố định tuyệt đối**: Chiều cao không bị sụt co lại khi hiển thị Skeleton Spinner nạp API, loại bỏ hiện tượng nhảy/giật layout (Layout Shift).
+  - Header & Footer luôn ghim ở hai đầu (`flex-shrink-0`), giúp thao tác in ấn hoặc đóng modal luôn sẵn sàng.
+  - Vùng nội dung Body (`overflow-y-auto flex-1`) tận dụng 94%–96% chiều cao màn hình trình duyệt, cho phép người dùng cuộn xem chi tiết sản phẩm và quy trình hoa thoải mái.
 
 ### 2. Module & Hàm Điều Khiển Độc Lập:
-- **Dialog "Công Việc Của Tôi":**
+- **Dialog "Công Việc Của Tôi / Bàn Làm Việc Ca Trực":**
   - File điều khiển: [`js/staff_portal.js`](file:///d:/wmshare/telua_flower/js/staff_portal.js)
-  - Hàm mở/đóng: `openStaffPortalModal()`, `closeStaffPortalModal()`, `loadStaffOrders()`
-  - Phân quyền: Tự động nhận diện vai trò `florist`, `sales_consultant`, `branch_manager`, `super_admin`.
+  - Hàm mở/đóng: `openStaffPortalModal()`, `closeStaffPortalModal()`, `loadStaffOrders()`, `dispatchStaffOrder(orderId, branchId)`
+  - Phân quyền & Hành vi: Tự động nhận diện vai trò; riêng `super_admin` chỉ tải các đơn hàng cần Admin điều phối (`branchId='admin'`) qua Task API `/staff/my-tasks?mode=auto`, loại bỏ selectBox lọc chi nhánh rườm rà. Nhân viên chi nhánh nhận đúng đơn theo Showroom và vai trò (`florist`, `sales_consultant`, `branch_manager`).
 - **Dialog "Quản Lý Người Dùng":**
   - File điều khiển: [`js/portal_admin_users.js`](file:///d:/wmshare/telua_flower/js/portal_admin_users.js)
   - Hàm mở/đóng/chuyển tab: `openUserManagementModal(tab = 'staff')`, `closeUserManagementModal()`, `switchUserManagementTab(tab)`
-  - Điều hướng: Menu Dropdown máy tính & Mobile Drawer gọi trực tiếp `openUserManagementModal('staff')`. Nếu người dùng đang trong CMS Admin (`adminPortalModal`) nhấp vào tab "Nhân Sự" hoặc "Khách Hàng", hệ thống tự động chuyển tiếp sang Dialog Quản Lý Người Dùng độc lập.
+  - Điều hướng: Menu Dropdown máy tính & Mobile Drawer gọi trực tiếp `openUserManagementModal('staff')`. Nút bấm tiện ích "Quản Lý Người Dùng" cũng được tích hợp ngay trên Header của CMS Admin (`adminPortalModal`). Thanh điều hướng tab của CMS Admin tập trung hoàn toàn vào nghiệp vụ vận hành hàng hóa (Đơn hàng, Mẫu hoa & Bảng giá, Kho & Hao hụt, Danh mục, Chuỗi Showroom, Khuyến mãi & Voucher, Sản phẩm kèm theo, Banners), loại bỏ hoàn toàn việc hiển thị dư thừa 2 tab Nhân sự & Khách hàng trong thanh tab bar.
+- **Dialog "Chi Tiết Đơn Hàng":**
+  - File điều khiển: [`js/order_dashboard.js`](file:///d:/wmshare/telua_flower/js/order_dashboard.js)
+  - Hàm mở/đóng: `openOrderDetailModal(orderId)`, `closeOrderDetailModal()`, `populateOrderDetail(order)`
+  - Tích hợp: Tra cứu trực tiếp từ API `/api/flower/v1/orders/{orderId}`, render tiến trình Stepper 5 bước, bảng kê hoa tươi, ảnh chụp hoa florist và chuyển trạng thái/thu tiền mặt.
 

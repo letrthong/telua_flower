@@ -454,15 +454,20 @@ def api_staff_my_tasks():
             }), 403
         target_branch = user_branch
     else:
-        # Super Admin có thể chọn xem một chi nhánh hoặc xem toàn bộ
+        # Super Admin trong Bàn Làm Việc Ca Trực: Mặc định chỉ hiển thị đơn hàng cần điều phối bởi admin
         req_branch = request.args.get("branchId")
-        target_branch = req_branch if req_branch and req_branch != "all" else None
+        if req_branch and req_branch != "all":
+            target_branch = req_branch
+        elif req_branch == "all":
+            target_branch = None
+        else:
+            target_branch = "admin"
 
     all_orders = read_orders_by_month()
     if target_branch:
         branch_orders = [
             o for o in all_orders
-            if (o.get("branchId") == target_branch or o.get("assignedBranchId") == target_branch)
+            if (o.get("branchId") == target_branch or o.get("assignedBranchId") == target_branch or (target_branch == "admin" and not o.get("branchId")))
         ]
     else:
         branch_orders = all_orders

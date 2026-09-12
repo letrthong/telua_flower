@@ -3911,6 +3911,38 @@ const STAFF_PAYMENT_STATUS_META = {
     failed: { label: "Thanh toán lỗi", color: "bg-red-100 text-red-700 border-red-200", icon: "fa-circle-xmark" }
 };
 
+const STAFF_KNOWN_BRANCHES = [
+    {
+        id: "branch_q10",
+        name: "Showroom Quận 10 Flagship (183/37 Đường 3/2, Q.10)",
+        shortName: "Showroom Q10 (Flagship)"
+    },
+    {
+        id: "branch_q1",
+        name: "Showroom Bến Nghé Quận 1 (Số 2 Hải Triều, Q.1)",
+        shortName: "Showroom Bến Nghé Q1"
+    },
+    {
+        id: "branch_thao_dien",
+        name: "Showroom Thảo Điền (68 Xuân Thủy, TP. Thủ Đức)",
+        shortName: "Showroom Thảo Điền"
+    }
+];
+
+const STAFF_BRANCH_DISPLAY_MAP = {
+    branch_q10: "Showroom Q10 Flagship (183/37 Đ. 3/2)",
+    branch_q1: "Showroom Bến Nghé Q1 (Số 2 Hải Triều)",
+    branch_thao_dien: "Showroom Thảo Điền (68 Xuân Thủy)",
+    admin: "Trung Tâm Admin (Chờ điều phối)"
+};
+
+function getStaffBranches() {
+    if (typeof window !== "undefined" && Array.isArray(window.allAdminBranches) && window.allAdminBranches.length > 0) {
+        return window.allAdminBranches;
+    }
+    return STAFF_KNOWN_BRANCHES;
+}
+
 function staffFormatVND(amount) {
     const n = Number(amount) || 0;
     return n.toLocaleString("vi-VN") + "₫";
@@ -3956,7 +3988,7 @@ function openStaffPortalModal() {
         } else if (user.role === "branch_manager") {
             titleEl.textContent = "Bàn Làm Việc Ca Trực (Quản Lý Chi Nhánh)";
         } else {
-            titleEl.textContent = "Bàn Làm Việc Ca Trực (Super Admin)";
+            titleEl.textContent = "Bàn Làm Việc Ca Trực (Điều Phối Đơn Hàng)";
         }
     }
     if (subtitleEl) {
@@ -3965,19 +3997,18 @@ function openStaffPortalModal() {
             subtitleEl.textContent = `Danh sách đơn hoa cần cắm trong ca trực${storeBadge}`;
         } else if (user.role === "sales_consultant") {
             subtitleEl.textContent = `Danh sách đơn mới & tiếp nhận xử lý ca trực${storeBadge}`;
-        } else {
+        } else if (user.role === "branch_manager") {
             subtitleEl.textContent = `Theo dõi đơn hàng và tiến độ thực hiện ca trực chi nhánh${storeBadge}`;
+        } else {
+            subtitleEl.textContent = `Đơn hàng cần xử lý và điều phối về các Showroom chi nhánh`;
         }
     }
 
-    // Cập nhật bộ lọc chi nhánh nếu là Super Admin
-    const branchWrapper = document.getElementById("staffBranchFilterWrapper");
+    // Badge chỉ dẫn cho Super Admin
     const isSuperAdmin = user.role === "super_admin";
-    if (branchWrapper) {
-        branchWrapper.classList.toggle("hidden", !isSuperAdmin);
-        if (isSuperAdmin) {
-            populateStaffBranchFilter();
-        }
+    const dispatchBadge = document.getElementById("staffAdminDispatchBadge");
+    if (dispatchBadge) {
+        dispatchBadge.classList.toggle("hidden", !isSuperAdmin);
     }
 
     modal.style.display = "flex";
@@ -3987,42 +4018,9 @@ function openStaffPortalModal() {
 }
 
 /**
- * Nạp danh sách chi nhánh vào bộ lọc ca trực của Super Admin
+ * Nạp danh sách chi nhánh (duy trì tương thích)
  */
-async function populateStaffBranchFilter() {
-    const branchSelect = document.getElementById("staffFilterBranch");
-    if (!branchSelect) return;
-
-    let branches = (typeof window !== "undefined" && Array.isArray(window.allAdminBranches) && window.allAdminBranches.length > 0)
-        ? window.allAdminBranches
-        : [];
-
-    if (branches.length === 0) {
-        try {
-            const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-            const res = await fetch(`${API_BASE}/branches`, {
-                headers: token ? { "Authorization": `Bearer ${token}` } : {}
-            });
-            const json = await res.json();
-            if (json.success && Array.isArray(json.data)) {
-                branches = json.data;
-                if (typeof window !== "undefined") window.allAdminBranches = branches;
-            }
-        } catch (_) {}
-    }
-
-    const currentVal = branchSelect.value || "all";
-    const branchOpts = branches.filter(b => b.isActive !== false).map(b => 
-        `<option value="${b.id}">📍 ${b.name || b.id}</option>`
-    ).join("");
-
-    branchSelect.innerHTML = `
-        <option value="all">⚡ Tất cả chi nhánh & Admin</option>
-        <option value="admin">🏢 Đơn chờ điều phối (Admin)</option>
-        ${branchOpts}
-    `;
-    branchSelect.value = currentVal;
-}
+async function populateStaffBranchFilter() {}
 
 function closeStaffPortalModal() {
     const modal = document.getElementById("staffPortalModal");
@@ -4034,6 +4032,7 @@ function closeStaffPortalModal() {
 
 /**
  * Tải danh sách đơn hàng của chi nhánh (phân quyền tự động theo role & user.branchId)
+ * Super Admin: Chỉ nhận danh sách đơn hàng cần điều phối bởi Admin ('admin')
  */
 async function loadStaffOrders() {
     const user = (typeof getCurrentUser === "function") ? getCurrentUser() : null;
@@ -4055,57 +4054,30 @@ async function loadStaffOrders() {
     if (emptyEl) emptyEl.classList.add("hidden");
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-    const isSuperAdmin = user.role === "super_admin";
-    const branchFilterEl = document.getElementById("staffFilterBranch");
-    const selectedBranch = (branchFilterEl && branchFilterEl.value) ? branchFilterEl.value : "all";
 
     try {
-        let orders = [];
-
-        if (isSuperAdmin) {
-            // Super Admin: xem theo bộ lọc chi nhánh hoặc toàn chuỗi
-            let url = `${API_BASE}/admin/orders?timeframe=all`;
-            if (selectedBranch && selectedBranch !== "all") {
-                url += `&branchId=${encodeURIComponent(selectedBranch)}`;
-            }
-            if (status && status !== "all") {
-                url += `&status=${encodeURIComponent(status)}`;
-            }
-            if (search) {
-                url += `&search=${encodeURIComponent(search)}`;
-            }
-
-            const res = await fetch(url, {
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            const json = await res.json();
-
-            if (!res.ok || !json.success) {
-                throw new Error(json.message || "Không tải được đơn hàng");
-            }
-
-            orders = (json.data && Array.isArray(json.data.orders)) ? json.data.orders : (Array.isArray(json.data) ? json.data : []);
-        } else {
-            // Nhân viên chi nhánh: gọi endpoint Task API chuyên trách (/staff/my-tasks)
-            let url = `${API_BASE}/staff/my-tasks?mode=auto`;
-            if (status && status !== "all") {
-                url += `&status=${encodeURIComponent(status)}`;
-            }
-            if (search) {
-                url += `&search=${encodeURIComponent(search)}`;
-            }
-
-            const res = await fetch(url, {
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            const json = await res.json();
-
-            if (!res.ok || !json.success) {
-                throw new Error(json.message || "Không tải được danh sách nhiệm vụ");
-            }
-
-            orders = Array.isArray(json.data) ? json.data : [];
+        // Gọi endpoint Task API chuyên trách (/staff/my-tasks)
+        // Backend tự động phân quyền: Super Admin chỉ nhận đơn cần điều phối bởi admin ('admin')
+        let url = `${API_BASE}/staff/my-tasks?mode=auto`;
+        if (status && status !== "all") {
+            url += `&status=${encodeURIComponent(status)}`;
         }
+        if (search) {
+            url += `&search=${encodeURIComponent(search)}`;
+        }
+
+        const res = await fetch(url, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không tải được danh sách đơn hàng ca trực");
+        }
+
+        const orders = (json.data && Array.isArray(json.data.orders))
+            ? json.data.orders
+            : (Array.isArray(json.data) ? json.data : []);
 
         renderStaffOrders(orders, user.role);
     } catch (e) {
@@ -4146,7 +4118,7 @@ function renderStaffOrders(orders, role) {
 
     const isFlorist = role === "florist";
     const isSuperAdmin = role === "super_admin";
-    const branches = (typeof window !== "undefined" && Array.isArray(window.allAdminBranches)) ? window.allAdminBranches : [];
+    const branches = getStaffBranches();
 
     listEl.innerHTML = orders.map(order => {
         const statusMeta = staffGetStatusMeta(order.status, STAFF_ORDER_STATUS_META);
@@ -4157,7 +4129,7 @@ function renderStaffOrders(orders, role) {
             + (items.length > 2 ? ` +${items.length - 2} món khác` : "");
 
         const branchId = order.branchId || order.assignedBranchId || "admin";
-        const branchName = order.branchName || (branchId === "admin" ? "Trung Tâm (Admin)" : branchId);
+        const branchName = STAFF_BRANCH_DISPLAY_MAP[branchId] || order.branchName || (branchId === "admin" ? "Trung Tâm Admin (Chờ điều phối)" : branchId);
         const isAssignedToAdmin = (branchId === "admin");
 
         // Nút hành động theo vai trò
@@ -4181,15 +4153,16 @@ function renderStaffOrders(orders, role) {
             }
         } else if (isSuperAdmin) {
             // Super Admin: có dropdown điều phối / gán Showroom trực tiếp + nút xác nhận
-            const branchOptions = branches.filter(b => b.isActive !== false).map(b => 
-                `<option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${b.name || b.id}</option>`
-            ).join("");
+            const branchOptions = branches.filter(b => b.isActive !== false).map(b => {
+                const label = STAFF_BRANCH_DISPLAY_MAP[b.id] || b.name || b.id;
+                return `<option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${label}</option>`;
+            }).join("");
 
             actionBtn = `
                 <div class="flex flex-col gap-1.5 items-end">
                     <select onclick="event.stopPropagation()" onchange="dispatchStaffOrder('${orderIdSafe}', this.value)" class="px-2.5 py-1 bg-pink-50 border border-pink-300 text-primary font-bold rounded-lg text-[10px] focus:outline-none focus:border-primary shadow-2xs">
                         <option value="">⚡ Gán Showroom...</option>
-                        <option value="admin" ${branchId === 'admin' ? 'selected' : ''}>🏢 Trung Tâm Admin</option>
+                        <option value="admin" ${branchId === 'admin' ? 'selected' : ''}>🏢 Trung Tâm Admin (Chờ điều phối)</option>
                         ${branchOptions}
                     </select>
                     ${order.status === "pending" ? `
@@ -4219,7 +4192,7 @@ function renderStaffOrders(orders, role) {
                         <span class="font-mono text-xs font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
                         <span class="text-[11px] text-gray-400">${staffFormatDate(order.createdAt || order.orderDate)}</span>
                         ${isSuperAdmin ? `
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAssignedToAdmin ? 'bg-amber-100 text-amber-800 border border-amber-200 animate-pulse' : 'bg-gray-100 text-gray-700'}">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${isAssignedToAdmin ? 'bg-amber-100 text-amber-800 border border-amber-200 animate-pulse' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}">
                                 <i class="fa-solid ${isAssignedToAdmin ? 'fa-bolt' : 'fa-store'} text-xs"></i> ${branchName}
                             </span>
                         ` : ''}
@@ -4388,6 +4361,56 @@ const DASH_PAYMENT_STATUS_META = {
 };
 
 const INTERNAL_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant"];
+
+const DASH_KNOWN_BRANCHES = [
+    {
+        id: "branch_q10",
+        name: "Showroom Quận 10 Flagship (183/37 Đường 3/2, Q.10)",
+        shortName: "Showroom Q10 (Flagship)"
+    },
+    {
+        id: "branch_q1",
+        name: "Showroom Bến Nghé Quận 1 (Số 2 Hải Triều, Q.1)",
+        shortName: "Showroom Bến Nghé Q1"
+    },
+    {
+        id: "branch_thao_dien",
+        name: "Showroom Thảo Điền (68 Xuân Thủy, TP. Thủ Đức)",
+        shortName: "Showroom Thảo Điền"
+    }
+];
+
+const DASH_BRANCH_DISPLAY_MAP = {
+    branch_q10: "Showroom Q10 Flagship (183/37 Đ. 3/2)",
+    branch_q1: "Showroom Bến Nghé Q1 (Số 2 Hải Triều)",
+    branch_thao_dien: "Showroom Thảo Điền (68 Xuân Thủy)",
+    admin: "Trung Tâm Admin (Chờ điều phối)"
+};
+
+function getDashBranches() {
+    if (typeof window !== "undefined" && Array.isArray(window.allAdminBranches) && window.allAdminBranches.length > 0) {
+        return window.allAdminBranches;
+    }
+    return DASH_KNOWN_BRANCHES;
+}
+
+async function ensureAdminBranchesLoaded() {
+    if (typeof window !== "undefined" && Array.isArray(window.allAdminBranches) && window.allAdminBranches.length > 0) {
+        return window.allAdminBranches;
+    }
+    try {
+        const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+        const res = await fetch(`${API_BASE}/branches`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            if (typeof window !== "undefined") window.allAdminBranches = json.data;
+            return json.data;
+        }
+    } catch (_) {}
+    return DASH_KNOWN_BRANCHES;
+}
 
 function dashFormatVND(amount) {
     const n = Number(amount) || 0;
@@ -4762,6 +4785,8 @@ async function openOrderDetailModal(orderId) {
 
     if (!modal) return;
 
+    ensureAdminBranchesLoaded();
+
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
@@ -5053,7 +5078,16 @@ function populateOrderDetail(order) {
     const branchBadge = document.getElementById("ordDetailBranchBadge");
     if (branchBadge) {
         const bId = order.assignedBranchId || order.branchId || "admin";
-        branchBadge.innerHTML = `<i class="fa-solid fa-store text-emerald-600"></i> ${bId}`;
+        const isUnassigned = (bId === "admin" || !bId);
+        const bName = order.branchName || DASH_BRANCH_DISPLAY_MAP[bId] || (isUnassigned ? "Trung Tâm Admin (Chờ điều phối)" : bId);
+
+        if (isUnassigned) {
+            branchBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold border border-amber-300 animate-pulse";
+            branchBadge.innerHTML = `<i class="fa-solid fa-bolt text-amber-600"></i> ${bName}`;
+        } else {
+            branchBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200";
+            branchBadge.innerHTML = `<i class="fa-solid fa-store text-emerald-600"></i> ${bName}`;
+        }
     }
 
     // 2b. Tiến trình xử lý đơn hàng (5 bước trạng thái + ngày giờ cập nhật)
@@ -5074,15 +5108,18 @@ function populateOrderDetail(order) {
                 dispatchSelect.classList.toggle("hidden", !isSuperAdmin);
                 if (isSuperAdmin) {
                     const currentBranch = order.branchId || order.assignedBranchId || "admin";
-                    const branches = (typeof window !== "undefined" && Array.isArray(window.allAdminBranches)) ? window.allAdminBranches : [];
-                    const branchOptions = branches.filter(b => b.isActive !== false).map(b => 
-                        `<option value="${b.id}" ${b.id === currentBranch ? 'selected' : ''}>📍 ${b.name || b.id}</option>`
-                    ).join("");
+                    const branches = getDashBranches();
+                    const branchOptions = branches.filter(b => b.isActive !== false).map(b => {
+                        const label = DASH_BRANCH_DISPLAY_MAP[b.id] || b.name || b.id;
+                        return `<option value="${b.id}" ${b.id === currentBranch ? 'selected' : ''}>📍 ${label}</option>`;
+                    }).join("");
+
                     dispatchSelect.innerHTML = `
-                        <option value="">⚡ Gán Showroom...</option>
-                        <option value="admin" ${currentBranch === 'admin' ? 'selected' : ''}>🏢 Trung Tâm Admin</option>
+                        <option value="" disabled ${!currentBranch ? 'selected' : ''}>⚡ Chọn Showroom cần gán...</option>
+                        <option value="admin" ${currentBranch === 'admin' ? 'selected' : ''}>🏢 Trung Tâm Admin (Chờ điều phối)</option>
                         ${branchOptions}
                     `;
+                    dispatchSelect.value = currentBranch;
                 }
             }
 
@@ -11064,7 +11101,7 @@ function switchAdminTab(tabName) {
     console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
     console.log("📂 Tab Identifier:", tabName);
 
-    const tabs = ["orders", "products", "inventory", "categories", "staff", "customers", "branches", "promotions", "addons"];
+    const tabs = ["orders", "products", "inventory", "categories", "branches", "promotions", "addons"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);

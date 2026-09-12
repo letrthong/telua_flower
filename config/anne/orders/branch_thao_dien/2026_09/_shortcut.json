@@ -1,0 +1,152 @@
+[
+  {
+    "id": "ord_1789052816_84dd04",
+    "orderCode": "NHTB-260910-LTSL",
+    "createdAt": "2026-09-10T22:06:56Z",
+    "updatedAt": "2026-09-10T22:06:56Z",
+    "status": "pending",
+    "branchId": "branch_thao_dien",
+    "branchName": "Nở Hoa Thả Bình - Showroom Thảo Điền",
+    "assignedBranchId": "branch_thao_dien",
+    "assignedTo": "staff_005",
+    "assigneeName": "Trần Hoa Q1 (staff_005)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_thao_dien/2026_09/pending/ord_1789052816_84dd04.json"
+  },
+  {
+    "id": "ord_1789052814_724b33",
+    "orderCode": "NHTB-260910-APLZ",
+    "createdAt": "2026-09-10T22:06:54Z",
+    "updatedAt": "2026-09-10T22:06:54Z",
+    "status": "pending",
+    "branchId": "branch_thao_dien",
+    "branchName": "Nở Hoa Thả Bình - Showroom Thảo Điền",
+    "assignedBranchId": "branch_thao_dien",
+    "assignedTo": "staff_005",
+    "assigneeName": "Trần Hoa Q1 (staff_005)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_thao_dien/2026_09/pending/ord_1789052814_724b33.json"
+  },
+  {
+    "id": "ord_1789052694_ac45cd",
+    "orderCode": "NHTB-260910-WIKK",
+    "createdAt": "2026-09-10T22:04:54Z",
+    "updatedAt": "2026-09-10T22:04:54Z",
+    "status": "pending",
+    "branchId": "branch_thao_dien",
+    "branchName": "Nở Hoa Thả Bình - Showroom Thảo Điền",
+    "assignedBranchId": "branch_thao_dien",
+    "assignedTo": "staff_005",
+    "assigneeName": "Trần Hoa Q1 (staff_005)",
+    "createdBy": "0988667788",
+    "creatorName": "Khách Đặt Cắm Hoa",
+    "totalAmount": 665000.0,
+    "financials": {
+      "totalAmount": 665000.0,
+      "itemsTotal": 665000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Bình Hoa",
+      "phone": "0977665544",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Đặt Cắm Hoa",
+      "phone": "0988667788"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-10",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_thao_dien/2026_09/pending/ord_1789052694_ac45cd.json"
+  }
+]

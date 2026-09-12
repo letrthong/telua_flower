@@ -27,7 +27,9 @@ from data_service import (
     get_user_orders,
     get_system_current_and_prev_ym,
     enrich_order_display_names,
-    get_user_by_id
+    get_user_by_id,
+    build_user_lookup_cache,
+    build_branch_lookup_cache
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -578,6 +580,8 @@ def query_admin_orders(
     # 4. Thực hiện lọc đơn hàng
     filtered_orders: List[Dict[str, Any]] = []
     clean_search = (search or "").strip().lower()
+    user_cache = build_user_lookup_cache()
+    branch_cache = build_branch_lookup_cache()
 
     for o in orders_pool:
         # Đồng bộ trường updatedAt cho đơn
@@ -623,8 +627,8 @@ def query_admin_orders(
                 clean_search not in recipient_phone):
                 continue
 
-        # Bổ sung thông tin hiển thị (tên người tạo, người thực hiện, cửa hàng xử lý)
-        enrich_order_display_names(o)
+        # Bổ sung thông tin hiển thị (tên người tạo, người thực hiện, cửa hàng xử lý) với cache O(1)
+        enrich_order_display_names(o, user_lookup_cache=user_cache, branch_lookup_cache=branch_cache)
         filtered_orders.append(o)
 
     # Sắp xếp theo tiêu chí sortBy và sortOrder
@@ -812,10 +816,15 @@ def filter_tasks_for_staff(
     role = current_user.get("role")
     user_id = current_user.get("userId") or current_user.get("id")
 
-    # 1. Super Admin: Toàn quyền, không bị giới hạn vị trí cửa hàng
+    # 1. Super Admin: Bàn làm việc ca trực (mode='auto') tập trung vào các đơn cần điều phối bởi admin
     if role == "super_admin":
         if mode == "my_tasks" and user_id:
             return [o for o in orders if o.get("assignedTo") == user_id]
+        if mode == "auto":
+            return [
+                o for o in orders
+                if (o.get("branchId") in ["admin", "", None] or o.get("assignedBranchId") in ["admin", "", None])
+            ]
         return orders
 
     # 2. Branch Manager: Quản lý toàn bộ đơn trong chi nhánh phụ trách

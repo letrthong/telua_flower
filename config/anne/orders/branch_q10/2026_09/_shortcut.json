@@ -1,0 +1,6374 @@
+[
+  {
+    "id": "ord_1789194564_974f44",
+    "orderCode": "NHTB-260912-T4ZI",
+    "createdAt": "2026-09-12T13:29:24Z",
+    "updatedAt": "2026-09-12T06:38:44Z",
+    "status": "confirmed",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-14",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/confirmed/ord_1789194564_974f44.json"
+  },
+  {
+    "id": "ord_1789181565_4db9c3",
+    "orderCode": "NHTB-260912-KGEE",
+    "createdAt": "2026-09-12T09:52:45Z",
+    "updatedAt": "2026-09-12T03:09:59Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-15",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789181565_4db9c3.json"
+  },
+  {
+    "id": "ord_1789090794_f63125",
+    "orderCode": "NHTB-260911-VMJ4",
+    "createdAt": "2026-09-11T08:39:54Z",
+    "updatedAt": "2026-09-11T16:25:05Z",
+    "status": "shipping",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-14",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/shipping/ord_1789090794_f63125.json"
+  },
+  {
+    "id": "ord_1789090739_fd887b",
+    "orderCode": "NHTB-260911-YZ4N",
+    "createdAt": "2026-09-11T08:38:59Z",
+    "updatedAt": "2026-09-12T02:37:06Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-14",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789090739_fd887b.json"
+  },
+  {
+    "id": "ord_1789056049_19c57e",
+    "orderCode": "NHTB-260910-J92E",
+    "createdAt": "2026-09-10T23:00:49Z",
+    "updatedAt": "2026-09-10T16:28:28Z",
+    "status": "confirmed",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/confirmed/ord_1789056049_19c57e.json"
+  },
+  {
+    "id": "ord_1789056046_8b73b5",
+    "orderCode": "NHTB-260910-XV20",
+    "createdAt": "2026-09-10T23:00:46Z",
+    "updatedAt": "2026-09-10T23:00:46Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789056046_8b73b5.json"
+  },
+  {
+    "id": "ord_1789056044_78aee8",
+    "orderCode": "NHTB-260910-I23A",
+    "createdAt": "2026-09-10T23:00:44Z",
+    "updatedAt": "2026-09-10T16:10:29Z",
+    "status": "confirmed",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/confirmed/ord_1789056044_78aee8.json"
+  },
+  {
+    "id": "ord_1789055974_b8fa3e",
+    "orderCode": "NHTB-260910-CK3T",
+    "createdAt": "2026-09-10T22:59:34Z",
+    "updatedAt": "2026-09-11T00:58:47Z",
+    "status": "confirmed",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/confirmed/ord_1789055974_b8fa3e.json"
+  },
+  {
+    "id": "ord_1789055969_acf6c5",
+    "orderCode": "NHTB-260910-OWN7",
+    "createdAt": "2026-09-10T22:59:29Z",
+    "updatedAt": "2026-09-10T22:59:29Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789055969_acf6c5.json"
+  },
+  {
+    "id": "ord_1789055964_e38187",
+    "orderCode": "NHTB-260910-UN5O",
+    "createdAt": "2026-09-10T22:59:24Z",
+    "updatedAt": "2026-09-10T22:59:24Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789055964_e38187.json"
+  },
+  {
+    "id": "ord_1789053902_b87b23",
+    "orderCode": "NHTB-260910-CQTK",
+    "createdAt": "2026-09-10T22:25:02Z",
+    "updatedAt": "2026-09-10T22:25:02Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789053902_b87b23.json"
+  },
+  {
+    "id": "ord_1789053898_71cf2e",
+    "orderCode": "NHTB-260910-IAQD",
+    "createdAt": "2026-09-10T22:24:58Z",
+    "updatedAt": "2026-09-10T22:24:58Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789053898_71cf2e.json"
+  },
+  {
+    "id": "ord_1789053895_3d9046",
+    "orderCode": "NHTB-260910-VH6J",
+    "createdAt": "2026-09-10T22:24:55Z",
+    "updatedAt": "2026-09-10T22:24:55Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789053895_3d9046.json"
+  },
+  {
+    "id": "ord_1789052819_d07372",
+    "orderCode": "NHTB-260910-BS9B",
+    "createdAt": "2026-09-10T22:06:59Z",
+    "updatedAt": "2026-09-10T22:06:59Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052819_d07372.json"
+  },
+  {
+    "id": "ord_1789052681_6d608c",
+    "orderCode": "NHTB-260910-Z2HR",
+    "createdAt": "2026-09-10T22:04:41Z",
+    "updatedAt": "2026-09-10T22:04:41Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052681_6d608c.json"
+  },
+  {
+    "id": "ord_1789052679_1ed64c",
+    "orderCode": "NHTB-260910-0YAP",
+    "createdAt": "2026-09-10T22:04:39Z",
+    "updatedAt": "2026-09-10T22:04:39Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052679_1ed64c.json"
+  },
+  {
+    "id": "ord_1789052678_80fe57",
+    "orderCode": "NHTB-260910-6FWC",
+    "createdAt": "2026-09-10T22:04:38Z",
+    "updatedAt": "2026-09-10T22:04:38Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052678_80fe57.json"
+  },
+  {
+    "id": "ord_1789052651_ab8ccb",
+    "orderCode": "NHTB-260910-Q6JQ",
+    "createdAt": "2026-09-10T22:04:11Z",
+    "updatedAt": "2026-09-10T22:04:11Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052651_ab8ccb.json"
+  },
+  {
+    "id": "ord_1789052650_b8ade7",
+    "orderCode": "NHTB-260910-DDMH",
+    "createdAt": "2026-09-10T22:04:10Z",
+    "updatedAt": "2026-09-10T22:04:10Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052650_b8ade7.json"
+  },
+  {
+    "id": "ord_1789052650_9cdbad",
+    "orderCode": "NHTB-260910-CCJV",
+    "createdAt": "2026-09-10T22:04:10Z",
+    "updatedAt": "2026-09-10T22:04:10Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052650_9cdbad.json"
+  },
+  {
+    "id": "ord_1789052070_b67615",
+    "orderCode": "NHTB-260910-5V22",
+    "createdAt": "2026-09-10T21:54:30Z",
+    "updatedAt": "2026-09-10T21:54:30Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052070_b67615.json"
+  },
+  {
+    "id": "ord_1789052068_98020d",
+    "orderCode": "NHTB-260910-GVGQ",
+    "createdAt": "2026-09-10T21:54:28Z",
+    "updatedAt": "2026-09-10T21:54:28Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052068_98020d.json"
+  },
+  {
+    "id": "ord_1789052066_84cdb1",
+    "orderCode": "NHTB-260910-L9QN",
+    "createdAt": "2026-09-10T21:54:26Z",
+    "updatedAt": "2026-09-10T21:54:26Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1789052066_84cdb1.json"
+  },
+  {
+    "id": "ord_1788541183_9a4332",
+    "orderCode": "NHTB-260904-GEQ5",
+    "createdAt": "2026-09-04T23:59:43Z",
+    "updatedAt": "2026-09-04T23:59:43Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-07",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788541183_9a4332.json"
+  },
+  {
+    "id": "ord_1788541183_09b0cd",
+    "orderCode": "NHTB-260904-LSWM",
+    "createdAt": "2026-09-04T23:59:43Z",
+    "updatedAt": "2026-09-04T23:59:43Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788541183_09b0cd.json"
+  },
+  {
+    "id": "ord_1788541182_ef1ccc",
+    "orderCode": "NHTB-260904-N496",
+    "createdAt": "2026-09-04T23:59:42Z",
+    "updatedAt": "2026-09-04T23:59:42Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788541182_ef1ccc.json"
+  },
+  {
+    "id": "ord_1788481597_7ab062",
+    "orderCode": "NHTB-260904-SOPC",
+    "createdAt": "2026-09-04T07:26:37Z",
+    "updatedAt": "2026-09-04T07:26:37Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-07",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788481597_7ab062.json"
+  },
+  {
+    "id": "ord_1788481596_f18291",
+    "orderCode": "NHTB-260904-9W58",
+    "createdAt": "2026-09-04T07:26:36Z",
+    "updatedAt": "2026-09-04T07:26:36Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788481596_f18291.json"
+  },
+  {
+    "id": "ord_1788481595_96746f",
+    "orderCode": "NHTB-260904-WRW8",
+    "createdAt": "2026-09-04T07:26:35Z",
+    "updatedAt": "2026-09-04T07:26:35Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788481595_96746f.json"
+  },
+  {
+    "id": "ord_1788455053_b0d552",
+    "orderCode": "NHTB-260904-AKZX",
+    "createdAt": "2026-09-04T00:04:13Z",
+    "updatedAt": "2026-09-04T00:04:13Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788455053_b0d552.json"
+  },
+  {
+    "id": "ord_1788455053_53c056",
+    "orderCode": "NHTB-260904-1VIK",
+    "createdAt": "2026-09-04T00:04:13Z",
+    "updatedAt": "2026-09-04T00:04:13Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788455053_53c056.json"
+  },
+  {
+    "id": "ord_1788455053_407389",
+    "orderCode": "NHTB-260904-7TTK",
+    "createdAt": "2026-09-04T00:04:13Z",
+    "updatedAt": "2026-09-04T00:04:13Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-07",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788455053_407389.json"
+  },
+  {
+    "id": "ord_1788453718_87220c",
+    "orderCode": "NHTB-260903-PLVN",
+    "createdAt": "2026-09-03T23:41:58Z",
+    "updatedAt": "2026-09-03T23:41:58Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788453718_87220c.json"
+  },
+  {
+    "id": "ord_1788453717_5cc9ef",
+    "orderCode": "NHTB-260903-W5FD",
+    "createdAt": "2026-09-03T23:41:57Z",
+    "updatedAt": "2026-09-03T23:41:57Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788453717_5cc9ef.json"
+  },
+  {
+    "id": "ord_1788453717_58d378",
+    "orderCode": "NHTB-260903-1BW7",
+    "createdAt": "2026-09-03T23:41:57Z",
+    "updatedAt": "2026-09-03T23:41:57Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788453717_58d378.json"
+  },
+  {
+    "id": "ord_1788452596_e32fa5",
+    "orderCode": "NHTB-260903-IXEF",
+    "createdAt": "2026-09-03T23:23:16Z",
+    "updatedAt": "2026-09-03T23:23:16Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788452596_e32fa5.json"
+  },
+  {
+    "id": "ord_1788452596_9f37ec",
+    "orderCode": "NHTB-260903-DYHQ",
+    "createdAt": "2026-09-03T23:23:16Z",
+    "updatedAt": "2026-09-03T23:23:16Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788452596_9f37ec.json"
+  },
+  {
+    "id": "ord_1788452595_c2a22a",
+    "orderCode": "NHTB-260903-A225",
+    "createdAt": "2026-09-03T23:23:15Z",
+    "updatedAt": "2026-09-03T23:23:15Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788452595_c2a22a.json"
+  },
+  {
+    "id": "ord_1788446660_94213f",
+    "orderCode": "NHTB-260903-6A5L",
+    "createdAt": "2026-09-03T21:44:20Z",
+    "updatedAt": "2026-09-03T21:44:20Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446660_94213f.json"
+  },
+  {
+    "id": "ord_1788446660_71ccfd",
+    "orderCode": "NHTB-260903-A61Z",
+    "createdAt": "2026-09-03T21:44:20Z",
+    "updatedAt": "2026-09-03T21:44:20Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446660_71ccfd.json"
+  },
+  {
+    "id": "ord_1788446660_54e874",
+    "orderCode": "NHTB-260903-G9RU",
+    "createdAt": "2026-09-03T21:44:20Z",
+    "updatedAt": "2026-09-03T21:44:20Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446660_54e874.json"
+  },
+  {
+    "id": "ord_1788446341_df4097",
+    "orderCode": "NHTB-260903-DYV8",
+    "createdAt": "2026-09-03T21:39:01Z",
+    "updatedAt": "2026-09-03T21:39:01Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446341_df4097.json"
+  },
+  {
+    "id": "ord_1788446341_c61fbd",
+    "orderCode": "NHTB-260903-CSDW",
+    "createdAt": "2026-09-03T21:39:01Z",
+    "updatedAt": "2026-09-03T21:39:01Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446341_c61fbd.json"
+  },
+  {
+    "id": "ord_1788446340_42e76f",
+    "orderCode": "NHTB-260903-1NR8",
+    "createdAt": "2026-09-03T21:39:00Z",
+    "updatedAt": "2026-09-03T21:39:00Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446340_42e76f.json"
+  },
+  {
+    "id": "ord_1788446175_8f8dea",
+    "orderCode": "NHTB-260903-038E",
+    "createdAt": "2026-09-03T21:36:15Z",
+    "updatedAt": "2026-09-03T21:36:15Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446175_8f8dea.json"
+  },
+  {
+    "id": "ord_1788446174_bf26dd",
+    "orderCode": "NHTB-260903-0KG7",
+    "createdAt": "2026-09-03T21:36:14Z",
+    "updatedAt": "2026-09-03T21:36:14Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446174_bf26dd.json"
+  },
+  {
+    "id": "ord_1788446174_699002",
+    "orderCode": "NHTB-260903-8B5Y",
+    "createdAt": "2026-09-03T21:36:14Z",
+    "updatedAt": "2026-09-03T21:36:14Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446174_699002.json"
+  },
+  {
+    "id": "ord_1788446058_f34553",
+    "orderCode": "NHTB-260903-VJ8H",
+    "createdAt": "2026-09-03T21:34:18Z",
+    "updatedAt": "2026-09-03T21:34:18Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446058_f34553.json"
+  },
+  {
+    "id": "ord_1788446058_ddae55",
+    "orderCode": "NHTB-260903-B1X8",
+    "createdAt": "2026-09-03T21:34:18Z",
+    "updatedAt": "2026-09-03T21:34:18Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446058_ddae55.json"
+  },
+  {
+    "id": "ord_1788446058_1a9dd5",
+    "orderCode": "NHTB-260903-TFJT",
+    "createdAt": "2026-09-03T21:34:18Z",
+    "updatedAt": "2026-09-03T21:34:18Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446058_1a9dd5.json"
+  },
+  {
+    "id": "ord_1788446028_baad30",
+    "orderCode": "NHTB-260903-1TH2",
+    "createdAt": "2026-09-03T21:33:48Z",
+    "updatedAt": "2026-09-03T21:33:48Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446028_baad30.json"
+  },
+  {
+    "id": "ord_1788446028_4909c0",
+    "orderCode": "NHTB-260903-413C",
+    "createdAt": "2026-09-03T21:33:48Z",
+    "updatedAt": "2026-09-03T21:33:48Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446028_4909c0.json"
+  },
+  {
+    "id": "ord_1788446028_2b748c",
+    "orderCode": "NHTB-260903-L6OS",
+    "createdAt": "2026-09-03T21:33:48Z",
+    "updatedAt": "2026-09-03T21:33:48Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788446028_2b748c.json"
+  },
+  {
+    "id": "ord_1788445958_be8b1a",
+    "orderCode": "NHTB-260903-LDV5",
+    "createdAt": "2026-09-03T21:32:38Z",
+    "updatedAt": "2026-09-03T21:32:38Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788445958_be8b1a.json"
+  },
+  {
+    "id": "ord_1788445957_28ed3b",
+    "orderCode": "NHTB-260903-V0L0",
+    "createdAt": "2026-09-03T21:32:37Z",
+    "updatedAt": "2026-09-03T21:32:37Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788445957_28ed3b.json"
+  },
+  {
+    "id": "ord_1788445956_2e2810",
+    "orderCode": "NHTB-260903-AMD4",
+    "createdAt": "2026-09-03T21:32:36Z",
+    "updatedAt": "2026-09-03T21:32:36Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788445956_2e2810.json"
+  },
+  {
+    "id": "ord_1788441187_667b17",
+    "orderCode": "NHTB-260903-SINC",
+    "createdAt": "2026-09-03T20:13:07Z",
+    "updatedAt": "2026-09-03T20:13:07Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788441187_667b17.json"
+  },
+  {
+    "id": "ord_1788441185_ba31ca",
+    "orderCode": "NHTB-260903-CUWT",
+    "createdAt": "2026-09-03T20:13:05Z",
+    "updatedAt": "2026-09-03T20:13:05Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788441185_ba31ca.json"
+  },
+  {
+    "id": "ord_1788441184_d6abd6",
+    "orderCode": "NHTB-260903-HDY1",
+    "createdAt": "2026-09-03T20:13:04Z",
+    "updatedAt": "2026-09-03T20:13:04Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788441184_d6abd6.json"
+  },
+  {
+    "id": "ord_1788440662_bc8347",
+    "orderCode": "NHTB-260903-76ES",
+    "createdAt": "2026-09-03T20:04:22Z",
+    "updatedAt": "2026-09-03T20:04:22Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788440662_bc8347.json"
+  },
+  {
+    "id": "ord_1788440662_ba12d2",
+    "orderCode": "NHTB-260903-CD7M",
+    "createdAt": "2026-09-03T20:04:22Z",
+    "updatedAt": "2026-09-03T20:04:22Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788440662_ba12d2.json"
+  },
+  {
+    "id": "ord_1788440662_8ee23f",
+    "orderCode": "NHTB-260903-OPPK",
+    "createdAt": "2026-09-03T20:04:22Z",
+    "updatedAt": "2026-09-03T20:04:22Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788440662_8ee23f.json"
+  },
+  {
+    "id": "ord_1788438584_2d8797",
+    "orderCode": "NHTB-260903-03ZM",
+    "createdAt": "2026-09-03T19:29:44Z",
+    "updatedAt": "2026-09-03T19:29:44Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788438584_2d8797.json"
+  },
+  {
+    "id": "ord_1788438583_e2d00e",
+    "orderCode": "NHTB-260903-4W8F",
+    "createdAt": "2026-09-03T19:29:43Z",
+    "updatedAt": "2026-09-03T19:29:43Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788438583_e2d00e.json"
+  },
+  {
+    "id": "ord_1788438582_dbd095",
+    "orderCode": "NHTB-260903-0MWS",
+    "createdAt": "2026-09-03T19:29:42Z",
+    "updatedAt": "2026-09-03T19:29:42Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788438582_dbd095.json"
+  },
+  {
+    "id": "ord_1788438207_82e836",
+    "orderCode": "NHTB-260903-RTN6",
+    "createdAt": "2026-09-03T19:23:27Z",
+    "updatedAt": "2026-09-03T19:23:27Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788438207_82e836.json"
+  },
+  {
+    "id": "ord_1788438207_7e42b3",
+    "orderCode": "NHTB-260903-1YUB",
+    "createdAt": "2026-09-03T19:23:27Z",
+    "updatedAt": "2026-09-03T19:23:27Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788438207_7e42b3.json"
+  },
+  {
+    "id": "ord_1788438207_623227",
+    "orderCode": "NHTB-260903-SFYS",
+    "createdAt": "2026-09-03T19:23:27Z",
+    "updatedAt": "2026-09-03T19:23:27Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788438207_623227.json"
+  },
+  {
+    "id": "ord_1788400328_8c3782",
+    "orderCode": "NHTB-260903-3LUZ",
+    "createdAt": "2026-09-03T08:52:08Z",
+    "updatedAt": "2026-09-03T08:52:08Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400328_8c3782.json"
+  },
+  {
+    "id": "ord_1788400328_79f3e0",
+    "orderCode": "NHTB-260903-AQS6",
+    "createdAt": "2026-09-03T08:52:08Z",
+    "updatedAt": "2026-09-03T08:52:08Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400328_79f3e0.json"
+  },
+  {
+    "id": "ord_1788400328_58e2ad",
+    "orderCode": "NHTB-260903-6OIE",
+    "createdAt": "2026-09-03T08:52:08Z",
+    "updatedAt": "2026-09-03T08:52:08Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400328_58e2ad.json"
+  },
+  {
+    "id": "ord_1788400303_ce5c22",
+    "orderCode": "NHTB-260903-KRIB",
+    "createdAt": "2026-09-03T08:51:43Z",
+    "updatedAt": "2026-09-03T08:51:43Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400303_ce5c22.json"
+  },
+  {
+    "id": "ord_1788400302_9a4eee",
+    "orderCode": "NHTB-260903-GRVE",
+    "createdAt": "2026-09-03T08:51:42Z",
+    "updatedAt": "2026-09-03T08:51:42Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400302_9a4eee.json"
+  },
+  {
+    "id": "ord_1788400302_0d1113",
+    "orderCode": "NHTB-260903-GVWC",
+    "createdAt": "2026-09-03T08:51:42Z",
+    "updatedAt": "2026-09-03T08:51:42Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400302_0d1113.json"
+  },
+  {
+    "id": "ord_1788400236_891dfc",
+    "orderCode": "NHTB-260903-LUCQ",
+    "createdAt": "2026-09-03T08:50:36Z",
+    "updatedAt": "2026-09-03T08:50:36Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400236_891dfc.json"
+  },
+  {
+    "id": "ord_1788400235_6b8a43",
+    "orderCode": "NHTB-260903-QRTA",
+    "createdAt": "2026-09-03T08:50:35Z",
+    "updatedAt": "2026-09-03T08:50:35Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400235_6b8a43.json"
+  },
+  {
+    "id": "ord_1788400235_582bd5",
+    "orderCode": "NHTB-260903-YXUE",
+    "createdAt": "2026-09-03T08:50:35Z",
+    "updatedAt": "2026-09-03T08:50:35Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400235_582bd5.json"
+  },
+  {
+    "id": "ord_1788400073_a52c42",
+    "orderCode": "NHTB-260903-K5R9",
+    "createdAt": "2026-09-03T08:47:53Z",
+    "updatedAt": "2026-09-03T08:47:53Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400073_a52c42.json"
+  },
+  {
+    "id": "ord_1788400073_6d45c8",
+    "orderCode": "NHTB-260903-KP8G",
+    "createdAt": "2026-09-03T08:47:53Z",
+    "updatedAt": "2026-09-03T08:47:53Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400073_6d45c8.json"
+  },
+  {
+    "id": "ord_1788400073_13e736",
+    "orderCode": "NHTB-260903-KQ46",
+    "createdAt": "2026-09-03T08:47:53Z",
+    "updatedAt": "2026-09-03T08:47:53Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788400073_13e736.json"
+  },
+  {
+    "id": "ord_1788399988_8e03b3",
+    "orderCode": "NHTB-260903-T11W",
+    "createdAt": "2026-09-03T08:46:28Z",
+    "updatedAt": "2026-09-03T08:46:28Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788399988_8e03b3.json"
+  },
+  {
+    "id": "ord_1788399988_1c98eb",
+    "orderCode": "NHTB-260903-8EGR",
+    "createdAt": "2026-09-03T08:46:28Z",
+    "updatedAt": "2026-09-03T08:46:28Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788399988_1c98eb.json"
+  },
+  {
+    "id": "ord_1788399987_607eae",
+    "orderCode": "NHTB-260903-YTKK",
+    "createdAt": "2026-09-03T08:46:27Z",
+    "updatedAt": "2026-09-03T08:46:27Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788399987_607eae.json"
+  },
+  {
+    "id": "ord_1788399966_e02525",
+    "orderCode": "NHTB-260903-DJZQ",
+    "createdAt": "2026-09-03T08:46:06Z",
+    "updatedAt": "2026-09-03T08:46:06Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788399966_e02525.json"
+  },
+  {
+    "id": "ord_1788399966_6e1738",
+    "orderCode": "NHTB-260903-B3RD",
+    "createdAt": "2026-09-03T08:46:06Z",
+    "updatedAt": "2026-09-03T08:46:06Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788399966_6e1738.json"
+  },
+  {
+    "id": "ord_1788399966_4d8525",
+    "orderCode": "NHTB-260903-BFO4",
+    "createdAt": "2026-09-03T08:46:06Z",
+    "updatedAt": "2026-09-03T08:46:06Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788399966_4d8525.json"
+  },
+  {
+    "id": "ord_1788398658_5dd6f7",
+    "orderCode": "NHTB-260903-H7X9",
+    "createdAt": "2026-09-03T08:24:18Z",
+    "updatedAt": "2026-09-03T08:24:18Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398658_5dd6f7.json"
+  },
+  {
+    "id": "ord_1788398658_03d6f7",
+    "orderCode": "NHTB-260903-KLFO",
+    "createdAt": "2026-09-03T08:24:18Z",
+    "updatedAt": "2026-09-03T08:24:18Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398658_03d6f7.json"
+  },
+  {
+    "id": "ord_1788398657_7a91f4",
+    "orderCode": "NHTB-260903-Q7VM",
+    "createdAt": "2026-09-03T08:24:17Z",
+    "updatedAt": "2026-09-03T08:24:17Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398657_7a91f4.json"
+  },
+  {
+    "id": "ord_1788398601_bc49ec",
+    "orderCode": "NHTB-260903-UTQM",
+    "createdAt": "2026-09-03T08:23:21Z",
+    "updatedAt": "2026-09-03T08:23:21Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398601_bc49ec.json"
+  },
+  {
+    "id": "ord_1788398601_524b7b",
+    "orderCode": "NHTB-260903-JN5Z",
+    "createdAt": "2026-09-03T08:23:21Z",
+    "updatedAt": "2026-09-03T08:23:21Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398601_524b7b.json"
+  },
+  {
+    "id": "ord_1788398601_24d32f",
+    "orderCode": "NHTB-260903-GI5C",
+    "createdAt": "2026-09-03T08:23:21Z",
+    "updatedAt": "2026-09-03T08:23:21Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398601_24d32f.json"
+  },
+  {
+    "id": "ord_1788398036_97af83",
+    "orderCode": "NHTB-260903-ZOT3",
+    "createdAt": "2026-09-03T08:13:56Z",
+    "updatedAt": "2026-09-03T08:13:56Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398036_97af83.json"
+  },
+  {
+    "id": "ord_1788398035_11d4c9",
+    "orderCode": "NHTB-260903-5ZO6",
+    "createdAt": "2026-09-03T08:13:55Z",
+    "updatedAt": "2026-09-03T08:13:55Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398035_11d4c9.json"
+  },
+  {
+    "id": "ord_1788398035_0a07d5",
+    "orderCode": "NHTB-260903-XH1Q",
+    "createdAt": "2026-09-03T08:13:55Z",
+    "updatedAt": "2026-09-03T08:13:55Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788398035_0a07d5.json"
+  },
+  {
+    "id": "ord_1788370041_0b666e",
+    "orderCode": "NHTB-260903-72PG",
+    "createdAt": "2026-09-03T00:27:21Z",
+    "updatedAt": "2026-09-03T00:27:21Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788370041_0b666e.json"
+  },
+  {
+    "id": "ord_1788370040_c4d42c",
+    "orderCode": "NHTB-260903-2U5C",
+    "createdAt": "2026-09-03T00:27:20Z",
+    "updatedAt": "2026-09-03T00:27:20Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788370040_c4d42c.json"
+  },
+  {
+    "id": "ord_1788370040_7be953",
+    "orderCode": "NHTB-260903-WHOD",
+    "createdAt": "2026-09-03T00:27:20Z",
+    "updatedAt": "2026-09-03T00:27:20Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788370040_7be953.json"
+  },
+  {
+    "id": "ord_1788370008_c1d8fd",
+    "orderCode": "NHTB-260903-22QD",
+    "createdAt": "2026-09-03T00:26:48Z",
+    "updatedAt": "2026-09-03T00:26:48Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788370008_c1d8fd.json"
+  },
+  {
+    "id": "ord_1788370007_efa943",
+    "orderCode": "NHTB-260903-P1T0",
+    "createdAt": "2026-09-03T00:26:47Z",
+    "updatedAt": "2026-09-03T00:26:47Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788370007_efa943.json"
+  },
+  {
+    "id": "ord_1788370007_5ceba0",
+    "orderCode": "NHTB-260903-QKDJ",
+    "createdAt": "2026-09-03T00:26:47Z",
+    "updatedAt": "2026-09-03T00:26:47Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788370007_5ceba0.json"
+  },
+  {
+    "id": "ord_1788369984_1ea8c9",
+    "orderCode": "NHTB-260903-KCSF",
+    "createdAt": "2026-09-03T00:26:24Z",
+    "updatedAt": "2026-09-03T00:26:24Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788369984_1ea8c9.json"
+  },
+  {
+    "id": "ord_1788369983_fcce99",
+    "orderCode": "NHTB-260903-6XK1",
+    "createdAt": "2026-09-03T00:26:23Z",
+    "updatedAt": "2026-09-03T00:26:23Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788369983_fcce99.json"
+  },
+  {
+    "id": "ord_1788369983_c2beac",
+    "orderCode": "NHTB-260903-ZA81",
+    "createdAt": "2026-09-03T00:26:23Z",
+    "updatedAt": "2026-09-03T00:26:23Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788369983_c2beac.json"
+  },
+  {
+    "id": "ord_1788369857_471b2c",
+    "orderCode": "NHTB-260903-1DN6",
+    "createdAt": "2026-09-03T00:24:17Z",
+    "updatedAt": "2026-09-03T00:24:17Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788369857_471b2c.json"
+  },
+  {
+    "id": "ord_1788369856_4b1b36",
+    "orderCode": "NHTB-260903-BAVR",
+    "createdAt": "2026-09-03T00:24:16Z",
+    "updatedAt": "2026-09-03T00:24:16Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788369856_4b1b36.json"
+  },
+  {
+    "id": "ord_1788369854_6a946b",
+    "orderCode": "NHTB-260903-KZ5L",
+    "createdAt": "2026-09-03T00:24:14Z",
+    "updatedAt": "2026-09-03T00:24:14Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788369854_6a946b.json"
+  },
+  {
+    "id": "ord_1788368978_ee0ce8",
+    "orderCode": "NHTB-260903-EIDS",
+    "createdAt": "2026-09-03T00:09:38Z",
+    "updatedAt": "2026-09-03T00:09:38Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788368978_ee0ce8.json"
+  },
+  {
+    "id": "ord_1788368978_904608",
+    "orderCode": "NHTB-260903-75KK",
+    "createdAt": "2026-09-03T00:09:38Z",
+    "updatedAt": "2026-09-03T00:09:38Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788368978_904608.json"
+  },
+  {
+    "id": "ord_1788368978_7fdbfb",
+    "orderCode": "NHTB-260903-SEII",
+    "createdAt": "2026-09-03T00:09:38Z",
+    "updatedAt": "2026-09-03T00:09:38Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788368978_7fdbfb.json"
+  },
+  {
+    "id": "ord_1788321044_de5013",
+    "orderCode": "NHTB-260902-B7NK",
+    "createdAt": "2026-09-02T10:50:44Z",
+    "updatedAt": "2026-09-02T10:50:44Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788321044_de5013.json"
+  },
+  {
+    "id": "ord_1788321044_71bb8d",
+    "orderCode": "NHTB-260902-JNUO",
+    "createdAt": "2026-09-02T10:50:44Z",
+    "updatedAt": "2026-09-02T10:50:44Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788321044_71bb8d.json"
+  },
+  {
+    "id": "ord_1788321043_dfa21c",
+    "orderCode": "NHTB-260902-J27O",
+    "createdAt": "2026-09-02T10:50:43Z",
+    "updatedAt": "2026-09-02T10:50:43Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788321043_dfa21c.json"
+  },
+  {
+    "id": "ord_1788320827_70b7f8",
+    "orderCode": "NHTB-260902-Z6PQ",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "updatedAt": "2026-09-02T10:47:07Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788320827_70b7f8.json"
+  },
+  {
+    "id": "ord_1788320827_5b81a2",
+    "orderCode": "NHTB-260902-A1JL",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "updatedAt": "2026-09-02T10:47:07Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788320827_5b81a2.json"
+  },
+  {
+    "id": "ord_1788320827_2628ae",
+    "orderCode": "NHTB-260902-0NFW",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "updatedAt": "2026-09-02T10:47:07Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788320827_2628ae.json"
+  },
+  {
+    "id": "ord_1788342670_bdaff2",
+    "orderCode": "NHTB-260902-NPUS",
+    "createdAt": "2026-09-02T09:51:10Z",
+    "updatedAt": "2026-09-02T09:51:10Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "staff_admin",
+    "creatorName": "Tổng Quản Trị Hệ Thống",
+    "totalAmount": 2510000.0,
+    "financials": {
+      "totalAmount": 2510000.0,
+      "itemsTotal": 2510000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "x",
+      "phone": "002222222222",
+      "address": "222"
+    },
+    "sender": {
+      "name": "Tổng Quản Trị Hệ Thống",
+      "phone": "0900000000"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-02",
+      "timeSlot": "10:00 - 12:00 (Trưa)"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_03",
+        "productName": "Tulip Mix Lam Tinh",
+        "quantity": 1,
+        "unitPrice": 1980000
+      },
+      {
+        "productId": "addon_cake",
+        "productName": "Bánh Kem Sinh Nhật",
+        "quantity": 1,
+        "unitPrice": 350000
+      },
+      {
+        "productId": "addon_teddy",
+        "productName": "Gấu Bông Đáng Yêu",
+        "quantity": 1,
+        "unitPrice": 180000
+      }
+    ],
+    "itemSummary": "Tulip Mix Lam Tinh x1, Bánh Kem Sinh Nhật x1, Gấu Bông Đáng Yêu x1",
+    "itemCount": 3,
+    "requiresArranging": true,
+    "customerId": "staff_admin",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788342670_bdaff2.json"
+  },
+  {
+    "id": "ord_1788317222_dc3879",
+    "orderCode": "NHTB-260902-0O5I",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "updatedAt": "2026-09-02T09:47:02Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 840000.0,
+    "financials": {
+      "totalAmount": 840000.0,
+      "itemsTotal": 840000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Thu Hà",
+      "phone": "0912345678",
+      "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788317222_dc3879.json"
+  },
+  {
+    "id": "ord_1788317222_84e077",
+    "orderCode": "NHTB-260902-Y71W",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "updatedAt": "2026-09-02T09:47:02Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0909999888",
+    "creatorName": "Người Yêu Cũ",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Lê Thị C",
+      "phone": "0911223344",
+      "address": "456 Nguyễn Đình Chiểu, Q.3, TP.HCM"
+    },
+    "sender": {
+      "name": "Người gửi bí mật (Ẩn danh)",
+      "phone": "0909999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "14:00 - 16:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788317222_84e077.json"
+  },
+  {
+    "id": "ord_1788317222_2ca0d1",
+    "orderCode": "NHTB-260902-4R1X",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "updatedAt": "2026-09-02T09:47:02Z",
+    "status": "pending",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/pending/ord_1788317222_2ca0d1.json"
+  }
+]

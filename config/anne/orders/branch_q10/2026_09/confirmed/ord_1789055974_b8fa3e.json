@@ -1,0 +1,101 @@
+{
+  "id": "ord_1789055974_b8fa3e",
+  "orderCode": "NHTB-260910-CK3T",
+  "createdAt": "2026-09-10T22:59:34Z",
+  "orderDate": "2026-09-10T22:59:34Z",
+  "updatedAt": "2026-09-11T00:58:47Z",
+  "branchId": "branch_q10",
+  "customerId": null,
+  "assignedTo": "staff_001",
+  "assignedBy": "system",
+  "status": "confirmed",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "Khách Test API",
+    "realName": "Khách Test API",
+    "phone": "0988776655",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Người Nhận API",
+    "phone": "0933221100",
+    "address": "Quận 10, TP.HCM",
+    "deliveryNotes": "",
+    "lat": null,
+    "lng": null
+  },
+  "delivery": {
+    "deliveryDate": "2026-09-13",
+    "timeSlot": "09:00 - 11:00",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": false,
+  "arrangingFee": 0,
+  "arrangingNotes": "",
+  "customization": {
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "requestArranging": false,
+    "arrangingNotes": "",
+    "arrangingFee": 0
+  },
+  "items": [
+    {
+      "productId": "bo_hoa_01",
+      "productName": "Mây Trắng Bồng Bềnh",
+      "price": 420000,
+      "quantity": 1,
+      "itemTotal": 420000,
+      "image": "/api/flower/v1/images/bo_hoa_01.webp"
+    }
+  ],
+  "financials": {
+    "subtotal": 420000,
+    "arrangingFee": 0,
+    "shippingFee": 35000,
+    "discountAmount": 0,
+    "totalAmount": 455000,
+    "appliedVoucher": null
+  },
+  "totalAmount": 455000,
+  "payment": {
+    "method": "vietqr",
+    "status": "unpaid",
+    "transactionId": null,
+    "paidAt": null,
+    "bankInfo": {
+      "bankName": "MBBank (Ngân hàng Quân Đội)",
+      "bankCode": "MB",
+      "bankBin": "970422",
+      "accountNumber": "0976491323",
+      "accountName": "NO HOA THA BINH"
+    },
+    "transferContent": "NHTB NHTB-260910-CK3T",
+    "vietqr": {
+      "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260910-CK3T63042D2E",
+      "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260910-CK3T&accountName=NO%20HOA%20THA%20BINH",
+      "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACkklEQVR4nO1by3IjMQikVfn/X2aLbpBnKzlocpGoCNvjGacPqAvES4HbooxVoF3kiowl1F9HmpeBuhtfeZlXiXuXFY2tyK/gKm5gcHM44pY/uPHJ9dc2Kxrb+TSx5oYyR7iY5TP01WVFYz+fKWGRZo54h6kGlZ9w1WVF4xQkgsncTknok007R8/z7dN5S3ucHq9rPPkJeo5+8d1+fklufF8TPFyaNskwlMbKPbTbisZuJPIVwuyTX/GsGA8xvV3PPv7ucuwkc7q+fjLGqOvvazIqx8Q3esv5cfPP8QaJ+PawQiagdHWUuyshPULPNvEIGXxUIVVZJEJFZgSmLisaB9RHCCr5Joe6JKGWrHdZ0TgB6bGDhnerpUSDLVeHdoQj9Ozh7yZfZ2Aqt5/NJaSNdlnR2IrEZ8+cO2W+RaZV0t9lRWM30pVjItJPRfQHnUz1SfV2PdsgUTWSI3rKn8YI47tnl3m/nk2QCNMkkTTVR84Z1un83Pj+CgnZIKLlqZj+6DohPmfo2QTpDOrqylfPswpOxOfa51skZjeexDIX1U5g2SI9Q88GSOdNduLDIMPBaxAXhbyY3q5nFyQ0zwyb5ARJ4acqdwsJVrfr2QXprDWzkZyD+CyZ0u8tbrfr2QWJ3DNnJ14dO1om/d5vfLd39btlDq9ycx4ZSdfvtaKxFWmsMh89+XjMc0szafI771iVr+rP1UAz5x51QiTtdrueo+P5OpsTuJlAVZi69vn6fB1FTc/H3N3L8busaJxyvg6MTnV+yR80486PfoF0sZpTD005cyqPa5/vkZChhmFmJMpeqN/+p/3ufJ19Bh+kVBko7v5pqwL/PxLNkbwqTs3o7O6fq4L7/zILMlZAlItckfV8/h+ZTmg2tJbOogAAAABJRU5ErkJggg=="
+    }
+  },
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-09-10T22:59:34Z",
+      "note": "Khách hàng tạo đơn hàng trực tuyến",
+      "updatedBy": "0988776655"
+    },
+    {
+      "status": "confirmed",
+      "updatedAt": "2026-09-11T00:58:31Z",
+      "note": "Cập nhật trạng thái bởi super_admin",
+      "updatedBy": "staff_admin"
+    }
+  ],
+  "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+  "creatorName": "Khách Test API",
+  "createdBy": "0988776655",
+  "assigneeName": "Trần Thị Mai (staff_001)"
+}

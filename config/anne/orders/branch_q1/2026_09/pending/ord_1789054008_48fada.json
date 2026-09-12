@@ -1,13 +1,12 @@
 {
-  "id": "ord_1789090794_f63125",
-  "orderCode": "NHTB-260911-VMJ4",
-  "createdAt": "2026-09-11T08:39:54Z",
-  "orderDate": "2026-09-11T08:39:54Z",
-  "updatedAt": "2026-09-11T08:39:54Z",
-  "branchId": "admin",
+  "id": "ord_1789054008_48fada",
+  "orderCode": "NHTB-260910-MPB1",
+  "createdAt": "2026-09-10T22:26:48Z",
+  "orderDate": "2026-09-10T22:26:48Z",
+  "updatedAt": "2026-09-10T22:26:48Z",
+  "branchId": "branch_q1",
   "customerId": null,
-  "createdBy": "0988112233",
-  "assignedTo": "staff_admin",
+  "assignedTo": "staff_004",
   "assignedBy": "system",
   "status": "pending",
   "cardMessage": "Chúc mừng khai trương đại hồng phát!",
@@ -28,7 +27,7 @@
     "lng": null
   },
   "delivery": {
-    "deliveryDate": "2026-09-14",
+    "deliveryDate": "2026-09-13",
     "timeSlot": "10:00 - 12:00",
     "isExpress2H": false,
     "fulfillmentType": "delivery"
@@ -74,22 +73,19 @@
       "accountNumber": "0976491323",
       "accountName": "NO HOA THA BINH"
     },
-    "transferContent": "NHTB NHTB-260911-VMJ4",
+    "transferContent": "NHTB NHTB-260910-MPB1",
     "vietqr": {
-      "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA5303704540735000005802VN62250821NHTB NHTB-260911-VMJ463047E62",
-      "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=3500000&addInfo=NHTB%20NHTB-260911-VMJ4&accountName=NO%20HOA%20THA%20BINH",
-      "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACk0lEQVR4nO1awa7jMAgE1P//5VnBgJt3eJKzF8yu3VZN4jkAwjAeRyGbw3aBcpE7w7ZQ/zvyI6K8gkJUIKKesnmjqNkxHlkr8hOx8gAK4pvR9OgipsDZMR5ZP1I1stDTkeH15PTUjOfK2QPsnIVU5S8KQGRnJudhdo5BwjPTVz1DyhV/oJ2n10/JsCl8nUcl9VDm8hfM8shakeJJyYtfPhzAFI+sFfl51sjoRlzmrKP6mLVWO20Q/4T/uNAZ1GCewZ9ITuGYKR5ZP1I9J8HF7UkZjYlxThiOsHMIUr2pJ1Ei4YywwjOU9VWPsHMIEuziq1ZWnnJo7Trb7ZyC1EhOD2fEMK89jOpFQFhW++2c0o8kQgiPXj3N4GKiR9aK1BSTyOJJ4FNV8vtq93r7++ZA7oGyvZceUvuimPDmf/n8vl6nP/LTl34W02hFwCiPrB+Jqp2MpDy381pM6gA7h+SnhBifbSiKZ/DR2n0K83aKR9YeT/2K8bk/ylTlA5BHTfHI+vUQraRM3vnjX8jox3hkrUhd2mexpBLo60Y8fW88X+yPJKW5IE/sSMGe/Cb28nd/JNsDFJaiv5eAHM+Kesrln/KSz2MR+NDtvufEGWe5+vw7/VOofPBLZckb1Or6OMPOGUiwUvKe2ud6SyQe4/JPeYfUPDOKI4563eZ7UKc3P7cHWDpL92D3iQ60jooR91M8slakfjXOpKDB44veF5+Xbjtt4Pm7eG+vJl9MSYowTfHI2pGoMGZnT/ZEGQSVoP12jkHqeg2stPnqS5zC1ete6XUca6+ZhKkke716sv0lEs/TzvXGjfr7DkfZeTgSz6ZU0nJKJDFu/dwdWl2IXL4WN//W4adcve49//xHPLKL3BhTkH8ASQJoJTbyBZAAAAAASUVORK5CYII="
+      "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA5303704540735000005802VN62250821NHTB NHTB-260910-MPB163040958",
+      "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=3500000&addInfo=NHTB%20NHTB-260910-MPB1&accountName=NO%20HOA%20THA%20BINH",
+      "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACjElEQVR4nO1b0W7DMAgE1P//5ZuAw4m2PdidJofN7tok9WkzCA4MnkImh80C5SBnhk2h/jvyJaJ5BxUBn3iFYsy2kci2Il+pPepR/d6V6RdFzICzXSSy7fqUtMywUFdrvalfzdkuEtl+feZIlaZlhmZDm+0ksqfoU6XY0tWZV/ST6AFIgETp8UdFkznDUsfsE9bZACmprFDn968cQBeJbCtS8eXJ2ZMx/rf/uv1J+8TQHO0xvN8nOC/HPlfjEdws4YQZGVI8Jp2Ccb6LRLYV+YqgU/sibpEizqvAlSk+74guEtlWpKZhDrJ0jd6y+DRNPfY5PeBpUX4UeQajjtCOw5+y6O/qSmMBJHz82syH54f/d5HItiORpJn2CCeA9PFI7oVB6QHr7MKfUiF8bDpDv3WrWcnrIpFtRSr37FkDuTbwrNLlBcc+l+K7BGcmgzKye7Y0SqF67HN6oGoh1zdVARmbe5z4PjuUO/Zbh4NJKO1Sk0ePfS7tN5HxnHRK5RaxysnnZQWpgz0Hg3qexP6RMCrtX2cTf1fGn+sxxp0IsH2d1gQpFXtGVLoX6YgQD1FdJLL9SLBQ5x5Ovx+ejuPvsobUdPmqMWVcqsZR7TofsM42SPUbV1qdB6FVemfOf04/zpaQ8FoIuTOK8rk3YlUUomGg+9fZKP+UasGNcE4ejdTp1Otkpf4pPLRU341qfVXq1S9dJLLn9N/BUwyjMl9deTn50jvn6zT0l7Hd4xFLTBK+30Uie8z5Os3U6KopjdiPw59vIBFNj2gPRwIV6Tx+9jv/93lF8BhDlZirC6/b12md9Im8v3ybh0BHsR7H3986Xyef6iC3I03oIpFtRer5f5mJYTOgGAc5M+b9/QPzmWIrRWzEcAAAAABJRU5ErkJggg=="
     }
   },
   "history": [
     {
       "status": "pending",
-      "updatedAt": "2026-09-11T08:39:54Z",
+      "updatedAt": "2026-09-10T22:26:48Z",
       "note": "Khách hàng tạo đơn hàng trực tuyến",
       "updatedBy": "0988112233"
     }
-  ],
-  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
-  "creatorName": "Khách Thử Nghiệm VietQR",
-  "assigneeName": "Super Admin (staff_admin)"
+  ]
 }

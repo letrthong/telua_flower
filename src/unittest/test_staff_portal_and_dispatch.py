@@ -360,6 +360,18 @@ class TestStaffPortalAndDispatch(unittest.TestCase):
         )
         self.assertEqual(res_claim_blocked.status_code, 403)
 
+        # 5. Super Admin trong Bàn Làm Việc Ca Trực: Mặc định chỉ hiển thị đơn hàng cần điều phối bởi admin ('admin')
+        admin_order = self._create_test_order(branch_id="admin")
+        headers_sa = {"Authorization": f"Bearer {self.admin_token}"}
+        res_sa_tasks = self.client.get("/api/flower/v1/staff/my-tasks", headers=headers_sa)
+        self.assertEqual(res_sa_tasks.status_code, 200)
+        sa_tasks_json = res_sa_tasks.get_json()
+        self.assertEqual(sa_tasks_json["branchId"], "admin")
+        sa_ids = [t["id"] for t in sa_tasks_json["data"]]
+        self.assertIn(admin_order["id"], sa_ids)
+        # Đơn của Showroom Q10 không hiển thị trong ca trực điều phối admin
+        self.assertNotIn(order["id"], sa_ids)
+
 
 if __name__ == "__main__":
     unittest.main()

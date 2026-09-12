@@ -1,0 +1,91 @@
+{
+  "id": "ord_1789052694_ac45cd",
+  "orderCode": "NHTB-260910-WIKK",
+  "createdAt": "2026-09-10T22:04:54Z",
+  "orderDate": "2026-09-10T22:04:54Z",
+  "updatedAt": "2026-09-10T22:04:54Z",
+  "branchId": "branch_thao_dien",
+  "customerId": null,
+  "assignedTo": "staff_005",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "Khách Đặt Cắm Hoa",
+    "realName": "Khách Đặt Cắm Hoa",
+    "phone": "0988667788",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Người Nhận Bình Hoa",
+    "phone": "0977665544",
+    "address": "Quận 1, TP.HCM",
+    "deliveryNotes": "",
+    "lat": null,
+    "lng": null
+  },
+  "delivery": {
+    "deliveryDate": "2026-09-10",
+    "timeSlot": "09:00 - 11:00",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": true,
+  "arrangingFee": 210000,
+  "arrangingNotes": "Cắm tone hồng pastel, dáng tròn tỏa đều vào bình cao",
+  "customization": {
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "requestArranging": true,
+    "arrangingNotes": "Cắm tone hồng pastel, dáng tròn tỏa đều vào bình cao",
+    "arrangingFee": 210000
+  },
+  "items": [
+    {
+      "productId": "bo_hoa_01",
+      "productName": "Mây Trắng Bồng Bềnh",
+      "price": 420000,
+      "quantity": 1,
+      "itemTotal": 420000,
+      "image": "/api/flower/v1/images/bo_hoa_01.webp"
+    }
+  ],
+  "financials": {
+    "subtotal": 420000,
+    "arrangingFee": 210000,
+    "shippingFee": 35000,
+    "discountAmount": 0,
+    "totalAmount": 665000,
+    "appliedVoucher": null
+  },
+  "totalAmount": 665000,
+  "payment": {
+    "method": "vietqr",
+    "status": "unpaid",
+    "transactionId": null,
+    "paidAt": null,
+    "bankInfo": {
+      "bankName": "MBBank (Ngân hàng Quân Đội)",
+      "bankCode": "MB",
+      "bankBin": "970422",
+      "accountNumber": "0976491323",
+      "accountName": "NO HOA THA BINH"
+    },
+    "transferContent": "NHTB NHTB-260910-WIKK",
+    "vietqr": {
+      "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454066650005802VN62250821NHTB NHTB-260910-WIKK6304263A",
+      "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=665000&addInfo=NHTB%20NHTB-260910-WIKK&accountName=NO%20HOA%20THA%20BINH",
+      "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACh0lEQVR4nO1aQY7kMAgE1P//cq2ogqQPe0jmsDazJt0Zp4M0BmGqwHbYQ4mninY0n0g80vrfNQ0doMgP8tOjulOAKRbFUs2PPGnmBjdzOhDmcOTvupv56nnGIH+at0/z7unOvMqlVm+nWBS7aDq/jFOu+X/7339TfJYoY/Jvhmav9WEWxXp/oh7u9c4smqP77RSLYht8x18vycH3Z/K5o5PJM4OU0ZmSiI9pFsVSzY9WuafrmDIZk43sifQm/jTGolitCWJ6Qnr6r8gSX4qLpmCDeY7Kn6ixAjPDtIoj6Dr587kmVFnKs/ReVkrC+DsbrJ/nkPwJrvgLfLjia+HTta7gnWJRrNZ0L8c1Ac2INLhq+X3mOUYTF3nXiudQN6K++R7zHKKJ5kT92xWX8mbKwfdX9abrLv7Zfq286eXeKRbFak0vfGeLLnNpV/FKqab7+nnO4Z+wL9Z0s3jxT2h4+OdzTZdPM0Kd/Ih8vgkUDl+K1/kT8mlBe6XOgikwsU6xKJZrghtHtbNR3wxVNZqwzTyn5E9crKjaS1V9dgFqHE+xKJZq+lcNlAHJUv1u06uLZ2c/7l3/0wU76n2o2rw3PUzOnWJRrNf0C4vkTYkIKLq5vME8p6x357Cb8XJibXNqyZ968+V+MYjohUqEez1cuyA2xqJYqmnXOaUqjkTlb2y3IvUH39/iu99HmcTwc9ydu9XzjIn77+jzIX3Grumonfr9J+frIL7ZbWWCETpAp1gUu5yv83JqpwDRUTv77/Ye31OqG1JkSVy095Ns9TxjrKYXHb2ayXDuHe82z4010aBUHXmlU7WZKCd/vlnvruF38mT5rgevA01TLIpt+ku/w6I4mg9kiuYfwXR4/WDgq7MAAAAASUVORK5CYII="
+    }
+  },
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-09-10T22:04:54Z",
+      "note": "Khách hàng tạo đơn hàng trực tuyến",
+      "updatedBy": "0988667788"
+    }
+  ]
+}

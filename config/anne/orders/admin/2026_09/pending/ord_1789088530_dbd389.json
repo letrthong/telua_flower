@@ -1,0 +1,90 @@
+{
+  "id": "ord_1789088530_dbd389",
+  "orderCode": "NHTB-260911-3IM0",
+  "createdAt": "2026-09-11T01:02:10Z",
+  "orderDate": "2026-09-11T01:02:10Z",
+  "updatedAt": "2026-09-11T01:02:10Z",
+  "branchId": "admin",
+  "customerId": "staff_admin",
+  "createdBy": "staff_admin",
+  "assignedTo": "staff_admin",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "Người gửi bí mật (Ẩn danh)",
+    "realName": "Tổng Quản Trị Hệ Thống",
+    "phone": "0900000000",
+    "email": "admin@nohoathabinh.vn",
+    "isAnonymous": true
+  },
+  "recipient": {
+    "name": "sssxxx",
+    "phone": "3423423423423",
+    "address": "2423423423",
+    "deliveryNotes": "",
+    "lat": null,
+    "lng": null
+  },
+  "delivery": {
+    "deliveryDate": "2026-09-11",
+    "timeSlot": "08:00 - 10:00 (Sáng sớm)",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": false,
+  "arrangingFee": 0,
+  "arrangingNotes": "",
+  "customization": {
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "requestArranging": false,
+    "arrangingNotes": "",
+    "arrangingFee": 0
+  },
+  "items": [
+    {
+      "productId": "binh_hoa_04",
+      "productName": "Bình Gốm Cắm Hoa Nghệ Thuật Minimalist",
+      "price": 690000,
+      "quantity": 1,
+      "itemTotal": 690000,
+      "image": "/api/flower/v1/images/binh_hoa_04.jpg"
+    },
+    {
+      "productId": "bo_hoa_03",
+      "productName": "Tulip Mix Lam Tinh",
+      "price": 1980000,
+      "quantity": 1,
+      "itemTotal": 1980000,
+      "image": "/api/flower/v1/images/prod_1788076301_8268887c.webp"
+    }
+  ],
+  "financials": {
+    "subtotal": 2670000,
+    "arrangingFee": 0,
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "totalAmount": 2670000,
+    "appliedVoucher": null
+  },
+  "totalAmount": 2670000,
+  "payment": {
+    "method": "cod",
+    "status": "unpaid",
+    "transactionId": null,
+    "paidAt": null
+  },
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-09-11T01:02:10Z",
+      "note": "Khách hàng tạo đơn hàng trực tuyến",
+      "updatedBy": "0900000000"
+    }
+  ],
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "creatorName": "Tổng Quản Trị Hệ Thống",
+  "assigneeName": "Super Admin (staff_admin)"
+}

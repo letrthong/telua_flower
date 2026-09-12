@@ -1,0 +1,95 @@
+{
+  "id": "ord_1789090464_579020",
+  "orderCode": "NHTB-260911-KHIM",
+  "createdAt": "2026-09-11T08:34:24Z",
+  "orderDate": "2026-09-11T08:34:24Z",
+  "updatedAt": "2026-09-11T08:34:24Z",
+  "branchId": "admin",
+  "customerId": null,
+  "createdBy": "0987654321",
+  "assignedTo": "staff_admin",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+  "ribbonBanner": "Happy Birthday My Love",
+  "sender": {
+    "name": "Nguyễn Văn A",
+    "realName": "Nguyễn Văn A",
+    "phone": "0987654321",
+    "email": "nva@gmail.com",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Trần Thị Thu Hà",
+    "phone": "0912345678",
+    "address": "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP.HCM",
+    "deliveryNotes": "Tòa nhà đối diện công viên, gửi bảo vệ nếu không nghe máy",
+    "lat": null,
+    "lng": null
+  },
+  "delivery": {
+    "deliveryDate": "2026-09-13",
+    "timeSlot": "09:00 - 11:00",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": false,
+  "arrangingFee": 0,
+  "arrangingNotes": "",
+  "customization": {
+    "cardMessage": "Chúc em sinh nhật vui vẻ, luôn rạng ngời và hạnh phúc!",
+    "ribbonBanner": "Happy Birthday My Love",
+    "requestArranging": false,
+    "arrangingNotes": "",
+    "arrangingFee": 0
+  },
+  "items": [
+    {
+      "productId": "bo_hoa_01",
+      "productName": "Mây Trắng Bồng Bềnh",
+      "price": 420000,
+      "quantity": 2,
+      "itemTotal": 840000,
+      "image": "/api/flower/v1/images/bo_hoa_01.webp"
+    }
+  ],
+  "financials": {
+    "subtotal": 840000,
+    "arrangingFee": 0,
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "totalAmount": 840000,
+    "appliedVoucher": null
+  },
+  "totalAmount": 840000,
+  "payment": {
+    "method": "vietqr",
+    "status": "unpaid",
+    "transactionId": null,
+    "paidAt": null,
+    "bankInfo": {
+      "bankName": "MBBank (Ngân hàng Quân Đội)",
+      "bankCode": "MB",
+      "bankBin": "970422",
+      "accountNumber": "0976491323",
+      "accountName": "NO HOA THA BINH"
+    },
+    "transferContent": "NHTB NHTB-260911-KHIM",
+    "vietqr": {
+      "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454068400005802VN62250821NHTB NHTB-260911-KHIM6304DDD5",
+      "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=840000&addInfo=NHTB%20NHTB-260911-KHIM&accountName=NO%20HOA%20THA%20BINH",
+      "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAACiklEQVR4nO1ay44kMQizUf//LzMCQ3XNag9VpwRN0up6iQNYJBgndDwc9tQQx/LJsEdWf90S3gnq+ahXh251RzxOiciWWn4SPQAEmPDFG+MrXXfow5SIbDme4C9M8zWQLDCp25SIbBdLj/QM5AQpwAB3Pz+nWJJO8J6snaV7+bn/fPd8dBZ81NoZa2lesIGfNrG+438/jVPfnw3+y+ep3MzfheakiGypJaIKFWxZi+4ctD74yU+8sPRkme7OBrDmeecn89tyP8fMdxZ4zd7FQXXpCu9jIrL1/REjIZMnidEnVVJWXgCPiciWWiImenP5fKim8yrtftZPvOVL3uh9URS2ha4fPB+OT83yWkS1hOo9+6Wg9DH1V/tpkyw9EIuls3H1qk1ZrKh+fgM/Z+QnQqerZGw5Kd8KTBekUyKypZbU7K5ZXrnYApO+QdcpEdkG/SYFXmufJSRfGigPnq8smTQpn7KiqwClXK98Pfzz6fi0/l6Nkua5tJB+xuHzeKV/QtpxVvaWlmpZVc6u99OGWDKzrzKxc7LSsoRlCOkpEdlqSxea4vNaSIN/JrfPPPXDP/HCktm5X9tGCeNXVmLvhyz3c44lVdC/2ufV08faSS0CG/g5xJK586a5naOao+qUsIufUyw91ssW7KqBr2LUTT128HOKXuc1z6/No18SHo5eh7f95r31LAaadf1q5X21nzZw/z3Gd0eu/370ebzrjxw3mc6LMXWb5F2fpkRk25yvo+r890xdV3wGoFMism0sXd1QMKdskO5nHbCRn9vnp4b4e9B3de3aPUZJ92Misl3O1yETsnY6qri30MzVftrI83W4DtRqJ/5+jMmW+mlTz9eNj8iO5YMxxfIHVD95ASI8HRYAAAAASUVORK5CYII="
+    }
+  },
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-09-11T08:34:24Z",
+      "note": "Khách hàng tạo đơn hàng trực tuyến",
+      "updatedBy": "0987654321"
+    }
+  ],
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "creatorName": "Nguyễn Văn A",
+  "assigneeName": "Super Admin (staff_admin)"
+}

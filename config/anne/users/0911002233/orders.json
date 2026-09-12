@@ -1,0 +1,58 @@
+[
+  {
+    "orderId": "ord_1789230024_eb1d31",
+    "orderCode": "NHTB-260912-D5QN",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "pending",
+    "createdAt": "2026-09-12T23:20:24Z"
+  },
+  {
+    "orderId": "ord_1789230023_8aa4df",
+    "orderCode": "NHTB-260912-CBOF",
+    "branchId": "admin",
+    "yearMonth": "2026_09",
+    "status": "pending",
+    "createdAt": "2026-09-12T23:20:23Z"
+  },
+  {
+    "orderId": "ord_1789230022_0b8fb3",
+    "orderCode": "NHTB-260912-ALAB",
+    "branchId": "admin",
+    "yearMonth": "2026_09",
+    "status": "pending",
+    "createdAt": "2026-09-12T23:20:22Z"
+  },
+  {
+    "orderId": "ord_1789230018_ce753c",
+    "orderCode": "NHTB-260912-ZLEU",
+    "branchId": "branch_thao_dien",
+    "yearMonth": "2026_09",
+    "status": "pending",
+    "createdAt": "2026-09-12T23:20:18Z"
+  },
+  {
+    "orderId": "ord_1789230013_21c6c1",
+    "orderCode": "NHTB-260912-XSE6",
+    "branchId": "admin",
+    "yearMonth": "2026_09",
+    "status": "pending",
+    "createdAt": "2026-09-12T23:20:13Z"
+  },
+  {
+    "orderId": "ord_1789230007_ef66d8",
+    "orderCode": "NHTB-260912-EDMG",
+    "branchId": "branch_q1",
+    "yearMonth": "2026_09",
+    "status": "pending",
+    "createdAt": "2026-09-12T23:20:07Z"
+  },
+  {
+    "orderId": "ord_1789229999_682e9a",
+    "orderCode": "NHTB-260912-FVOM",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "pending",
+    "createdAt": "2026-09-12T23:19:59Z"
+  }
+]

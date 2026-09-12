@@ -1596,17 +1596,257 @@ def extract_year_month_from_order(order: Dict[str, Any]) -> str:
     return datetime.now().strftime("%Y_%m")
 
 
+def get_order_shortcut_path(branch_id: str, year_month: str) -> str:
+    """Trả về đường dẫn file _shortcut.json trong thư mục chi nhánh và tháng tương ứng."""
+    b_id = normalize_branch_id(branch_id)
+    ym = normalize_year_month(year_month)
+    target_dir = os.path.join(ORDERS_DIR, b_id, ym)
+    return os.path.join(target_dir, "_shortcut.json")
+
+
+def build_order_shortcut_item(order: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Trích xuất bản ghi tóm tắt siêu nhẹ (~200-300 bytes) phục vụ cho Cây Mục Lục Shortcut Tree (_shortcut.json).
+    Bao gồm đủ các thông tin cần thiết để hiển thị trên Bảng đơn hàng Admin, Thẻ ca trực, Kanban.
+    """
+    if not order or not isinstance(order, dict):
+        return {}
+
+    order_id = order.get("id") or order.get("orderCode") or ""
+    order_code = order.get("orderCode") or order_id
+    created_at = order.get("createdAt") or order.get("orderDate") or ""
+    updated_at = order.get("updatedAt") or created_at
+    status = normalize_order_status(order.get("status") or "pending")
+    branch_id = normalize_branch_id(order.get("branchId") or order.get("assignedBranchId") or "admin")
+    branch_name = order.get("branchName") or ("Tổng Quản Trị / Trung Tâm (Admin)" if branch_id == "admin" else f"Chi nhánh ({branch_id})")
+
+    total_amount = 0
+    if "financials" in order and isinstance(order["financials"], dict):
+        total_amount = float(order["financials"].get("totalAmount") or 0)
+    elif "totalAmount" in order:
+        total_amount = float(order.get("totalAmount") or 0)
+
+    payment = order.get("payment") or {}
+    recipient = order.get("recipient") or {}
+    sender = order.get("sender") or {}
+    delivery = order.get("delivery") or {}
+    items = order.get("items") or []
+
+    # Tóm tắt sản phẩm
+    item_summary = ""
+    item_count = len(items) if isinstance(items, list) else 0
+    clean_items = []
+    if isinstance(items, list) and len(items) > 0:
+        first_names = []
+        for itm in items[:3]:
+            if isinstance(itm, dict):
+                p_name = itm.get("productName") or itm.get("name") or "Sản phẩm"
+                qty = itm.get("quantity", 1)
+                first_names.append(f"{p_name} x{qty}")
+                clean_items.append({
+                    "productId": itm.get("productId") or itm.get("id") or "",
+                    "productName": p_name,
+                    "quantity": qty,
+                    "unitPrice": itm.get("unitPrice") or itm.get("price") or 0
+                })
+        item_summary = ", ".join(first_names)
+        if len(items) > 3:
+            item_summary += f" (+{len(items) - 3} món khác)"
+
+    year_month = extract_year_month_from_order(order)
+    detail_rel_path = f"orders/{branch_id}/{year_month}/{status}/{order_id}.json"
+
+    return {
+        "id": order_id,
+        "orderCode": order_code,
+        "createdAt": created_at,
+        "updatedAt": updated_at,
+        "status": status,
+        "branchId": branch_id,
+        "branchName": branch_name,
+        "assignedBranchId": branch_id,
+        "assignedTo": order.get("assignedTo") or ("staff_admin" if branch_id == "admin" else ""),
+        "assigneeName": order.get("assigneeName") or "",
+        "createdBy": order.get("createdBy") or "",
+        "creatorName": order.get("creatorName") or "",
+        "totalAmount": total_amount,
+        "financials": {
+            "totalAmount": total_amount,
+            "itemsTotal": float((order.get("financials") or {}).get("itemsTotal") or total_amount),
+            "shippingFee": float((order.get("financials") or {}).get("shippingFee") or 0),
+            "discountAmount": float((order.get("financials") or {}).get("discountAmount") or 0)
+        },
+        "payment": {
+            "status": payment.get("status", "unpaid"),
+            "method": payment.get("method", "vietqr")
+        },
+        "recipient": {
+            "name": recipient.get("name") or recipient.get("fullName") or "",
+            "phone": recipient.get("phone") or "",
+            "address": recipient.get("address") or ""
+        },
+        "sender": {
+            "name": sender.get("name") or sender.get("fullName") or "",
+            "phone": sender.get("phone") or ""
+        },
+        "delivery": {
+            "fulfillmentType": delivery.get("fulfillmentType", "delivery"),
+            "deliveryDate": delivery.get("deliveryDate") or "",
+            "timeSlot": delivery.get("timeSlot") or ""
+        },
+        "items": clean_items,
+        "itemSummary": item_summary,
+        "itemCount": item_count,
+        "requiresArranging": order.get("requiresArranging") if "requiresArranging" in order else True,
+        "customerId": order.get("customerId") or order.get("userId") or "",
+        "note": order.get("note") or "",
+        "detailPath": detail_rel_path
+    }
+
+
+def get_or_build_month_branch_shortcut(
+    branch_id: str,
+    year_month: str,
+    force_rebuild: bool = False
+) -> List[Dict[str, Any]]:
+    """
+    Lấy danh sách các đơn hàng tóm tắt từ _shortcut.json (có RAM mtime cache).
+    Nếu file chưa tồn tại hoặc force_rebuild=True -> Tự động quét các file chi tiết con trên đĩa để sinh ra _shortcut.json.
+    """
+    b_id = normalize_branch_id(branch_id)
+    ym = normalize_year_month(year_month)
+    month_dir = os.path.join(ORDERS_DIR, b_id, ym)
+    if not os.path.exists(month_dir) or not os.path.isdir(month_dir):
+        return []
+
+    shortcut_path = get_order_shortcut_path(b_id, ym)
+    if not force_rebuild and os.path.exists(shortcut_path):
+        cached_data = read_json_cached(shortcut_path, default=None)
+        if isinstance(cached_data, list):
+            return cached_data
+
+    # Quét đĩa để sinh ra file _shortcut.json
+    seen_ids = set()
+    shortcut_items = []
+    user_cache = build_user_lookup_cache()
+    branch_cache = build_branch_lookup_cache()
+
+    for entry in sorted(os.listdir(month_dir), reverse=True):
+        if entry == "_shortcut.json":
+            continue
+        entry_path = os.path.join(month_dir, entry)
+        if os.path.isdir(entry_path):
+            # Thư mục trạng thái (pending, confirmed, arranging, ...)
+            for f in sorted(os.listdir(entry_path), reverse=True):
+                if f.endswith(".json") and not f.startswith("_"):
+                    f_path = os.path.join(entry_path, f)
+                    order_data = read_json(f_path, default=None)
+                    if isinstance(order_data, dict):
+                        o_id = order_data.get("id") or order_data.get("orderCode")
+                        if o_id and o_id not in seen_ids:
+                            seen_ids.add(o_id)
+                            enrich_order_display_names(order_data, user_lookup_cache=user_cache, branch_lookup_cache=branch_cache)
+                            shortcut_items.append(build_order_shortcut_item(order_data))
+        elif entry.endswith(".json") and not entry.startswith("_"):
+            # File trực tiếp dưới month_dir
+            order_data = read_json(entry_path, default=None)
+            if isinstance(order_data, dict):
+                o_id = order_data.get("id") or order_data.get("orderCode")
+                if o_id and o_id not in seen_ids:
+                    seen_ids.add(o_id)
+                    enrich_order_display_names(order_data, user_lookup_cache=user_cache, branch_lookup_cache=branch_cache)
+                    shortcut_items.append(build_order_shortcut_item(order_data))
+
+    shortcut_items.sort(key=lambda x: x.get("createdAt") or x.get("updatedAt") or "", reverse=True)
+    write_json(shortcut_path, shortcut_items)
+    invalidate_file_cache(shortcut_path)
+    return shortcut_items
+
+
+def upsert_order_shortcut(order: Dict[str, Any]) -> None:
+    """Cập nhật hoặc thêm mới một bản ghi tóm tắt vào _shortcut.json."""
+    if not order or not isinstance(order, dict):
+        return
+    order_id = order.get("id") or order.get("orderCode")
+    if not order_id:
+        return
+
+    year_month = extract_year_month_from_order(order)
+    raw_branch = order.get("branchId") or order.get("assignedBranchId") or "admin"
+    branch_id = normalize_branch_id(raw_branch)
+    shortcut_path = get_order_shortcut_path(branch_id, year_month)
+
+    shortcut_item = build_order_shortcut_item(order)
+
+    # 1. Đọc danh sách hiện tại (nếu chưa có thì sinh từ đĩa)
+    current_items = get_or_build_month_branch_shortcut(branch_id, year_month)
+    updated_items = []
+    found = False
+    for itm in current_items:
+        if itm.get("id") == order_id or itm.get("orderCode") == order_id:
+            updated_items.append(shortcut_item)
+            found = True
+        else:
+            updated_items.append(itm)
+
+    if not found:
+        updated_items.insert(0, shortcut_item)
+
+    # Sắp xếp mới nhất lên đầu
+    updated_items.sort(key=lambda x: x.get("createdAt") or x.get("updatedAt") or "", reverse=True)
+
+    # Ghi lại file _shortcut.json
+    os.makedirs(os.path.dirname(shortcut_path), exist_ok=True)
+    write_json(shortcut_path, updated_items)
+    invalidate_file_cache(shortcut_path)
+
+    # 2. Dọn dẹp khỏi _shortcut.json ở các showroom khác nếu đơn hàng vừa đổi chi nhánh
+    if os.path.exists(ORDERS_DIR):
+        for b_entry in os.listdir(ORDERS_DIR):
+            b_path = os.path.join(ORDERS_DIR, b_entry)
+            if not os.path.isdir(b_path):
+                continue
+            for ym_entry in os.listdir(b_path):
+                ym_path = os.path.join(b_path, ym_entry)
+                if not os.path.isdir(ym_path):
+                    continue
+                sc_file = os.path.join(ym_path, "_shortcut.json")
+                if os.path.exists(sc_file) and os.path.normpath(sc_file) != os.path.normpath(shortcut_path):
+                    sc_data = read_json(sc_file, default=[])
+                    if isinstance(sc_data, list):
+                        new_sc = [x for x in sc_data if x.get("id") != order_id and x.get("orderCode") != order_id]
+                        if len(new_sc) != len(sc_data):
+                            write_json(sc_file, new_sc)
+                            invalidate_file_cache(sc_file)
+
+
+def remove_order_shortcut(order_id: str, branch_id: Optional[str] = None, year_month: Optional[str] = None) -> None:
+    """Xóa một bản ghi khỏi tất cả các file _shortcut.json có chứa nó."""
+    if not order_id:
+        return
+    if os.path.exists(ORDERS_DIR):
+        for root, dirs, files in os.walk(ORDERS_DIR):
+            if "_shortcut.json" in files:
+                sc_file = os.path.join(root, "_shortcut.json")
+                sc_data = read_json(sc_file, default=[])
+                if isinstance(sc_data, list):
+                    new_sc = [x for x in sc_data if x.get("id") != order_id and x.get("orderCode") != order_id]
+                    if len(new_sc) != len(sc_data):
+                        write_json(sc_file, new_sc)
+                        invalidate_file_cache(sc_file)
+
+
 def read_orders_by_month(
     year_month: Optional[str] = None,
     branch_id: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    use_shortcut: bool = True
 ) -> List[Dict[str, Any]]:
     """
-    Đọc toàn bộ đơn hàng trong 1 tháng xác định.
-    - Nếu có status: Chỉ đọc thư mục config/anne/orders/{branch_id}/{YYYY_MM}/{status}/ (Zero-Scan Query).
-    - Nếu status is None hoặc 'all': Quét qua tất cả các thư mục trạng thái con.
-    - Tương thích ngược: Nếu có file nằm trực tiếp dưới {YYYY_MM} hoặc file batch orders_{ym}.json.
-    - Nếu branch_id là None hoặc 'all': quét và hợp nhất qua tất cả các showroom + admin.
+    Đọc danh sách đơn hàng trong 1 tháng xác định.
+    - Mặc định use_shortcut=True: Đọc trực tiếp từ Cây Mục Lục _shortcut.json của từng chi nhánh (Tốc độ ~0.2ms, tiết kiệm RAM/CPU).
+    - Nếu use_shortcut=False: Quét trực tiếp toàn bộ các file con JSON trên đĩa (Full-scan).
+    - Hỗ trợ lọc theo branch_id và status.
     """
     ym = normalize_year_month(year_month)
     filename = f"orders_{ym}.json"
@@ -1621,6 +1861,21 @@ def read_orders_by_month(
     all_orders: List[Dict[str, Any]] = []
     seen_ids = set()
 
+    # 1. Chế độ Shortcut Tree Index (Tối ưu hóa tức thì)
+    if use_shortcut:
+        for b in target_branches:
+            branch_items = get_or_build_month_branch_shortcut(b, ym)
+            for itm in branch_items:
+                o_id = itm.get("id") or itm.get("orderCode")
+                if target_status and normalize_order_status(itm.get("status")) != target_status:
+                    continue
+                if o_id and o_id not in seen_ids:
+                    seen_ids.add(o_id)
+                    all_orders.append(itm)
+        all_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
+        return all_orders
+
+    # 2. Chế độ Full-scan trực tiếp từ file con (Fallback)
     for b in target_branches:
         branch_dir = os.path.join(ORDERS_DIR, b)
         if not os.path.isdir(branch_dir):
@@ -1628,7 +1883,7 @@ def read_orders_by_month(
 
         month_dir = os.path.join(branch_dir, ym)
         if os.path.exists(month_dir) and os.path.isdir(month_dir):
-            # 1. Nếu lọc theo 1 trạng thái cụ thể
+            # Nếu lọc theo 1 trạng thái cụ thể
             if target_status:
                 s_dir = os.path.join(month_dir, target_status)
                 if os.path.exists(s_dir) and os.path.isdir(s_dir):
@@ -1642,8 +1897,10 @@ def read_orders_by_month(
                                     seen_ids.add(o_id)
                                     all_orders.append(data)
             else:
-                # 2. Không lọc status: quét qua các thư mục con status trong month_dir
+                # Không lọc status: quét qua các thư mục con status trong month_dir
                 for entry in sorted(os.listdir(month_dir), reverse=True):
+                    if entry == "_shortcut.json":
+                        continue
                     entry_path = os.path.join(month_dir, entry)
                     if os.path.isdir(entry_path):
                         for f in sorted(os.listdir(entry_path), reverse=True):
@@ -1656,7 +1913,6 @@ def read_orders_by_month(
                                         seen_ids.add(o_id)
                                         all_orders.append(data)
                     elif entry.endswith(".json") and not entry.startswith("_"):
-                        # Tương thích ngược: file trực tiếp dưới month_dir
                         data = read_json(entry_path)
                         if isinstance(data, dict):
                             o_id = data.get("id") or data.get("orderCode")
@@ -1831,6 +2087,13 @@ def save_order(order: Dict[str, Any]) -> bool:
 
     # 3. Đồng bộ con trỏ tham chiếu vào sổ đơn khách hàng
     sync_order_to_user_folder(order)
+
+    # 4. Tự động đồng bộ vào Cây Mục Lục Shortcut Tree (_shortcut.json)
+    try:
+        upsert_order_shortcut(order)
+    except Exception as ex:
+        print(f"[SHORTCUT_SYNC_WARNING] Lỗi đồng bộ shortcut cho đơn {order_id}: {ex}", flush=True)
+
     return success
 
 
@@ -1886,6 +2149,12 @@ def delete_order(
                     deleted = True
                 except Exception:
                     pass
+
+    if deleted:
+        try:
+            remove_order_shortcut(order_id, branch_id, year_month)
+        except Exception:
+            pass
 
     return deleted
 
@@ -2054,11 +2323,12 @@ def sync_order_to_user_folder(order: Dict[str, Any]) -> bool:
 
 def get_all_orders_across_all_months(
     branch_id: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    use_shortcut: bool = True
 ) -> List[Dict[str, Any]]:
     """
     Đọc toàn bộ đơn hàng trên toàn hệ thống hoặc theo một chi nhánh cụ thể (có thể lọc theo status).
-    Quét qua các thư mục con {branch_id}/{YYYY_MM}/{status}/{order_id}.json.
+    Ưu tiên đọc từ các file _shortcut.json theo từng tháng để đạt tốc độ tức thì (~0.5ms).
     """
     all_orders: List[Dict[str, Any]] = []
     seen_ids = set()
@@ -2068,6 +2338,27 @@ def get_all_orders_across_all_months(
 
     target_branches = [normalize_branch_id(branch_id)] if (branch_id and branch_id != "all") else sorted(os.listdir(ORDERS_DIR))
     target_status = normalize_order_status(status) if (status and status != "all") else None
+
+    # 1. Chế độ Shortcut Tree Index
+    if use_shortcut:
+        for b_entry in target_branches:
+            b_path = os.path.join(ORDERS_DIR, b_entry)
+            if not os.path.isdir(b_path):
+                continue
+            for ym_entry in sorted(os.listdir(b_path), reverse=True):
+                ym_path = os.path.join(b_path, ym_entry)
+                if not os.path.isdir(ym_path) or not re.match(r"^\d{4}_\d{2}$", ym_entry):
+                    continue
+                month_items = get_or_build_month_branch_shortcut(b_entry, ym_entry)
+                for itm in month_items:
+                    if target_status and normalize_order_status(itm.get("status")) != target_status:
+                        continue
+                    o_id = itm.get("id") or itm.get("orderCode")
+                    if o_id and o_id not in seen_ids:
+                        seen_ids.add(o_id)
+                        all_orders.append(itm)
+        all_orders.sort(key=lambda x: x.get("createdAt") or x.get("orderDate") or "", reverse=True)
+        return all_orders
 
     for b_entry in target_branches:
         b_path = os.path.join(ORDERS_DIR, b_entry)
@@ -2586,10 +2877,64 @@ def save_banners_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dic
     return False, None, "Không thể ghi file cấu hình banners.json"
 
 
-def enrich_order_display_names(order: Dict[str, Any]) -> Dict[str, Any]:
+def build_user_lookup_cache() -> Dict[str, Any]:
+    """Tạo bảng tra cứu người dùng trong RAM O(1) để tăng tốc xử lý danh sách đơn hàng."""
+    cache = {}
+    try:
+        for u in get_staff_users():
+            if isinstance(u, dict) and u.get("id"):
+                cache[str(u["id"]).strip()] = u
+                if u.get("phone"):
+                    cache[str(u["phone"]).strip()] = u
+        for c in get_customers():
+            if isinstance(c, dict) and c.get("id"):
+                cache[str(c["id"]).strip()] = c
+                if c.get("phone"):
+                    cache[str(c["phone"]).strip()] = c
+    except Exception:
+        pass
+    return cache
+
+
+def build_branch_lookup_cache() -> Dict[str, Any]:
+    """Tạo bảng tra cứu chi nhánh trong RAM O(1)."""
+    cache = {}
+    try:
+        for b in get_branches():
+            if isinstance(b, dict) and b.get("id"):
+                cache[str(b["id"]).strip()] = b
+    except Exception:
+        pass
+    return cache
+
+
+def _lookup_user_cached(user_id: Any, cache: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    if not user_id:
+        return None
+    s_id = str(user_id).strip()
+    if cache is not None:
+        return cache.get(s_id)
+    return get_user_by_id(s_id)
+
+
+def _lookup_branch_cached(branch_id: Any, cache: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    if not branch_id:
+        return None
+    s_id = str(branch_id).strip()
+    if cache is not None:
+        return cache.get(s_id)
+    return get_branch_by_id(s_id)
+
+
+def enrich_order_display_names(
+    order: Dict[str, Any],
+    user_lookup_cache: Optional[Dict[str, Any]] = None,
+    branch_lookup_cache: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
     Bổ sung tên hiển thị người tạo (creatorName), người thực hiện (assigneeName)
     và tên cửa hàng xử lý (branchName) vào đối tượng đơn hàng để hiển thị trực quan trên giao diện.
+    Hỗ trợ truyền user_lookup_cache và branch_lookup_cache để tra cứu O(1) không tốn CPU/IO khi xử lý hàng loạt.
     Nếu không có cửa hàng hoặc là 'admin' -> hiển thị 'Tổng Quản Trị / Trung Tâm (Admin)'.
     """
     if not order or not isinstance(order, dict):
@@ -2603,7 +2948,7 @@ def enrich_order_display_names(order: Dict[str, Any]) -> Dict[str, Any]:
     if branch_id == "admin":
         order["branchName"] = "Tổng Quản Trị / Trung Tâm (Admin)"
     else:
-        branch_obj = get_branch_by_id(branch_id)
+        branch_obj = _lookup_branch_cached(branch_id, branch_lookup_cache)
         if branch_obj and branch_obj.get("name"):
             order["branchName"] = branch_obj.get("name")
         else:
@@ -2613,7 +2958,7 @@ def enrich_order_display_names(order: Dict[str, Any]) -> Dict[str, Any]:
     created_by_id = order.get("createdBy")
     creator_name = None
     if created_by_id:
-        user_obj = get_user_by_id(created_by_id)
+        user_obj = _lookup_user_cached(created_by_id, user_lookup_cache)
         if user_obj:
             creator_name = user_obj.get("fullName") or user_obj.get("name") or user_obj.get("phone")
 
@@ -2621,7 +2966,7 @@ def enrich_order_display_names(order: Dict[str, Any]) -> Dict[str, Any]:
         # Nếu chưa có createdBy hoặc là khách đặt online
         cust_id = order.get("customerId") or order.get("userId")
         if cust_id:
-            cust_obj = get_user_by_id(cust_id)
+            cust_obj = _lookup_user_cached(cust_id, user_lookup_cache)
             if cust_obj:
                 creator_name = cust_obj.get("fullName") or cust_obj.get("name") or cust_obj.get("phone")
 
@@ -2640,7 +2985,7 @@ def enrich_order_display_names(order: Dict[str, Any]) -> Dict[str, Any]:
         if assigned_to_id == "staff_admin":
             assignee_name = "Super Admin (staff_admin)"
         else:
-            staff_obj = get_user_by_id(assigned_to_id)
+            staff_obj = _lookup_user_cached(assigned_to_id, user_lookup_cache)
             if staff_obj:
                 assignee_name = f"{staff_obj.get('fullName') or staff_obj.get('name')} ({staff_obj.get('id')})"
             else:
@@ -2651,10 +2996,10 @@ def enrich_order_display_names(order: Dict[str, Any]) -> Dict[str, Any]:
             assignee_name = "Super Admin (staff_admin)"
             order["assignedTo"] = "staff_admin"
         else:
-            branch_obj = get_branch_by_id(branch_id)
+            branch_obj = _lookup_branch_cached(branch_id, branch_lookup_cache)
             mgr_id = (branch_obj.get("managerId") if branch_obj else None) or "staff_admin"
             order["assignedTo"] = mgr_id
-            staff_obj = get_user_by_id(mgr_id)
+            staff_obj = _lookup_user_cached(mgr_id, user_lookup_cache)
             assignee_name = f"{staff_obj.get('fullName') or staff_obj.get('name')} ({mgr_id})" if staff_obj else mgr_id
 
     order["assigneeName"] = assignee_name

@@ -1,0 +1,3102 @@
+[
+  {
+    "id": "ord_1789181330_36c8e1",
+    "orderCode": "NHTB-260912-8PEQ",
+    "createdAt": "2026-09-12T09:48:50Z",
+    "updatedAt": "2026-09-12T03:14:17Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988776655",
+    "creatorName": "Khách Test API",
+    "totalAmount": 455000.0,
+    "financials": {
+      "totalAmount": 455000.0,
+      "itemsTotal": 455000.0,
+      "shippingFee": 35000.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận API",
+      "phone": "0933221100",
+      "address": "Quận 10, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Test API",
+      "phone": "0988776655"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-15",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789181330_36c8e1.json"
+  },
+  {
+    "id": "ord_1789056048_13d82e",
+    "orderCode": "NHTB-260910-JL6S",
+    "createdAt": "2026-09-10T23:00:48Z",
+    "updatedAt": "2026-09-10T23:00:48Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789056048_13d82e.json"
+  },
+  {
+    "id": "ord_1789055972_bdb398",
+    "orderCode": "NHTB-260910-ZOKN",
+    "createdAt": "2026-09-10T22:59:32Z",
+    "updatedAt": "2026-09-10T22:59:32Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789055972_bdb398.json"
+  },
+  {
+    "id": "ord_1789054008_48fada",
+    "orderCode": "NHTB-260910-MPB1",
+    "createdAt": "2026-09-10T22:26:48Z",
+    "updatedAt": "2026-09-10T22:26:48Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789054008_48fada.json"
+  },
+  {
+    "id": "ord_1789053901_e1512e",
+    "orderCode": "NHTB-260910-9MRE",
+    "createdAt": "2026-09-10T22:25:01Z",
+    "updatedAt": "2026-09-10T22:25:01Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789053901_e1512e.json"
+  },
+  {
+    "id": "ord_1789052818_c6131e",
+    "orderCode": "NHTB-260910-O2TX",
+    "createdAt": "2026-09-10T22:06:58Z",
+    "updatedAt": "2026-09-10T22:06:58Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789052818_c6131e.json"
+  },
+  {
+    "id": "ord_1789052680_c9da69",
+    "orderCode": "NHTB-260910-63SJ",
+    "createdAt": "2026-09-10T22:04:40Z",
+    "updatedAt": "2026-09-10T22:04:40Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789052680_c9da69.json"
+  },
+  {
+    "id": "ord_1789052651_bacc94",
+    "orderCode": "NHTB-260910-LEZ9",
+    "createdAt": "2026-09-10T22:04:11Z",
+    "updatedAt": "2026-09-10T22:04:11Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789052651_bacc94.json"
+  },
+  {
+    "id": "ord_1789052493_acd6a0",
+    "orderCode": "NHTB-260910-UH7N",
+    "createdAt": "2026-09-10T22:01:33Z",
+    "updatedAt": "2026-09-10T22:01:33Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-13",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789052493_acd6a0.json"
+  },
+  {
+    "id": "ord_1789052069_a9e3dd",
+    "orderCode": "NHTB-260910-LFJS",
+    "createdAt": "2026-09-10T21:54:29Z",
+    "updatedAt": "2026-09-10T21:54:29Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-12",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1789052069_a9e3dd.json"
+  },
+  {
+    "id": "ord_1788541197_05c01a",
+    "orderCode": "NHTB-260904-U6IU",
+    "createdAt": "2026-09-04T23:59:57Z",
+    "updatedAt": "2026-09-10T14:23:14Z",
+    "status": "confirmed",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-07",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/confirmed/ord_1788541197_05c01a.json"
+  },
+  {
+    "id": "ord_1788541183_878f79",
+    "orderCode": "NHTB-260904-C8SM",
+    "createdAt": "2026-09-04T23:59:43Z",
+    "updatedAt": "2026-09-04T23:59:43Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788541183_878f79.json"
+  },
+  {
+    "id": "ord_1788481597_55d8a6",
+    "orderCode": "NHTB-260904-KKWN",
+    "createdAt": "2026-09-04T07:26:37Z",
+    "updatedAt": "2026-09-04T07:26:37Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788481597_55d8a6.json"
+  },
+  {
+    "id": "ord_1788455053_a66885",
+    "orderCode": "NHTB-260904-3MUR",
+    "createdAt": "2026-09-04T00:04:13Z",
+    "updatedAt": "2026-09-04T00:04:13Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788455053_a66885.json"
+  },
+  {
+    "id": "ord_1788453757_8ae385",
+    "orderCode": "NHTB-260903-1XLZ",
+    "createdAt": "2026-09-03T23:42:37Z",
+    "updatedAt": "2026-09-03T23:42:37Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788453757_8ae385.json"
+  },
+  {
+    "id": "ord_1788453718_01ead5",
+    "orderCode": "NHTB-260903-RCGD",
+    "createdAt": "2026-09-03T23:41:58Z",
+    "updatedAt": "2026-09-03T23:41:58Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788453718_01ead5.json"
+  },
+  {
+    "id": "ord_1788452631_62c417",
+    "orderCode": "NHTB-260903-KEFC",
+    "createdAt": "2026-09-03T23:23:51Z",
+    "updatedAt": "2026-09-03T23:23:51Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788452631_62c417.json"
+  },
+  {
+    "id": "ord_1788452596_1644bc",
+    "orderCode": "NHTB-260903-XAWP",
+    "createdAt": "2026-09-03T23:23:16Z",
+    "updatedAt": "2026-09-03T23:23:16Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788452596_1644bc.json"
+  },
+  {
+    "id": "ord_1788446709_f45799",
+    "orderCode": "NHTB-260903-BR74",
+    "createdAt": "2026-09-03T21:45:09Z",
+    "updatedAt": "2026-09-03T21:45:09Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446709_f45799.json"
+  },
+  {
+    "id": "ord_1788446660_0d7778",
+    "orderCode": "NHTB-260903-KPSY",
+    "createdAt": "2026-09-03T21:44:20Z",
+    "updatedAt": "2026-09-03T21:44:20Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446660_0d7778.json"
+  },
+  {
+    "id": "ord_1788446472_138add",
+    "orderCode": "NHTB-260903-DY4C",
+    "createdAt": "2026-09-03T21:41:12Z",
+    "updatedAt": "2026-09-03T21:41:12Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446472_138add.json"
+  },
+  {
+    "id": "ord_1788446341_8143cd",
+    "orderCode": "NHTB-260903-PYVV",
+    "createdAt": "2026-09-03T21:39:01Z",
+    "updatedAt": "2026-09-03T21:39:01Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446341_8143cd.json"
+  },
+  {
+    "id": "ord_1788446194_0a7f41",
+    "orderCode": "NHTB-260903-KZOU",
+    "createdAt": "2026-09-03T21:36:34Z",
+    "updatedAt": "2026-09-03T21:36:34Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446194_0a7f41.json"
+  },
+  {
+    "id": "ord_1788446174_b81e7e",
+    "orderCode": "NHTB-260903-VM8R",
+    "createdAt": "2026-09-03T21:36:14Z",
+    "updatedAt": "2026-09-03T21:36:14Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446174_b81e7e.json"
+  },
+  {
+    "id": "ord_1788446075_bc892a",
+    "orderCode": "NHTB-260903-H5QU",
+    "createdAt": "2026-09-03T21:34:35Z",
+    "updatedAt": "2026-09-03T21:34:35Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446075_bc892a.json"
+  },
+  {
+    "id": "ord_1788446058_262717",
+    "orderCode": "NHTB-260903-BTAF",
+    "createdAt": "2026-09-03T21:34:18Z",
+    "updatedAt": "2026-09-03T21:34:18Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446058_262717.json"
+  },
+  {
+    "id": "ord_1788446028_5bb037",
+    "orderCode": "NHTB-260903-6H40",
+    "createdAt": "2026-09-03T21:33:48Z",
+    "updatedAt": "2026-09-03T21:33:48Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788446028_5bb037.json"
+  },
+  {
+    "id": "ord_1788445985_580bd4",
+    "orderCode": "NHTB-260903-A6B8",
+    "createdAt": "2026-09-03T21:33:05Z",
+    "updatedAt": "2026-09-03T21:33:05Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788445985_580bd4.json"
+  },
+  {
+    "id": "ord_1788445957_16c784",
+    "orderCode": "NHTB-260903-UDM8",
+    "createdAt": "2026-09-03T21:32:37Z",
+    "updatedAt": "2026-09-03T21:32:37Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788445957_16c784.json"
+  },
+  {
+    "id": "ord_1788441186_ada36d",
+    "orderCode": "NHTB-260903-1BJ5",
+    "createdAt": "2026-09-03T20:13:06Z",
+    "updatedAt": "2026-09-03T20:13:06Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788441186_ada36d.json"
+  },
+  {
+    "id": "ord_1788440662_7801da",
+    "orderCode": "NHTB-260903-IGNG",
+    "createdAt": "2026-09-03T20:04:22Z",
+    "updatedAt": "2026-09-03T20:04:22Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788440662_7801da.json"
+  },
+  {
+    "id": "ord_1788438625_d2eb75",
+    "orderCode": "NHTB-260903-CJNQ",
+    "createdAt": "2026-09-03T19:30:25Z",
+    "updatedAt": "2026-09-03T19:30:25Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788438625_d2eb75.json"
+  },
+  {
+    "id": "ord_1788438583_437e85",
+    "orderCode": "NHTB-260903-QOOK",
+    "createdAt": "2026-09-03T19:29:43Z",
+    "updatedAt": "2026-09-03T19:29:43Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788438583_437e85.json"
+  },
+  {
+    "id": "ord_1788438207_6d1ed0",
+    "orderCode": "NHTB-260903-5YW3",
+    "createdAt": "2026-09-03T19:23:27Z",
+    "updatedAt": "2026-09-03T19:23:27Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788438207_6d1ed0.json"
+  },
+  {
+    "id": "ord_1788400355_ba5015",
+    "orderCode": "NHTB-260903-NS39",
+    "createdAt": "2026-09-03T08:52:35Z",
+    "updatedAt": "2026-09-03T08:52:35Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400355_ba5015.json"
+  },
+  {
+    "id": "ord_1788400328_58886c",
+    "orderCode": "NHTB-260903-42LE",
+    "createdAt": "2026-09-03T08:52:08Z",
+    "updatedAt": "2026-09-03T08:52:08Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400328_58886c.json"
+  },
+  {
+    "id": "ord_1788400303_a42c0d",
+    "orderCode": "NHTB-260903-SUA3",
+    "createdAt": "2026-09-03T08:51:43Z",
+    "updatedAt": "2026-09-03T08:51:43Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400303_a42c0d.json"
+  },
+  {
+    "id": "ord_1788400266_12ff9f",
+    "orderCode": "NHTB-260903-HB7F",
+    "createdAt": "2026-09-03T08:51:06Z",
+    "updatedAt": "2026-09-03T08:51:06Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400266_12ff9f.json"
+  },
+  {
+    "id": "ord_1788400235_2379dd",
+    "orderCode": "NHTB-260903-QMVZ",
+    "createdAt": "2026-09-03T08:50:35Z",
+    "updatedAt": "2026-09-03T08:50:35Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400235_2379dd.json"
+  },
+  {
+    "id": "ord_1788400092_97c265",
+    "orderCode": "NHTB-260903-IE0N",
+    "createdAt": "2026-09-03T08:48:12Z",
+    "updatedAt": "2026-09-03T08:48:12Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400092_97c265.json"
+  },
+  {
+    "id": "ord_1788400073_c856de",
+    "orderCode": "NHTB-260903-ZSHU",
+    "createdAt": "2026-09-03T08:47:53Z",
+    "updatedAt": "2026-09-03T08:47:53Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400073_c856de.json"
+  },
+  {
+    "id": "ord_1788400007_d03556",
+    "orderCode": "NHTB-260903-JWYW",
+    "createdAt": "2026-09-03T08:46:47Z",
+    "updatedAt": "2026-09-03T08:46:47Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788400007_d03556.json"
+  },
+  {
+    "id": "ord_1788399988_375ffa",
+    "orderCode": "NHTB-260903-HU0T",
+    "createdAt": "2026-09-03T08:46:28Z",
+    "updatedAt": "2026-09-03T08:46:28Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788399988_375ffa.json"
+  },
+  {
+    "id": "ord_1788399966_29606f",
+    "orderCode": "NHTB-260903-4AVV",
+    "createdAt": "2026-09-03T08:46:06Z",
+    "updatedAt": "2026-09-03T08:46:06Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788399966_29606f.json"
+  },
+  {
+    "id": "ord_1788398688_2a930c",
+    "orderCode": "NHTB-260903-E9SQ",
+    "createdAt": "2026-09-03T08:24:48Z",
+    "updatedAt": "2026-09-03T08:24:48Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788398688_2a930c.json"
+  },
+  {
+    "id": "ord_1788398658_de5a96",
+    "orderCode": "NHTB-260903-9CE9",
+    "createdAt": "2026-09-03T08:24:18Z",
+    "updatedAt": "2026-09-03T08:24:18Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788398658_de5a96.json"
+  },
+  {
+    "id": "ord_1788398601_025068",
+    "orderCode": "NHTB-260903-78W4",
+    "createdAt": "2026-09-03T08:23:21Z",
+    "updatedAt": "2026-09-03T08:23:21Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788398601_025068.json"
+  },
+  {
+    "id": "ord_1788398126_769a4c",
+    "orderCode": "NHTB-260903-6HDG",
+    "createdAt": "2026-09-03T08:15:26Z",
+    "updatedAt": "2026-09-03T08:15:26Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788398126_769a4c.json"
+  },
+  {
+    "id": "ord_1788398035_514894",
+    "orderCode": "NHTB-260903-UB0S",
+    "createdAt": "2026-09-03T08:13:55Z",
+    "updatedAt": "2026-09-03T08:13:55Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788398035_514894.json"
+  },
+  {
+    "id": "ord_1788370073_889d34",
+    "orderCode": "NHTB-260903-YM5Z",
+    "createdAt": "2026-09-03T00:27:53Z",
+    "updatedAt": "2026-09-03T00:27:53Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788370073_889d34.json"
+  },
+  {
+    "id": "ord_1788370040_decf7c",
+    "orderCode": "NHTB-260903-G8Q2",
+    "createdAt": "2026-09-03T00:27:20Z",
+    "updatedAt": "2026-09-03T00:27:20Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788370040_decf7c.json"
+  },
+  {
+    "id": "ord_1788370008_86f4f6",
+    "orderCode": "NHTB-260903-TD2H",
+    "createdAt": "2026-09-03T00:26:48Z",
+    "updatedAt": "2026-09-03T00:26:48Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788370008_86f4f6.json"
+  },
+  {
+    "id": "ord_1788369983_53c957",
+    "orderCode": "NHTB-260903-AY44",
+    "createdAt": "2026-09-03T00:26:23Z",
+    "updatedAt": "2026-09-03T00:26:23Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788369983_53c957.json"
+  },
+  {
+    "id": "ord_1788369939_70544c",
+    "orderCode": "NHTB-260903-OA8F",
+    "createdAt": "2026-09-03T00:25:39Z",
+    "updatedAt": "2026-09-03T00:25:39Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788369939_70544c.json"
+  },
+  {
+    "id": "ord_1788369856_21f3a0",
+    "orderCode": "NHTB-260903-HVX9",
+    "createdAt": "2026-09-03T00:24:16Z",
+    "updatedAt": "2026-09-03T00:24:16Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788369856_21f3a0.json"
+  },
+  {
+    "id": "ord_1788368997_55e1ab",
+    "orderCode": "NHTB-260903-F9Y8",
+    "createdAt": "2026-09-03T00:09:57Z",
+    "updatedAt": "2026-09-03T00:09:57Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-06",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788368997_55e1ab.json"
+  },
+  {
+    "id": "ord_1788368978_739ed2",
+    "orderCode": "NHTB-260903-ZXES",
+    "createdAt": "2026-09-03T00:09:38Z",
+    "updatedAt": "2026-09-03T00:09:38Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788368978_739ed2.json"
+  },
+  {
+    "id": "ord_1788321075_550885",
+    "orderCode": "NHTB-260902-29FM",
+    "createdAt": "2026-09-02T10:51:15Z",
+    "updatedAt": "2026-09-02T10:51:15Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788321075_550885.json"
+  },
+  {
+    "id": "ord_1788321044_1a6d95",
+    "orderCode": "NHTB-260902-PMVW",
+    "createdAt": "2026-09-02T10:50:44Z",
+    "updatedAt": "2026-09-02T10:50:44Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788321044_1a6d95.json"
+  },
+  {
+    "id": "ord_1788320827_8837f1",
+    "orderCode": "NHTB-260902-9D8W",
+    "createdAt": "2026-09-02T10:47:07Z",
+    "updatedAt": "2026-09-02T10:47:07Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788320827_8837f1.json"
+  },
+  {
+    "id": "ord_1788320815_4426ed",
+    "orderCode": "NHTB-260902-GF1Q",
+    "createdAt": "2026-09-02T10:46:55Z",
+    "updatedAt": "2026-09-02T10:46:55Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0988112233",
+    "creatorName": "Khách Thử Nghiệm VietQR",
+    "totalAmount": 3500000.0,
+    "financials": {
+      "totalAmount": 3500000.0,
+      "itemsTotal": 3500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận Hoa Mẫu",
+      "phone": "0977665544",
+      "address": "99 Nguyễn Huệ, Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Khách Thử Nghiệm VietQR",
+      "phone": "0988112233"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-05",
+      "timeSlot": "10:00 - 12:00"
+    },
+    "items": [
+      {
+        "productId": "lan_01",
+        "productName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "quantity": 1,
+        "unitPrice": 3500000
+      }
+    ],
+    "itemSummary": "Chậu Lan Hồ Điệp Phú Quý (5 Cành) x1",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788320815_4426ed.json"
+  },
+  {
+    "id": "ord_1788317222_f9eafc",
+    "orderCode": "NHTB-260902-4L9N",
+    "createdAt": "2026-09-02T09:47:02Z",
+    "updatedAt": "2026-09-02T09:47:02Z",
+    "status": "pending",
+    "branchId": "branch_q1",
+    "branchName": "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
+    "assignedBranchId": "branch_q1",
+    "assignedTo": "staff_004",
+    "assigneeName": "Nguyễn Văn Q1 (staff_004)",
+    "createdBy": "0911000222",
+    "creatorName": "Test Voucher",
+    "totalAmount": 714000.0,
+    "financials": {
+      "totalAmount": 714000.0,
+      "itemsTotal": 714000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 126000.0
+    },
+    "payment": {
+      "status": "unpaid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Người Nhận",
+      "phone": "0911000333",
+      "address": "Quận 1, TP.HCM"
+    },
+    "sender": {
+      "name": "Test Voucher",
+      "phone": "0911000222"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-09-04",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 2,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x2",
+    "itemCount": 1,
+    "detailPath": "orders/branch_q1/2026_09/pending/ord_1788317222_f9eafc.json"
+  }
+]

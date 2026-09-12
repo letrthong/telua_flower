@@ -8,7 +8,8 @@
     "role": "super_admin",
     "branchId": null,
     "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z"
+    "createdAt": "2026-08-21T00:00:00Z",
+    "updatedAt": "2026-09-12T02:49:39Z"
   },
   {
     "id": "staff_001",

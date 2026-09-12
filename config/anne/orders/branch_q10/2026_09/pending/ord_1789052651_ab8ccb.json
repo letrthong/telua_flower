@@ -1,0 +1,91 @@
+{
+  "id": "ord_1789052651_ab8ccb",
+  "orderCode": "NHTB-260910-Q6JQ",
+  "createdAt": "2026-09-10T22:04:11Z",
+  "orderDate": "2026-09-10T22:04:11Z",
+  "updatedAt": "2026-09-10T22:04:11Z",
+  "branchId": "branch_q10",
+  "customerId": null,
+  "assignedTo": "staff_001",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "Khách Test API",
+    "realName": "Khách Test API",
+    "phone": "0988776655",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Người Nhận API",
+    "phone": "0933221100",
+    "address": "Quận 10, TP.HCM",
+    "deliveryNotes": "",
+    "lat": null,
+    "lng": null
+  },
+  "delivery": {
+    "deliveryDate": "2026-09-13",
+    "timeSlot": "09:00 - 11:00",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": false,
+  "arrangingFee": 0,
+  "arrangingNotes": "",
+  "customization": {
+    "cardMessage": "",
+    "ribbonBanner": "",
+    "requestArranging": false,
+    "arrangingNotes": "",
+    "arrangingFee": 0
+  },
+  "items": [
+    {
+      "productId": "bo_hoa_01",
+      "productName": "Mây Trắng Bồng Bềnh",
+      "price": 420000,
+      "quantity": 1,
+      "itemTotal": 420000,
+      "image": "/api/flower/v1/images/bo_hoa_01.webp"
+    }
+  ],
+  "financials": {
+    "subtotal": 420000,
+    "arrangingFee": 0,
+    "shippingFee": 35000,
+    "discountAmount": 0,
+    "totalAmount": 455000,
+    "appliedVoucher": null
+  },
+  "totalAmount": 455000,
+  "payment": {
+    "method": "vietqr",
+    "status": "unpaid",
+    "transactionId": null,
+    "paidAt": null,
+    "bankInfo": {
+      "bankName": "MBBank (Ngân hàng Quân Đội)",
+      "bankCode": "MB",
+      "bankBin": "970422",
+      "accountNumber": "0976491323",
+      "accountName": "NO HOA THA BINH"
+    },
+    "transferContent": "NHTB NHTB-260910-Q6JQ",
+    "vietqr": {
+      "payload": "00020101021238540010A00000072701240006970422011009764913230208QRIBFTTA530370454064550005802VN62250821NHTB NHTB-260910-Q6JQ6304DF7E",
+      "quickLink": "https://img.vietqr.io/image/MB-0976491323-compact2.png?amount=455000&addInfo=NHTB%20NHTB-260910-Q6JQ&accountName=NO%20HOA%20THA%20BINH",
+      "qrBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAFIAQAAAAAab1qeAAAClklEQVR4nO1ayxKkMAikqfn/X2aLbojuTU8Ju6ZmNCqH0MWjIUHYw+FPBe2TfDL8kdT/Lvkzg2aB0DwMllaL9cby5RSNfKvkj1glegIQARBb1MX66xSNfDuelgjKLnMQ1Xy8sIzt6/RJeGrQywNppu31cvxZGvkpeAbaFOn6f6NpYzTy/XiG5gqfipvl/XL8URr5djyhaWJ3oYpQxjcM08i3Sv6W/SVyixwJSiWlYRr5VkkLQpao1b9/kYN3y+eYopFvlYRcOok7I6bSetTTslPbvU6fIwnByUfaqIBsZwfyd8A650iG7BTB4ig9fNlmkaavPno4cC/ROSkiXyX8quXHaOQHxM/QlIVmB9O2WZSlTtHIj8hHkHle7p3P5fdGa52ikW+VtCRFYkXiSTRVsqVmTvHxJX8nGZnCBeitQ1cgW1H6A9Y5RRJM5MpMldmLd2bKt7wesc4Z9aZVsKz2UtfrOUjsoVA6RSPfKmkMn4qR+ue86swOn5Fvp2jkWyUhTqTAqVsnd7FRfP06ey0ZTEeKlBksVRj1lgcYCU5Y54j4CaLXFREt8kpKTPOYpJEfkI/APITFPmWdfAN+//L7K75kaZ/p6LzVLkdHTnz9EH/Zn49FNyF+dG2CWHeapmjkZ+wfQYEzDTXhW50Rjm///elAMyPl96utdCNQxssUjfyU/hLq0NK1zbE4aGxfpw+RxHVkYfGkbidXKIUQnaKRn3K+zgrLQlG2yX34A9bpA8/X2So+1VFqMmq8TtHIj8hH0dvF9bLO1d1s17eu04eer8M909+6JTFGIz8FTys371KzQmlUwTRFIz/lfF2wNmL/oyioys5QxpqikR90vg5ZwbOhdKWmYF3/+ftr/vmPaOSf5IMxRfIP/p1nWzTnfIsAAAAASUVORK5CYII="
+    }
+  },
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-09-10T22:04:11Z",
+      "note": "Khách hàng tạo đơn hàng trực tuyến",
+      "updatedBy": "0988776655"
+    }
+  ]
+}
