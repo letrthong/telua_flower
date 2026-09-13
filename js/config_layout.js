@@ -67,7 +67,41 @@ export const ADMIN_NAVIGATION_CONFIG = [
         module: "portal_admin_inventory.js",
         loadFn: "loadAdminInventory",
         action: "switchAdminTab('inventory')",
-        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST]
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT],
+        subTabs: [
+          {
+            key: "matrix",
+            label: "Hạn Mức Bán Hàng",
+            icon: "fa-solid fa-table-cells",
+            btnId: "subViewBtnMatrix",
+            subViewId: "inventoryMatrixSubView",
+            roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST]
+          },
+          {
+            key: "materials",
+            label: "Kho Cành Hoa & Phụ Liệu",
+            icon: "fa-solid fa-seedling",
+            btnId: "subViewBtnMaterials",
+            subViewId: "inventoryMaterialsSubView",
+            roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT]
+          },
+          {
+            key: "inbounds",
+            label: "Phiếu Nhập & Báo Hủy",
+            icon: "fa-solid fa-truck-ramp-box",
+            btnId: "subViewBtnInbounds",
+            subViewId: "inventoryInboundsSubView",
+            roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
+          },
+          {
+            key: "monthly_report",
+            label: "Báo Cáo Nhập-Xuất-Tồn Tháng",
+            icon: "fa-solid fa-chart-pie",
+            btnId: "subViewBtnMonthlyReport",
+            subViewId: "inventoryMonthlyReportSubView",
+            roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
+          }
+        ]
       },
       {
         tabKey: "categories",
@@ -308,6 +342,34 @@ export function isTabAllowed(tabKey, userRole) {
 }
 
 /**
+ * Kiểm tra xem người dùng có vai trò userRole có quyền truy cập subTabKey trong tabKey hay không
+ * @param {string} tabKey
+ * @param {string} subTabKey
+ * @param {string} userRole
+ * @returns {boolean}
+ */
+export function isSubTabAllowed(tabKey, subTabKey, userRole) {
+  const config = getTabConfig(tabKey);
+  if (!config || !Array.isArray(config.subTabs)) return true;
+  const sub = config.subTabs.find(s => s.key === subTabKey);
+  if (!sub || !sub.roles) return true;
+  return hasPermission(userRole, sub.roles);
+}
+
+/**
+ * Lấy danh sách subTabs của một tab, tùy chọn lọc theo userRole
+ * @param {string} tabKey
+ * @param {string|null} userRole
+ * @returns {Array}
+ */
+export function getSubTabsForTab(tabKey, userRole = null) {
+  const config = getTabConfig(tabKey);
+  if (!config || !Array.isArray(config.subTabs)) return [];
+  if (!userRole) return config.subTabs;
+  return config.subTabs.filter(sub => !sub.roles || hasPermission(userRole, sub.roles));
+}
+
+/**
  * Lấy tabKey mặc định đầu tiên mà vai trò userRole được phép truy cập trong nhóm groupId
  * @param {string} userRole
  * @param {string} groupId
@@ -345,6 +407,8 @@ if (typeof window !== "undefined") {
   window.getAuthorizedLayout = getAuthorizedLayout;
   window.getTabConfig = getTabConfig;
   window.isTabAllowed = isTabAllowed;
+  window.isSubTabAllowed = isSubTabAllowed;
+  window.getSubTabsForTab = getSubTabsForTab;
   window.getDefaultTabForRole = getDefaultTabForRole;
   window.openMyWorkspace = openMyWorkspace;
 }

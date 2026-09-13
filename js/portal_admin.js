@@ -16,7 +16,7 @@
 
 import { getCurrentUser, getAuthToken, openAuthModal, logout } from './auth.js';
 import { API_BASE, showToast, showConfirmDialog, showScreenLock, hideScreenLock, removeVietnameseTones } from './utils.js';
-import { CONFIG_LAYOUT, isTabAllowed, getDefaultTabForRole, getTabConfig } from './config_layout.js';
+import { CONFIG_LAYOUT, isTabAllowed, isSubTabAllowed, getDefaultTabForRole, getTabConfig } from './config_layout.js';
 
 // Re-export state & helpers
 export {
@@ -199,7 +199,23 @@ export {
     removeWastageItemRow,
     recalculateWastageTotals,
     handleWastageSubmit,
-    filterInventoryMatrixTable
+    filterInventoryMatrixTable,
+    allAdminMaterials,
+    allAdminInbounds,
+    currentMonthlyReport,
+    loadAdminMaterials,
+    renderAdminMaterialsTable,
+    loadAdminInbounds,
+    renderAdminInboundsTable,
+    openInboundModal,
+    closeInboundModal,
+    addInboundItemRow,
+    onInboundItemSelect,
+    removeInboundItemRow,
+    recalculateInboundTotals,
+    handleInboundSubmit,
+    loadMonthlyInventoryReport,
+    renderMonthlyInventoryReport
 } from './portal_admin_inventory.js';
 
 // Import local references for shell functions
@@ -289,6 +305,23 @@ export function openAdminPortalModal(initialTab = null) {
                     } else {
                         btn.classList.add("hidden");
                     }
+                }
+
+                // Đồng bộ phân quyền các sub-tabs nếu có cấu hình
+                if (Array.isArray(t.subTabs)) {
+                    const checkSubAllowed = (typeof isSubTabAllowed === "function") 
+                        ? isSubTabAllowed 
+                        : ((typeof window !== "undefined" && typeof window.isSubTabAllowed === "function") ? window.isSubTabAllowed : null);
+                    t.subTabs.forEach(sub => {
+                        const subBtn = document.getElementById(sub.btnId || `subViewBtn${sub.key.charAt(0).toUpperCase() + sub.key.slice(1)}`);
+                        if (subBtn && checkSubAllowed) {
+                            if (checkSubAllowed(t.tabKey, sub.key, user.role)) {
+                                subBtn.classList.remove("hidden");
+                            } else {
+                                subBtn.classList.add("hidden");
+                            }
+                        }
+                    });
                 }
             });
         }

@@ -512,6 +512,8 @@ export function openProductModal(isEdit = false) {
             if (customBox) customBox.classList.add("hidden");
             if (customInp) customInp.value = "";
         });
+        const prodTypeSelect = document.getElementById("prodProductType");
+        if (prodTypeSelect) prodTypeSelect.value = "arranged";
         renderProductModalStockFields({});
     }
 
@@ -659,6 +661,8 @@ export async function editProduct(productId) {
     document.getElementById("editProductId").value = prod.id;
     document.getElementById("prodName").value = prod.name || "";
     document.getElementById("prodCategory").value = prod.category || "bo_hoa";
+    const prodTypeSelect = document.getElementById("prodProductType");
+    if (prodTypeSelect) prodTypeSelect.value = prod.productType || (prod.category === "binh_hoa" ? "direct" : "arranged");
     document.getElementById("prodPriceLevel").value = prod.priceLevelId || "price_lvl_01";
     document.getElementById("prodPriceNumber").value = prod.priceNumber || 420000;
     
@@ -775,11 +779,13 @@ export async function handleProductSubmit(event) {
         stockByBranch["branch_thao_dien"] = 5;
     }
     const dailyQuota = Object.values(stockByBranch).reduce((a, b) => a + b, 0);
+    const productType = document.getElementById("prodProductType")?.value || (category === "binh_hoa" ? "direct" : "arranged");
 
     const payload = {
         name,
         nameTextId,
         category,
+        productType,
         priceLevelId,
         priceNumber,
         image,

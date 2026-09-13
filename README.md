@@ -148,28 +148,37 @@ Khi phát triển giao diện hoặc chỉnh sửa các module JavaScript trong 
 
 > **Quy định bắt buộc:** Mọi thay đổi mã nguồn trước khi bàn giao đều phải chạy thành công **100%** cả 2 bộ test suite của hệ thống. Xem chi tiết tại: [Quy chuẩn kiểm thử & Unit Test Mandate](docs/design/TESTING_AND_UNIT_TEST_MANDATE.md).
 
-### 1. Chạy Toàn Bộ Unit Test JavaScript (Frontend & Business Logic):
+### 1. Chạy Toàn Bộ Test Bằng 1 Lệnh Duy Nhất (Master Test Suite):
 ```bash
-# Cách 1: npm test chuẩn
+# Chạy cả 3 tầng kiểm thử: Frontend + Backend Unit + Live Server System Tests
+python scripts/run_all_tests.py
+
+# Hoặc qua npm
+npm run test:all
+```
+
+### 2. Chạy Riêng Từng Tầng Kiểm Thử:
+
+**Tầng 1: Frontend Unit Tests (Node.js Built-in Runner)**
+```bash
 npm test
-
-# Cách 2: Node.js test runner
-node --test js/unittest/*.js
+# hoặc: node --test js/unittest/*.js
 ```
-*(Bao gồm 27 bài test: Tìm kiếm tiếng Việt không dấu, URL Hash Router, Phân quyền RBAC, Tầng giá, Chiết khấu Voucher, i18n)*
+*(Bao gồm 40 bài test: Tìm kiếm tiếng Việt không dấu, URL Hash Router, Phân quyền RBAC, Tầng giá, Chiết khấu Voucher, i18n)*
 
-### 2. Chạy Toàn Bộ Unit Test Python (Backend REST API & Data Protection):
-```powershell
-# Windows PowerShell
-$env:PYTHONPATH="src"
-python -m unittest discover -s src/unittest -p "test_*.py"
-```
+**Tầng 2: Backend Unit & Integration Tests (Python Unittest)**
 ```bash
-# Linux / Ubuntu / Docker
-export PYTHONPATH="src"
-python3 -m unittest discover -s src/unittest -p "test_*.py"
+python -m unittest discover -s src/unittest -p "test_*.py"
+# hoặc: npm run test:unit
 ```
-*(Bao gồm 79 bài test qua 9 test suites: Cấu trúc tệp, File I/O Cache mtime, JWT Auth, Đơn hàng & Ẩn danh, Price Governance, Product CRUD, Voucher & Báo cáo hỏng, Quản trị chi nhánh, Bảo vệ dữ liệu RBAC)*
+*(Bao gồm 159 bài test: Cấu trúc tệp, File I/O Cache mtime, JWT Auth, Đơn hàng & Ẩn danh, Price Governance, Product CRUD, Voucher & Báo cáo hỏng, Quản trị chi nhánh, Bảo vệ dữ liệu RBAC, Quản lý kho hoa cành & Báo cáo PnL)*
+
+**Tầng 3: Live Server E2E System Tests (HTTP qua TCP Socket Thật)**
+```bash
+python tests/system/run_system_tests.py
+# hoặc: npm run test:system
+```
+*(Bao gồm 7 kịch bản E2E: Tự động khởi động Flask Server trên cổng TCP động, xác thực Auth JWT, Catalog, Kho cành hoa, Lập phiếu nhập kho, Báo hủy hao hụt, Báo cáo cân đối tồn kho tháng)*
 
 ---
 

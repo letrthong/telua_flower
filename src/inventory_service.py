@@ -335,20 +335,23 @@ def create_wastage_report(
         if user_role not in ["super_admin", "admin"] and user_branch and branch_id != user_branch:
             return False, f"Bạn chỉ có quyền lập phiếu hủy cho chi nhánh {user_branch}"
 
-    raw_items = data.get("items") or []
+    raw_items = data.get("items")
     if not raw_items or not isinstance(raw_items, list):
-        return False, "Phiếu báo hủy phải có ít nhất 1 loại hoa hư hỏng"
+        if data.get("materialId") or data.get("productId") or data.get("flowerType") or data.get("productName"):
+            raw_items = [data]
+        else:
+            return False, "Phiếu báo hủy phải có ít nhất 1 loại hoa hư hỏng"
 
     parsed_items = []
     total_loss_amount = 0
 
     for itm in raw_items:
         flower_type = (itm.get("flowerType") or itm.get("productName") or "").strip()
-        damaged_stems = int(itm.get("damagedStems") or 0)
+        damaged_stems = int(itm.get("damagedStems") or itm.get("quantity") or 0)
         if damaged_stems <= 0:
             continue
 
-        unit_cost = int(itm.get("unitCost") or 0)
+        unit_cost = int(itm.get("unitCost") or itm.get("costPrice") or 0)
         item_loss = damaged_stems * unit_cost
         total_loss_amount += item_loss
 
@@ -551,11 +554,11 @@ def create_inbound_receipt(
     parsed_items = []
 
     for itm in items:
-        mat_id = itm.get("materialId")
+        mat_id = itm.get("materialId") or itm.get("id")
         qty = int(itm.get("quantity") or 0)
         if qty <= 0:
             continue
-        unit_cost = int(itm.get("costPrice") or 0)
+        unit_cost = int(itm.get("costPrice") or itm.get("unitPrice") or 0)
         item_total = qty * unit_cost
 
         total_stems += qty

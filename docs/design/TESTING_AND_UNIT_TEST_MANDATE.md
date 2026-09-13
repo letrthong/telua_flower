@@ -1,4 +1,4 @@
-# QUY CHUẨN KIỂM THỬ & BẮT BUỘC CHẠY UNIT TEST (TESTING & QUALITY ASSURANCE MANDATE)
+# QUY CHUẨN KIỂM THỬ BẮT BUỘC: UNIT TEST & SYSTEM TEST (TESTING & QUALITY ASSURANCE MANDATE)
 
 > **MÃ TÀI LIỆU:** DOC-QA-01  
 > **ÁP DỤNG CHO:** Toàn bộ hệ thống `telua_flower` (Backend Python Flask + Frontend JavaScript Vanilla ES Modules)  
@@ -11,8 +11,12 @@
 Mọi quy trình phát triển, nâng cấp, bảo trì hoặc refactor mã nguồn trong dự án `telua_flower` đều phải tuân thủ nghiêm ngặt nguyên tắc:
 
 1. **Cập nhật tài liệu kiến trúc trước khi viết code**: Mọi thay đổi về luồng dữ liệu, API hoặc logic nghiệp vụ phải được phản ánh vào thư mục `docs/` trước.
-2. **Luôn luôn chạy toàn bộ Unit Test (cả JavaScript và Python)**: Sau khi hoàn thành bất kỳ chỉnh sửa code nào, lập trình viên/AI Agent BẮT BUỘC phải thực thi toàn bộ 2 bộ test suite của hệ thống.
-3. **Tỷ lệ vượt qua 100% (Zero-Regression Policy)**: Không chấp nhận bất kỳ lỗi kiểm thử (Failure / Error) nào. Nếu có lỗi, phải điều tra và khắc phục triệt để trước khi bàn giao.
+2. **Bắt buộc chạy cả Unit Test và System Test**: Sau khi hoàn thành bất kỳ chỉnh sửa code nào, lập trình viên/AI Agent BẮT BUỘC phải thực thi toàn bộ **3 tầng kiểm thử** của hệ thống:
+   - **Tầng 1 - Frontend Unit Tests**: `npm test` hoặc `node --test js/unittest/*.js` (40 bài test).
+   - **Tầng 2 - Backend Python Unit & Integration Tests**: `python -m unittest discover -s src/unittest -p "test_*.py"` (159 bài test).
+   - **Tầng 3 - Live Server E2E System Tests**: `python tests/system/run_system_tests.py` (7 kịch bản E2E trên cổng TCP thật).
+   - *Hoặc chạy nhanh toàn bộ bằng 1 lệnh duy nhất*: `python scripts/run_all_tests.py` (hoặc `npm run test:all`).
+3. **Tỷ lệ vượt qua 100% (Zero-Regression Policy)**: Cả 3 bộ test đều phải đạt tỷ lệ PASS 100%. Không chấp nhận bất kỳ lỗi kiểm thử (Failure / Error) nào. Nếu có lỗi, phải điều tra và khắc phục triệt để trước khi bàn giao.
 
 ---
 
@@ -92,7 +96,55 @@ python -m unittest src/unittest/test_file_structure.py src/unittest/test_data_se
 
 ---
 
-## 4. QUY TRÌNH THỰC HIỆN KHI PHÁT TRIỂN TÍNH NĂNG (DEVELOPMENT WORKFLOW)
+## 4. BỘ KIỂM THỬ HỆ THỐNG (SYSTEM TESTING & LIVE RESTFUL API E2E)
+
+Để đảm bảo toàn bộ hệ thống hoạt động không lỗi (Zero-Error System Guarantee) khi triển khai thực tế trên máy chủ hoặc qua các đường ống CI/CD, hệ thống tích hợp bộ **System Testing** độc lập tại thư mục `tests/system/`.
+
+### 4.1 Mục đích và Sự khác biệt cốt lõi
+
+| Tiêu chí | Unit & Integration Test (`src/unittest/`) | System Testing E2E (`tests/system/`) |
+| :--- | :--- | :--- |
+| **Bản chất** | Kiểm tra logic hàm, class và service trong bộ nhớ RAM. | **Kiểm thử toàn diện hệ thống như một hộp đen (Black-Box Testing)** đang chạy thực tế. |
+| **Môi trường** | Sử dụng `Flask.test_client()` mô phỏng WSGI. | **Khởi động Flask HTTP Server thật** lắng nghe trên cổng mạng TCP (`http://127.0.0.1:PORT`). |
+| **Giao thức** | Gọi hàm Python nội bộ. | **Gửi gói tin HTTP qua Socket/Wire Protocol** như trình duyệt hoặc Mobile App. |
+| **Phạm vi kiểm tra** | Logic tính toán, thuật toán, validation. | **Toàn bộ chu trình hoạt động**: Network Socket $\rightarrow$ WSGI Server $\rightarrow$ Routing $\rightarrow$ CORS $\rightarrow$ JWT Auth $\rightarrow$ Business Services $\rightarrow$ Disk File I/O. |
+| **Phát hiện lỗi đặc thù** | Lỗi code, sai logic. | **Xung đột cổng mạng, rò rỉ luồng (threads), sai lệch Content-Type/MIME, lỗi mã hóa header, lỗi Timeout**. |
+
+### 4.2 Cấu trúc thư mục `tests/system/`
+
+```
+tests/
+└── system/
+    ├── __init__.py
+    ├── http_client.py              # HTTP Client chuẩn Python stdlib (GET, POST, PUT, DELETE, Bearer Auth)
+    ├── test_live_server_system.py  # Test suite hệ thống: Khởi động live server, gửi API, xác thực kết quả
+    └── run_system_tests.py         # CLI Runner cho CI pipeline (exit code 0/1, báo cáo trực quan)
+```
+
+### 4.3 Các kịch bản kiểm thử hệ thống (E2E Scenarios)
+1. **Khởi động & Sẵn sàng (Server Bootstrap & Healthcheck)**: Tìm cổng mạng trống ngẫu nhiên, bật live server nền trong thread riêng, gửi request ping kiểm tra trạng thái 200 OK.
+2. **Xác thực đa vai trò (Auth & RBAC Matrix)**: Gửi `POST /api/flower/v1/auth/login` kiểm tra cấp JWT Token cho 4 nhóm vai trò (`super_admin`, `branch_manager`, `florist`, `sales_consultant`), chặn mật khẩu sai và tài khoản vô hiệu hóa.
+3. **Danh mục & Mẫu hoa công khai (Catalog API)**: Gửi `GET /api/flower/v1/products` và `GET /api/flower/v1/categories`, kiểm tra tính toàn vẹn dữ liệu JSON và trường `productType`.
+4. **Quản lý kho cành hoa (Raw Materials API)**: Gửi `GET /api/flower/v1/admin/inventory/materials` với token hợp lệ và kiểm tra chặn 401/403 đối với người dùng không có quyền.
+5. **Vòng đời phiếu nhập kho từ Admin/Quản lý (Inbound Receipt Flow)**: Gửi `POST /api/flower/v1/admin/inventory/inbounds` tạo phiếu nhập hoa cành và bình hoa, kiểm tra số lượng tồn cành tự động cộng dồn vào `materials.json` của chi nhánh, sau đó `GET` để xác minh lưu trữ trên ổ đĩa.
+6. **Báo hủy hoa dập hỏng (Wastage Flow)**: Gửi `POST /api/flower/v1/admin/inventory/wastage` báo hủy cành hoa, kiểm tra số lượng tồn cành tự động trừ đi tương ứng.
+7. **Báo cáo cân đối nhập - xuất - tồn tháng (Monthly Balance & PnL Report)**: Gửi `GET /api/flower/v1/admin/inventory/monthly-report` kiểm tra các chỉ số tài chính (Doanh thu, Giá vốn COGS, Lợi nhuận gộp Gross Profit, Biên lợi nhuận %) và bảng cân đối 10 cột.
+8. **Quy trình Mua hàng Online - Giao tận nơi (Home Delivery Flow)**: Khách hàng đặt mua hoa Online hẹn giờ, viết thiệp mừng, banner ruy-băng (`fulfillmentType='delivery'`). Super Admin tiếp nhận đơn và điều phối (`/dispatch`) về Showroom Q.10. Quản lý chi nhánh cập nhật quy trình cắm hoa (`confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`), thu tiền COD và xác nhận `paid`.
+9. **Quy trình Mua hàng Offline / Online - Nhận tại cửa hàng (Store Pickup & Takeaway Flow)**: Khách đặt hoa chọn nhận trực tiếp tại Showroom Q.10 (`fulfillmentType='pickup'`). Nhân viên tại quầy chuẩn bị hoa (`confirmed` $\rightarrow$ `ready_for_pickup`), khách nhận hoa thanh toán tiền mặt/POS tại quầy (`paid`) và hoàn tất đơn (`completed`).
+10. **Đóng kết nối an toàn (Graceful Shutdown)**: Tự động dừng máy chủ và giải phóng cổng mạng TCP sau khi hoàn tất kiểm thử.
+
+### 4.4 Lệnh thực thi System Test
+```powershell
+# Cách 1: Chạy trực tiếp qua Runner chuẩn CI
+python tests/system/run_system_tests.py
+
+# Cách 2: Chạy qua Unittest Discover
+python -m unittest discover -s tests/system -p "test_*.py"
+```
+
+---
+
+## 5. QUY TRÌNH THỰC HIỆN KHI PHÁT TRIỂN TÍNH NĂNG (DEVELOPMENT WORKFLOW)
 
 ```mermaid
 graph TD
@@ -101,20 +153,23 @@ graph TD
     C --> D["4. Bổ sung Unit Test mới (nếu có tính năng mới)"]
     D --> E["5. Chạy Test Suite JavaScript: npm test"]
     E --> F["6. Chạy Test Suite Python: python -m unittest ..."]
-    F --> G{"100% Tests PASS?"}
-    G -- "KHÔNG (Có lỗi)" --> H["Điều tra & Sửa lỗi (Fix Regression)"]
-    H --> E
-    G -- "CÓ (100% PASS)" --> I["7. Hoàn tất & Báo cáo kết quả kiểm thử"]
+    F --> G["7. Chạy System Testing: python tests/system/run_system_tests.py"]
+    G --> H{"100% Tests PASS?"}
+    H -- "KHÔNG (Có lỗi)" --> I["Điều tra & Sửa lỗi (Fix Regression)"]
+    I --> E
+    H -- "CÓ (100% PASS)" --> K["8. Hoàn tất & Báo cáo kết quả kiểm thử"]
 ```
 
 ---
 
-## 5. TỔNG HỢP KIỂM TRA CHẤT LƯỢNG TOÀN DIỆN (FULL AUDIT CHECKLIST)
+## 6. TỔNG HỢP KIỂM TRA CHẤT LƯỢNG TOÀN DIỆN (FULL AUDIT CHECKLIST)
 
 Trước khi xác nhận hoàn thành bất kỳ task nào, hệ thống phải đạt đủ các tiêu chí:
 
-- [x] **JavaScript Tests**: 27/27 bài test chạy thành công.
-- [x] **Python Tests**: 79/79 bài test chạy thành công.
-- [x] **Tài liệu hóa**: Đã cập nhật `docs/` tương ứng với tính năng mới.
+- [x] **JavaScript Tests**: 40/40 bài test chạy thành công (`npm test`).
+- [x] **Python Unit Tests**: 159/159 bài test chạy thành công (`python -m unittest discover -s src/unittest -p "test_*.py"`).
+- [x] **System Tests (E2E)**: Toàn bộ kịch bản kiểm thử Live Server chạy thành công (`python tests/system/run_system_tests.py`).
+- [x] **Tài liệu hóa**: Đã cập nhật `docs/` tương ứng với tính năng mới trước khi code.
 - [x] **Hiệu năng & Caching**: Sử dụng RAM Cache theo `mtime` file cho backend và Debounce/Memoization cho frontend.
 - [x] **An ninh dữ liệu**: Kiểm tra phân quyền RBAC không cho phép truy cập chéo tài nguyên.
+
