@@ -20,6 +20,7 @@ config/anne/
 ├── staff_users.json          # Tài khoản nhân sự nội bộ (admin, manager, florist, sales)
 ├── customers.json            # Hồ sơ khách hàng & tích điểm loyalty
 ├── products.json             # Danh mục sản phẩm tóm tắt (Zero-Base64)
+├── materials.json            # Kho hoa cành & phụ liệu nguyên vật liệu (Raw Stems & Accessories)
 ├── categories.json           # Danh mục phân loại hoa
 ├── price_levels.json         # Phân tầng mức giá & Price Guardrails
 ├── promotions.json           # Mã giảm giá Voucher & chiến dịch khuyến mãi
@@ -33,6 +34,9 @@ config/anne/
 ├── images/                   # Kho ảnh tĩnh vật lý (.webp / .jpg) - Docker: /app/config/anne/images
 ├── products/                 # File JSON chi tiết của từng sản phẩm riêng lẻ ({id}.json)
 │   └── images/               # Kho ảnh phụ sản phẩm đồng bộ - Docker: /app/config/anne/products/images
+├── inventory/                # Lịch sử Nhập kho & Kiểm kê chốt sổ phân mảnh theo tháng
+│   ├── inbounds/             # Phiếu nhập hoa tươi từ nhà vườn (inbounds/{YYYY_MM}/{id}.json)
+│   └── audits/               # Biên bản kiểm kê & chốt sổ thất thoát (audits/{YYYY_MM}/{id}.json)
 ├── orders/                   # Sổ đơn hàng Kanban: Chi Nhánh -> Tháng -> Trạng thái -> {order_id}.json
 │   ├── branch_q10/           # Showroom Quận 10
 │   │   ├── 2026_08/          # Thư mục tháng
@@ -292,6 +296,10 @@ Lưu trữ danh sách các danh mục hoa tươi, ngày tạo (`createdAt`), ng�
 Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ sản phẩm ngoài Grid và Bảng danh mục mà không làm nặng trang.
 > [!IMPORTANT]
 > **Quy chuẩn Zero-Base64:** Trường `"image"` chỉ chứa chuỗi URL tĩnh (Đường dẫn tiền tố `/flower/images/<file>.webp` hoặc CDN). Tuyệt đối không lưu chuỗi `data:image/...;base64,...` vào JSON để đảm bảo dung lượng file cho 1.000 sản phẩm chỉ từ **200 KB – 350 KB**.
+>
+> **Cờ phân loại hàng hóa (`productType`):**
+> - `"direct"`: Hàng bán 1 - 1 có sẵn (Bình gốm, Socola, Gấu bông, Thiệp, hoặc hoa cành nguyên bó). Quản lý tồn kho cộng dồn liên tục.
+> - `"arranged"`: Hoa cắm phối tại cửa hàng (Bó hoa, Giỏ hoa, Kệ hoa nghệ thuật). Quản lý theo hạn mức cắm trong ngày (`dailyQuota`) và liên kết trừ hoa cành (`recipe`).
 
 ```json
 [
@@ -300,6 +308,7 @@ Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ s
     "name": "Bó Hoa Hồng & Hoa Ly Trắng Thanh Lịch",
     "nameTextId": "prod_name_bo_hoa_1788048775",
     "category": "bo_hoa",
+    "productType": "arranged",
     "priceLevelId": "price_lvl_02",
     "originalPrice": "920,000₫",
     "salePrice": "850,000₫",
@@ -337,6 +346,7 @@ File chi tiết riêng biệt được nạp qua API `GET /api/flower/v1/product
   "name": "Bó Hoa Hồng & Hoa Ly Trắng Thanh Lịch",
   "nameTextId": "prod_name_bo_hoa_1788048775",
   "category": "bo_hoa",
+  "productType": "arranged",
   "priceLevelId": "price_lvl_02",
   "originalPrice": "920,000₫",
   "salePrice": "850,000₫",
@@ -349,6 +359,12 @@ File chi tiết riêng biệt được nạp qua API `GET /api/flower/v1/product
 
   "description": "Bó hoa tone trắng dịu êm kết hợp hoa sao xanh thanh lịch.",
   "flowerComposition": "Hồng trắng Ohara (10 cành), Cúc Tana, Hoa Sao Xanh, Lá Bạc Dollar",
+  "recipe": [
+    { "materialId": "mat_rose_ohara_white", "name": "Hồng Trắng Ohara", "quantity": 10, "unit": "cành", "isMain": true },
+    { "materialId": "mat_daisy_tana", "name": "Cúc Tana", "quantity": 5, "unit": "nhánh", "isMain": false },
+    { "materialId": "mat_leaf_silver_dollar", "name": "Lá Bạc Dollar", "quantity": 3, "unit": "nhánh", "isMain": false },
+    { "materialId": "mat_wrap_paper_korean", "name": "Giấy Gói Hàn Quốc", "quantity": 2, "unit": "tờ", "isMain": true }
+  ],
   "dimension": "Cao 50cm x Rộng 40cm",
   "careTips": "Cắt gốc 45 độ, phun sương nhẹ cánh hoa mỗi sáng.",
   "i18n": {
@@ -367,6 +383,137 @@ File chi tiết riêng biệt được nạp qua API `GET /api/flower/v1/product
   "dailyQuota": 20,
   "isActive": true,
   "updatedAt": "2026-08-22T07:00:00Z"
+}
+```
+
+---
+
+### 🌿 5c. `config/materials.json` - Danh Mục Hoa Cành & Phụ Liệu Nguyên Vật Liệu (Raw Stems & Accessories)
+Quản lý trực tiếp lượng hoa cành tươi và phụ kiện nhập về từ nhà vườn, theo dõi số lượng tồn kho từng cành/nhánh theo từng chi nhánh:
+
+```json
+[
+  {
+    "id": "mat_rose_ohara_white",
+    "code": "STEM_ROSE_OHARA_W",
+    "name": "Hồng Trắng Ohara Nhập Khẩu",
+    "category": "flower_main",
+    "unit": "cành",
+    "costPrice": 18000,
+    "minStockAlert": 20,
+    "stockByBranch": {
+      "branch_q10": 120,
+      "branch_q1": 70,
+      "branch_thao_dien": 50
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_daisy_tana",
+    "code": "STEM_DAISY_TANA",
+    "name": "Cúc Tana Đà Lạt",
+    "category": "flower_filler",
+    "unit": "nhánh",
+    "costPrice": 6000,
+    "minStockAlert": 30,
+    "stockByBranch": {
+      "branch_q10": 80,
+      "branch_q1": 40,
+      "branch_thao_dien": 35
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_basket_rattan_oval",
+    "code": "ACC_BASKET_RATTAN_01",
+    "name": "Giỏ Mây Đan Tay Bầu Dục",
+    "category": "accessory",
+    "unit": "cái",
+    "costPrice": 45000,
+    "minStockAlert": 10,
+    "stockByBranch": {
+      "branch_q10": 25,
+      "branch_q1": 15,
+      "branch_thao_dien": 12
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  }
+]
+```
+
+---
+
+### 📥 5d. `config/inventory/inbounds/{YYYY_MM}/{inbound_id}.json` - Phiếu Nhập Hoa Tươi Theo Tháng (Inbound Receipts)
+Lưu trữ hóa đơn và chi tiết cành hoa nhập về showroom từ các nhà vườn theo từng tháng:
+
+```json
+{
+  "id": "inb_20260913_q10_01",
+  "inboundCode": "NH_20260913_001",
+  "branchId": "branch_q10",
+  "branchName": "Nở Hoa Thả Bình - Showroom Quận 10",
+  "supplier": "Nhà Vườn Dalat Hasfarm",
+  "importDate": "2026-09-13",
+  "receivedBy": "staff_001",
+  "receiverName": "Trần Thị Mai (Quản lý CN)",
+  "items": [
+    {
+      "materialId": "mat_rose_ohara_white",
+      "materialName": "Hồng Trắng Ohara Nhập Khẩu",
+      "quantity": 100,
+      "unit": "cành",
+      "costPrice": 18000,
+      "totalAmount": 1800000
+    },
+    {
+      "materialId": "mat_daisy_tana",
+      "materialName": "Cúc Tana Đà Lạt",
+      "quantity": 50,
+      "unit": "nhánh",
+      "costPrice": 6000,
+      "totalAmount": 300000
+    }
+  ],
+  "totalItems": 2,
+  "totalStems": 150,
+  "totalCost": 2100000,
+  "notes": "Hoa tươi mới cắt sáng sớm, cánh đều đẹp không dập.",
+  "createdAt": "2026-09-13T07:15:00Z"
+}
+```
+
+---
+
+### 📋 5e. `config/inventory/audits/{YYYY_MM}/{audit_id}.json` - Biên Bản Kiểm Kê Chốt Sổ & Thất Thoát (Stock Audits)
+Lưu trữ kết quả kiểm kê định kỳ thực tế so với số liệu phần mềm và ghi nhận số lượng cành thất thoát:
+
+```json
+{
+  "id": "audit_20260930_end_q10",
+  "auditCode": "KK_20260930_Q10",
+  "branchId": "branch_q10",
+  "auditDate": "2026-09-30",
+  "auditedBy": "staff_001",
+  "auditorName": "Trần Thị Mai",
+  "items": [
+    {
+      "materialId": "mat_rose_ohara_white",
+      "materialName": "Hồng Trắng Ohara Nhập Khẩu",
+      "systemQuantity": 15,
+      "actualQuantity": 12,
+      "discrepancy": -3,
+      "unitCost": 18000,
+      "lossAmount": 54000,
+      "reason": "Thất thoát không giải trình được trong ca tối"
+    }
+  ],
+  "totalDiscrepancyStems": -3,
+  "totalLossAmount": 54000,
+  "status": "confirmed",
+  "createdAt": "2026-09-30T21:30:00Z"
 }
 ```
 

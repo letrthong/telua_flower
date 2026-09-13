@@ -1,0 +1,33 @@
+{
+  "id": "inb_20260913_q10_01",
+  "inboundCode": "NH_20260913_001",
+  "branchId": "branch_q10",
+  "branchName": "Nở Hoa Thả Bình - Showroom Quận 10",
+  "supplier": "Nhà Vườn Dalat Hasfarm",
+  "importDate": "2026-09-13",
+  "receivedBy": "staff_001",
+  "receiverName": "Trần Thị Mai (Quản lý CN)",
+  "items": [
+    {
+      "materialId": "mat_rose_ohara_white",
+      "materialName": "Hồng Trắng Ohara Nhập Khẩu",
+      "quantity": 100,
+      "unit": "cành",
+      "costPrice": 18000,
+      "totalAmount": 1800000
+    },
+    {
+      "materialId": "mat_daisy_tana",
+      "materialName": "Cúc Tana Đà Lạt",
+      "quantity": 50,
+      "unit": "nhánh",
+      "costPrice": 6000,
+      "totalAmount": 300000
+    }
+  ],
+  "totalItems": 2,
+  "totalStems": 150,
+  "totalCost": 2100000,
+  "notes": "Hoa tươi mới cắt sáng sớm, cánh đều đẹp không dập.",
+  "createdAt": "2026-09-13T07:15:00Z"
+}

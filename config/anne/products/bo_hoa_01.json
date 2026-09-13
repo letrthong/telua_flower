@@ -48,7 +48,8 @@
     "branch_q1": 6,
     "branch_thao_dien": 4
   },
-  "dailyQuota": 20,
+  "dailyQuota": 22,
   "isActive": false,
-  "updatedAt": "2026-08-25T14:15:27Z"
+  "updatedAt": "2026-08-25T14:15:27Z",
+  "productType": "arranged"
 }

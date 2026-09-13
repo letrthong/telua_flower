@@ -151,9 +151,14 @@ Nhóm API độc lập dành riêng cho nhân viên thừa hành tác nghiệp c
 | `GET` | `/api/branches/nearest` | Public | Tìm chi nhánh gần nhất theo tọa độ người nhận |
 | `POST` | `/api/admin/branches` | `super_admin` | Tạo chi nhánh mới |
 | `PUT` | `/api/admin/branches/<id>` | `super_admin` | Cập nhật thông tin chi nhánh, bán kính giao 2H |
-| `GET` | `/api/admin/inventory/matrix` | Manager / Admin | Xem ma trận tồn kho toàn chuỗi theo thời gian thực |
-| `PUT` | `/api/branch/<branch_id>/inventory` | Staff / Manager | Cập nhật số lượng hoa bán trong ngày (Daily Quota) |
-| `POST` | `/api/branch/<branch_id>/wastage` | Manager / Admin | **Nhập phiếu báo hủy/hao hụt hoa tươi cuối ngày** |
+| `GET` | `/api/admin/inventory/matrix` | Manager / Admin | Xem ma trận tồn kho toàn chuỗi theo ngày (Daily Live Matrix) |
+| `PUT` | `/api/admin/inventory/batch` | Manager / Admin | Cập nhật nhanh số lượng hạn mức bán hôm nay hàng loạt |
+| `GET` | `/api/flower/v1/admin/inventory/monthly-report` | Manager / Admin | **Báo Cáo Nhập – Xuất – Tồn theo tháng (Hỗ trợ lọc tháng, chi nhánh, loại hàng)** |
+| `GET` | `/api/flower/v1/admin/inventory/inbounds` | Manager / Admin | Lấy danh sách các phiếu nhập hoa tươi từ nhà vườn theo tháng |
+| `POST` | `/api/flower/v1/admin/inventory/inbounds` | Manager / Admin | Tạo phiếu nhập hoa tươi mới (tự động cộng dồn vào `materials.json`) |
+| `POST` | `/api/flower/v1/admin/inventory/audits` | Manager / Admin | Lập biên bản kiểm kê chốt sổ cuối tháng và kết chuyển số dư |
+| `GET` | `/api/admin/inventory/wastage` | Staff / Manager / Admin | Lấy danh sách các phiếu báo hủy hoa dập/hỏng |
+| `POST` | `/api/admin/inventory/wastage` | Staff / Manager / Admin | **Nhập phiếu báo hủy/hao hụt hoa tươi (trừ kho khả dụng)** |
 
 ---
 

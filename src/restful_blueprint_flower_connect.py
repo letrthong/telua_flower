@@ -106,7 +106,16 @@ from inventory_service import (
     create_wastage_report,
     get_wastage_reports_list,
     get_product_stock_for_branch,
-    find_best_routing_branch
+    find_best_routing_branch,
+    create_inbound_receipt,
+    get_inbound_receipts,
+    get_monthly_inventory_report
+)
+from data_service import (
+    get_materials,
+    save_materials,
+    get_material_by_id,
+    update_material_stock
 )
 from auth_decorator import require_auth, require_role, can_access_branch
 
@@ -1768,6 +1777,97 @@ def api_create_wastage_report():
         "message": "Đã lưu phiếu báo hủy hoa hỏng thành công!",
         "data": res
     }), 201
+
+
+@flower_connect_api.route("/admin/inventory/materials", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant", "accountant"])
+def api_get_materials():
+    """
+    Lấy danh sách các nguyên vật liệu / hoa cành tươi và phụ kiện.
+    Hỗ trợ lọc theo category.
+    """
+    materials = get_materials()
+    category = request.args.get("category")
+    if category:
+        materials = [m for m in materials if m.get("category") == category]
+    return jsonify({
+        "success": True,
+        "data": materials
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/inbounds", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant", "accountant"])
+def api_get_inbounds():
+    """
+    Lấy danh sách các phiếu nhập hàng theo tháng và chi nhánh.
+    Query params:
+        month: Chuỗi tháng dạng YYYY_MM hoặc YYYY-MM (mặc định tháng hiện tại)
+        branchId: ID chi nhánh lọc (tùy chọn với super_admin, tự động áp dụng với branch_manager/florist)
+    """
+    month_str = request.args.get("month")
+    branch_id = request.args.get("branchId")
+
+    current_user = request.current_user
+    if current_user and current_user.get("role") in ["branch_manager", "florist"] and not branch_id:
+        branch_id = current_user.get("branchId")
+
+    receipts = get_inbound_receipts(month_str=month_str, branch_id=branch_id)
+    return jsonify({
+        "success": True,
+        "data": receipts
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/inbounds", methods=["POST"])
+@require_role(["super_admin", "branch_manager", "florist"])
+def api_create_inbound():
+    """
+    Tạo mới phiếu nhập hàng (Inbound Receipt).
+    Tự động cộng tồn kho vào materials.json (cho nguyên vật liệu cành hoa) hoặc products.json (cho bình hoa/direct).
+    """
+    data = request.get_json(silent=True) or {}
+    current_user = request.current_user
+
+    # Nếu không phải super_admin, ép branchId thành chi nhánh của user
+    if current_user.get("role") != "super_admin":
+        data["branchId"] = current_user.get("branchId")
+
+    success, res = create_inbound_receipt(data, user_dict=current_user)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": res
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã tạo phiếu nhập kho thành công!",
+        "data": res
+    }), 201
+
+
+@flower_connect_api.route("/admin/inventory/monthly-report", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "accountant"])
+def api_get_monthly_inventory_report():
+    """
+    Báo cáo Nhập - Xuất - Tồn và Lợi nhuận gộp theo tháng (Monthly Inventory Balance & PnL Report).
+    Query params:
+        month: Chuỗi tháng dạng YYYY_MM hoặc YYYY-MM (mặc định tháng hiện tại)
+        branchId: ID chi nhánh (tùy chọn)
+    """
+    month_str = request.args.get("month")
+    branch_id = request.args.get("branchId")
+
+    current_user = request.current_user
+    if current_user and current_user.get("role") == "branch_manager" and not branch_id:
+        branch_id = current_user.get("branchId")
+
+    report = get_monthly_inventory_report(month_str=month_str, branch_id=branch_id)
+    return jsonify({
+        "success": True,
+        "data": report
+    }), 200
 
 
 @flower_connect_api.route("/products/<product_id>/stock", methods=["GET"])

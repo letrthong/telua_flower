@@ -21,6 +21,13 @@ from data_service import (
     save_wastage_reports,
     add_wastage_report,
     get_all_orders_across_all_months,
+    get_materials,
+    save_materials,
+    get_material_by_id,
+    update_material_stock,
+    get_config_path,
+    read_json,
+    write_json,
 )
 from order_service import calculate_haversine_distance, assign_nearest_branch
 
@@ -345,8 +352,14 @@ def create_wastage_report(
         item_loss = damaged_stems * unit_cost
         total_loss_amount += item_loss
 
+        # Tự động trừ kho hoa cành nếu có materialId
+        mat_id = itm.get("materialId")
+        if mat_id:
+            update_material_stock(mat_id, branch_id, delta=-damaged_stems)
+
         parsed_items.append({
             "productId": itm.get("productId") or None,
+            "materialId": mat_id or None,
             "flowerType": flower_type or "Hoa tươi",
             "damagedStems": damaged_stems,
             "reason": (itm.get("reason") or "Hoa dập/gãy cành").strip(),
@@ -507,3 +520,360 @@ def find_best_routing_branch(
         "reason": "Đủ tồn kho và khoảng cách tối ưu" if all_in_stock else "Chi nhánh gần nhất (lưu ý thiếu một số tồn kho)",
         "evaluatedBranches": evaluated_branches
     }
+
+
+# ==============================================================================
+# PHÂN HỆ NHẬP KHO HOA CÀNH, TRỪ KHO ĐƠN HÀNG, COGS & BÁO CÁO THÁNG (V2)
+# ==============================================================================
+
+def create_inbound_receipt(
+    data: Dict[str, Any],
+    user_dict: Optional[Dict[str, Any]] = None
+) -> Tuple[bool, Union[Dict[str, Any], str]]:
+    """
+    Lập phiếu nhập hoa tươi / phụ liệu nguyên vật liệu từ nhà vườn.
+    Lưu phiếu vào config/anne/inventory/inbounds/{YYYY_MM}/inb_...json
+    Tự động cộng dồn số lượng cành vào materials.json của chi nhánh.
+    """
+    if not data or not isinstance(data, dict):
+        return False, "Dữ liệu phiếu nhập không hợp lệ"
+
+    branch_id = data.get("branchId")
+    if not branch_id:
+        return False, "Vui lòng chọn chi nhánh nhận hàng"
+
+    items = data.get("items") or []
+    if not items or not isinstance(items, list):
+        return False, "Phiếu nhập phải có ít nhất 1 loại nguyên vật liệu hoa cành"
+
+    total_stems = 0
+    total_cost = 0
+    parsed_items = []
+
+    for itm in items:
+        mat_id = itm.get("materialId")
+        qty = int(itm.get("quantity") or 0)
+        if qty <= 0:
+            continue
+        unit_cost = int(itm.get("costPrice") or 0)
+        item_total = qty * unit_cost
+
+        total_stems += qty
+        total_cost += item_total
+
+        mat_info = get_material_by_id(mat_id)
+        mat_name = itm.get("materialName") or (mat_info.get("name") if mat_info else "Hoa cành")
+        unit = itm.get("unit") or (mat_info.get("unit") if mat_info else "cành")
+
+        parsed_items.append({
+            "materialId": mat_id,
+            "materialName": mat_name,
+            "quantity": qty,
+            "unit": unit,
+            "costPrice": unit_cost,
+            "totalAmount": item_total
+        })
+
+    if not parsed_items:
+        return False, "Số lượng nguyên vật liệu nhập phải lớn hơn 0"
+
+    now_dt = datetime.now(VN_TZ)
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    import_date = data.get("importDate") or now_dt.strftime("%Y-%m-%d")
+    month_key = import_date[:7].replace("-", "_")
+
+    receipt_id = f"inb_{now_dt.strftime('%Y%m%d_%H%M%S')}_{branch_id}_{uuid.uuid4().hex[:4]}"
+    inbound_code = f"NH_{now_dt.strftime('%Y%m%d')}_{uuid.uuid4().hex[:3].upper()}"
+
+    receiver_id = (user_dict.get("id") or user_dict.get("userId")) if user_dict else "staff"
+    receiver_name = (user_dict.get("fullName") or user_dict.get("name")) if user_dict else data.get("receiverName", "Thủ kho")
+
+    receipt = {
+        "id": receipt_id,
+        "inboundCode": inbound_code,
+        "branchId": branch_id,
+        "supplier": data.get("supplier") or "Nhà vườn Đà Lạt",
+        "importDate": import_date,
+        "receivedBy": receiver_id,
+        "receiverName": receiver_name,
+        "paymentStatus": data.get("paymentStatus", "paid"),
+        "items": parsed_items,
+        "totalItems": len(parsed_items),
+        "totalStems": total_stems,
+        "totalCost": total_cost,
+        "notes": (data.get("notes") or "").strip(),
+        "createdAt": now_iso
+    }
+
+    # 1. Lưu file hóa đơn vào inventory/inbounds/{YYYY_MM}/
+    inbounds_dir = os.path.join(get_config_path("inventory"), "inbounds", month_key)
+    os.makedirs(inbounds_dir, exist_ok=True)
+    file_path = os.path.join(inbounds_dir, f"{receipt_id}.json")
+    write_json(file_path, receipt)
+
+    # 2. Tự động cộng dồn số lượng cành vào materials.json
+    for itm in parsed_items:
+        if itm.get("materialId"):
+            update_material_stock(itm["materialId"], branch_id, delta=itm["quantity"])
+
+    return True, receipt
+
+
+def get_inbound_receipts(
+    month_str: Optional[str] = None,
+    branch_id: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """Lấy danh sách các phiếu nhập hàng theo tháng và chi nhánh."""
+    inbounds_base = os.path.join(get_config_path("inventory"), "inbounds")
+    if not os.path.exists(inbounds_base):
+        return []
+
+    month_key = month_str.replace("-", "_") if month_str else None
+    receipts = []
+
+    target_dirs = []
+    if month_key:
+        m_dir = os.path.join(inbounds_base, month_key)
+        if os.path.exists(m_dir):
+            target_dirs.append(m_dir)
+    else:
+        for entry in os.listdir(inbounds_base):
+            p = os.path.join(inbounds_base, entry)
+            if os.path.isdir(p):
+                target_dirs.append(p)
+
+    for d in target_dirs:
+        for fname in os.listdir(d):
+            if fname.endswith(".json"):
+                fpath = os.path.join(d, fname)
+                rc = read_json(fpath, default=None)
+                if isinstance(rc, dict):
+                    if not branch_id or branch_id == "all" or rc.get("branchId") == branch_id:
+                        receipts.append(rc)
+
+    receipts.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
+    return receipts
+
+
+def deduct_order_materials(order_dict: Dict[str, Any], branch_id: str) -> Tuple[bool, str]:
+    """
+    Trừ hoa cành trong materials.json khi đơn hàng hoàn thành cắm hoa (status -> photo_sent/delivered).
+    """
+    if not order_dict or not branch_id:
+        return False, "Thiếu thông tin đơn hàng hoặc chi nhánh"
+
+    items = order_dict.get("items") or []
+    deducted_count = 0
+
+    for itm in items:
+        item_qty = int(itm.get("quantity") or 1)
+        recipe = itm.get("recipe") or []
+        if not recipe:
+            p_id = itm.get("productId") or itm.get("id")
+            if p_id:
+                from data_service import get_product_by_id
+                p_detail = get_product_by_id(p_id)
+                if p_detail and p_detail.get("recipe"):
+                    recipe = p_detail.get("recipe") or []
+
+        for r in recipe:
+            mat_id = r.get("materialId")
+            if mat_id:
+                r_qty = int(r.get("quantity") or 0) * item_qty
+                if r_qty > 0:
+                    update_material_stock(mat_id, branch_id, delta=-r_qty)
+                    deducted_count += 1
+
+    return True, f"Đã trừ {deducted_count} loại hoa cành trong kho chi nhánh {branch_id}"
+
+
+def calculate_order_cogs_and_profit(order_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tính toán chi phí giá vốn (COGS) hoa cành và Lợi nhuận gộp (Gross Profit) của đơn hàng.
+    """
+    revenue = int(order_dict.get("financials", {}).get("subtotal") or order_dict.get("totalAmount") or 0)
+    cogs = 0
+
+    for itm in order_dict.get("items") or []:
+        item_qty = int(itm.get("quantity") or 1)
+        recipe = itm.get("recipe") or []
+        if not recipe:
+            p_id = itm.get("productId") or itm.get("id")
+            if p_id:
+                from data_service import get_product_by_id
+                p_detail = get_product_by_id(p_id)
+                if p_detail and p_detail.get("recipe"):
+                    recipe = p_detail.get("recipe") or []
+
+        if recipe:
+            for r in recipe:
+                r_qty = int(r.get("quantity") or 0)
+                cost = int(r.get("costPrice") or 0)
+                if cost <= 0:
+                    mat = get_material_by_id(r.get("materialId"))
+                    if mat:
+                        cost = int(mat.get("costPrice") or 0)
+                cogs += cost * r_qty * item_qty
+        else:
+            cogs += int(itm.get("costPrice") or 0) * item_qty
+
+    gross_profit = revenue - cogs
+    profit_margin = round((gross_profit / revenue * 100), 2) if revenue > 0 else 0.0
+
+    return {
+        "revenue": revenue,
+        "cogs": cogs,
+        "grossProfit": gross_profit,
+        "profitMarginPercent": profit_margin
+    }
+
+
+def get_monthly_inventory_report(
+    month_str: str,
+    branch_id: Optional[str] = None,
+    item_type: Optional[str] = "all"
+) -> Dict[str, Any]:
+    """
+    Tổng hợp Báo Cáo Nhập – Xuất – Tồn Theo Tháng (Monthly Inventory Balance Report).
+    Tuân thủ công thức: Tồn Cuối = Tồn Đầu + Nhập - Bán - Hủy
+    """
+    normalized_month = month_str.replace("_", "-")[:7]
+    month_key = normalized_month.replace("-", "_")
+
+    # 1. Thu thập Inbound trong tháng
+    inbounds = get_inbound_receipts(month_str=month_key, branch_id=branch_id)
+    inbound_map: Dict[str, int] = {}
+    for inb in inbounds:
+        for itm in inb.get("items") or []:
+            mid = itm.get("materialId")
+            if mid:
+                inbound_map[mid] = inbound_map.get(mid, 0) + int(itm.get("quantity") or 0)
+
+    # 2. Thu thập Xuất Bán trong tháng
+    all_orders = get_all_orders_across_all_months(branch_id=branch_id)
+    sold_map: Dict[str, int] = {}
+    for ord_dict in all_orders:
+        if ord_dict.get("status") in ["cancelled", "returned"]:
+            continue
+        ord_date = ord_dict.get("createdAt", "")[:7].replace("_", "-")
+        if ord_date != normalized_month:
+            continue
+        for itm in ord_dict.get("items") or []:
+            pid = itm.get("productId") or itm.get("id")
+            qty = int(itm.get("quantity") or 1)
+            recipe = itm.get("recipe") or []
+            if recipe:
+                for r in recipe:
+                    mid = r.get("materialId")
+                    if mid:
+                        sold_map[mid] = sold_map.get(mid, 0) + int(r.get("quantity") or 0) * qty
+            elif pid:
+                sold_map[pid] = sold_map.get(pid, 0) + qty
+
+    # 3. Thu thập Hao Hụt Báo Hủy trong tháng
+    wastage_map: Dict[str, int] = {}
+    for rep in get_wastage_reports():
+        if branch_id and branch_id != "all" and rep.get("branchId") != branch_id:
+            continue
+        rep_date = (rep.get("date") or rep.get("createdAt", ""))[:7].replace("_", "-")
+        if rep_date != normalized_month:
+            continue
+        for itm in rep.get("items") or []:
+            target_id = itm.get("materialId") or itm.get("productId")
+            if target_id:
+                wastage_map[target_id] = wastage_map.get(target_id, 0) + int(itm.get("damagedStems") or 0)
+
+    # 4. Tập hợp danh mục mặt hàng
+    report_items = []
+    total_opening_val = 0
+    total_inbound_val = 0
+    total_sold_val = 0
+    total_closing_val = 0
+
+    # A. Danh mục cành hoa (materials)
+    if item_type in ["all", "materials"]:
+        materials = get_materials()
+        for m in materials:
+            mid = m.get("id")
+            stock_dict = m.get("stockByBranch") or {}
+            closing_stock = sum(int(v or 0) for b, v in stock_dict.items() if (not branch_id or branch_id == "all" or b == branch_id))
+            inbound_qty = inbound_map.get(mid, 0)
+            sold_qty = sold_map.get(mid, 0)
+            wastage_qty = wastage_map.get(mid, 0)
+            unit_cost = int(m.get("costPrice") or 0)
+
+            opening_stock = max(0, closing_stock - inbound_qty + sold_qty + wastage_qty)
+            closing_stock = max(0, opening_stock + inbound_qty - sold_qty - wastage_qty)
+
+            closing_val = closing_stock * unit_cost
+            total_opening_val += opening_stock * unit_cost
+            total_inbound_val += inbound_qty * unit_cost
+            total_sold_val += sold_qty * unit_cost
+            total_closing_val += closing_val
+
+            report_items.append({
+                "id": mid,
+                "name": m.get("name"),
+                "category": m.get("category"),
+                "productType": "materials",
+                "unit": m.get("unit", "cành"),
+                "unitCost": unit_cost,
+                "opening": opening_stock,
+                "inbound": inbound_qty,
+                "sold": sold_qty,
+                "wastage": wastage_qty,
+                "closing": closing_stock,
+                "closingValue": closing_val
+            })
+
+    # B. Hàng bền (direct products)
+    if item_type in ["all", "direct"]:
+        products = get_products()
+        for p in products:
+            if p.get("productType") != "direct" and p.get("category") != "binh_hoa":
+                continue
+            pid = p.get("id")
+            stock_dict = p.get("stockByBranch") or {}
+            closing_stock = sum(int(v or 0) for b, v in stock_dict.items() if (not branch_id or branch_id == "all" or b == branch_id))
+            inbound_qty = inbound_map.get(pid, 0)
+            sold_qty = sold_map.get(pid, 0)
+            wastage_qty = wastage_map.get(pid, 0)
+            unit_price = int(p.get("priceNumber") or 0)
+
+            opening_stock = max(0, closing_stock - inbound_qty + sold_qty + wastage_qty)
+            closing_stock = max(0, opening_stock + inbound_qty - sold_qty - wastage_qty)
+
+            closing_val = closing_stock * unit_price
+            total_opening_val += opening_stock * unit_price
+            total_inbound_val += inbound_qty * unit_price
+            total_sold_val += sold_qty * unit_price
+            total_closing_val += closing_val
+
+            report_items.append({
+                "id": pid,
+                "name": p.get("name"),
+                "category": p.get("category"),
+                "productType": "direct",
+                "unit": "cái",
+                "unitCost": unit_price,
+                "opening": opening_stock,
+                "inbound": inbound_qty,
+                "sold": sold_qty,
+                "wastage": wastage_qty,
+                "closing": closing_stock,
+                "closingValue": closing_val
+            })
+
+    return {
+        "month": normalized_month,
+        "branchId": branch_id or "all",
+        "summary": {
+            "totalOpeningValue": total_opening_val,
+            "totalInboundValue": total_inbound_val,
+            "totalSoldValue": total_sold_val,
+            "totalClosingValue": total_closing_val,
+            "totalItemsCount": len(report_items)
+        },
+        "items": report_items
+    }
+

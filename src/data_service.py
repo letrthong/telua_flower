@@ -5,7 +5,7 @@ import threading
 import functools
 import re
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple, Union
 import sys
 
@@ -860,7 +860,12 @@ def get_product_detail_path(product_id: str) -> str:
 
 def get_products() -> List[Dict[str, Any]]:
     """Lấy danh mục tóm tắt siêu nhẹ cho toàn bộ sản phẩm (phục vụ Grid & List có RAM cache mtime)."""
-    return _normalize_list_of_dicts(read_json_cached(get_config_path("products.json"), default=[]))
+    prods = _normalize_list_of_dicts(read_json_cached(get_config_path("products.json"), default=[]))
+    for p in prods:
+        if isinstance(p, dict) and not p.get("productType"):
+            # Mặc định tương thích ngược cho config cũ: nếu có recipe -> "arranged", còn lại mặc định "direct"
+            p["productType"] = "arranged" if (p.get("recipe") and len(p.get("recipe")) > 0) else "direct"
+    return prods
 
 
 def get_product_by_id(product_id: str, lang: Optional[str] = None) -> Optional[Dict[str, Any]]:
@@ -889,6 +894,10 @@ def get_product_by_id(product_id: str, lang: Optional[str] = None) -> Optional[D
 
     if not raw_prod:
         return None
+
+    # Đảm bảo trường productType luôn có giá trị hợp lệ cho config cũ
+    if not raw_prod.get("productType"):
+        raw_prod["productType"] = "arranged" if (raw_prod.get("recipe") and len(raw_prod.get("recipe")) > 0) else "direct"
 
     # Nếu không yêu cầu ngôn ngữ cụ thể hoặc là tiếng Việt gốc
     if not lang or lang == "vi":
@@ -941,6 +950,52 @@ def save_products(products: List[Dict[str, Any]]) -> bool:
     success = write_json(filepath, products)
     invalidate_file_cache(filepath)
     return success
+
+
+def get_materials() -> List[Dict[str, Any]]:
+    """Lấy danh mục hoa cành & phụ liệu nguyên vật liệu từ materials.json (có RAM cache mtime)."""
+    return _normalize_list_of_dicts(read_json_cached(get_config_path("materials.json"), default=[]))
+
+
+def save_materials(materials: List[Dict[str, Any]]) -> bool:
+    """Lưu danh mục hoa cành & phụ liệu nguyên vật liệu vào materials.json."""
+    filepath = get_config_path("materials.json")
+    success = write_json(filepath, materials)
+    invalidate_file_cache(filepath)
+    return success
+
+
+def get_material_by_id(material_id: str) -> Optional[Dict[str, Any]]:
+    """Tra cứu một loại nguyên vật liệu hoa cành theo ID."""
+    if not material_id:
+        return None
+    for m in get_materials():
+        if m.get("id") == material_id:
+            return m
+    return None
+
+
+def update_material_stock(material_id: str, branch_id: str, delta: int) -> bool:
+    """
+    Cập nhật tăng (+delta) hoặc giảm (-delta) số lượng tồn kho cành hoa tại một chi nhánh.
+    Đảm bảo tồn kho >= 0.
+    """
+    materials = get_materials()
+    found = False
+    for m in materials:
+        if m.get("id") == material_id:
+            found = True
+            if "stockByBranch" not in m or not isinstance(m["stockByBranch"], dict):
+                m["stockByBranch"] = {}
+            current_stock = int(m["stockByBranch"].get(branch_id, 0))
+            new_stock = max(0, current_stock + delta)
+            m["stockByBranch"][branch_id] = new_stock
+            m["updatedAt"] = datetime.now(timezone(timedelta(hours=7))).isoformat()
+            break
+    if found:
+        return save_materials(materials)
+    return False
+
 
 
 import base64

@@ -1,0 +1,146 @@
+[
+  {
+    "id": "mat_rose_ohara_white",
+    "code": "STEM_ROSE_OHARA_W",
+    "name": "Hồng Trắng Ohara Nhập Khẩu",
+    "category": "flower_main",
+    "unit": "cành",
+    "costPrice": 18000,
+    "minStockAlert": 20,
+    "stockByBranch": {
+      "branch_q10": 120,
+      "branch_q1": 70,
+      "branch_thao_dien": 50
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_rose_juliet",
+    "code": "STEM_ROSE_JULIET",
+    "name": "Hồng Juliet David Austin",
+    "category": "flower_main",
+    "unit": "cành",
+    "costPrice": 22000,
+    "minStockAlert": 25,
+    "stockByBranch": {
+      "branch_q10": 90,
+      "branch_q1": 60,
+      "branch_thao_dien": 40
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_daisy_tana",
+    "code": "STEM_DAISY_TANA",
+    "name": "Cúc Tana Đà Lạt",
+    "category": "flower_filler",
+    "unit": "nhánh",
+    "costPrice": 6000,
+    "minStockAlert": 30,
+    "stockByBranch": {
+      "branch_q10": 80,
+      "branch_q1": 40,
+      "branch_thao_dien": 35
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_hydrangea_blue",
+    "code": "STEM_HYDRANGEA_BL",
+    "name": "Cẩm Tú Cầu Xanh Pastel",
+    "category": "flower_main",
+    "unit": "bông",
+    "costPrice": 35000,
+    "minStockAlert": 15,
+    "stockByBranch": {
+      "branch_q10": 30,
+      "branch_q1": 20,
+      "branch_thao_dien": 15
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_baby_white",
+    "code": "STEM_BABY_WHITE",
+    "name": "Hoa Baby Trắng Nhập Khẩu",
+    "category": "flower_filler",
+    "unit": "nhánh",
+    "costPrice": 12000,
+    "minStockAlert": 20,
+    "stockByBranch": {
+      "branch_q10": 60,
+      "branch_q1": 45,
+      "branch_thao_dien": 25
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_eustoma_pink",
+    "code": "STEM_EUSTOMA_PK",
+    "name": "Cát Tường Xoăn Hồng",
+    "category": "flower_main",
+    "unit": "cành",
+    "costPrice": 14000,
+    "minStockAlert": 20,
+    "stockByBranch": {
+      "branch_q10": 70,
+      "branch_q1": 50,
+      "branch_thao_dien": 30
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_leaf_silver_dollar",
+    "code": "LEAF_SILVER_DOLLAR",
+    "name": "Lá Bạc Dollar Nhập Khẩu",
+    "category": "leaf",
+    "unit": "nhánh",
+    "costPrice": 8000,
+    "minStockAlert": 25,
+    "stockByBranch": {
+      "branch_q10": 50,
+      "branch_q1": 35,
+      "branch_thao_dien": 20
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_basket_rattan_oval",
+    "code": "ACC_BASKET_RATTAN_01",
+    "name": "Giỏ Mây Đan Tay Bầu Dục",
+    "category": "accessory",
+    "unit": "cái",
+    "costPrice": 45000,
+    "minStockAlert": 10,
+    "stockByBranch": {
+      "branch_q10": 25,
+      "branch_q1": 15,
+      "branch_thao_dien": 12
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  },
+  {
+    "id": "mat_wrap_paper_korean",
+    "code": "ACC_WRAP_PAPER_KR",
+    "name": "Giấy Gói Trơn Phong Cách Hàn Quốc",
+    "category": "accessory",
+    "unit": "tờ",
+    "costPrice": 5000,
+    "minStockAlert": 50,
+    "stockByBranch": {
+      "branch_q10": 150,
+      "branch_q1": 100,
+      "branch_thao_dien": 80
+    },
+    "isActive": true,
+    "updatedAt": "2026-09-13T07:00:00Z"
+  }
+]

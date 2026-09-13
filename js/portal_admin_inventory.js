@@ -16,6 +16,9 @@ import {
 export let currentInventoryData = null;
 export let currentInventoryBranches = [];
 export let allAdminWastageReports = [];
+export let allAdminMaterials = [];
+export let allAdminInbounds = [];
+export let currentMonthlyReport = null;
 
 export async function loadAdminInventory() {
     const dateInput = document.getElementById("filterInventoryDate");

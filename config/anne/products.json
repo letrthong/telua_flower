@@ -16,9 +16,10 @@
       "branch_q1": 12,
       "branch_thao_dien": 5
     },
-    "dailyQuota": 15,
+    "dailyQuota": 35,
     "isActive": true,
-    "updatedAt": "2026-08-30T07:51:05Z"
+    "updatedAt": "2026-08-30T07:51:05Z",
+    "productType": "direct"
   },
   {
     "id": "lan_test_1787964482799",
@@ -37,9 +38,10 @@
       "branch_q1": 5,
       "branch_thao_dien": 5
     },
-    "dailyQuota": 15,
+    "dailyQuota": 20,
     "isActive": true,
-    "updatedAt": "2026-08-30T03:51:11Z"
+    "updatedAt": "2026-08-30T03:51:11Z",
+    "productType": "arranged"
   },
   {
     "id": "gio_hoa_01",
@@ -70,9 +72,10 @@
       "branch_q1": 4,
       "branch_thao_dien": 1
     },
-    "dailyQuota": 10,
+    "dailyQuota": 11,
     "isActive": false,
-    "updatedAt": "2026-08-25T14:10:21Z"
+    "updatedAt": "2026-08-25T14:10:21Z",
+    "productType": "arranged"
   },
   {
     "id": "bo_hoa_01",
@@ -104,9 +107,10 @@
       "branch_q1": 6,
       "branch_thao_dien": 4
     },
-    "dailyQuota": 20,
+    "dailyQuota": 22,
     "isActive": false,
-    "updatedAt": "2026-08-25T14:15:27Z"
+    "updatedAt": "2026-08-25T14:15:27Z",
+    "productType": "arranged"
   },
   {
     "id": "bo_hoa_02",
@@ -140,7 +144,8 @@
     },
     "dailyQuota": 15,
     "isActive": true,
-    "updatedAt": "2026-08-30T04:18:44Z"
+    "updatedAt": "2026-08-30T04:18:44Z",
+    "productType": "arranged"
   },
   {
     "id": "bo_hoa_03",
@@ -174,7 +179,8 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-30T07:51:49Z"
+    "updatedAt": "2026-08-30T07:51:49Z",
+    "productType": "arranged"
   },
   {
     "id": "bo_hoa_04",
@@ -205,9 +211,10 @@
       "branch_q1": 4,
       "branch_thao_dien": 3
     },
-    "dailyQuota": 12,
+    "dailyQuota": 14,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-24T12:00:00Z",
+    "productType": "arranged"
   },
   {
     "id": "ke_hoa_01",
@@ -241,7 +248,8 @@
     },
     "dailyQuota": 8,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:20:26Z"
+    "updatedAt": "2026-08-30T08:20:26Z",
+    "productType": "arranged"
   },
   {
     "id": "ke_hoa_02",
@@ -274,7 +282,8 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-24T12:00:00Z",
+    "productType": "arranged"
   },
   {
     "id": "ke_hoa_03",
@@ -306,9 +315,10 @@
       "branch_q1": 4,
       "branch_thao_dien": 1
     },
-    "dailyQuota": 8,
+    "dailyQuota": 11,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:13:49Z"
+    "updatedAt": "2026-08-30T08:13:49Z",
+    "productType": "arranged"
   },
   {
     "id": "ke_hoa_04",
@@ -342,7 +352,8 @@
     },
     "dailyQuota": 8,
     "isActive": true,
-    "updatedAt": "2026-08-30T03:52:48Z"
+    "updatedAt": "2026-08-30T03:52:48Z",
+    "productType": "arranged"
   },
   {
     "id": "binh_hoa_01",
@@ -373,9 +384,10 @@
       "branch_q1": 10,
       "branch_thao_dien": 8
     },
-    "dailyQuota": 30,
+    "dailyQuota": 33,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z"
+    "updatedAt": "2026-08-24T12:00:00Z",
+    "productType": "direct"
   },
   {
     "id": "binh_hoa_02",
@@ -407,9 +419,10 @@
       "branch_q1": 6,
       "branch_thao_dien": 5
     },
-    "dailyQuota": 20,
+    "dailyQuota": 21,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:22:48Z"
+    "updatedAt": "2026-08-30T08:22:48Z",
+    "productType": "direct"
   },
   {
     "id": "binh_hoa_03",
@@ -441,9 +454,10 @@
       "branch_q1": 12,
       "branch_thao_dien": 10
     },
-    "dailyQuota": 50,
+    "dailyQuota": 42,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:14:02Z"
+    "updatedAt": "2026-08-30T08:14:02Z",
+    "productType": "direct"
   },
   {
     "id": "binh_hoa_04",
@@ -474,9 +488,10 @@
       "branch_q1": 5,
       "branch_thao_dien": 4
     },
-    "dailyQuota": 15,
+    "dailyQuota": 19,
     "isActive": true,
-    "updatedAt": "2026-08-27T14:58:03Z"
+    "updatedAt": "2026-08-27T14:58:03Z",
+    "productType": "direct"
   },
   {
     "id": "lan_01",
@@ -507,9 +522,10 @@
       "branch_q1": 2,
       "branch_thao_dien": 2
     },
-    "dailyQuota": 5,
+    "dailyQuota": 7,
     "isActive": true,
-    "updatedAt": "2026-08-24T15:18:45Z"
+    "updatedAt": "2026-08-24T15:18:45Z",
+    "productType": "arranged"
   },
   {
     "id": "hoa_cuoi_01",
@@ -543,7 +559,8 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:23:52Z"
+    "updatedAt": "2026-08-30T08:23:52Z",
+    "productType": "arranged"
   },
   {
     "id": "hoa_cuoi_02",
@@ -575,8 +592,9 @@
       "branch_q1": 4,
       "branch_thao_dien": 2
     },
-    "dailyQuota": 10,
+    "dailyQuota": 12,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:27:10Z"
+    "updatedAt": "2026-08-30T08:27:10Z",
+    "productType": "arranged"
   }
 ]

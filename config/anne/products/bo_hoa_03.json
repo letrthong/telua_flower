@@ -52,5 +52,6 @@
   },
   "dailyQuota": 10,
   "isActive": true,
-  "updatedAt": "2026-08-30T07:51:49Z"
+  "updatedAt": "2026-08-30T07:51:49Z",
+  "productType": "arranged"
 }
