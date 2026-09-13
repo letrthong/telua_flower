@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import shutil
+import tempfile
 from pathlib import Path
 
 # Cấu hình logger
@@ -78,9 +79,11 @@ def _detect_config_dir() -> str:
             _sync_test_config(workspace_config, target_path)
         return str(target_path)
 
-    # 2. Nếu đang chạy Unit Test: Tự động chuyển hướng sang /tmp/config/anne
+    # 2. Nếu đang chạy Unit Test: Tự động chuyển hướng sang thư mục tạm chuẩn của hệ điều hành
+    #    - Windows: %TEMP%\telua_flower\config\anne (ví dụ: C:\Users\<user>\AppData\Local\Temp\telua_flower\config\anne)
+    #    - Linux / Docker: /tmp/telua_flower/config/anne
     if _is_test_environment():
-        test_dir = Path(os.path.abspath("/tmp/config/anne"))
+        test_dir = Path(tempfile.gettempdir()) / "telua_flower" / "config" / "anne"
         _sync_test_config(workspace_config, test_dir)
         return str(test_dir)
 
