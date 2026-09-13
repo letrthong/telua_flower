@@ -20,7 +20,7 @@
   "flowerComposition": "Hoa Tulip & Cẩm Tú Cầu",
   "compTextId": null,
   "dimension": "",
-  "careTips": "Để nơi thoáng mát, phun sương mỗi ngày",
+  "careTips": "Để nơi thoáng mát, phun sương mỗi ngày .",
   "i18n": null,
   "stockByBranch": {
     "branch_q10": 10,
@@ -29,5 +29,5 @@
   },
   "dailyQuota": 20,
   "isActive": true,
-  "updatedAt": "2026-09-13T15:56:50Z"
+  "updatedAt": "2026-09-13T17:28:56Z"
 }

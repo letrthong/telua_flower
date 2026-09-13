@@ -4,6 +4,9 @@
     "name": "Bình Hoa Gốm Nghệ Thuật Base64",
     "nameTextId": null,
     "category": "binh_hoa",
+    "productType": "direct",
+    "recipe": null,
+    "stemCount": 5,
     "priceLevelId": "price_lvl_03",
     "priceNumber": 1500000,
     "salePrice": "1,500,000₫",
@@ -12,14 +15,13 @@
     "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg",
     "i18n": null,
     "stockByBranch": {
-      "branch_q10": 18,
-      "branch_q1": 12,
+      "branch_q10": 10,
+      "branch_q1": 5,
       "branch_thao_dien": 5
     },
-    "dailyQuota": 35,
+    "dailyQuota": 20,
     "isActive": true,
-    "updatedAt": "2026-08-30T07:51:05Z",
-    "productType": "direct"
+    "updatedAt": "2026-09-13T17:28:56Z"
   },
   {
     "id": "lan_test_1787964482799",
@@ -462,13 +464,17 @@
   {
     "id": "binh_hoa_04",
     "name": "Bình Gốm Cắm Hoa Nghệ Thuật Minimalist",
+    "nameTextId": null,
     "category": "binh_hoa",
+    "productType": "direct",
+    "recipe": null,
+    "stemCount": 6,
     "priceLevelId": "price_lvl_02",
     "priceNumber": 690000,
     "salePrice": "690,000₫",
     "originalPrice": "690,000₫",
     "badge": "Bán chạy",
-    "image": "/api/flower/v1/images/binh_hoa_04.webp",
+    "image": "/api/flower/v1/images/binh_hoa_04.jpg",
     "i18n": {
       "en": {
         "name": "Minimalist Ceramic Art Flower Vase"
@@ -490,8 +496,7 @@
     },
     "dailyQuota": 19,
     "isActive": true,
-    "updatedAt": "2026-08-27T14:58:03Z",
-    "productType": "direct"
+    "updatedAt": "2026-09-13T17:30:45Z"
   },
   {
     "id": "lan_01",

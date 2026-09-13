@@ -643,15 +643,22 @@ def create_inbound_receipt(
     for itm in parsed_items:
         m_id = itm.get("materialId")
         qty_add = itm.get("quantity", 0)
-                        p["stockByBranch"][branch_id] = int(p["stockByBranch"].get(branch_id, 0)) + qty_add
-                        p["dailyQuota"] = sum(int(v or 0) for v in p["stockByBranch"].values())
-                        sync(actual_prod_id, branch_id, qty_add, "product")
-                        break
-                if p_found:
-                    save_products(prods)
-            else:
-                clean_mat_id = m_id.replace("mat:", "")
-                update_material_stock(clean_mat_id, branch_id, delta=qty_add)
+        if not m_id:
+            continue
+        if not m_id.startswith("prod:"):
+            return False, f"Material ID {m_id} không liên kết tới product (prod:), nhập hàng bị từ chối"
+        prod_id = m_id.replace("prod:", "")
+        prod = product_map.get(prod_id)
+        if not prod:
+            return False, f"Product {prod_id} không tồn tại trong products.json, nhập hàng bị từ chối"
+        if not prod.get("linked_material_id"):
+            return False, f"Product {prod_id} không có linked_material_id, không thể đồng bộ vật liệu"
+        prod.setdefault("stockByBranch", {})
+        prod["stockByBranch"][branch_id] = int(prod["stockByBranch"].get(branch_id, 0)) + qty_add
+        prod["dailyQuota"] = sum(int(v or 0) for v in prod["stockByBranch"].values())
+        sync(prod_id, branch_id, qty_add, "product")
+    # Save updated products after processing all items
+    save_products(list(product_map.values()))
 
     return True, receipt
 
