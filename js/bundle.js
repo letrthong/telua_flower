@@ -911,7 +911,7 @@ const ADMIN_NAVIGATION_CONFIG = [
         subTabs: [
           {
             key: "matrix",
-            label: "Hạn Mức Bán Hàng",
+            label: "Hạn Mức Mở Bán",
             icon: "fa-solid fa-table-cells",
             btnId: "subViewBtnMatrix",
             subViewId: "inventoryMatrixSubView",
@@ -7100,15 +7100,17 @@ if (typeof window !== "undefined") {
 async function loadAdminProducts() {
     const searchInput = document.getElementById("searchProductInput");
     const categorySelect = document.getElementById("filterProductCategory");
+    const typeSelect = document.getElementById("filterProductType");
     const statusSelect = document.getElementById("filterProductStatus");
     const search = searchInput ? searchInput.value.trim().toLowerCase() : "";
     const category = categorySelect ? categorySelect.value : "";
+    const prodType = typeSelect ? typeSelect.value : "";
     const status = statusSelect ? statusSelect.value : "";
     const tbody = document.getElementById("productsTableBody");
     if (!tbody) return;
 
     if (!allAdminProducts || allAdminProducts.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh mục hoa tươi...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh mục hoa tươi...</td></tr>`;
     }
 
     try {
@@ -7125,6 +7127,13 @@ async function loadAdminProducts() {
                 displayProducts = displayProducts.filter(p => p && p.isActive !== false);
             } else if (status === "inactive") {
                 displayProducts = displayProducts.filter(p => p && p.isActive === false);
+            }
+            if (prodType) {
+                displayProducts = displayProducts.filter(p => {
+                    if (!p) return false;
+                    const pType = p.productType || (p.category === "binh_hoa" ? "direct" : "arranged");
+                    return pType === prodType;
+                });
             }
             if (search) {
                 const normSearch = typeof removeVietnameseTones === 'function' ? removeVietnameseTones(search) : search;
@@ -7146,7 +7155,7 @@ async function loadAdminProducts() {
         }
     } catch (e) {
         if (!allAdminProducts || allAdminProducts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
         }
     }
 }
@@ -7158,7 +7167,7 @@ function renderProductsTable(products) {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="p-12 text-center">
+                <td colspan="9" class="p-12 text-center">
                     <div class="flex flex-col items-center justify-center py-10 text-gray-400">
                         <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
                             <i class="fa-solid fa-spa"></i>
@@ -7179,6 +7188,34 @@ function renderProductsTable(products) {
             ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Đang Bán</span>`
             : `<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full">⚪ Đã Ẩn</span>`;
 
+        const pType = p.productType || (p.category === "binh_hoa" ? "direct" : "arranged");
+        const recipeCount = Array.isArray(p.recipe) ? p.recipe.length : 0;
+        const totalRecipeStems = Array.isArray(p.recipe) ? p.recipe.reduce((sum, r) => sum + (parseInt(r.quantity, 10) || 0), 0) : 0;
+        const displayStems = p.stemCount || totalRecipeStems;
+        
+        let typeBadge = "";
+        if (pType === "direct") {
+            typeBadge = `
+                <div class="space-y-0.5">
+                    <span class="bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                        <i class="fa-solid fa-wine-bottle text-amber-600"></i> Bán trực tiếp
+                    </span>
+                    <div class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-seedling text-[9px] text-amber-500"></i> ${displayStems > 0 ? `${displayStems} cành/sp` : 'Chưa set cành'}
+                    </div>
+                </div>`;
+        } else {
+            typeBadge = `
+                <div class="space-y-0.5">
+                    <span class="bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                        <i class="fa-solid fa-fan text-purple-600"></i> Cắm Phối
+                    </span>
+                    <div class="text-[10px] text-purple-700 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-layer-group text-[9px] text-purple-500"></i> ${recipeCount > 0 ? `${displayStems} cành (${recipeCount} loại)` : (displayStems > 0 ? `${displayStems} cành` : 'Theo BOM')}
+                    </div>
+                </div>`;
+        }
+
         const stockQ10 = p.stockByBranch?.branch_q10 ?? 0;
         const stockQ1 = p.stockByBranch?.branch_q1 ?? 0;
         const stockTD = p.stockByBranch?.branch_thao_dien ?? 0;
@@ -7193,6 +7230,7 @@ function renderProductsTable(products) {
                     <div class="text-[10px] text-gray-400">ID: ${p.id}</div>
                 </td>
                 <td class="p-4 uppercase font-bold text-gray-600">${p.category}</td>
+                <td class="p-4">${typeBadge}</td>
                 <td class="p-4">
                     <span class="bg-pink-100 text-primary font-extrabold text-[10px] px-2 py-0.5 rounded-md">${lvlCode}</span>
                 </td>
@@ -7547,6 +7585,214 @@ async function handleGalleryFileUpload(event) {
     }
 }
 
+let editingProductRecipe = [];
+let cachedAdminMaterials = [];
+
+function onProductTypeChange() {
+    const pType = document.getElementById("prodProductType")?.value || "arranged";
+    const directSec = document.getElementById("prodDirectStemsSection");
+    const recipeSec = document.getElementById("prodRecipeSection");
+
+    if (pType === "direct") {
+        if (directSec) directSec.classList.remove("hidden");
+        if (recipeSec) recipeSec.classList.add("hidden");
+    } else {
+        if (directSec) directSec.classList.add("hidden");
+        if (recipeSec) recipeSec.classList.remove("hidden");
+        populateRecipeMaterialDropdown();
+    }
+}
+
+async function populateRecipeMaterialDropdown() {
+    const select = document.getElementById("recipeMaterialSelect");
+    if (!select) return;
+
+    if (!cachedAdminMaterials || cachedAdminMaterials.length === 0) {
+        if (typeof window !== "undefined" && window.allAdminMaterials && window.allAdminMaterials.length > 0) {
+            cachedAdminMaterials = window.allAdminMaterials;
+        } else {
+            try {
+                const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+                const res = await fetch(`${API_BASE}/admin/inventory/materials`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.success && Array.isArray(json.data)) {
+                        cachedAdminMaterials = json.data;
+                        if (typeof window !== "undefined") window.allAdminMaterials = json.data;
+                    }
+                }
+            } catch (e) {
+                console.warn("Không thể tải danh sách cành hoa:", e);
+            }
+        }
+    }
+
+    const currentVal = select.value;
+    let html = `<option value="">-- Chọn cành hoa / nguyên phụ liệu từ kho --</option>`;
+
+    if (cachedAdminMaterials && cachedAdminMaterials.length > 0) {
+        html += `<optgroup label="🌸 Cành Hoa Tươi & Phụ Liệu (Kho materials.json)">`;
+        cachedAdminMaterials.forEach(m => {
+            const unit = m.unit || "cành";
+            const cost = m.costPrice ? `${Number(m.costPrice).toLocaleString('vi-VN')}₫` : "";
+            html += `<option value="${m.id}" data-name="${m.name}" data-unit="${unit}" data-category="${m.category || 'flower_main'}">${m.name} (${unit}${cost ? ' - ' + cost : ''})</option>`;
+        });
+        html += `</optgroup>`;
+    } else {
+        const defaults = [
+            { id: "mat_rose_ohara_white", name: "Hồng Trắng Ohara Nhập Khẩu", unit: "cành", category: "flower_main" },
+            { id: "mat_rose_juliet", name: "Hồng Juliet David Austin", unit: "cành", category: "flower_main" },
+            { id: "mat_daisy_tana", name: "Cúc Tana Đà Lạt", unit: "nhánh", category: "flower_filler" },
+            { id: "mat_hydrangea_blue", name: "Cẩm Tú Cầu Xanh Pastel", unit: "bông", category: "flower_main" },
+            { id: "mat_tulip_dutch", name: "Tulip Hà Lan Trắng", unit: "cành", category: "flower_main" },
+            { id: "mat_foliage_eucalyptus", name: "Lá Khuynh Diệp Bạc (Eucalyptus)", unit: "nhánh", category: "foliage" }
+        ];
+        html += `<optgroup label="🌸 Cành Hoa Mặc Định">`;
+        defaults.forEach(m => {
+            html += `<option value="${m.id}" data-name="${m.name}" data-unit="${m.unit}" data-category="${m.category}">${m.name} (${m.unit})</option>`;
+        });
+        html += `</optgroup>`;
+    }
+
+    const directItems = (allAdminProducts || []).filter(p => p.productType === "direct" || p.category === "binh_hoa");
+    if (directItems.length > 0) {
+        html += `<optgroup label="🏺 Hàng Bán Trực Tiếp (products.json)">`;
+        directItems.forEach(p => {
+            html += `<option value="prod_${p.id}" data-name="${p.name}" data-unit="cái" data-category="accessory">${p.name} (cái)</option>`;
+        });
+        html += `</optgroup>`;
+    }
+
+    select.innerHTML = html;
+    if (currentVal) select.value = currentVal;
+    onRecipeMaterialSelectChange();
+}
+
+function onRecipeMaterialSelectChange() {
+    const select = document.getElementById("recipeMaterialSelect");
+    const unitLabel = document.getElementById("recipeMaterialUnitLabel");
+    if (!select || !unitLabel) return;
+
+    const opt = select.selectedOptions ? select.selectedOptions[0] : null;
+    const unit = opt ? opt.getAttribute("data-unit") : "cành";
+    unitLabel.textContent = unit || "cành";
+}
+
+function addRecipeItemToDraft() {
+    const select = document.getElementById("recipeMaterialSelect");
+    const qtyInp = document.getElementById("recipeMaterialQty");
+    if (!select || !qtyInp) return;
+
+    const materialId = select.value;
+    if (!materialId) {
+        alert("Vui lòng chọn một cành hoa hoặc nguyên phụ liệu từ danh sách!");
+        return;
+    }
+
+    const qty = parseInt(qtyInp.value, 10);
+    if (isNaN(qty) || qty <= 0) {
+        alert("Vui lòng nhập số lượng cành hợp lệ (> 0)!");
+        return;
+    }
+
+    const opt = select.selectedOptions ? select.selectedOptions[0] : null;
+    const name = opt ? (opt.getAttribute("data-name") || opt.textContent) : materialId;
+    const unit = opt ? (opt.getAttribute("data-unit") || "cành") : "cành";
+    const category = opt ? (opt.getAttribute("data-category") || "flower_main") : "flower_main";
+
+    const existing = editingProductRecipe.find(r => r.materialId === materialId);
+    if (existing) {
+        existing.quantity = (parseInt(existing.quantity, 10) || 0) + qty;
+    } else {
+        editingProductRecipe.push({
+            materialId,
+            name,
+            quantity: qty,
+            unit,
+            category,
+            isMain: category === "flower_main"
+        });
+    }
+
+    qtyInp.value = 1;
+    renderEditingProductRecipe();
+}
+
+function removeRecipeItemFromDraft(index) {
+    if (index >= 0 && index < editingProductRecipe.length) {
+        editingProductRecipe.splice(index, 1);
+        renderEditingProductRecipe();
+    }
+}
+
+function updateRecipeItemQty(index, newQty) {
+    if (index >= 0 && index < editingProductRecipe.length) {
+        const qty = parseInt(newQty, 10);
+        if (!isNaN(qty) && qty > 0) {
+            editingProductRecipe[index].quantity = qty;
+        }
+        renderEditingProductRecipe();
+    }
+}
+
+function renderEditingProductRecipe() {
+    const tbody = document.getElementById("prodRecipeTableBody");
+    const badge = document.getElementById("prodRecipeTotalStemsBadge");
+    if (!tbody) return;
+
+    if (!editingProductRecipe || editingProductRecipe.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic text-xs">Chưa có cành hoa nào trong công thức. Vui lòng chọn cành hoa ở trên để thêm.</td></tr>`;
+        if (badge) badge.textContent = "Tổng: 0 cành hoa";
+        return;
+    }
+
+    let totalStems = 0;
+    let html = "";
+
+    editingProductRecipe.forEach((item, idx) => {
+        const qty = parseInt(item.quantity, 10) || 1;
+        totalStems += qty;
+        const unit = item.unit || "cành";
+        const catBadge = item.category === "flower_main" 
+            ? `<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Hoa chính</span>`
+            : item.category === "flower_filler"
+            ? `<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Hoa phụ</span>`
+            : item.category === "foliage"
+            ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Lá đệm</span>`
+            : `<span class="bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Phụ liệu</span>`;
+
+        html += `
+            <tr class="hover:bg-purple-50/30 transition border-b border-gray-100 last:border-b-0">
+                <td class="p-2.5">
+                    <div class="font-bold text-gray-800 text-xs">${item.name || item.materialId}</div>
+                    <div class="text-[10px] font-mono text-gray-400">${item.materialId}</div>
+                </td>
+                <td class="p-2.5">
+                    ${catBadge}
+                </td>
+                <td class="p-2.5 text-center">
+                    <div class="inline-flex items-center space-x-1.5">
+                        <input type="number" min="1" value="${qty}" onchange="updateRecipeItemQty(${idx}, this.value)" class="w-14 px-2 py-1 text-center bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:bg-white focus:outline-none focus:border-purple-500">
+                        <span class="text-[11px] text-gray-500 font-semibold">${unit}</span>
+                    </div>
+                </td>
+                <td class="p-2.5 text-right">
+                    <button type="button" onclick="removeRecipeItemFromDraft(${idx})" title="Xóa cành hoa này khỏi mẫu" class="w-7 h-7 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 inline-flex items-center justify-center transition">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+    if (badge) {
+        badge.textContent = `Tổng: ${totalStems} cành hoa (${editingProductRecipe.length} loại)`;
+    }
+}
+
 function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");
     const title = document.getElementById("productModalTitle");
@@ -7561,8 +7807,10 @@ function openProductModal(isEdit = false) {
 
     editingProductI18n = {};
     editingProductGallery = [];
+    editingProductRecipe = [];
     switchProductLangTab("vi");
     renderEditingProductGallery();
+    renderEditingProductRecipe();
 
     if (errBox) errBox.classList.add("hidden");
     if (fileInput) fileInput.value = "";
@@ -7595,6 +7843,9 @@ function openProductModal(isEdit = false) {
         });
         const prodTypeSelect = document.getElementById("prodProductType");
         if (prodTypeSelect) prodTypeSelect.value = "arranged";
+        const stemInput = document.getElementById("prodStemCount");
+        if (stemInput) stemInput.value = "";
+        onProductTypeChange();
         renderProductModalStockFields({});
     }
 
@@ -7616,7 +7867,7 @@ function updateProductModalTotalQuota() {
         total += Math.max(0, parseInt(inp.value, 10) || 0);
     });
     const badge = document.getElementById("prodTotalQuotaBadge");
-    if (badge) badge.textContent = `Tổng Hạn Mức: ${total} cành/mẫu`;
+    if (badge) badge.textContent = `Tổng Hạn Mức Mở Bán: ${total} cành/mẫu`;
 }
 
 function renderProductModalStockFields(stockByBranch = {}) {
@@ -7743,7 +7994,16 @@ async function editProduct(productId) {
     document.getElementById("prodName").value = prod.name || "";
     document.getElementById("prodCategory").value = prod.category || "bo_hoa";
     const prodTypeSelect = document.getElementById("prodProductType");
-    if (prodTypeSelect) prodTypeSelect.value = prod.productType || (prod.category === "binh_hoa" ? "direct" : "arranged");
+    const resolvedType = prod.productType || (prod.category === "binh_hoa" ? "direct" : "arranged");
+    if (prodTypeSelect) prodTypeSelect.value = resolvedType;
+    const stemInput = document.getElementById("prodStemCount");
+    if (stemInput) {
+        stemInput.value = (prod.stemCount !== undefined && prod.stemCount !== null) ? prod.stemCount : "";
+    }
+    editingProductRecipe = Array.isArray(prod.recipe) ? JSON.parse(JSON.stringify(prod.recipe)) : [];
+    onProductTypeChange();
+    renderEditingProductRecipe();
+
     document.getElementById("prodPriceLevel").value = prod.priceLevelId || "price_lvl_01";
     document.getElementById("prodPriceNumber").value = prod.priceNumber || 420000;
     
@@ -7861,12 +8121,18 @@ async function handleProductSubmit(event) {
     }
     const dailyQuota = Object.values(stockByBranch).reduce((a, b) => a + b, 0);
     const productType = document.getElementById("prodProductType")?.value || (category === "binh_hoa" ? "direct" : "arranged");
+    const rawStemVal = document.getElementById("prodStemCount")?.value;
+    const stemCount = (rawStemVal !== "" && rawStemVal !== null && !isNaN(parseInt(rawStemVal, 10)))
+        ? parseInt(rawStemVal, 10)
+        : (editingProductRecipe.length > 0 ? editingProductRecipe.reduce((sum, r) => sum + (parseInt(r.quantity, 10) || 0), 0) : 0);
 
     const payload = {
         name,
         nameTextId,
         category,
         productType,
+        stemCount,
+        recipe: editingProductRecipe,
         priceLevelId,
         priceNumber,
         image,
@@ -7993,6 +8259,13 @@ if (typeof window !== "undefined") {
     window.handleGalleryFileUpload = handleGalleryFileUpload;
     window.updateProductModalTotalQuota = updateProductModalTotalQuota;
     window.renderProductModalStockFields = renderProductModalStockFields;
+    window.onProductTypeChange = onProductTypeChange;
+    window.populateRecipeMaterialDropdown = populateRecipeMaterialDropdown;
+    window.onRecipeMaterialSelectChange = onRecipeMaterialSelectChange;
+    window.addRecipeItemToDraft = addRecipeItemToDraft;
+    window.removeRecipeItemFromDraft = removeRecipeItemFromDraft;
+    window.updateRecipeItemQty = updateRecipeItemQty;
+    window.renderEditingProductRecipe = renderEditingProductRecipe;
 }
 
 
@@ -10350,7 +10623,7 @@ function renderInventoryMatrixTable(matrix, branches) {
             <th class="p-3 text-center border-l border-pink-100/80 bg-pink-50/70">
                 <div class="font-bold text-gray-800">${shortName}</div>
                 <div class="text-[9px] font-normal text-gray-500 tracking-normal flex justify-center gap-1.5 mt-0.5">
-                    <span title="Hạn mức nhập đầu ca">Nhập</span>•<span title="Đã bán">Bán</span>•<span title="Báo hủy hỏng">Hỏng</span>•<span title="Tồn khả dụng" class="font-bold text-primary">Tồn</span>
+                    <span title="Hạn mức mở bán">Mở bán</span>•<span title="Đã bán">Bán</span>•<span title="Báo hủy hỏng">Hỏng</span>•<span title="Tồn khả dụng" class="font-bold text-primary">Tồn</span>
                 </div>
             </th>
         `;
@@ -10358,7 +10631,7 @@ function renderInventoryMatrixTable(matrix, branches) {
     headerHtml += `
             <th class="p-3 text-center border-l border-gray-200 bg-gray-50/80 w-36">
                 <div>Tổng Chuỗi</div>
-                <div class="text-[9px] font-normal text-gray-400 mt-0.5">Nhập • Bán • Tồn</div>
+                <div class="text-[9px] font-normal text-gray-400 mt-0.5">Mở Bán • Bán • Tồn</div>
             </th>
             <th class="p-3 text-center w-28">Trạng Thái</th>
         </tr>
@@ -10415,7 +10688,7 @@ function renderInventoryMatrixTable(matrix, branches) {
             bodyHtml += `
                 <td class="p-2.5 text-center border-l border-pink-100/60">
                     <div class="flex items-center justify-center space-x-1.5">
-                        <input type="number" min="0" value="${imported}" data-product-id="${prod.id}" data-branch-id="${b.id}" ${disabledAttr} class="${inputCls}" title="Hạn mức nhập đầu ngày">
+                        <input type="number" min="0" value="${imported}" data-product-id="${prod.id}" data-branch-id="${b.id}" ${disabledAttr} class="${inputCls}" title="Hạn mức mở bán">
                         <span class="text-[10px] text-gray-500 font-semibold" title="Đã bán">${sold}</span>
                         <span class="text-[10px] text-rose-500 font-semibold" title="Hao hụt">${wastage}</span>
                         <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${availBadgeCls}" title="Tồn khả dụng">${avail}</span>
@@ -10458,7 +10731,7 @@ function renderInventoryMatrixTable(matrix, branches) {
 async function saveBatchInventory() {
     const inputs = document.querySelectorAll(".batch-inventory-input");
     if (!inputs || inputs.length === 0) {
-        notifyUser("Không có dữ liệu hạn mức tồn kho nào để lưu", "warning");
+        notifyUser("Không có dữ liệu hạn mức mở bán nào để lưu", "warning");
         return;
     }
 
@@ -10478,11 +10751,11 @@ async function saveBatchInventory() {
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
     if (!token) {
-        notifyUser("Vui lòng đăng nhập quyền Quản Lý hoặc Super Admin để lưu hạn mức!", "error");
+        notifyUser("Vui lòng đăng nhập quyền Quản Lý hoặc Super Admin để lưu hạn mức mở bán!", "error");
         return;
     }
 
-    lockScreen("Đang lưu hạn mức tồn kho chi nhánh...");
+    lockScreen("Đang lưu hạn mức mở bán chi nhánh...");
     try {
         const res = await fetch(`${API_BASE}/admin/inventory/batch`, {
             method: "PUT",
@@ -10495,10 +10768,10 @@ async function saveBatchInventory() {
         const json = await res.json();
         unlockScreen();
         if (res.ok && json.success) {
-            notifyUser("Đã cập nhật hạn mức tồn kho thành công!", "success");
+            notifyUser("Đã cập nhật hạn mức mở bán thành công!", "success");
             loadAdminInventory();
         } else {
-            notifyUser(json.message || "Không thể lưu hạn mức tồn kho", "error");
+            notifyUser(json.message || "Không thể lưu hạn mức mở bán", "error");
         }
     } catch (e) {
         unlockScreen();
@@ -10825,10 +11098,12 @@ function addInboundItemRow() {
     let options = `<optgroup label="Cành Hoa Tươi & Phụ Liệu (materials.json)">`;
     if (allAdminMaterials && allAdminMaterials.length > 0) {
         allAdminMaterials.forEach(m => {
-            options += `<option value="mat:${m.id}" data-name="${m.name}" data-price="${m.costPrice || 0}" data-unit="${m.unit || 'cành'}">${m.name} (${m.unit || 'cành'} - ${Number(m.costPrice || 0).toLocaleString('vi-VN')}₫)</option>`;
+            const lower = (m.name || "").toLowerCase();
+            const defStems = (lower.includes("hồng") || lower.includes("rose")) ? 20 : (lower.includes("ly") || lower.includes("lily") || lower.includes("tana") || lower.includes("baby")) ? 10 : 20;
+            options += `<option value="mat:${m.id}" data-type="mat" data-name="${m.name}" data-price="${m.costPrice || 0}" data-unit="${m.unit || 'cành'}" data-default-stems="${defStems}">${m.name} (${m.unit || 'cành'} - ${Number(m.costPrice || 0).toLocaleString('vi-VN')}₫)</option>`;
         });
     } else {
-        options += `<option value="mat:mat_rose_red" data-name="Hồng đỏ Pháp" data-price="12000" data-unit="cành">Hồng đỏ Pháp (12.000₫/cành)</option>`;
+        options += `<option value="mat:mat_rose_red" data-type="mat" data-name="Hồng đỏ Pháp" data-price="12000" data-unit="cành" data-default-stems="20">Hồng đỏ Pháp (12.000₫/cành)</option>`;
     }
     options += `</optgroup>`;
 
@@ -10836,28 +11111,54 @@ function addInboundItemRow() {
     if (directProducts.length > 0) {
         options += `<optgroup label="Bình Hoa & Hàng Bán Trực Tiếp (products.json)">`;
         directProducts.forEach(p => {
-            options += `<option value="prod:${p.id}" data-name="${p.name}" data-price="${Math.round((p.priceNumber || 0) * 0.5)}" data-unit="bình">${p.name} (Tồn 1:1 - ${Number(p.priceNumber || 0).toLocaleString('vi-VN')}₫)</option>`;
+            options += `<option value="prod:${p.id}" data-type="prod" data-name="${p.name}" data-price="${Math.round((p.priceNumber || 0) * 0.5)}" data-unit="bình" data-default-stems="1">${p.name} (Bán trực tiếp - ${Number(p.priceNumber || 0).toLocaleString('vi-VN')}₫)</option>`;
         });
         options += `</optgroup>`;
     }
 
     const tr = document.createElement("tr");
     tr.id = rowId;
-    tr.className = "hover:bg-blue-50/30 transition";
+    tr.className = "hover:bg-blue-50/30 transition inbound-item-row";
     tr.innerHTML = `
         <td class="p-2">
             <select onchange="onInboundItemSelect('${rowId}')" class="inbound-item-select w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-primary">
                 ${options}
             </select>
         </td>
-        <td class="p-2">
-            <input type="number" min="1" value="50" oninput="recalculateInboundTotals()" class="inbound-item-qty w-full px-2 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary" required>
+        <td class="p-2 w-28">
+            <select onchange="onInboundModeChange('${rowId}')" class="inbound-item-mode w-full px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:outline-none focus:border-primary">
+                <option value="bundle">💐 Theo Bó</option>
+                <option value="stem">🌿 Cành/Cái</option>
+            </select>
         </td>
-        <td class="p-2">
-            <input type="number" min="0" step="1000" value="12000" oninput="recalculateInboundTotals()" class="inbound-item-cost w-full px-2 py-1 text-right bg-white border border-gray-200 rounded-lg text-xs font-mono font-bold focus:outline-none focus:border-primary" required>
+        <td class="p-2 w-48 text-center">
+            <!-- Chế độ Bó: [Số bó] x [Cành/bó] -> [Tổng cành] -->
+            <div class="inbound-bundle-inputs flex items-center justify-center space-x-1">
+                <div class="relative w-16">
+                    <input type="number" min="1" value="5" oninput="recalculateInboundTotals()" class="inbound-item-bundles w-full px-1.5 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary" title="Số lượng bó">
+                    <span class="text-[9px] text-gray-400 font-bold block mt-0.5">Bó</span>
+                </div>
+                <span class="text-xs text-gray-400 font-bold self-center mb-2">&times;</span>
+                <div class="relative w-16">
+                    <input type="number" min="1" value="20" oninput="recalculateInboundTotals()" class="inbound-item-bundle-stems w-full px-1.5 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary" title="Số cành trên 1 bó">
+                    <span class="text-[9px] text-gray-400 font-bold block mt-0.5">Cành/bó</span>
+                </div>
+            </div>
+            <!-- Chế độ Cành / Cái lẻ -->
+            <div class="inbound-stem-inputs hidden items-center justify-center">
+                <input type="number" min="1" value="50" oninput="recalculateInboundTotals()" class="inbound-item-qty w-20 px-2 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary">
+                <span class="inbound-unit-label ml-1.5 text-[11px] text-gray-500 font-bold">cành</span>
+            </div>
+            <div class="inbound-calc-badge text-[10px] font-bold text-blue-600 mt-0.5 text-center">
+                = <span class="inbound-total-stems font-extrabold text-blue-700">100</span> cành
+            </div>
+        </td>
+        <td class="p-2 w-32">
+            <input type="number" min="0" step="500" value="12000" oninput="recalculateInboundTotals()" class="inbound-item-cost w-full px-2 py-1 text-right bg-white border border-gray-200 rounded-lg text-xs font-mono font-bold focus:outline-none focus:border-primary" required>
+            <div class="inbound-cost-per-bundle text-[9px] text-gray-400 text-right mt-0.5 font-semibold">(240.000₫/bó)</div>
         </td>
         <td class="p-2 text-right font-mono font-bold text-blue-600 text-xs inbound-item-subtotal">
-            600.000₫
+            1.200.000₫
         </td>
         <td class="p-2 text-center">
             <button type="button" onclick="removeInboundItemRow('${rowId}')" class="w-6 h-6 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-600 flex items-center justify-center transition">
@@ -10871,18 +11172,75 @@ function addInboundItemRow() {
     recalculateInboundTotals();
 }
 
+function onInboundModeChange(rowId) {
+    const tr = document.getElementById(rowId);
+    if (!tr) return;
+    const modeSelect = tr.querySelector(".inbound-item-mode");
+    const bundleBox = tr.querySelector(".inbound-bundle-inputs");
+    const stemBox = tr.querySelector(".inbound-stem-inputs");
+    const calcBadge = tr.querySelector(".inbound-calc-badge");
+    const bundleCostEl = tr.querySelector(".inbound-cost-per-bundle");
+    const mode = modeSelect?.value || "bundle";
+
+    if (mode === "bundle") {
+        if (bundleBox) bundleBox.classList.remove("hidden");
+        if (stemBox) {
+            stemBox.classList.add("hidden");
+            stemBox.classList.remove("flex");
+        }
+        if (calcBadge) calcBadge.classList.remove("hidden");
+        if (bundleCostEl) bundleCostEl.classList.remove("hidden");
+    } else {
+        if (bundleBox) bundleBox.classList.add("hidden");
+        if (stemBox) {
+            stemBox.classList.remove("hidden");
+            stemBox.classList.add("flex");
+        }
+        if (calcBadge) calcBadge.classList.add("hidden");
+        if (bundleCostEl) bundleCostEl.classList.add("hidden");
+    }
+    recalculateInboundTotals();
+}
+
 function onInboundItemSelect(rowId) {
     const tr = document.getElementById(rowId);
     if (!tr) return;
     const select = tr.querySelector(".inbound-item-select");
     const costInput = tr.querySelector(".inbound-item-cost");
-    if (!select || !costInput) return;
+    const modeSelect = tr.querySelector(".inbound-item-mode");
+    const bundleStemsInput = tr.querySelector(".inbound-item-bundle-stems");
+    const unitLabel = tr.querySelector(".inbound-unit-label");
+    if (!select) return;
 
     const opt = select.selectedOptions[0];
-    if (opt && opt.dataset.price) {
+    if (!opt) return;
+
+    const itemType = opt.dataset.type || (opt.value.startsWith("prod:") ? "prod" : "mat");
+    const unit = opt.dataset.unit || "cành";
+    if (unitLabel) unitLabel.textContent = unit;
+
+    if (itemType === "prod") {
+        if (modeSelect) {
+            modeSelect.value = "stem";
+            modeSelect.disabled = true;
+        }
+    } else {
+        if (modeSelect) {
+            modeSelect.disabled = false;
+            const defStems = parseInt(opt.dataset.defaultStems || 20, 10);
+            if (bundleStemsInput && !bundleStemsInput.value) {
+                bundleStemsInput.value = defStems;
+            } else if (bundleStemsInput && (bundleStemsInput.value === "20" || bundleStemsInput.value === "10")) {
+                bundleStemsInput.value = defStems;
+            }
+        }
+    }
+
+    if (opt.dataset.price && costInput) {
         costInput.value = opt.dataset.price;
     }
-    recalculateInboundTotals();
+
+    onInboundModeChange(rowId);
 }
 
 function removeInboundItemRow(rowId) {
@@ -10896,28 +11254,51 @@ function removeInboundItemRow(rowId) {
 function recalculateInboundTotals() {
     const rows = document.querySelectorAll("#inboundItemsTableBody tr");
     let totalItems = 0;
+    let totalStems = 0;
     let totalCost = 0;
 
     rows.forEach(tr => {
+        const modeSelect = tr.querySelector(".inbound-item-mode");
+        const bundlesInp = tr.querySelector(".inbound-item-bundles");
+        const bundleStemsInp = tr.querySelector(".inbound-item-bundle-stems");
         const qtyInp = tr.querySelector(".inbound-item-qty");
         const costInp = tr.querySelector(".inbound-item-cost");
         const subtotalEl = tr.querySelector(".inbound-item-subtotal");
+        const calcStemsEl = tr.querySelector(".inbound-total-stems");
+        const bundleCostEl = tr.querySelector(".inbound-cost-per-bundle");
 
-        const qty = Math.max(1, parseInt(qtyInp?.value || 1, 10));
-        const cost = Math.max(0, parseInt(costInp?.value || 0, 10));
-        const sub = qty * cost;
+        const mode = modeSelect?.value || "bundle";
+        let rowStems = 0;
+        let stemsPerB = 1;
 
+        if (mode === "bundle") {
+            const bQty = Math.max(1, parseInt(bundlesInp?.value || 1, 10));
+            stemsPerB = Math.max(1, parseInt(bundleStemsInp?.value || 1, 10));
+            rowStems = bQty * stemsPerB;
+            if (calcStemsEl) calcStemsEl.textContent = rowStems;
+        } else {
+            rowStems = Math.max(1, parseInt(qtyInp?.value || 1, 10));
+        }
+
+        const costPerStem = Math.max(0, parseInt(costInp?.value || 0, 10));
+        if (bundleCostEl && mode === "bundle") {
+            const costPerB = costPerStem * stemsPerB;
+            bundleCostEl.textContent = `(~${Number(costPerB).toLocaleString('vi-VN')}₫/bó)`;
+        }
+
+        const sub = rowStems * costPerStem;
         if (subtotalEl) {
             subtotalEl.textContent = Number(sub).toLocaleString("vi-VN") + "₫";
         }
 
         totalItems += 1;
+        totalStems += rowStems;
         totalCost += sub;
     });
 
     const badgeItems = document.getElementById("inboundTotalItemsBadge");
     const badgeAmount = document.getElementById("inboundTotalAmountBadge");
-    if (badgeItems) badgeItems.textContent = totalItems;
+    if (badgeItems) badgeItems.textContent = `${totalItems} mặt hàng (${totalStems} cành/sp)`;
     if (badgeAmount) badgeAmount.textContent = Number(totalCost).toLocaleString("vi-VN") + "₫";
 }
 
@@ -10954,12 +11335,27 @@ async function handleInboundSubmit(event) {
     const items = [];
     rows.forEach(tr => {
         const select = tr.querySelector(".inbound-item-select");
+        const modeSelect = tr.querySelector(".inbound-item-mode");
+        const bundlesInp = tr.querySelector(".inbound-item-bundles");
+        const bundleStemsInp = tr.querySelector(".inbound-item-bundle-stems");
         const qtyInp = tr.querySelector(".inbound-item-qty");
         const costInp = tr.querySelector(".inbound-item-cost");
 
         const val = select?.value || "";
         const opt = select?.selectedOptions[0];
-        const qty = Math.max(1, parseInt(qtyInp?.value || 1, 10));
+        const mode = modeSelect?.value || "bundle";
+        let qty = 1;
+        let bundles = null;
+        let stemsPerBundle = null;
+
+        if (mode === "bundle") {
+            bundles = Math.max(1, parseInt(bundlesInp?.value || 1, 10));
+            stemsPerBundle = Math.max(1, parseInt(bundleStemsInp?.value || 1, 10));
+            qty = bundles * stemsPerBundle;
+        } else {
+            qty = Math.max(1, parseInt(qtyInp?.value || 1, 10));
+        }
+
         const unitCost = Math.max(0, parseInt(costInp?.value || 0, 10));
 
         if (val.startsWith("mat:")) {
@@ -10968,7 +11364,10 @@ async function handleInboundSubmit(event) {
                 name: opt?.dataset.name || "Hoa cành",
                 unit: opt?.dataset.unit || "cành",
                 quantity: qty,
-                unitCost: unitCost
+                unitCost: unitCost,
+                importMode: mode,
+                bundles: bundles,
+                stemsPerBundle: stemsPerBundle
             });
         } else if (val.startsWith("prod:")) {
             items.push({
@@ -10976,7 +11375,8 @@ async function handleInboundSubmit(event) {
                 name: opt?.dataset.name || "Sản phẩm",
                 unit: opt?.dataset.unit || "bình",
                 quantity: qty,
-                unitCost: unitCost
+                unitCost: unitCost,
+                importMode: mode
             });
         }
     });
@@ -10984,6 +11384,7 @@ async function handleInboundSubmit(event) {
     const payload = {
         branchId: branchId,
         date: dateStr,
+        importDate: dateStr,
         supplier: supplier || "Vườn Hoa Đà Lạt Hasfarm",
         notes: notes,
         items: items
@@ -11169,6 +11570,16 @@ function renderAdminWastageTable(reports) {
             `<div class="text-[11px]"><b class="text-rose-600">${itm.damagedStems} cành</b> ${itm.flowerType} <span class="text-gray-400 italic">(${itm.reason || "Hoa dập"})</span></div>`
         ).join("");
 
+        let photosHtml = `<span class="text-gray-300 text-xs italic">Không có ảnh</span>`;
+        if (r.proofImages && Array.isArray(r.proofImages) && r.proofImages.length > 0) {
+            photosHtml = `<div class="flex items-center justify-center gap-1">` +
+                r.proofImages.map(imgUrl => `
+                    <a href="${imgUrl}" target="_blank" title="Xem ảnh gốc" class="block w-9 h-9 rounded-lg overflow-hidden border border-rose-200 hover:scale-110 transition shadow-2xs">
+                        <img src="${imgUrl}" class="w-full h-full object-cover" alt="Minh chứng hủy">
+                    </a>
+                `).join("") + `</div>`;
+        }
+
         html += `
             <tr class="hover:bg-gray-50 transition">
                 <td class="p-3 font-mono text-xs font-bold text-gray-800">${r.id}</td>
@@ -11176,6 +11587,7 @@ function renderAdminWastageTable(reports) {
                 <td class="p-3 text-gray-600">${r.date || r.createdAt?.slice(0, 10)}</td>
                 <td class="p-3 text-gray-600">${r.reportedBy || "Nhân viên"}</td>
                 <td class="p-3 space-y-1">${itemsSummary}</td>
+                <td class="p-3 text-center">${photosHtml}</td>
                 <td class="p-3 font-bold text-rose-600 text-right">${lossFmt}</td>
                 <td class="p-3 text-gray-500 text-xs italic">${r.notes || "—"}</td>
             </tr>
@@ -11185,12 +11597,20 @@ function renderAdminWastageTable(reports) {
     tbody.innerHTML = html;
 }
 
+let currentWastagePhotos = [];
+
 function openWastageModal() {
     const modal = document.getElementById("wastageModal");
     const branchSelect = document.getElementById("wastageBranchSelect");
     const dateInput = document.getElementById("wastageDateInput");
     const notesInput = document.getElementById("wastageNotesInput");
     const errBox = document.getElementById("wastageModalError");
+    const previews = document.getElementById("wastagePhotoPreviews");
+    const photoFileInput = document.getElementById("wastagePhotoFileInput");
+
+    currentWastagePhotos = [];
+    if (previews) previews.innerHTML = "";
+    if (photoFileInput) photoFileInput.value = "";
 
     if (!modal) return;
     if (errBox) errBox.classList.add("hidden");
@@ -11239,6 +11659,67 @@ function openWastageModal() {
 
     modal.style.display = "flex";
     modal.classList.remove("hidden");
+}
+
+async function handleWastagePhotoSelect(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const statusEl = document.getElementById("wastagePhotoUploadStatus");
+    if (statusEl) statusEl.classList.remove("hidden");
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("prefix", "wastage");
+
+        try {
+            const res = await fetch(`${API_BASE}/admin/upload-image`, {
+                method: "POST",
+                headers: token ? { "Authorization": `Bearer ${token}` } : {},
+                body: formData
+            });
+            const json = await res.json();
+            if (res.ok && json.success && json.data && json.data.url) {
+                currentWastagePhotos.push(json.data.url);
+            } else {
+                notifyUser(json.message || "Không thể tải ảnh minh chứng", "error");
+            }
+        } catch (err) {
+            notifyUser(`Lỗi tải ảnh: ${err.message}`, "error");
+        }
+    }
+
+    if (statusEl) statusEl.classList.add("hidden");
+    renderWastagePhotoPreviews();
+}
+
+function renderWastagePhotoPreviews() {
+    const container = document.getElementById("wastagePhotoPreviews");
+    if (!container) return;
+    container.innerHTML = "";
+
+    currentWastagePhotos.forEach((url, idx) => {
+        const div = document.createElement("div");
+        div.className = "relative w-16 h-16 rounded-lg overflow-hidden border border-rose-200 group shadow-2xs";
+        div.innerHTML = `
+            <img src="${url}" class="w-full h-full object-cover" alt="Hoa hỏng">
+            <button type="button" onclick="removeWastagePhoto(${idx})" class="absolute top-0.5 right-0.5 w-5 h-5 bg-black/70 hover:bg-rose-600 text-white rounded-full flex items-center justify-center text-[10px] transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function removeWastagePhoto(index) {
+    if (index >= 0 && index < currentWastagePhotos.length) {
+        currentWastagePhotos.splice(index, 1);
+        renderWastagePhotoPreviews();
+    }
 }
 
 function closeWastageModal() {
@@ -11403,6 +11884,7 @@ async function handleWastageSubmit(event) {
         branchId: branchSelect?.value,
         date: dateInput?.value,
         notes: (notesInput?.value || "").trim(),
+        proofImages: currentWastagePhotos,
         items
     };
 
@@ -11472,6 +11954,9 @@ if (typeof window !== "undefined") {
     window.onWastageProductSelect = onWastageProductSelect;
     window.recalculateWastageTotals = recalculateWastageTotals;
     window.handleWastageSubmit = handleWastageSubmit;
+    window.handleWastagePhotoSelect = handleWastagePhotoSelect;
+    window.renderWastagePhotoPreviews = renderWastagePhotoPreviews;
+    window.removeWastagePhoto = removeWastagePhoto;
     window.loadAdminMaterials = loadAdminMaterials;
     window.renderAdminMaterialsTable = renderAdminMaterialsTable;
     window.loadAdminInbounds = loadAdminInbounds;
@@ -11480,6 +11965,7 @@ if (typeof window !== "undefined") {
     window.closeInboundModal = closeInboundModal;
     window.addInboundItemRow = addInboundItemRow;
     window.onInboundItemSelect = onInboundItemSelect;
+    window.onInboundModeChange = onInboundModeChange;
     window.removeInboundItemRow = removeInboundItemRow;
     window.recalculateInboundTotals = recalculateInboundTotals;
     window.handleInboundSubmit = handleInboundSubmit;

@@ -297,9 +297,9 @@ Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ s
 > [!IMPORTANT]
 > **Quy chuẩn Zero-Base64:** Trường `"image"` chỉ chứa chuỗi URL tĩnh (Đường dẫn tiền tố `/flower/images/<file>.webp` hoặc CDN). Tuyệt đối không lưu chuỗi `data:image/...;base64,...` vào JSON để đảm bảo dung lượng file cho 1.000 sản phẩm chỉ từ **200 KB – 350 KB**.
 >
-> **Cờ phân loại hàng hóa (`productType`):**
-> - `"direct"`: Hàng bán 1 - 1 có sẵn (Bình gốm, Socola, Gấu bông, Thiệp, hoặc hoa cành nguyên bó). Quản lý tồn kho cộng dồn liên tục.
-> - `"arranged"`: Hoa cắm phối tại cửa hàng (Bó hoa, Giỏ hoa, Kệ hoa nghệ thuật). Quản lý theo hạn mức cắm trong ngày (`dailyQuota`) và liên kết trừ hoa cành (`recipe`).
+> **Cờ phân loại hàng hóa (`productType`) & Quy cách cành (`stemCount`):**
+> - `"direct"`: Hàng **Bán trực tiếp** có sẵn (Bình hoa, Chậu lan, Socola, Gấu bông, Thiệp). Quản lý tồn kho cộng dồn liên tục. Hỗ trợ cấu hình `stemCount` (số cành quy cách/sp) để quản lý kho dễ dàng kiểm soát số lượng cành thực tế nhập vào.
+> - `"arranged"`: Hoa cắm phối tại cửa hàng (Bó hoa, Giỏ hoa, Kệ hoa nghệ thuật). Quản lý theo hạn mức cắm trong ngày (`dailyQuota`) và liên kết trừ hoa cành theo công thức định lượng chi tiết (`recipe`).
 
 ```json
 [
@@ -309,6 +309,12 @@ Chứa các trường tóm tắt cần thiết nhất để hiển thị thẻ s
     "nameTextId": "prod_name_bo_hoa_1788048775",
     "category": "bo_hoa",
     "productType": "arranged",
+    "stemCount": 18,
+    "recipe": [
+      { "materialId": "mat_rose_ohara_white", "name": "Hồng Trắng Ohara", "quantity": 10, "unit": "cành", "isMain": true },
+      { "materialId": "mat_daisy_tana", "name": "Cúc Tana", "quantity": 5, "unit": "nhánh", "isMain": false },
+      { "materialId": "mat_leaf_silver_dollar", "name": "Lá Bạc Dollar", "quantity": 3, "unit": "nhánh", "isMain": false }
+    ],
     "priceLevelId": "price_lvl_02",
     "originalPrice": "920,000₫",
     "salePrice": "850,000₫",

@@ -1,4 +1,5 @@
 import json
+import time
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -46,6 +47,9 @@ class TestHttpClient:
         if self.auth_token and "Authorization" not in req_headers:
             req_headers["Authorization"] = f"Bearer {self.auth_token}"
 
+        if "Connection" not in req_headers:
+            req_headers["Connection"] = "close"
+
         encoded_data = None
         if data is not None:
             if isinstance(data, (dict, list)):
@@ -61,33 +65,40 @@ class TestHttpClient:
         return req
 
     def send_request(self, method: str, path: str, data: Optional[Any] = None, headers: Optional[Dict[str, str]] = None) -> ApiResponse:
-        """Gửi request và nhận ApiResponse an toàn (bắt cả mã 4xx, 5xx)."""
-        req = self._build_request(method, path, data, headers)
-        try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                status_code = resp.status
-                raw_bytes = resp.read()
+        """Gửi request và nhận ApiResponse an toàn (bắt cả mã 4xx, 5xx, hỗ trợ retry 1 lần khi socket nghẽn)."""
+        for attempt in range(2):
+            req = self._build_request(method, path, data, headers)
+            try:
+                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                    status_code = resp.status
+                    raw_bytes = resp.read()
+                    raw_text = raw_bytes.decode("utf-8", errors="replace")
+                    headers_dict = dict(resp.headers)
+                    
+                    try:
+                        json_data = json.loads(raw_text)
+                    except Exception:
+                        json_data = None
+
+                    return ApiResponse(status_code, json_data, raw_text, headers_dict)
+            except urllib.error.HTTPError as e:
+                raw_bytes = e.read()
                 raw_text = raw_bytes.decode("utf-8", errors="replace")
-                headers_dict = dict(resp.headers)
-                
                 try:
                     json_data = json.loads(raw_text)
                 except Exception:
                     json_data = None
-
-                return ApiResponse(status_code, json_data, raw_text, headers_dict)
-        except urllib.error.HTTPError as e:
-            raw_bytes = e.read()
-            raw_text = raw_bytes.decode("utf-8", errors="replace")
-            try:
-                json_data = json.loads(raw_text)
-            except Exception:
-                json_data = None
-            return ApiResponse(e.code, json_data, raw_text, dict(e.headers))
-        except urllib.error.URLError as e:
-            return ApiResponse(0, None, str(e.reason), {})
-        except Exception as e:
-            return ApiResponse(0, None, str(e), {})
+                return ApiResponse(e.code, json_data, raw_text, dict(e.headers))
+            except urllib.error.URLError as e:
+                if attempt == 0:
+                    time.sleep(0.2)
+                    continue
+                return ApiResponse(0, None, str(e.reason), {})
+            except Exception as e:
+                if attempt == 0:
+                    time.sleep(0.2)
+                    continue
+                return ApiResponse(0, None, str(e), {})
 
     def get(self, path: str, headers: Optional[Dict[str, str]] = None) -> ApiResponse:
         return self.send_request("GET", path, headers=headers)

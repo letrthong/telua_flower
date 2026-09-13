@@ -23,6 +23,7 @@ from flower_config import (
     FLOWER_CONFIG_DIR,
     PRODUCTS_DIR,
     PRODUCT_IMAGES_DIR,
+    WASTAGE_IMAGES_DIR,
     FLOWER_IMAGE_URL_PREFIX
 )
 
@@ -30,6 +31,7 @@ logger = logging.getLogger("flower_image")
 
 # Đảm bảo thư mục lưu ảnh tĩnh luôn tồn tại
 os.makedirs(PRODUCT_IMAGES_DIR, exist_ok=True)
+os.makedirs(WASTAGE_IMAGES_DIR, exist_ok=True)
 
 
 def find_flower_image_file(filename: str, auto_remote_fetch: bool = False) -> Optional[str]:
@@ -38,6 +40,7 @@ def find_flower_image_file(filename: str, auto_remote_fetch: bool = False) -> Op
     1. config/anne/images/<filename>
     2. config/anne/products/images/<filename>
     3. config/anne/images/products/<filename>
+    4. config/anne/wastage/images/<subpath/filename>
     """
     if not filename or ".." in filename:
         return None
@@ -52,7 +55,19 @@ def find_flower_image_file(filename: str, auto_remote_fetch: bool = False) -> Op
         os.path.join(PRODUCT_IMAGES_DIR, clean_name),
         os.path.join(ROOT_DIR, "config", "anne", "images", clean_name),
         os.path.join(ROOT_DIR, "config", "anne", "products", "images", clean_name),
+        os.path.join(FLOWER_CONFIG_DIR, "wastage", "images", filename),
+        os.path.join(FLOWER_CONFIG_DIR, "wastage", "images", clean_name),
+        os.path.join(ROOT_DIR, "config", "anne", "wastage", "images", filename),
+        os.path.join(ROOT_DIR, "config", "anne", "wastage", "images", clean_name)
     ]
+
+    # Quét thêm trong các thư mục con YYYY_MM của wastage/images nếu có
+    wastage_base = os.path.join(FLOWER_CONFIG_DIR, "wastage", "images")
+    if os.path.isdir(wastage_base):
+        for sub in os.listdir(wastage_base):
+            sub_dir = os.path.join(wastage_base, sub)
+            if os.path.isdir(sub_dir):
+                candidates.append(os.path.join(sub_dir, clean_name))
 
     for path in candidates:
         abs_path = os.path.abspath(path)
@@ -79,6 +94,15 @@ def save_flower_uploaded_image(file_storage_or_data: Any, filename_prefix: str =
         os.makedirs(products_img_dir, exist_ok=True)
         unique_suffix = f"{int(time.time())}_{uuid.uuid4().hex[:8]}"
 
+        # Nếu prefix là 'wastage', lưu vào config/anne/wastage/images/{YYYY_MM}/
+        is_wastage = (filename_prefix == "wastage" or filename_prefix.startswith("wastage_"))
+        current_month = time.strftime("%Y_%m")
+        if is_wastage:
+            target_img_dir = os.path.join(FLOWER_CONFIG_DIR, "wastage", "images", current_month)
+        else:
+            target_img_dir = PRODUCT_IMAGES_DIR
+        os.makedirs(target_img_dir, exist_ok=True)
+
         # 1. Trường hợp chuỗi Base64 (data:image/...;base64,...)
         if isinstance(file_storage_or_data, str):
             data_str = file_storage_or_data.strip()
@@ -93,14 +117,15 @@ def save_flower_uploaded_image(file_storage_or_data: Any, filename_prefix: str =
                 raw_bytes = base64.b64decode(data_str)
 
             filename = f"{filename_prefix}_{unique_suffix}{ext}"
-            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
+            file_path = os.path.join(target_img_dir, filename)
             with open(file_path, "wb") as f:
                 f.write(raw_bytes)
 
-            # Đồng bộ sang config/anne/products/images
-            p_path = os.path.join(products_img_dir, filename)
-            with open(p_path, "wb") as f:
-                f.write(raw_bytes)
+            if not is_wastage:
+                # Đồng bộ sang config/anne/products/images
+                p_path = os.path.join(products_img_dir, filename)
+                with open(p_path, "wb") as f:
+                    f.write(raw_bytes)
 
             relative_url = f"{FLOWER_IMAGE_URL_PREFIX}/{filename}"
             return True, relative_url, None
@@ -113,15 +138,16 @@ def save_flower_uploaded_image(file_storage_or_data: Any, filename_prefix: str =
                 ext = ".jpg"
 
             filename = f"{filename_prefix}_{unique_suffix}{ext}"
-            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
+            file_path = os.path.join(target_img_dir, filename)
             file_storage_or_data.save(file_path)
 
-            # Đồng bộ sang config/anne/products/images
-            try:
-                import shutil
-                shutil.copy2(file_path, os.path.join(products_img_dir, filename))
-            except Exception:
-                pass
+            if not is_wastage:
+                # Đồng bộ sang config/anne/products/images
+                try:
+                    import shutil
+                    shutil.copy2(file_path, os.path.join(products_img_dir, filename))
+                except Exception:
+                    pass
 
             relative_url = f"{FLOWER_IMAGE_URL_PREFIX}/{filename}"
             return True, relative_url, None
@@ -129,23 +155,22 @@ def save_flower_uploaded_image(file_storage_or_data: Any, filename_prefix: str =
         # 3. Trường hợp bytes thô
         if isinstance(file_storage_or_data, (bytes, bytearray)):
             filename = f"{filename_prefix}_{unique_suffix}.jpg"
-            file_path = os.path.join(PRODUCT_IMAGES_DIR, filename)
+            file_path = os.path.join(target_img_dir, filename)
             with open(file_path, "wb") as f:
                 f.write(file_storage_or_data)
 
-            p_path = os.path.join(products_img_dir, filename)
-            with open(p_path, "wb") as f:
-                f.write(file_storage_or_data)
+            if not is_wastage:
+                p_path = os.path.join(products_img_dir, filename)
+                with open(p_path, "wb") as f:
+                    f.write(file_storage_or_data)
 
             relative_url = f"{FLOWER_IMAGE_URL_PREFIX}/{filename}"
             return True, relative_url, None
 
-
-
         return False, None, f"Kiểu dữ liệu tệp ảnh không được hỗ trợ: {type(file_storage_or_data)}"
 
     except Exception as e:
-        logger.error(f"[IMAGE_UPLOAD_ERROR] Lỗi khi lưu ảnh sản phẩm: {e}")
+        logger.error(f"[IMAGE_UPLOAD_ERROR] Lỗi khi lưu ảnh: {e}")
         return False, None, f"Lỗi máy chủ khi lưu ảnh: {str(e)}"
 
 

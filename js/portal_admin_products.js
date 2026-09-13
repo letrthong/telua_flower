@@ -19,15 +19,17 @@ import { populateCategoryDropdowns } from './portal_admin_categories.js';
 export async function loadAdminProducts() {
     const searchInput = document.getElementById("searchProductInput");
     const categorySelect = document.getElementById("filterProductCategory");
+    const typeSelect = document.getElementById("filterProductType");
     const statusSelect = document.getElementById("filterProductStatus");
     const search = searchInput ? searchInput.value.trim().toLowerCase() : "";
     const category = categorySelect ? categorySelect.value : "";
+    const prodType = typeSelect ? typeSelect.value : "";
     const status = statusSelect ? statusSelect.value : "";
     const tbody = document.getElementById("productsTableBody");
     if (!tbody) return;
 
     if (!allAdminProducts || allAdminProducts.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh mục hoa tươi...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải danh mục hoa tươi...</td></tr>`;
     }
 
     try {
@@ -44,6 +46,13 @@ export async function loadAdminProducts() {
                 displayProducts = displayProducts.filter(p => p && p.isActive !== false);
             } else if (status === "inactive") {
                 displayProducts = displayProducts.filter(p => p && p.isActive === false);
+            }
+            if (prodType) {
+                displayProducts = displayProducts.filter(p => {
+                    if (!p) return false;
+                    const pType = p.productType || (p.category === "binh_hoa" ? "direct" : "arranged");
+                    return pType === prodType;
+                });
             }
             if (search) {
                 const normSearch = typeof removeVietnameseTones === 'function' ? removeVietnameseTones(search) : search;
@@ -65,7 +74,7 @@ export async function loadAdminProducts() {
         }
     } catch (e) {
         if (!allAdminProducts || allAdminProducts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
         }
     }
 }
@@ -77,7 +86,7 @@ function renderProductsTable(products) {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="p-12 text-center">
+                <td colspan="9" class="p-12 text-center">
                     <div class="flex flex-col items-center justify-center py-10 text-gray-400">
                         <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
                             <i class="fa-solid fa-spa"></i>
@@ -98,6 +107,34 @@ function renderProductsTable(products) {
             ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Đang Bán</span>`
             : `<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full">⚪ Đã Ẩn</span>`;
 
+        const pType = p.productType || (p.category === "binh_hoa" ? "direct" : "arranged");
+        const recipeCount = Array.isArray(p.recipe) ? p.recipe.length : 0;
+        const totalRecipeStems = Array.isArray(p.recipe) ? p.recipe.reduce((sum, r) => sum + (parseInt(r.quantity, 10) || 0), 0) : 0;
+        const displayStems = p.stemCount || totalRecipeStems;
+        
+        let typeBadge = "";
+        if (pType === "direct") {
+            typeBadge = `
+                <div class="space-y-0.5">
+                    <span class="bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                        <i class="fa-solid fa-wine-bottle text-amber-600"></i> Bán trực tiếp
+                    </span>
+                    <div class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-seedling text-[9px] text-amber-500"></i> ${displayStems > 0 ? `${displayStems} cành/sp` : 'Chưa set cành'}
+                    </div>
+                </div>`;
+        } else {
+            typeBadge = `
+                <div class="space-y-0.5">
+                    <span class="bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                        <i class="fa-solid fa-fan text-purple-600"></i> Cắm Phối
+                    </span>
+                    <div class="text-[10px] text-purple-700 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-layer-group text-[9px] text-purple-500"></i> ${recipeCount > 0 ? `${displayStems} cành (${recipeCount} loại)` : (displayStems > 0 ? `${displayStems} cành` : 'Theo BOM')}
+                    </div>
+                </div>`;
+        }
+
         const stockQ10 = p.stockByBranch?.branch_q10 ?? 0;
         const stockQ1 = p.stockByBranch?.branch_q1 ?? 0;
         const stockTD = p.stockByBranch?.branch_thao_dien ?? 0;
@@ -112,6 +149,7 @@ function renderProductsTable(products) {
                     <div class="text-[10px] text-gray-400">ID: ${p.id}</div>
                 </td>
                 <td class="p-4 uppercase font-bold text-gray-600">${p.category}</td>
+                <td class="p-4">${typeBadge}</td>
                 <td class="p-4">
                     <span class="bg-pink-100 text-primary font-extrabold text-[10px] px-2 py-0.5 rounded-md">${lvlCode}</span>
                 </td>
@@ -466,6 +504,214 @@ export async function handleGalleryFileUpload(event) {
     }
 }
 
+let editingProductRecipe = [];
+let cachedAdminMaterials = [];
+
+export function onProductTypeChange() {
+    const pType = document.getElementById("prodProductType")?.value || "arranged";
+    const directSec = document.getElementById("prodDirectStemsSection");
+    const recipeSec = document.getElementById("prodRecipeSection");
+
+    if (pType === "direct") {
+        if (directSec) directSec.classList.remove("hidden");
+        if (recipeSec) recipeSec.classList.add("hidden");
+    } else {
+        if (directSec) directSec.classList.add("hidden");
+        if (recipeSec) recipeSec.classList.remove("hidden");
+        populateRecipeMaterialDropdown();
+    }
+}
+
+export async function populateRecipeMaterialDropdown() {
+    const select = document.getElementById("recipeMaterialSelect");
+    if (!select) return;
+
+    if (!cachedAdminMaterials || cachedAdminMaterials.length === 0) {
+        if (typeof window !== "undefined" && window.allAdminMaterials && window.allAdminMaterials.length > 0) {
+            cachedAdminMaterials = window.allAdminMaterials;
+        } else {
+            try {
+                const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+                const res = await fetch(`${API_BASE}/admin/inventory/materials`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.success && Array.isArray(json.data)) {
+                        cachedAdminMaterials = json.data;
+                        if (typeof window !== "undefined") window.allAdminMaterials = json.data;
+                    }
+                }
+            } catch (e) {
+                console.warn("Không thể tải danh sách cành hoa:", e);
+            }
+        }
+    }
+
+    const currentVal = select.value;
+    let html = `<option value="">-- Chọn cành hoa / nguyên phụ liệu từ kho --</option>`;
+
+    if (cachedAdminMaterials && cachedAdminMaterials.length > 0) {
+        html += `<optgroup label="🌸 Cành Hoa Tươi & Phụ Liệu (Kho materials.json)">`;
+        cachedAdminMaterials.forEach(m => {
+            const unit = m.unit || "cành";
+            const cost = m.costPrice ? `${Number(m.costPrice).toLocaleString('vi-VN')}₫` : "";
+            html += `<option value="${m.id}" data-name="${m.name}" data-unit="${unit}" data-category="${m.category || 'flower_main'}">${m.name} (${unit}${cost ? ' - ' + cost : ''})</option>`;
+        });
+        html += `</optgroup>`;
+    } else {
+        const defaults = [
+            { id: "mat_rose_ohara_white", name: "Hồng Trắng Ohara Nhập Khẩu", unit: "cành", category: "flower_main" },
+            { id: "mat_rose_juliet", name: "Hồng Juliet David Austin", unit: "cành", category: "flower_main" },
+            { id: "mat_daisy_tana", name: "Cúc Tana Đà Lạt", unit: "nhánh", category: "flower_filler" },
+            { id: "mat_hydrangea_blue", name: "Cẩm Tú Cầu Xanh Pastel", unit: "bông", category: "flower_main" },
+            { id: "mat_tulip_dutch", name: "Tulip Hà Lan Trắng", unit: "cành", category: "flower_main" },
+            { id: "mat_foliage_eucalyptus", name: "Lá Khuynh Diệp Bạc (Eucalyptus)", unit: "nhánh", category: "foliage" }
+        ];
+        html += `<optgroup label="🌸 Cành Hoa Mặc Định">`;
+        defaults.forEach(m => {
+            html += `<option value="${m.id}" data-name="${m.name}" data-unit="${m.unit}" data-category="${m.category}">${m.name} (${m.unit})</option>`;
+        });
+        html += `</optgroup>`;
+    }
+
+    const directItems = (allAdminProducts || []).filter(p => p.productType === "direct" || p.category === "binh_hoa");
+    if (directItems.length > 0) {
+        html += `<optgroup label="🏺 Hàng Bán Trực Tiếp (products.json)">`;
+        directItems.forEach(p => {
+            html += `<option value="prod_${p.id}" data-name="${p.name}" data-unit="cái" data-category="accessory">${p.name} (cái)</option>`;
+        });
+        html += `</optgroup>`;
+    }
+
+    select.innerHTML = html;
+    if (currentVal) select.value = currentVal;
+    onRecipeMaterialSelectChange();
+}
+
+export function onRecipeMaterialSelectChange() {
+    const select = document.getElementById("recipeMaterialSelect");
+    const unitLabel = document.getElementById("recipeMaterialUnitLabel");
+    if (!select || !unitLabel) return;
+
+    const opt = select.selectedOptions ? select.selectedOptions[0] : null;
+    const unit = opt ? opt.getAttribute("data-unit") : "cành";
+    unitLabel.textContent = unit || "cành";
+}
+
+export function addRecipeItemToDraft() {
+    const select = document.getElementById("recipeMaterialSelect");
+    const qtyInp = document.getElementById("recipeMaterialQty");
+    if (!select || !qtyInp) return;
+
+    const materialId = select.value;
+    if (!materialId) {
+        alert("Vui lòng chọn một cành hoa hoặc nguyên phụ liệu từ danh sách!");
+        return;
+    }
+
+    const qty = parseInt(qtyInp.value, 10);
+    if (isNaN(qty) || qty <= 0) {
+        alert("Vui lòng nhập số lượng cành hợp lệ (> 0)!");
+        return;
+    }
+
+    const opt = select.selectedOptions ? select.selectedOptions[0] : null;
+    const name = opt ? (opt.getAttribute("data-name") || opt.textContent) : materialId;
+    const unit = opt ? (opt.getAttribute("data-unit") || "cành") : "cành";
+    const category = opt ? (opt.getAttribute("data-category") || "flower_main") : "flower_main";
+
+    const existing = editingProductRecipe.find(r => r.materialId === materialId);
+    if (existing) {
+        existing.quantity = (parseInt(existing.quantity, 10) || 0) + qty;
+    } else {
+        editingProductRecipe.push({
+            materialId,
+            name,
+            quantity: qty,
+            unit,
+            category,
+            isMain: category === "flower_main"
+        });
+    }
+
+    qtyInp.value = 1;
+    renderEditingProductRecipe();
+}
+
+export function removeRecipeItemFromDraft(index) {
+    if (index >= 0 && index < editingProductRecipe.length) {
+        editingProductRecipe.splice(index, 1);
+        renderEditingProductRecipe();
+    }
+}
+
+export function updateRecipeItemQty(index, newQty) {
+    if (index >= 0 && index < editingProductRecipe.length) {
+        const qty = parseInt(newQty, 10);
+        if (!isNaN(qty) && qty > 0) {
+            editingProductRecipe[index].quantity = qty;
+        }
+        renderEditingProductRecipe();
+    }
+}
+
+export function renderEditingProductRecipe() {
+    const tbody = document.getElementById("prodRecipeTableBody");
+    const badge = document.getElementById("prodRecipeTotalStemsBadge");
+    if (!tbody) return;
+
+    if (!editingProductRecipe || editingProductRecipe.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 italic text-xs">Chưa có cành hoa nào trong công thức. Vui lòng chọn cành hoa ở trên để thêm.</td></tr>`;
+        if (badge) badge.textContent = "Tổng: 0 cành hoa";
+        return;
+    }
+
+    let totalStems = 0;
+    let html = "";
+
+    editingProductRecipe.forEach((item, idx) => {
+        const qty = parseInt(item.quantity, 10) || 1;
+        totalStems += qty;
+        const unit = item.unit || "cành";
+        const catBadge = item.category === "flower_main" 
+            ? `<span class="bg-purple-100 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Hoa chính</span>`
+            : item.category === "flower_filler"
+            ? `<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Hoa phụ</span>`
+            : item.category === "foliage"
+            ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Lá đệm</span>`
+            : `<span class="bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-md">Phụ liệu</span>`;
+
+        html += `
+            <tr class="hover:bg-purple-50/30 transition border-b border-gray-100 last:border-b-0">
+                <td class="p-2.5">
+                    <div class="font-bold text-gray-800 text-xs">${item.name || item.materialId}</div>
+                    <div class="text-[10px] font-mono text-gray-400">${item.materialId}</div>
+                </td>
+                <td class="p-2.5">
+                    ${catBadge}
+                </td>
+                <td class="p-2.5 text-center">
+                    <div class="inline-flex items-center space-x-1.5">
+                        <input type="number" min="1" value="${qty}" onchange="updateRecipeItemQty(${idx}, this.value)" class="w-14 px-2 py-1 text-center bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:bg-white focus:outline-none focus:border-purple-500">
+                        <span class="text-[11px] text-gray-500 font-semibold">${unit}</span>
+                    </div>
+                </td>
+                <td class="p-2.5 text-right">
+                    <button type="button" onclick="removeRecipeItemFromDraft(${idx})" title="Xóa cành hoa này khỏi mẫu" class="w-7 h-7 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 inline-flex items-center justify-center transition">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+    if (badge) {
+        badge.textContent = `Tổng: ${totalStems} cành hoa (${editingProductRecipe.length} loại)`;
+    }
+}
+
 export function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");
     const title = document.getElementById("productModalTitle");
@@ -480,8 +726,10 @@ export function openProductModal(isEdit = false) {
 
     editingProductI18n = {};
     editingProductGallery = [];
+    editingProductRecipe = [];
     switchProductLangTab("vi");
     renderEditingProductGallery();
+    renderEditingProductRecipe();
 
     if (errBox) errBox.classList.add("hidden");
     if (fileInput) fileInput.value = "";
@@ -514,6 +762,9 @@ export function openProductModal(isEdit = false) {
         });
         const prodTypeSelect = document.getElementById("prodProductType");
         if (prodTypeSelect) prodTypeSelect.value = "arranged";
+        const stemInput = document.getElementById("prodStemCount");
+        if (stemInput) stemInput.value = "";
+        onProductTypeChange();
         renderProductModalStockFields({});
     }
 
@@ -535,7 +786,7 @@ export function updateProductModalTotalQuota() {
         total += Math.max(0, parseInt(inp.value, 10) || 0);
     });
     const badge = document.getElementById("prodTotalQuotaBadge");
-    if (badge) badge.textContent = `Tổng Hạn Mức: ${total} cành/mẫu`;
+    if (badge) badge.textContent = `Tổng Hạn Mức Mở Bán: ${total} cành/mẫu`;
 }
 
 export function renderProductModalStockFields(stockByBranch = {}) {
@@ -662,7 +913,16 @@ export async function editProduct(productId) {
     document.getElementById("prodName").value = prod.name || "";
     document.getElementById("prodCategory").value = prod.category || "bo_hoa";
     const prodTypeSelect = document.getElementById("prodProductType");
-    if (prodTypeSelect) prodTypeSelect.value = prod.productType || (prod.category === "binh_hoa" ? "direct" : "arranged");
+    const resolvedType = prod.productType || (prod.category === "binh_hoa" ? "direct" : "arranged");
+    if (prodTypeSelect) prodTypeSelect.value = resolvedType;
+    const stemInput = document.getElementById("prodStemCount");
+    if (stemInput) {
+        stemInput.value = (prod.stemCount !== undefined && prod.stemCount !== null) ? prod.stemCount : "";
+    }
+    editingProductRecipe = Array.isArray(prod.recipe) ? JSON.parse(JSON.stringify(prod.recipe)) : [];
+    onProductTypeChange();
+    renderEditingProductRecipe();
+
     document.getElementById("prodPriceLevel").value = prod.priceLevelId || "price_lvl_01";
     document.getElementById("prodPriceNumber").value = prod.priceNumber || 420000;
     
@@ -780,12 +1040,18 @@ export async function handleProductSubmit(event) {
     }
     const dailyQuota = Object.values(stockByBranch).reduce((a, b) => a + b, 0);
     const productType = document.getElementById("prodProductType")?.value || (category === "binh_hoa" ? "direct" : "arranged");
+    const rawStemVal = document.getElementById("prodStemCount")?.value;
+    const stemCount = (rawStemVal !== "" && rawStemVal !== null && !isNaN(parseInt(rawStemVal, 10)))
+        ? parseInt(rawStemVal, 10)
+        : (editingProductRecipe.length > 0 ? editingProductRecipe.reduce((sum, r) => sum + (parseInt(r.quantity, 10) || 0), 0) : 0);
 
     const payload = {
         name,
         nameTextId,
         category,
         productType,
+        stemCount,
+        recipe: editingProductRecipe,
         priceLevelId,
         priceNumber,
         image,
@@ -912,4 +1178,11 @@ if (typeof window !== "undefined") {
     window.handleGalleryFileUpload = handleGalleryFileUpload;
     window.updateProductModalTotalQuota = updateProductModalTotalQuota;
     window.renderProductModalStockFields = renderProductModalStockFields;
+    window.onProductTypeChange = onProductTypeChange;
+    window.populateRecipeMaterialDropdown = populateRecipeMaterialDropdown;
+    window.onRecipeMaterialSelectChange = onRecipeMaterialSelectChange;
+    window.addRecipeItemToDraft = addRecipeItemToDraft;
+    window.removeRecipeItemFromDraft = removeRecipeItemFromDraft;
+    window.updateRecipeItemQty = updateRecipeItemQty;
+    window.renderEditingProductRecipe = renderEditingProductRecipe;
 }

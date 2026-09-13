@@ -25,6 +25,7 @@ from data_service import (
     save_materials,
     get_material_by_id,
     update_material_stock,
+    sync,
     get_config_path,
     read_json,
     write_json,
@@ -380,17 +381,33 @@ def create_wastage_report(
     report_id = f"wastage_{now_dt.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:4]}"
     reported_by = (user_dict.get("id") or user_dict.get("userId") or user_dict.get("fullName")) if user_dict else data.get("reportedBy", "staff")
 
+    month_key = date_str[:7].replace("-", "_")
+    proof_images = data.get("proofImages") or []
+    if isinstance(proof_images, str):
+        proof_images = [proof_images]
+
     new_report = {
         "id": report_id,
         "branchId": branch_id,
         "date": date_str,
         "reportedBy": reported_by,
         "items": parsed_items,
+        "proofImages": proof_images,
         "totalLossAmount": total_loss_amount,
         "notes": (data.get("notes") or "").strip(),
         "createdAt": now_iso
     }
 
+    # 1. Lưu phiếu báo hủy chi tiết vào inventory/wastage/{YYYY_MM}/
+    try:
+        wastage_dir = os.path.join(get_config_path("inventory"), "wastage", month_key)
+        os.makedirs(wastage_dir, exist_ok=True)
+        rep_file_path = os.path.join(wastage_dir, f"{report_id}.json")
+        write_json(rep_file_path, new_report)
+    except Exception as e:
+        print(f"[WASTAGE_SAVE_WARNING] Không thể lưu file riêng lẻ vào {wastage_dir}: {e}")
+
+    # 2. Đồng bộ vào wastage_reports.json trung tâm
     success = add_wastage_report(new_report)
     if not success:
         return False, "Không thể lưu phiếu báo hủy vào hệ thống"
@@ -554,24 +571,30 @@ def create_inbound_receipt(
     parsed_items = []
 
     for itm in items:
-        mat_id = itm.get("materialId") or itm.get("id")
+        mat_id = itm.get("materialId") or itm.get("productId") or itm.get("id")
         qty = int(itm.get("quantity") or 0)
         if qty <= 0:
             continue
-        unit_cost = int(itm.get("costPrice") or itm.get("unitPrice") or 0)
+        unit_cost = int(itm.get("costPrice") or itm.get("unitCost") or itm.get("unitPrice") or 0)
         item_total = qty * unit_cost
 
         total_stems += qty
         total_cost += item_total
 
         mat_info = get_material_by_id(mat_id)
-        mat_name = itm.get("materialName") or (mat_info.get("name") if mat_info else "Hoa cành")
+        mat_name = itm.get("name") or itm.get("materialName") or (mat_info.get("name") if mat_info else "Hoa cành")
         unit = itm.get("unit") or (mat_info.get("unit") if mat_info else "cành")
+        bundles = int(itm.get("bundles") or 0) if itm.get("bundles") else None
+        stems_per_bundle = int(itm.get("stemsPerBundle") or 0) if itm.get("stemsPerBundle") else None
+        import_mode = itm.get("importMode") or ("bundle" if bundles else "stem")
 
         parsed_items.append({
             "materialId": mat_id,
             "materialName": mat_name,
             "quantity": qty,
+            "bundles": bundles,
+            "stemsPerBundle": stems_per_bundle,
+            "importMode": import_mode,
             "unit": unit,
             "costPrice": unit_cost,
             "totalAmount": item_total
@@ -614,10 +637,21 @@ def create_inbound_receipt(
     file_path = os.path.join(inbounds_dir, f"{receipt_id}.json")
     write_json(file_path, receipt)
 
-    # 2. Tự động cộng dồn số lượng cành vào materials.json
+    # 2. Tự động cộng dồn số lượng cành vào products.json (chỉ cho phép các mặt hàng liên kết sản phẩm)
+    prods = get_products()
+    product_map = {p.get("id"): p for p in prods}
     for itm in parsed_items:
-        if itm.get("materialId"):
-            update_material_stock(itm["materialId"], branch_id, delta=itm["quantity"])
+        m_id = itm.get("materialId")
+        qty_add = itm.get("quantity", 0)
+                        p["stockByBranch"][branch_id] = int(p["stockByBranch"].get(branch_id, 0)) + qty_add
+                        p["dailyQuota"] = sum(int(v or 0) for v in p["stockByBranch"].values())
+                        sync(actual_prod_id, branch_id, qty_add, "product")
+                        break
+                if p_found:
+                    save_products(prods)
+            else:
+                clean_mat_id = m_id.replace("mat:", "")
+                update_material_stock(clean_mat_id, branch_id, delta=qty_add)
 
     return True, receipt
 

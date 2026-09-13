@@ -71,7 +71,7 @@ export const ADMIN_NAVIGATION_CONFIG = [
         subTabs: [
           {
             key: "matrix",
-            label: "Hạn Mức Bán Hàng",
+            label: "Hạn Mức Mở Bán",
             icon: "fa-solid fa-table-cells",
             btnId: "subViewBtnMatrix",
             subViewId: "inventoryMatrixSubView",

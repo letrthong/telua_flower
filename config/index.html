@@ -2024,6 +2024,11 @@
                             <select id="filterProductCategory" onchange="loadAdminProducts()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
                                 <option value="">Tất cả danh mục</option>
                             </select>
+                            <select id="filterProductType" onchange="loadAdminProducts()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
+                                <option value="">Tất cả loại sản phẩm</option>
+                                <option value="arranged">🌸 Hoa cắm phối (BOM)</option>
+                                <option value="direct">🏺 Bán trực tiếp</option>
+                            </select>
                             <select id="filterProductStatus" onchange="loadAdminProducts()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary">
                                 <option value="">Tất cả trạng thái</option>
                                 <option value="active">🟢 Đang bán (Active)</option>
@@ -2044,6 +2049,7 @@
                                         <th class="p-3">Hình ảnh</th>
                                         <th class="p-3">Tên sản phẩm</th>
                                         <th class="p-3">Danh mục</th>
+                                        <th class="p-3">Loại sản phẩm</th>
                                         <th class="p-3">Tầng giá</th>
                                         <th class="p-3">Giá bán</th>
                                         <th class="p-3">Tồn kho Showroom</th>
@@ -2088,7 +2094,7 @@
                                 <i class="fa-solid fa-triangle-exclamation"></i> Báo Hủy Hoa Hỏng
                             </button>
                             <button type="button" onclick="saveBatchInventory()" id="btnSaveBatchInventory" class="px-4 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
-                                <i class="fa-solid fa-floppy-disk"></i> Lưu Hạn Mức Tồn Kho
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu Hạn Mức Mở Bán
                             </button>
                         </div>
                     </div>
@@ -2100,9 +2106,9 @@
                                 <i class="fa-solid fa-truck-ramp-box"></i>
                             </div>
                             <div class="min-w-0">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Hạn Mức Nhập</span>
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Hạn Mức Mở Bán</span>
                                 <div id="invKpiImported" class="text-base sm:text-lg font-bold text-blue-600 leading-tight">--</div>
-                                <span class="text-[10px] text-gray-400">cành/bình đầu ngày</span>
+                                <span class="text-[10px] text-gray-400">cành/bình đợt nhập</span>
                             </div>
                         </div>
 
@@ -2155,7 +2161,7 @@
                     <div class="flex items-center justify-between border-b border-gray-200 overflow-x-auto">
                         <div class="flex space-x-1 sm:space-x-3 shrink-0">
                             <button type="button" onclick="switchInventorySubView('matrix')" id="subViewBtnMatrix" class="py-2.5 px-2 font-bold text-xs border-b-2 border-primary text-primary transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-table-cells"></i> 1. Hạn Mức Bán Hàng
+                                <i class="fa-solid fa-table-cells"></i> 1. Hạn Mức Mở Bán
                             </button>
                             <button type="button" onclick="switchInventorySubView('materials')" id="subViewBtnMaterials" class="py-2.5 px-2 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-seedling text-emerald-600"></i> 2. Kho Cành Hoa & Phụ Liệu
@@ -2298,12 +2304,13 @@
                                             <th class="p-3">Ngày Lập</th>
                                             <th class="p-3">Người Báo Cáo</th>
                                             <th class="p-3">Chi Tiết Hao Hụt</th>
+                                            <th class="p-3 text-center">Ảnh Minh Chứng</th>
                                             <th class="p-3 text-right">Thiệt Hại Chi Phí</th>
                                             <th class="p-3">Ghi Chú</th>
                                         </tr>
                                     </thead>
                                     <tbody id="inventoryWastageBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                        <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Đang tải nhật ký báo hủy...</td></tr>
+                                        <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Đang tải nhật ký báo hủy...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -3301,10 +3308,81 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-1">Loại Sản Phẩm (Product Type) *</label>
-                            <select id="prodProductType" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
+                            <select id="prodProductType" onchange="onProductTypeChange()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
                                 <option value="arranged">🌸 Hoa Cắm Phối (Trừ hoa cành theo BOM Recipe)</option>
-                                <option value="direct">🏺 Bán Trực Tiếp 1:1 (Bình hoa, quà tặng, thiệp)</option>
+                                <option value="direct">🏺 Bán Trực Tiếp (Bình hoa, quà tặng, thiệp)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- KHỐI QUẢN LÝ SỐ CÀNH BÁN TRỰC TIẾP (DIRECT STEMS) -->
+                    <div id="prodDirectStemsSection" class="hidden p-3.5 bg-amber-50/50 rounded-2xl border border-amber-200/80 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wine-bottle text-amber-600"></i>
+                                Số Cành Quy Cách (Stems Count per Item) *
+                            </label>
+                            <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">Bán Trực Tiếp</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <div class="relative w-full sm:w-48">
+                                <input type="number" id="prodStemCount" min="0" placeholder="VD: 5, 10..." class="w-full pl-3 pr-12 py-2 bg-white border border-amber-200 rounded-xl text-xs font-bold text-amber-900 focus:outline-none focus:border-amber-500">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-amber-600 font-semibold pointer-events-none">cành</span>
+                            </div>
+                            <p class="text-[11px] text-gray-600 flex-1">
+                                <i class="fa-solid fa-circle-info text-amber-600 mr-1"></i>
+                                Cấu hình số cành quy đổi (vd: bình lan 5 cành, chậu hoa 10 cành) giúp quản lý kho dễ dàng kiểm kê và theo dõi số lượng cành thực tế khi nhập hàng trực tiếp.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- KHỐI ĐỊNH LƯỢNG CÀNH HOA & NGUYÊN LIỆU (ARRANGED BOM RECIPE) -->
+                    <div id="prodRecipeSection" class="p-3.5 bg-purple-50/40 rounded-2xl border border-purple-200/80 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-fan text-purple-600 text-sm"></i>
+                                <label class="text-xs font-bold text-purple-900">Định Lượng Cành Hoa Cắm Phối (BOM Recipe)</label>
+                            </div>
+                            <span id="prodRecipeTotalStemsBadge" class="text-[10px] font-bold px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full border border-purple-200 shadow-2xs">Tổng: 0 cành hoa</span>
+                        </div>
+
+                        <!-- Hàng thêm cành hoa / nguyên liệu vào recipe -->
+                        <div class="p-2.5 bg-white rounded-xl border border-purple-100 shadow-2xs space-y-2">
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <div class="flex-1">
+                                    <select id="recipeMaterialSelect" onchange="onRecipeMaterialSelectChange()" class="w-full px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-purple-500">
+                                        <option value="">-- Chọn cành hoa / nguyên phụ liệu từ kho --</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="relative w-28">
+                                        <input type="number" id="recipeMaterialQty" min="1" value="1" placeholder="Số cành" class="w-full pl-3 pr-10 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-purple-500">
+                                        <span id="recipeMaterialUnitLabel" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold pointer-events-none">cành</span>
+                                    </div>
+                                    <button type="button" onclick="addRecipeItemToDraft()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                                        <i class="fa-solid fa-plus"></i> Thêm Cành
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bảng danh sách các cành hoa đã cấu hình cho mẫu -->
+                        <div class="overflow-x-auto rounded-xl border border-purple-100 bg-white">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-purple-50/60 text-purple-900 border-b border-purple-100 font-bold text-[11px]">
+                                    <tr>
+                                        <th class="p-2.5">Cành Hoa / Phụ Liệu</th>
+                                        <th class="p-2.5">Phân Loại</th>
+                                        <th class="p-2.5 text-center">Số Lượng</th>
+                                        <th class="p-2.5 text-right">Thao Tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prodRecipeTableBody">
+                                    <tr>
+                                        <td colspan="4" class="p-4 text-center text-gray-400 italic text-xs">Chưa có cành hoa nào trong công thức. Vui lòng chọn cành hoa ở trên để thêm.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -3379,15 +3457,15 @@
                     </div>
                 </div>
 
-                <!-- 6. HẠN MỨC TỒN KHO THEO CHI NHÁNH (DYNAMIC TỪ BRANCHES.JSON) -->
+                <!-- 6. HẠN MỨC MỞ BÁN THEO CHI NHÁNH (DYNAMIC TỪ BRANCHES.JSON) -->
                 <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
                         <label class="block text-[11px] font-bold text-gray-700 flex items-center">
                             <i class="fa-solid fa-boxes-stacked text-primary mr-1.5 text-xs"></i>
-                            Hạn Mức Nhập Đầu Ca Theo Chi Nhánh (Daily Quota)
+                            Hạn Mức Mở Bán Theo Chi Nhánh (Available Quota)
                         </label>
                         <span id="prodTotalQuotaBadge" class="text-[10px] font-bold text-primary bg-pink-50 px-2.5 py-0.5 rounded-full border border-pink-100">
-                            Tổng Hạn Mức: 0 cành/mẫu
+                            Tổng Hạn Mức Mở Bán: 0 cành/mẫu
                         </span>
                     </div>
                     <div id="productStockByBranchDynamicContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 p-3 bg-gray-50/80 border border-gray-200 rounded-xl max-h-48 overflow-y-auto">
@@ -4053,6 +4131,23 @@
                     </div>
                 </div>
 
+                <!-- Ảnh Minh Chứng Hoa Hủy / Hao Hụt (Proof Photo) -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center justify-between">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-camera text-rose-500"></i> Ảnh Chụp Minh Chứng Hoa Hỏng (Bắt buộc đối soát nhà vườn)</span>
+                        <span class="text-[10px] text-gray-400 font-normal">Lưu tại config/anne/wastage/images/{YYYY_MM}/</span>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <label class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 border-dashed rounded-xl cursor-pointer text-xs font-bold flex items-center gap-1.5 transition shadow-2xs">
+                            <i class="fa-solid fa-cloud-arrow-up text-sm"></i> Chụp / Chọn Ảnh Hoa Hỏng
+                            <input type="file" id="wastagePhotoFileInput" accept="image/*" multiple capture="environment" class="hidden" onchange="handleWastagePhotoSelect(event)">
+                        </label>
+                        <span id="wastagePhotoUploadStatus" class="text-[11px] text-gray-500 italic hidden">Đang tải ảnh lên...</span>
+                    </div>
+                    <!-- Thumbnails Preview Container -->
+                    <div id="wastagePhotoPreviews" class="flex flex-wrap gap-2 mt-2 empty:hidden"></div>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Ghi Chú Kiểm Kê / Bàn Giao Ca</label>
                     <textarea id="wastageNotesInput" rows="2" placeholder="Ví dụ: Kiểm kê hoa dập cuối ca chiều ngày hôm nay..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white resize-none"></textarea>
@@ -4133,9 +4228,10 @@
                             <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                                 <tr>
                                     <th class="p-2.5">Loại Mặt Hàng (Hoa Cành / Bình Hoa)</th>
-                                    <th class="p-2.5 w-24 text-center">Số Lượng</th>
-                                    <th class="p-2.5 w-32">Đơn Giá Nhập (₫)</th>
-                                    <th class="p-2.5 w-32 text-right">Thành Tiền (₫)</th>
+                                    <th class="p-2.5 w-28 text-center">Quy Cách</th>
+                                    <th class="p-2.5 w-48 text-center">Số Lượng Nhập (Bó &times; Cành)</th>
+                                    <th class="p-2.5 w-32 text-right">Đơn Giá Nhập (₫)</th>
+                                    <th class="p-2.5 w-28 text-right">Thành Tiền (₫)</th>
                                     <th class="p-2.5 w-10 text-center">Xóa</th>
                                 </tr>
                             </thead>

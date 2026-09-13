@@ -101,10 +101,10 @@ Tiến độ: [███████████████░] 62.5% (5/8 Task
 - [x] Thêm API endpoint `GET /api/admin/customers` tra cứu điểm thưởng & hạng VIP.
 - [x] Tạo giao diện `portal_admin.html` và tái cấu trúc `js/portal_admin.js` thành 10 sub-modules chuyên biệt (`js/portal_admin_state.js`, `_categories.js`, `_branches.js`, `_users.js`, `_products.js`, `_promotions.js`, `_translations.js`, `_sysconfig.js`, `_orders.js`, `_inventory.js`) + file điều phối `portal_admin.js`.
 - [x] Tích hợp bộ đóng gói `scripts/build_bundle.py` sinh `js/bundle.js` hoàn chỉnh.
-- [x] Đồng bộ hóa toàn bộ hàm HTML inline ra `window.*` trong `portal_admin.js` (`saveCurrentProdI18nDraft`, `syncSingleKeyInputToDictionary`...) và cấu hình chống cache trong `src/app.py` & `index.html`.
 - [x] Cập nhật tài liệu kỹ thuật (`FRONTEND_LAYOUT_DESIGN.md`, `README.md`) về vòng đời các file sinh tự động (`scripts/build_bundle.py`, `js/bundle.js`, `config/index.html`).
 - [x] Viết `src/unittest/test_price_governance.py` và `js/unittest/test-portal-governance.js`.
 - [x] Bổ sung Unit Tests kiểm tra tính toàn vẹn Bundle & Global Event Bindings: `src/unittest/test_bundle_integrity.py` (Python) và `js/unittest/test-bundle-integrity.js` (JavaScript Node runner).
+- [x] Nâng cấp CMS Mẫu Hoa (`#productModal`): Giao diện động phân loại Sản Phẩm (`arranged` vs `direct`), tích hợp bộ chọn cành hoa định lượng BOM Recipe từ `materials.json` và quản lý số cành quy cách (`stemCount`) cho hàng bán trực tiếp.
 
 ---
 

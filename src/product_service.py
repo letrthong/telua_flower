@@ -224,13 +224,30 @@ def create_or_update_product(
         else:
             clean_gallery = [clean_image]
 
+        prod_type = product_data.get("productType") or old_detail.get("productType") or ("direct" if category == "binh_hoa" else "arranged")
+        raw_recipe = product_data.get("recipe")
+        if raw_recipe is None:
+            raw_recipe = old_detail.get("recipe", [])
+        if not isinstance(raw_recipe, list):
+            raw_recipe = []
+
+        raw_stem_count = product_data.get("stemCount")
+        if raw_stem_count is None:
+            raw_stem_count = old_detail.get("stemCount")
+        try:
+            stem_count = int(raw_stem_count) if raw_stem_count is not None else (sum(int(r.get("quantity") or 0) for r in raw_recipe) if raw_recipe else 0)
+        except (ValueError, TypeError):
+            stem_count = 0
+
         # 1. Chi tiết đầy đủ
         full_detail = {
             "id": product_id,
             "name": name,
             "nameTextId": name_text_id or None,
             "category": category,
-            "productType": product_data.get("productType") or old_detail.get("productType") or ("direct" if category == "binh_hoa" else "arranged"),
+            "productType": prod_type,
+            "recipe": raw_recipe,
+            "stemCount": stem_count,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
@@ -265,7 +282,9 @@ def create_or_update_product(
             "name": name,
             "nameTextId": name_text_id or None,
             "category": category,
-            "productType": full_detail["productType"],
+            "productType": prod_type,
+            "recipe": raw_recipe if len(raw_recipe) > 0 else None,
+            "stemCount": stem_count,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
@@ -302,14 +321,26 @@ def create_or_update_product(
         else:
             clean_gallery = [clean_image]
 
-        # 1. Chi tiết đầy đủ
+        prod_type = product_data.get("productType") or ("direct" if category == "binh_hoa" else "arranged")
+        raw_recipe = product_data.get("recipe", [])
+        if not isinstance(raw_recipe, list):
+            raw_recipe = []
 
+        raw_stem_count = product_data.get("stemCount")
+        try:
+            stem_count = int(raw_stem_count) if raw_stem_count is not None else (sum(int(r.get("quantity") or 0) for r in raw_recipe) if raw_recipe else 0)
+        except (ValueError, TypeError):
+            stem_count = 0
+
+        # 1. Chi tiết đầy đủ
         full_detail = {
             "id": new_id,
             "name": name,
             "nameTextId": name_text_id or None,
             "category": category,
-            "productType": product_data.get("productType") or ("direct" if category == "binh_hoa" else "arranged"),
+            "productType": prod_type,
+            "recipe": raw_recipe,
+            "stemCount": stem_count,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
@@ -345,7 +376,9 @@ def create_or_update_product(
             "name": name,
             "nameTextId": name_text_id or None,
             "category": category,
-            "productType": full_detail["productType"],
+            "productType": prod_type,
+            "recipe": raw_recipe if len(raw_recipe) > 0 else None,
+            "stemCount": stem_count,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,

@@ -3,6 +3,9 @@
   "name": "Bình Hoa Gốm Nghệ Thuật Base64",
   "nameTextId": null,
   "category": "binh_hoa",
+  "productType": "direct",
+  "recipe": [],
+  "stemCount": 5,
   "priceLevelId": "price_lvl_03",
   "priceNumber": 1500000,
   "salePrice": "1,500,000₫",
@@ -26,6 +29,5 @@
   },
   "dailyQuota": 20,
   "isActive": true,
-  "updatedAt": "2026-08-30T07:51:05Z",
-  "productType": "direct"
+  "updatedAt": "2026-09-13T15:56:50Z"
 }

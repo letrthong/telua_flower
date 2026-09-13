@@ -975,6 +975,58 @@ def get_material_by_id(material_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def sync(item_id: str = "", branch_id: str = "", delta: int = 0, item_type: str = "") -> bool:
+    """
+    Synchronize stock between linked product and material.
+    item_type: "product" or "material" indicating the source of the update.
+    delta: change applied to the source item (new_stock - old_stock).
+    """
+    try:
+        from .data_service import get_products, get_materials, save_products, save_materials
+        if item_type == "product":
+            # Update linked material if exists
+            products = get_products()
+            for p in products:
+                if p.get("id") == item_id:
+                    linked_mat = p.get("linked_material_id")
+                    if linked_mat:
+                        materials = get_materials()
+                        for m in materials:
+                            if m.get("id") == linked_mat:
+                                if "stockByBranch" not in m or not isinstance(m["stockByBranch"], dict):
+                                    m["stockByBranch"] = {}
+                                current = int(m["stockByBranch"].get(branch_id, 0))
+                                m["stockByBranch"][branch_id] = max(0, current + delta)
+                                m["updatedAt"] = datetime.now(timezone(timedelta(hours=7))).isoformat()
+                                save_materials(materials)
+                                break
+                    break
+        elif item_type == "material":
+            # Update linked product if exists
+            materials = get_materials()
+            for m in materials:
+                if m.get("id") == item_id:
+                    linked_prod = m.get("linked_product_id")
+                    if linked_prod:
+                        products = get_products()
+                        for p in products:
+                            if p.get("id") == linked_prod:
+                                if "stockByBranch" not in p or not isinstance(p["stockByBranch"], dict):
+                                    p["stockByBranch"] = {}
+                                current = int(p["stockByBranch"].get(branch_id, 0))
+                                p["stockByBranch"][branch_id] = max(0, current + delta)
+                                p["updatedAt"] = datetime.now(timezone(timedelta(hours=7))).isoformat()
+                                # Recalculate dailyQuota for product
+                                p["dailyQuota"] = sum(int(v or 0) for v in p["stockByBranch"].values())
+                                save_products(products)
+                                break
+                    break
+        return True
+    except Exception as e:
+        print(f"[SYNC_ERROR] {e}")
+        return False
+
+
 def update_material_stock(material_id: str, branch_id: str, delta: int) -> bool:
     """
     Cập nhật tăng (+delta) hoặc giảm (-delta) số lượng tồn kho cành hoa tại một chi nhánh.
@@ -993,7 +1045,10 @@ def update_material_stock(material_id: str, branch_id: str, delta: int) -> bool:
             m["updatedAt"] = datetime.now(timezone(timedelta(hours=7))).isoformat()
             break
     if found:
-        return save_materials(materials)
+        success = save_materials(materials)
+        if success:
+            sync(material_id, branch_id, delta, "material")
+        return success
     return False
 
 

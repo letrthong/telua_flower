@@ -310,6 +310,16 @@ Nhằm tối ưu hóa hiệu năng tải trang và tránh làm phình to file t�
 ### 6.3. Trải Nghiệm Quản Trị Form Mẫu Hoa (`#productModal`):
 - Form cung cấp **Hàng Tab Chuyển Đổi Ngôn Ngữ** `[🇻🇳 Tiếng Việt | 🇬🇧 English | 🇯🇵 日本語 | 🇰🇷 한국어 | 🇨🇳 中文]`.
 - Quản trị viên chỉ cần chuyển tab để nhập bản dịch cho mẫu hoa đang chỉnh sửa ngay tại chỗ.
+- **Phân loại Loại Sản Phẩm Động (Dynamic Product Type Management):**
+  - Khi chọn **`🌸 Hoa Cắm Phối` (`arranged`)**:
+    - Tự động mở khối **Định Lượng Cành Hoa (BOM Recipe)**.
+    - Cung cấp dropdown chọn cành hoa tươi từ kho (`materials.json`) phân loại Hoa chính, Hoa phụ, Lá đệm, Phụ liệu và nhập số lượng cành cần.
+    - Bảng công thức hiển thị danh sách cành hoa đã thêm, cho phép sửa số cành trực tiếp, xóa cành, và tự động cập nhật badge: `Tổng: X cành hoa (Y loại)`.
+  - Khi chọn **`🏺 Bán Trực Tiếp` (`direct`)**:
+    - Tự động mở khối **Số Cành Quy Cách (`stemCount`)**.
+    - Cho phép quản lý tiệm cấu hình số cành quy đổi (vd: Chậu lan 5 cành, Bình 10 cành tulip, hoặc 0 cành nếu là thiệp/gấu bông/bình rỗng). Giúp quản lý kho dễ dàng kiểm kê, đối soát số cành hoa thực tế nhập vào mà không cần tạo công thức phức tạp.
+- **Hiển thị trên Bảng Danh Mục Mẫu Hoa (Products Table):**
+  - Cột *Phân loại* tự động hiển thị badge `🌸 Cắm Phối` kèm `X cành (Y loại)` hoặc `🏺 Bán trực tiếp` kèm `X cành/sp`.
 
 ### 6.4. Cấu Trúc File Tóm Tắt Danh Mục Sản Phẩm (`config/anne/products.json`):
 ```json
@@ -318,6 +328,13 @@ Nhằm tối ưu hóa hiệu năng tải trang và tránh làm phình to file t�
     "id": "bo_hoa_1788048775",
     "name": "Bó Hoa Hồng & Hoa Ly Trắng Thanh Lịch",
     "category": "bo_hoa",
+    "productType": "arranged",
+    "stemCount": 18,
+    "recipe": [
+      { "materialId": "mat_rose_ohara_white", "name": "Hồng Trắng Ohara", "quantity": 10, "unit": "cành", "isMain": true },
+      { "materialId": "mat_daisy_tana", "name": "Cúc Tana", "quantity": 5, "unit": "nhánh", "isMain": false },
+      { "materialId": "mat_leaf_silver_dollar", "name": "Lá Bạc Dollar", "quantity": 3, "unit": "nhánh", "isMain": false }
+    ],
     "priceLevelId": "price_lvl_02",
     "originalPrice": "920,000₫",
     "salePrice": "850,000₫",

@@ -3,6 +3,26 @@
   "name": "Chậu Lan Test Xóa",
   "nameTextId": null,
   "category": "lan_ho_diep",
+  "productType": "arranged",
+  "recipe": [
+    {
+      "materialId": "mat_hydrangea_blue",
+      "name": "Cẩm Tú Cầu Xanh Pastel",
+      "quantity": 2,
+      "unit": "bông",
+      "category": "flower_main",
+      "isMain": true
+    },
+    {
+      "materialId": "mat_basket_rattan_oval",
+      "name": "Giỏ Mây Đan Tay Bầu Dục",
+      "quantity": 1,
+      "unit": "cái",
+      "category": "accessory",
+      "isMain": false
+    }
+  ],
+  "stemCount": 3,
   "priceLevelId": "price_lvl_04",
   "priceNumber": 3500000,
   "salePrice": "3,500,000₫",
@@ -24,6 +44,5 @@
   },
   "dailyQuota": 20,
   "isActive": true,
-  "updatedAt": "2026-08-30T03:51:11Z",
-  "productType": "arranged"
+  "updatedAt": "2026-09-13T15:59:05Z"
 }
