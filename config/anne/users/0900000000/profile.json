@@ -1,8 +1,8 @@
 {
   "id": "0900000000",
-  "name": "Người gửi bí mật (Ẩn danh)",
+  "name": "Tổng Quản Trị Hệ Thống",
   "phone": "0900000000",
   "email": "admin@nohoathabinh.vn",
-  "lastOrderAt": "2026-09-11T01:02:10Z",
-  "totalOrders": 2
+  "role": "super_admin",
+  "totalOrders": 0
 }

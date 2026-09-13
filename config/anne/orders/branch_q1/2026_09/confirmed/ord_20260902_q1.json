@@ -1,0 +1,68 @@
+{
+  "id": "ord_20260902_q1",
+  "orderCode": "NHTB-20260902-Q01",
+  "createdAt": "2026-09-02T09:15:00Z",
+  "assignedBranchId": "branch_q1",
+  "status": "confirmed",
+  "sender": {
+    "name": "Nguyễn Văn A",
+    "phone": "0987654321",
+    "email": "nva@gmail.com",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Trần Thị Mai",
+    "phone": "0911223344",
+    "address": "Tòa nhà Bitexco, Tầng 12 - Số 2 Hải Triều, Q.1, TP.HCM",
+    "deliveryNotes": "Gửi Lễ tân nếu người nhận đang họp. Gọi trước 15 phút."
+  },
+  "delivery": {
+    "date": "2026-08-25",
+    "timeSlot": "09:00 - 11:00",
+    "isExpress2H": false
+  },
+  "customization": {
+    "cardMessage": "Chúc mừng sinh nhật em gái yêu quý!",
+    "ribbonBanner": "Công ty ABC Kính Chúc"
+  },
+  "items": [
+    {
+      "productId": "ke_hoa_01",
+      "productName": "Kệ Hoa Khai Trương Phát Tài",
+      "quantity": 1,
+      "price": 1250000
+    }
+  ],
+  "pricing": {
+    "subtotal": 1250000,
+    "discountCode": "",
+    "discountAmount": 0,
+    "shippingFee": 0,
+    "finalTotal": 1250000
+  },
+  "payment": {
+    "method": "vietqr",
+    "status": "paid",
+    "paidAt": "2026-08-22T07:16:05Z",
+    "transactionId": "TXN_987654321"
+  },
+  "proof": {
+    "realPhotoUrl": "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=800",
+    "signedPhotoUrl": null
+  },
+  "vatInvoice": {
+    "isRequested": true,
+    "taxCode": "0312345678",
+    "companyName": "CÔNG TY CỔ PHẦN CÔNG NGHỆ TELUA",
+    "companyAddress": "183/37 Đường 3 Tháng 2, P.11, Q.10, TP.HCM",
+    "recipientEmail": "ketoan@telua.vn"
+  },
+  "branchId": "branch_q1",
+  "updatedAt": "2026-09-12T13:29:46Z",
+  "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+  "creatorName": "Nguyễn Văn A",
+  "createdBy": "0987654321",
+  "assignedTo": "staff_004",
+  "assigneeName": "Trần Thị Mai (staff_001)",
+  "orderDate": "2026-09-02T09:15:00Z"
+}

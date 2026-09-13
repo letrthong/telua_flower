@@ -77,11 +77,16 @@ python -m unittest discover -s src/unittest -p "test_*.py"
 python -m unittest src/unittest/test_file_structure.py src/unittest/test_data_service.py src/unittest/test_auth_service.py src/unittest/test_order_service.py src/unittest/test_price_governance.py src/unittest/test_product_crud.py src/unittest/test_catalog_and_promotions.py src/unittest/test_staff_and_branch_management.py src/unittest/test_rbac_data_protection.py
 ```
 
-```bash
-# Linux / Ubuntu / Docker
-export PYTHONPATH="src"
-python3 -m unittest discover -s src/unittest -p "test_*.py"
-```
+### 3.3 Cơ chế cô lập dữ liệu kiểm thử Sandbox (`/tmp/config/anne`)
+
+Để tránh việc chạy Unit Test sinh ra hàng chục file đơn hàng, hình ảnh upload và làm thay đổi các file JSON trong thư mục cấu hình gốc `config/anne/`, hệ thống đã tích hợp cơ chế **Test Sandbox Isolation**:
+
+1. **Tự động nhận diện Test Runner**: Khi chạy qua `unittest` hoặc `pytest` (hoặc đặt biến `FLOWER_TEST_MODE=1`), hệ thống trong [flower_config.py](file:///D:/wmshare/telua_flower/src/flower_config.py) sẽ tự động chuyển hướng đường dẫn lưu trữ cấu hình sang thư mục tạm: `/tmp/config/anne` (trên Windows tự động trỏ vào `<Drive>:\tmp\config\anne`).
+2. **Đồng bộ tự động dữ liệu mẫu (Auto Seed Sync)**: Trước khi test thực thi, toàn bộ dữ liệu mẫu sạch từ `config/anne` được sao chép sang `/tmp/config/anne` để đảm bảo bài test có đầy đủ danh mục, sản phẩm, tài khoản nhân viên ban đầu.
+3. **Tuyệt đối không ô nhiễm dữ liệu gốc (Zero Side-Effects)**: Mọi thao tác ghi đơn hàng mới, upload ảnh tĩnh, cập nhật khách hàng đều diễn ra trên `/tmp/config/anne`. Thư mục gốc `config/anne` trong Git luôn giữ trạng thái sạch 100%.
+4. **Tùy biến qua biến môi trường**: Bạn cũng có thể chủ động chỉ định bất kỳ thư mục nào bằng:
+   - PowerShell: `$env:FLOWER_CONFIG_DIR="/tmp/config/anne"`
+   - Bash/Linux: `export FLOWER_CONFIG_DIR="/tmp/config/anne"`
 
 ---
 
