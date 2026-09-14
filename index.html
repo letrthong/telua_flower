@@ -2699,6 +2699,9 @@
                 <button onclick="switchSystemConfigTab('banners')" id="tabSysBtnBanners" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-images mr-1.5 text-base text-rose-500"></i> Banner Trình Chiếu
                 </button>
+                <button onclick="switchSystemConfigTab('price_levels')" id="tabSysBtnPriceLevels" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                    <i class="fa-solid fa-layer-group mr-1.5 text-base text-indigo-600"></i> Phân Tầng Mức Giá
+                </button>
             </div>
 
             <!-- Modal Body (Scrollable) -->
@@ -3172,7 +3175,116 @@
                         Nguồn cấu hình: <code class="font-mono">config/anne/banners.json</code>. Các thay đổi sẽ được áp dụng ngay lập tức trên trang chủ Storefront.
                     </p>
                 </section>
+
+                <!-- ================= TAB 6: PHÂN TẦNG MỨC GIÁ (price_levels.json) ================= -->
+                <section id="tabSysContentPriceLevels" class="space-y-5 hidden">
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-inner border border-indigo-100">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-gray-800">Cấu Hình Phân Tầng Mức Giá (price_levels.json)</h4>
+                                    <span id="priceLevelsConfigStatus" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        Đang nạp…
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500">Quản lý hạn mức giá sàn, giá trần và giá đề xuất để kiểm soát an toàn giá bán sản phẩm (Price Governance Guardrail).</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="openPriceLevelModal()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center flex-shrink-0 cursor-pointer">
+                                <i class="fa-solid fa-plus mr-1.5"></i> Thêm Mức Giá Mới
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách phân tầng giá -->
+                    <div id="adminPriceLevelsList" class="space-y-3">
+                        <div class="text-center py-10 text-gray-400 text-xs">
+                            <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
+                            <p>Đang tải dữ liệu phân tầng giá...</p>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-gray-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Nguồn dữ liệu: <code class="font-mono">config/anne/price_levels.json</code>. Các thay đổi giá sàn/trần sẽ tự động đồng bộ sang bộ kiểm duyệt giá khi tạo hoặc sửa mẫu hoa.
+                    </p>
+                </section>
             </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL THÊM / SỬA PHÂN TẦNG MỨC GIÁ ================= -->
+    <div id="priceLevelModal" onclick="if (event.target === this) closePriceLevelModal();" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-indigo-100 flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-indigo-50/60 border-b border-indigo-100 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h3 id="priceLevelModalTitle" class="font-bold text-sm text-gray-800">Thêm Mới Phân Tầng Mức Giá</h3>
+                </div>
+                <button onclick="closePriceLevelModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="priceLevelForm" onsubmit="savePriceLevelFromModal(event)" class="p-6 space-y-4">
+                <input type="hidden" id="priceLevelModalMode" value="create">
+                <input type="hidden" id="priceLevelId">
+                <div id="priceLevelModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mã Phân Tầng (Code) *</label>
+                        <input type="text" id="priceLevelCode" placeholder="VD: LV_05" required class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-indigo-600 focus:bg-white uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">ID Hệ Thống</label>
+                        <input type="text" id="priceLevelIdInput" placeholder="price_lvl_05" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono text-gray-600 focus:outline-none focus:border-indigo-600 focus:bg-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Tên Phân Tầng (Name) *</label>
+                    <input type="text" id="priceLevelName" placeholder="VD: Tiết Kiệm (Budget)" required class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-600 focus:bg-white">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Mô Tả Định Hướng *</label>
+                    <textarea id="priceLevelDescription" rows="2" placeholder="Mô tả nhóm mẫu hoa phù hợp cho phân tầng này..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-indigo-600 focus:bg-white resize-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Giá Sàn (Min) *</label>
+                        <input type="number" id="priceLevelMinPrice" step="10000" min="0" placeholder="150000" required oninput="validatePriceLevelModalNumbers()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-indigo-600 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Giá Đề Xuất *</label>
+                        <input type="number" id="priceLevelDefaultPrice" step="10000" min="0" placeholder="250000" required oninput="validatePriceLevelModalNumbers()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-indigo-600 focus:outline-none focus:border-indigo-600 focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Giá Trần (Max) *</label>
+                        <input type="number" id="priceLevelMaxPrice" step="10000" min="0" placeholder="300000" required oninput="validatePriceLevelModalNumbers()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-indigo-600 focus:bg-white">
+                    </div>
+                </div>
+                <div id="priceLevelRangeWarning" class="text-[11px] text-amber-600 font-medium hidden"></div>
+
+                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100">
+                    <button type="button" onclick="closePriceLevelModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition cursor-pointer">
+                        Hủy
+                    </button>
+                    <button type="submit" id="btnSavePriceLevel" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md cursor-pointer">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu Mức Giá
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -3394,10 +3506,7 @@
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-1">Phân Tầng Mức Giá (Governance Level) *</label>
                             <select id="prodPriceLevel" onchange="onPriceLevelChange()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary focus:bg-white" required>
-                                <option value="price_lvl_01">Mức 1: Tiêu chuẩn / Phổ thông (&le; 500k)</option>
-                                <option value="price_lvl_02">Mức 2: Trung cấp / Thiết kế (500k - 1tr)</option>
-                                <option value="price_lvl_03">Mức 3: Cao cấp / Sự kiện (1tr - 2.5tr)</option>
-                                <option value="price_lvl_04">Mức 4: VIP / Lan hồ điệp (&gt; 2.5tr)</option>
+                                <option value="">-- Chọn mức giá --</option>
                             </select>
                         </div>
                         <div>

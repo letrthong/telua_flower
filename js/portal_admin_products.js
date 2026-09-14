@@ -8,7 +8,9 @@ import {
     allAdminCategories, 
     allAdminBranches, 
     allAdminTranslations, 
-    PRICE_LEVEL_CONFIG 
+    PRICE_LEVEL_CONFIG,
+    allAdminPriceLevels,
+    setAdminPriceLevels
 } from './portal_admin_state.js';
 import { populateCategoryDropdowns } from './portal_admin_categories.js';
 
@@ -102,7 +104,8 @@ function renderProductsTable(products) {
 
     let html = "";
     products.forEach((p) => {
-        const lvlCode = (p.priceLevelId || "").replace("price_lvl_", "LV_").toUpperCase();
+        const lvlObj = PRICE_LEVEL_CONFIG[p.priceLevelId];
+        const lvlCode = lvlObj ? lvlObj.code : ((p.priceLevelId || "").replace("price_lvl_", "LV_").toUpperCase());
         const activeBadge = p.isActive !== false
             ? `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Đang Bán</span>`
             : `<span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full">⚪ Đã Ẩn</span>`;
@@ -172,6 +175,40 @@ function renderProductsTable(products) {
         `;
     });
     tbody.innerHTML = html;
+}
+
+export async function populatePriceLevelSelect(selectedId = null) {
+    const lvlSelect = document.getElementById("prodPriceLevel");
+    if (!lvlSelect) return;
+
+    if (!allAdminPriceLevels || allAdminPriceLevels.length === 0) {
+        try {
+            const res = await fetch(`${API_BASE}/price-levels?_t=${Date.now()}`);
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success && Array.isArray(json.data)) {
+                    setAdminPriceLevels(json.data);
+                }
+            }
+        } catch (e) {
+            console.warn("Không thể tải danh sách price-levels:", e);
+        }
+    }
+
+    const currentVal = selectedId || lvlSelect.value || (allAdminPriceLevels[0]?.id || "price_lvl_01");
+    if (allAdminPriceLevels && allAdminPriceLevels.length > 0) {
+        lvlSelect.innerHTML = allAdminPriceLevels.map(lvl => {
+            const minStr = (Number(lvl.minPrice) || 0).toLocaleString();
+            const maxStr = (Number(lvl.maxPrice) || 0).toLocaleString();
+            const label = `${lvl.code || lvl.id}: ${lvl.name || ""} (${minStr}₫ - ${maxStr}₫)`;
+            return `<option value="${lvl.id}" ${lvl.id === currentVal ? "selected" : ""}>${label}</option>`;
+        }).join("");
+    }
+
+    if (currentVal) {
+        lvlSelect.value = currentVal;
+    }
+    onPriceLevelChange();
 }
 
 export function onPriceLevelChange() {
@@ -715,6 +752,7 @@ export function openProductModal(isEdit = false) {
 
     // Nạp danh sách Text ID vào các SelectBox của Mẫu Hoa
     populateProductTextIdDropdowns(allAdminTranslations);
+    populatePriceLevelSelect();
 
     if (!isEdit && form) {
         form.reset();
@@ -902,7 +940,8 @@ export async function editProduct(productId) {
     onProductTypeChange();
     renderEditingProductRecipe();
 
-    document.getElementById("prodPriceLevel").value = prod.priceLevelId || "price_lvl_01";
+    await populatePriceLevelSelect(prod.priceLevelId);
+    document.getElementById("prodPriceLevel").value = prod.priceLevelId || (allAdminPriceLevels[0]?.id || "price_lvl_01");
     document.getElementById("prodPriceNumber").value = prod.priceNumber || 420000;
     
     // Gán dữ liệu Text ID vào 3 SelectBox của Mẫu Hoa
@@ -1164,4 +1203,5 @@ if (typeof window !== "undefined") {
     window.removeRecipeItemFromDraft = removeRecipeItemFromDraft;
     window.updateRecipeItemQty = updateRecipeItemQty;
     window.renderEditingProductRecipe = renderEditingProductRecipe;
+    window.populatePriceLevelSelect = populatePriceLevelSelect;
 }

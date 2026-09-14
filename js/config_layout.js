@@ -249,6 +249,15 @@ export const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminBanners",
         action: "switchSystemConfigTab('banners')",
         roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "price_levels",
+        label: "Phân Tầng Mức Giá",
+        icon: "fa-solid fa-layer-group",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminPriceLevels",
+        action: "switchSystemConfigTab('price_levels')",
+        roles: [ROLES.SUPER_ADMIN]
       }
     ]
   },

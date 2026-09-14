@@ -29,6 +29,8 @@ from   data_service import (
     read_orders_by_month,
     get_available_order_months,
     get_price_levels,
+    create_or_update_price_level,
+    delete_price_level,
     get_product_by_id,
     get_branches,
     create_or_update_branch,
@@ -1027,8 +1029,73 @@ def api_move_category(cat_id):
 
 @flower_connect_api.route("/price-levels", methods=["GET"])
 def api_get_price_levels():
-    """Lấy danh sách 4 phân tầng giá chuẩn kèm hạn mức min/max (hỗ trợ HTTP ETag Cache)."""
+    """Lấy danh sách phân tầng giá chuẩn kèm hạn mức min/max (hỗ trợ HTTP ETag Cache)."""
     return _build_cached_file_response("price_levels.json", lambda: get_price_levels(use_cache=True), max_age=120)
+
+
+@flower_connect_api.route("/admin/price-levels", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_price_levels():
+    """Lấy danh sách các phân tầng mức giá đầy đủ cho Cổng Quản Trị."""
+    return jsonify({
+        "success": True,
+        "data": get_price_levels(use_cache=False)
+    }), 200
+
+
+@flower_connect_api.route("/admin/price-levels", methods=["POST"])
+@require_role(["super_admin"])
+def api_create_admin_price_level():
+    """Tạo mới phân tầng mức giá (price_levels.json)."""
+    data = request.get_json(silent=True) or {}
+    success, item, err = create_or_update_price_level(data)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể tạo phân tầng giá mới"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": f"Đã thêm mới phân tầng giá '{item.get('name')}' thành công!",
+        "data": item
+    }), 201
+
+
+@flower_connect_api.route("/admin/price-levels/<level_id>", methods=["PUT"])
+@require_role(["super_admin"])
+def api_update_admin_price_level(level_id: str):
+    """Cập nhật thông tin và hạn mức của phân tầng giá."""
+    data = request.get_json(silent=True) or {}
+    success, item, err = create_or_update_price_level(data, level_id=level_id)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or f"Không thể cập nhật phân tầng giá '{level_id}'"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": f"Đã cập nhật phân tầng giá '{item.get('name')}' thành công!",
+        "data": item
+    }), 200
+
+
+@flower_connect_api.route("/admin/price-levels/<level_id>", methods=["DELETE"])
+@require_role(["super_admin"])
+def api_delete_admin_price_level(level_id: str):
+    """Xóa phân tầng mức giá (chặn nếu đang có sản phẩm gán mức này)."""
+    success, err = delete_price_level(level_id)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or f"Không thể xóa phân tầng giá '{level_id}'"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": f"Đã xóa phân tầng giá '{level_id}' thành công!"
+    }), 200
 
 
 @flower_connect_api.route("/products", methods=["GET"])

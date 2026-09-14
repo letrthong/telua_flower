@@ -1,6 +1,6 @@
 import { getAuthToken } from './auth.js';
-import { API_BASE } from './utils.js';
-import { lockScreen, unlockScreen, notifyUser } from './portal_admin_state.js';
+import { API_BASE, showConfirmDialog } from './utils.js';
+import { lockScreen, unlockScreen, notifyUser, setAdminPriceLevels } from './portal_admin_state.js';
 
 // ==========================================
 // CẤU HÌNH THÔNG TIN DOANH NGHIỆP (infoCompany.json)
@@ -728,6 +728,303 @@ export async function handleCompanyInfoSubmit(event) {
     }
 }
 
+// ==========================================
+// CẤU HÌNH PHÂN TẦNG MỨC GIÁ (price_levels.json)
+// ==========================================
+
+export let adminPriceLevels = [];
+
+export async function loadAdminPriceLevels() {
+    const listEl = document.getElementById("adminPriceLevelsList");
+    const badge = document.getElementById("priceLevelsConfigStatus");
+    if (!listEl) return;
+
+    listEl.innerHTML = `
+        <div class="text-center py-10 text-gray-400 text-xs">
+            <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2 text-indigo-500"></i>
+            <p>Đang nạp cấu hình phân tầng giá...</p>
+        </div>`;
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/price-levels?_t=${Date.now()}`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success || !Array.isArray(json.data)) {
+            throw new Error(json.message || "Không tải được danh sách phân tầng giá");
+        }
+        adminPriceLevels = json.data;
+        if (typeof setAdminPriceLevels === "function") {
+            setAdminPriceLevels(adminPriceLevels);
+        }
+        renderAdminPriceLevels(adminPriceLevels);
+        if (badge) {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+            badge.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Đã tải ${adminPriceLevels.length} mức giá • ${new Date().toLocaleTimeString()}`;
+        }
+    } catch (e) {
+        listEl.innerHTML = `
+            <div class="text-center py-8 bg-white rounded-xl border border-red-100">
+                <i class="fa-solid fa-triangle-exclamation text-xl text-red-400 mb-2"></i>
+                <p class="text-xs font-semibold text-gray-700">Không thể tải cấu hình phân tầng giá</p>
+                <p class="text-[11px] text-gray-400 mt-1">${e.message}</p>
+            </div>`;
+        if (badge) {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi tải`;
+        }
+    }
+}
+
+export function renderAdminPriceLevels(levels) {
+    const listEl = document.getElementById("adminPriceLevelsList");
+    if (!listEl) return;
+
+    if (!levels || levels.length === 0) {
+        listEl.innerHTML = `<p class="text-center text-xs text-gray-400 py-8">Chưa có phân tầng mức giá nào.</p>`;
+        return;
+    }
+
+    listEl.innerHTML = levels.map((lvl, idx) => {
+        const minP = Number(lvl.minPrice) || 0;
+        const maxP = Number(lvl.maxPrice) || 0;
+        const defP = Number(lvl.defaultPrice) || minP;
+        return `
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-2xs p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:border-indigo-200">
+                <div class="flex items-start gap-3.5 min-w-0 flex-1">
+                    <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-base font-extrabold flex-shrink-0 border border-indigo-100 shadow-inner">
+                        ${lvl.code || `LV_${idx + 1}`}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h5 class="text-sm font-bold text-gray-900">${lvl.name || lvl.id}</h5>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 font-semibold">${lvl.id}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 leading-relaxed">${lvl.description || "Chưa có mô tả định hướng"}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-xl border border-gray-100 md:min-w-[340px] text-center">
+                    <div>
+                        <span class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Giá Sàn</span>
+                        <span class="text-xs font-bold text-gray-800">${minP.toLocaleString()}₫</span>
+                    </div>
+                    <div class="border-x border-gray-200">
+                        <span class="block text-[10px] font-semibold text-indigo-500 uppercase tracking-wider">Đề Xuất</span>
+                        <span class="text-xs font-bold text-indigo-600">${defP.toLocaleString()}₫</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Giá Trần</span>
+                        <span class="text-xs font-bold text-gray-800">${maxP.toLocaleString()}₫</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-shrink-0 justify-end">
+                    <button type="button" onclick="openPriceLevelModal('${lvl.id}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl border border-indigo-200 transition flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-pen-to-square"></i> Sửa
+                    </button>
+                    <button type="button" onclick="deletePriceLevel('${lvl.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-200 transition flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-trash-can"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+export function openPriceLevelModal(levelId = null) {
+    const modal = document.getElementById("priceLevelModal");
+    const title = document.getElementById("priceLevelModalTitle");
+    const form = document.getElementById("priceLevelForm");
+    const errBox = document.getElementById("priceLevelModalError");
+    const warnBox = document.getElementById("priceLevelRangeWarning");
+    const idInput = document.getElementById("priceLevelIdInput");
+    if (!modal) return;
+
+    if (errBox) errBox.classList.add("hidden");
+    if (warnBox) warnBox.classList.add("hidden");
+    if (form) form.reset();
+
+    if (levelId) {
+        const lvl = (adminPriceLevels || []).find(l => l.id === levelId || l.code === levelId);
+        if (lvl) {
+            document.getElementById("priceLevelModalMode").value = "edit";
+            document.getElementById("priceLevelId").value = lvl.id;
+            document.getElementById("priceLevelCode").value = lvl.code || "";
+            if (idInput) {
+                idInput.value = lvl.id || "";
+                idInput.disabled = true;
+            }
+            document.getElementById("priceLevelName").value = lvl.name || "";
+            document.getElementById("priceLevelDescription").value = lvl.description || "";
+            document.getElementById("priceLevelMinPrice").value = lvl.minPrice || "";
+            document.getElementById("priceLevelDefaultPrice").value = lvl.defaultPrice || "";
+            document.getElementById("priceLevelMaxPrice").value = lvl.maxPrice || "";
+            if (title) title.textContent = `Chỉnh Sửa Phân Tầng: ${lvl.name}`;
+        }
+    } else {
+        document.getElementById("priceLevelModalMode").value = "create";
+        document.getElementById("priceLevelId").value = "";
+        if (idInput) {
+            idInput.value = `price_lvl_${String((adminPriceLevels.length || 0) + 1).padStart(2, '0')}`;
+            idInput.disabled = false;
+        }
+        document.getElementById("priceLevelCode").value = `LV_${String((adminPriceLevels.length || 0) + 1).padStart(2, '0')}`;
+        if (title) title.textContent = "Thêm Mới Phân Tầng Mức Giá";
+    }
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+export function closePriceLevelModal() {
+    const modal = document.getElementById("priceLevelModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function validatePriceLevelModalNumbers() {
+    const minEl = document.getElementById("priceLevelMinPrice");
+    const defEl = document.getElementById("priceLevelDefaultPrice");
+    const maxEl = document.getElementById("priceLevelMaxPrice");
+    const warn = document.getElementById("priceLevelRangeWarning");
+    if (!minEl || !defEl || !maxEl || !warn) return true;
+
+    const minP = parseInt(minEl.value, 10) || 0;
+    const defP = parseInt(defEl.value, 10) || 0;
+    const maxP = parseInt(maxEl.value, 10) || 0;
+
+    if (maxP > 0 && maxP < minP) {
+        warn.textContent = `⚠️ Giá trần (${maxP.toLocaleString()}₫) đang nhỏ hơn giá sàn (${minP.toLocaleString()}₫)!`;
+        warn.classList.remove("hidden");
+        return false;
+    }
+    if (defP > 0 && (defP < minP || (maxP > 0 && defP > maxP))) {
+        warn.textContent = `⚠️ Giá đề xuất (${defP.toLocaleString()}₫) phải nằm trong khoảng [${minP.toLocaleString()}₫ - ${maxP.toLocaleString()}₫]!`;
+        warn.classList.remove("hidden");
+        return false;
+    }
+
+    warn.classList.add("hidden");
+    return true;
+}
+
+export async function savePriceLevelFromModal(event) {
+    if (event) event.preventDefault();
+    const mode = document.getElementById("priceLevelModalMode").value;
+    const id = document.getElementById("priceLevelId").value;
+    const idInput = document.getElementById("priceLevelIdInput");
+    const customId = idInput ? idInput.value.trim() : "";
+    const code = document.getElementById("priceLevelCode").value.trim().toUpperCase();
+    const name = document.getElementById("priceLevelName").value.trim();
+    const description = document.getElementById("priceLevelDescription").value.trim();
+    const minPrice = parseInt(document.getElementById("priceLevelMinPrice").value, 10);
+    const defaultPrice = parseInt(document.getElementById("priceLevelDefaultPrice").value, 10);
+    const maxPrice = parseInt(document.getElementById("priceLevelMaxPrice").value, 10);
+
+    const errBox = document.getElementById("priceLevelModalError");
+    if (!validatePriceLevelModalNumbers()) {
+        return;
+    }
+
+    const payload = {
+        code,
+        name,
+        description,
+        minPrice,
+        defaultPrice,
+        maxPrice
+    };
+    if (mode === "create" && customId) {
+        payload.id = customId;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen(mode === "create" ? "Đang thêm phân tầng mức giá mới..." : "Đang cập nhật phân tầng mức giá...");
+    try {
+        const url = mode === "create"
+            ? `${API_BASE}/admin/price-levels`
+            : `${API_BASE}/admin/price-levels/${encodeURIComponent(id)}`;
+        const method = mode === "create" ? "POST" : "PUT";
+
+        const res = await fetch(url, {
+            method,
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+            notifyUser(json.message || "Đã lưu phân tầng mức giá thành công!", 'success');
+            closePriceLevelModal();
+            await loadAdminPriceLevels();
+            if (typeof window !== "undefined" && typeof window.populatePriceLevelSelect === "function") {
+                window.populatePriceLevelSelect();
+            }
+        } else {
+            if (errBox) {
+                errBox.textContent = json.message || "Lỗi khi lưu phân tầng mức giá";
+                errBox.classList.remove("hidden");
+            } else {
+                notifyUser(json.message || "Lỗi lưu mức giá", 'error');
+            }
+        }
+    } catch (e) {
+        if (errBox) {
+            errBox.textContent = "Lỗi kết nối máy chủ: " + e.message;
+            errBox.classList.remove("hidden");
+        } else {
+            notifyUser("Lỗi kết nối: " + e.message, 'error');
+        }
+    } finally {
+        unlockScreen();
+    }
+}
+
+export async function deletePriceLevel(levelId) {
+    if (!levelId) return;
+    const lvl = (adminPriceLevels || []).find(l => l.id === levelId || l.code === levelId);
+    const lvlName = lvl ? `${lvl.code}: ${lvl.name}` : levelId;
+
+    const isConfirmed = await (typeof showConfirmDialog === 'function' ? showConfirmDialog : window.showConfirmDialog)({
+        title: "Xác nhận xóa phân tầng giá",
+        message: `Bạn có chắc chắn muốn xóa phân tầng "${lvlName}" khỏi hệ thống không? Lưu ý: Nếu có mẫu hoa đang thuộc phân tầng này, hệ thống sẽ từ chối xóa để đảm bảo an toàn.`,
+        confirmText: "Xóa Ngay",
+        cancelText: "Hủy Bỏ",
+        type: "danger"
+    });
+    if (!isConfirmed) return;
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang xóa phân tầng giá...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/price-levels/${encodeURIComponent(levelId)}`, {
+            method: "DELETE",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+            notifyUser(json.message || "Đã xóa phân tầng mức giá thành công!", 'success');
+            await loadAdminPriceLevels();
+            if (typeof window !== "undefined" && typeof window.populatePriceLevelSelect === "function") {
+                window.populatePriceLevelSelect();
+            }
+        } else {
+            notifyUser(json.message || "Không thể xóa phân tầng giá", 'error');
+        }
+    } catch (e) {
+        notifyUser("Lỗi kết nối: " + e.message, 'error');
+    } finally {
+        unlockScreen();
+    }
+}
+
 if (typeof window !== "undefined") {
     window.DEFAULT_STATIC_COMPANY_INFO = DEFAULT_STATIC_COMPANY_INFO;
     window.loadAdminCompanyInfo = loadAdminCompanyInfo;
@@ -743,4 +1040,11 @@ if (typeof window !== "undefined") {
     window.addAdminBannerItem = addAdminBannerItem;
     window.removeAdminBannerItem = removeAdminBannerItem;
     window.saveAdminBanners = saveAdminBanners;
+    window.loadAdminPriceLevels = loadAdminPriceLevels;
+    window.renderAdminPriceLevels = renderAdminPriceLevels;
+    window.openPriceLevelModal = openPriceLevelModal;
+    window.closePriceLevelModal = closePriceLevelModal;
+    window.validatePriceLevelModalNumbers = validatePriceLevelModalNumbers;
+    window.savePriceLevelFromModal = savePriceLevelFromModal;
+    window.deletePriceLevel = deletePriceLevel;
 }

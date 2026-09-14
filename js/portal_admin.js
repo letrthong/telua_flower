@@ -218,8 +218,7 @@ export {
     renderMonthlyInventoryReport
 } from './portal_admin_inventory.js';
 
-// Import local references for shell functions
-import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loadAdminBanners, openSystemConfigModal, closeSystemConfigModal, switchSystemConfigTab } from './portal_admin_sysconfig.js';
+import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loadAdminBanners, loadAdminPriceLevels, openSystemConfigModal, closeSystemConfigModal, switchSystemConfigTab } from './portal_admin_sysconfig.js';
 import { loadAdminCategories, saveCurrentCatI18nDraft } from './portal_admin_categories.js';
 import { loadAdminProducts, onPriceLevelChange, saveCurrentProdI18nDraft, openProductModal, closeProductModal } from './portal_admin_products.js';
 import { loadAdminBranches } from './portal_admin_branches.js';
@@ -397,18 +396,21 @@ export function closeSystemConfigModal() {
 }
 
 export function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
     const btnPayment = document.getElementById("tabSysBtnPayment");
     const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
     const btnBanners = document.getElementById("tabSysBtnBanners");
+    const btnPriceLevels = document.getElementById("tabSysBtnPriceLevels");
+
     const contentCompany = document.getElementById("tabSysContentCompany");
     const contentTranslations = document.getElementById("tabSysContentTranslations");
     const contentPayment = document.getElementById("tabSysContentPayment");
     const contentAddonVis = document.getElementById("tabSysContentAddonVis");
     const contentBanners = document.getElementById("tabSysContentBanners");
+    const contentPriceLevels = document.getElementById("tabSysContentPriceLevels");
 
     const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
     const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
@@ -419,11 +421,14 @@ export function switchSystemConfigTab(tabName) {
     if (btnPayment) btnPayment.className = idleCls;
     if (btnAddonVis) btnAddonVis.className = idleCls;
     if (btnBanners) btnBanners.className = idleCls;
+    if (btnPriceLevels) btnPriceLevels.className = idleCls;
+
     if (contentCompany) contentCompany.classList.add("hidden");
     if (contentTranslations) contentTranslations.classList.add("hidden");
     if (contentPayment) contentPayment.classList.add("hidden");
     if (contentAddonVis) contentAddonVis.classList.add("hidden");
     if (contentBanners) contentBanners.classList.add("hidden");
+    if (contentPriceLevels) contentPriceLevels.classList.add("hidden");
 
     if (tabName === "company") {
         if (btnCompany) btnCompany.className = activeCls;
@@ -441,6 +446,10 @@ export function switchSystemConfigTab(tabName) {
         if (btnBanners) btnBanners.className = activeCls;
         if (contentBanners) contentBanners.classList.remove("hidden");
         loadAdminBanners();
+    } else if (tabName === "price_levels") {
+        if (btnPriceLevels) btnPriceLevels.className = activeCls;
+        if (contentPriceLevels) contentPriceLevels.classList.remove("hidden");
+        loadAdminPriceLevels();
     } else {
         if (btnTranslations) btnTranslations.className = activeCls;
         if (contentTranslations) contentTranslations.classList.remove("hidden");

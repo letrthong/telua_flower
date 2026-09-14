@@ -375,9 +375,142 @@ def get_price_level_by_id(price_lvl_id: str) -> Optional[Dict[str, Any]]:
 
 
 def save_price_levels(price_levels: List[Dict[str, Any]]) -> bool:
-    success = write_json(get_config_path("price_levels.json"), price_levels)
+    target_path = get_config_path("price_levels.json")
+    success = write_json(target_path, price_levels)
     _get_cached_price_levels.cache_clear()
+    invalidate_file_cache(target_path)
     return success
+
+
+def create_or_update_price_level(data: Dict[str, Any], level_id: Optional[str] = None) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Tạo mới hoặc cập nhật một phân tầng mức giá (price_levels.json).
+    Nếu level_id được truyền vào (hoặc data['id']), tiến hành cập nhật; ngược lại tạo mới.
+    Validation:
+      - code và name không được rỗng
+      - minPrice >= 0, maxPrice >= minPrice
+      - defaultPrice nằm trong [minPrice, maxPrice]
+      - code duy nhất (không trùng với mức giá khác)
+      - id duy nhất
+    """
+    levels = get_price_levels(use_cache=False)
+    target_id = (level_id or data.get("id") or "").strip()
+
+    code = (data.get("code") or "").strip()
+    name = (data.get("name") or "").strip()
+    description = (data.get("description") or "").strip()
+
+    if not code:
+        return False, None, "Mã phân tầng giá (code) không được để trống (ví dụ: LV_01, LV_05)."
+    if not name:
+        return False, None, "Tên phân tầng mức giá không được để trống."
+
+    try:
+        min_p = int(data.get("minPrice", 0))
+        max_p = int(data.get("maxPrice", 0))
+        def_p = int(data.get("defaultPrice", min_p))
+    except (ValueError, TypeError):
+        return False, None, "Các trường giá (minPrice, maxPrice, defaultPrice) phải là số nguyên hợp lệ."
+
+    if min_p < 0:
+        return False, None, "Giá sàn (minPrice) không được nhỏ hơn 0."
+    if max_p < min_p:
+        return False, None, f"Giá trần ({max_p:,}₫) không được thấp hơn giá sàn ({min_p:,}₫)."
+    if not (min_p <= def_p <= max_p):
+        return False, None, f"Giá đề xuất ({def_p:,}₫) phải nằm trong khoảng từ giá sàn ({min_p:,}₫) đến giá trần ({max_p:,}₫)."
+
+    existing_idx = None
+    if target_id:
+        for idx, lvl in enumerate(levels):
+            if lvl.get("id") == target_id:
+                existing_idx = idx
+                break
+
+    # Kiểm tra trùng lặp code
+    for idx, lvl in enumerate(levels):
+        if lvl.get("code", "").upper() == code.upper():
+            if existing_idx is None or idx != existing_idx:
+                return False, None, f"Mã phân tầng giá '{code}' đã tồn tại ở mức giá khác ({lvl.get('name')})."
+
+    if existing_idx is not None:
+        item = levels[existing_idx]
+        item["code"] = code
+        item["name"] = name
+        item["description"] = description
+        item["minPrice"] = min_p
+        item["maxPrice"] = max_p
+        item["defaultPrice"] = def_p
+        levels[existing_idx] = item
+        saved_item = item
+    else:
+        if not target_id:
+            clean_code = re.sub(r'[^a-zA-Z0-9_]', '', code.lower().replace('-', '_'))
+            target_id = f"price_lvl_{clean_code}" if clean_code else f"price_lvl_{len(levels) + 1:02d}"
+
+        # Kiểm tra trùng id
+        for lvl in levels:
+            if lvl.get("id") == target_id:
+                target_id = f"{target_id}_{int(time.time())}"
+                break
+
+        saved_item = {
+            "id": target_id,
+            "code": code,
+            "name": name,
+            "description": description,
+            "minPrice": min_p,
+            "maxPrice": max_p,
+            "defaultPrice": def_p
+        }
+        levels.append(saved_item)
+
+    ok = save_price_levels(levels)
+    if not ok:
+        return False, None, "Lỗi khi lưu tệp price_levels.json."
+    return True, saved_item, None
+
+
+def delete_price_level(level_id: str) -> Tuple[bool, Optional[str]]:
+    """
+    Xóa một phân tầng mức giá khỏi price_levels.json.
+    Safety Guardrail: Ngăn chặn xóa nếu có sản phẩm đang được gán phân tầng mức giá này.
+    """
+    if not level_id:
+        return False, "Thiếu định danh mức giá cần xóa (level_id)."
+
+    levels = get_price_levels(use_cache=False)
+    target_idx = None
+    target_item = None
+    for idx, lvl in enumerate(levels):
+        if lvl.get("id") == level_id or lvl.get("code") == level_id:
+            target_idx = idx
+            target_item = lvl
+            break
+
+    if target_idx is None or target_item is None:
+        return False, f"Không tìm thấy phân tầng mức giá với ID hoặc mã '{level_id}'."
+
+    real_id = target_item.get("id")
+    # Kiểm tra xem có sản phẩm nào đang sử dụng phân tầng này không
+    prods = get_products()
+    used_in = [p for p in prods if p.get("priceLevelId") == real_id or p.get("priceLevelId") == target_item.get("code")]
+    if used_in:
+        sample_names = ", ".join([f"'{p.get('name', p.get('id'))}'" for p in used_in[:3]])
+        if len(used_in) > 3:
+            sample_names += f" và {len(used_in) - 3} sản phẩm khác"
+        return False, (
+            f"Không thể xóa phân tầng '{target_item.get('name', real_id)}' vì đang được gán cho "
+            f"{len(used_in)} sản phẩm ({sample_names}). Vui lòng chuyển các sản phẩm này sang mức giá khác trước."
+        )
+
+    if len(levels) <= 1:
+        return False, "Hệ thống phải duy trì ít nhất 1 phân tầng mức giá."
+
+    del levels[target_idx]
+    ok = save_price_levels(levels)
+    if not ok:
+        return False, "Lỗi khi ghi tệp price_levels.json."
+    return True, None
 
 
 DEFAULT_CATEGORIES = [

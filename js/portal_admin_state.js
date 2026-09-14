@@ -25,12 +25,31 @@ export function notifyUser(message, type = 'success', duration = 5000) {
  * Phân hệ Quản Trị Hệ Thống (TASK 07 - Admin Portal, Product CMS & Price Governance)
  */
 
-export const PRICE_LEVEL_CONFIG = {
-    price_lvl_01: { name: "LV_01: Phổ Thông (Standard)", min: 300000, max: 550000 },
-    price_lvl_02: { name: "LV_02: Cao Cấp (Premium)", min: 600000, max: 950000 },
-    price_lvl_03: { name: "LV_03: Sang Trọng (Luxury)", min: 1000000, max: 2500000 },
-    price_lvl_04: { name: "LV_04: Độc Bản VIP (Exclusive)", min: 2600000, max: 15000000 }
-};
+export let PRICE_LEVEL_CONFIG = {};
+export let allAdminPriceLevels = [];
+
+export function setAdminPriceLevels(levels) {
+    allAdminPriceLevels = Array.isArray(levels) ? [...levels] : [];
+    Object.keys(PRICE_LEVEL_CONFIG).forEach(k => delete PRICE_LEVEL_CONFIG[k]);
+    allAdminPriceLevels.forEach(lvl => {
+        if (lvl && lvl.id) {
+            PRICE_LEVEL_CONFIG[lvl.id] = {
+                id: lvl.id,
+                code: lvl.code || lvl.id,
+                name: `${lvl.code || ""}: ${lvl.name || ""}`.trim().replace(/^:\s*/, ""),
+                rawName: lvl.name || "",
+                min: Number(lvl.minPrice) || 0,
+                max: Number(lvl.maxPrice) || 0,
+                defaultPrice: Number(lvl.defaultPrice) || 0,
+                description: lvl.description || ""
+            };
+        }
+    });
+    if (typeof window !== "undefined") {
+        window.PRICE_LEVEL_CONFIG = PRICE_LEVEL_CONFIG;
+        window.allAdminPriceLevels = allAdminPriceLevels;
+    }
+}
 
 export let allAdminCategories = [];
 export let allAdminProducts = [];
@@ -45,4 +64,6 @@ if (typeof window !== "undefined") {
     window.unlockScreen = unlockScreen;
     window.notifyUser = notifyUser;
     window.PRICE_LEVEL_CONFIG = PRICE_LEVEL_CONFIG;
+    window.allAdminPriceLevels = allAdminPriceLevels;
+    window.setAdminPriceLevels = setAdminPriceLevels;
 }
