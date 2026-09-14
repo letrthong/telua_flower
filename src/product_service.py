@@ -239,6 +239,9 @@ def create_or_update_product(
         except (ValueError, TypeError):
             stem_count = 0
 
+        cost_price = product_data.get("costPrice") if "costPrice" in product_data else old_detail.get("costPrice")
+        unit = product_data.get("unit") or old_detail.get("unit")
+
         # 1. Chi tiết đầy đủ
         full_detail = {
             "id": product_id,
@@ -248,6 +251,8 @@ def create_or_update_product(
             "productType": prod_type,
             "recipe": raw_recipe,
             "stemCount": stem_count,
+            "unit": unit,
+            "costPrice": cost_price,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
@@ -285,6 +290,8 @@ def create_or_update_product(
             "productType": prod_type,
             "recipe": raw_recipe if len(raw_recipe) > 0 else None,
             "stemCount": stem_count,
+            "unit": unit,
+            "costPrice": cost_price,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
@@ -332,6 +339,9 @@ def create_or_update_product(
         except (ValueError, TypeError):
             stem_count = 0
 
+        cost_price = product_data.get("costPrice")
+        unit = product_data.get("unit")
+
         # 1. Chi tiết đầy đủ
         full_detail = {
             "id": new_id,
@@ -341,6 +351,8 @@ def create_or_update_product(
             "productType": prod_type,
             "recipe": raw_recipe,
             "stemCount": stem_count,
+            "unit": unit,
+            "costPrice": cost_price,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
@@ -379,6 +391,8 @@ def create_or_update_product(
             "productType": prod_type,
             "recipe": raw_recipe if len(raw_recipe) > 0 else None,
             "stemCount": stem_count,
+            "unit": unit,
+            "costPrice": cost_price,
             "priceLevelId": price_level_id,
             "priceNumber": price_number,
             "salePrice": formatted_sale_price,
