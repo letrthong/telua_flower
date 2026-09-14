@@ -48,10 +48,44 @@ class TestInventoryLifecycleV2(unittest.TestCase):
         self.test_mat_rose = "mat_rose_ohara_white"
         self.test_mat_tana = "mat_daisy_tana"
 
+        prods = get_products()
+        prod_ids = [p.get("id") for p in prods]
+        needs_save = False
+        if self.test_mat_rose not in prod_ids:
+            prods.append({
+                "id": self.test_mat_rose,
+                "name": "Hồng Trắng Ohara Nhập Khẩu",
+                "category": "flower_main",
+                "productType": "direct",
+                "unit": "cành",
+                "costPrice": 18000,
+                "priceNumber": 30000,
+                "stockByBranch": {"branch_q10": 100, "branch_q1": 50, "branch_thao_dien": 30},
+                "dailyQuota": 180,
+                "isActive": True
+            })
+            needs_save = True
+        if self.test_mat_tana not in prod_ids:
+            prods.append({
+                "id": self.test_mat_tana,
+                "name": "Cúc Tana Đà Lạt",
+                "category": "flower_filler",
+                "productType": "direct",
+                "unit": "nhánh",
+                "costPrice": 6000,
+                "priceNumber": 12000,
+                "stockByBranch": {"branch_q10": 80, "branch_q1": 40, "branch_thao_dien": 20},
+                "dailyQuota": 140,
+                "isActive": True
+            })
+            needs_save = True
+        if needs_save:
+            save_products(prods)
+
     def tearDown(self):
         # Phục hồi dữ liệu sau khi test
-        save_materials(self.original_materials)
         save_products(self.original_products)
+        save_materials(self.original_materials)
         save_wastage_reports(self.original_wastage)
 
     def test_01_materials_data_service_crud_and_stock_update(self):

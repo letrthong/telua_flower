@@ -1,0 +1,28 @@
+{
+  "id": "inb_20260914_073734_branch_q10_16a4",
+  "inboundCode": "NH_20260914_5B2",
+  "branchId": "branch_q10",
+  "supplier": "Vườn Hoa Đà Lạt Hasfarm",
+  "importDate": "2026-09-14",
+  "receivedBy": "staff_admin",
+  "receiverName": "Tổng Quản Trị Hệ Thống",
+  "paymentStatus": "paid",
+  "items": [
+    {
+      "materialId": "binh_hoa_01",
+      "materialName": "Bình Thủy Tinh Hổ Phách Cao Cấp",
+      "quantity": 25,
+      "bundles": 5,
+      "stemsPerBundle": 5,
+      "importMode": "bundle",
+      "unit": "bình",
+      "costPrice": 240000,
+      "totalAmount": 6000000
+    }
+  ],
+  "totalItems": 1,
+  "totalStems": 25,
+  "totalCost": 6000000,
+  "notes": "",
+  "createdAt": "2026-09-14T00:37:34Z"
+}

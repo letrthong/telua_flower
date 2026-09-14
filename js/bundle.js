@@ -7633,36 +7633,15 @@ async function populateRecipeMaterialDropdown() {
     let html = `<option value="">-- Chọn cành hoa / nguyên phụ liệu từ kho --</option>`;
 
     if (cachedAdminMaterials && cachedAdminMaterials.length > 0) {
-        html += `<optgroup label="🌸 Cành Hoa Tươi & Phụ Liệu (Kho materials.json)">`;
+        html += `<optgroup label="🌸 Cành Hoa & Hàng Trực Tiếp (Kho materials.json)">`;
         cachedAdminMaterials.forEach(m => {
-            const unit = m.unit || "cành";
+            const unit = m.unit || (m.category === "binh_hoa" ? "bình" : "cành");
             const cost = m.costPrice ? `${Number(m.costPrice).toLocaleString('vi-VN')}₫` : "";
             html += `<option value="${m.id}" data-name="${m.name}" data-unit="${unit}" data-category="${m.category || 'flower_main'}">${m.name} (${unit}${cost ? ' - ' + cost : ''})</option>`;
         });
         html += `</optgroup>`;
     } else {
-        const defaults = [
-            { id: "mat_rose_ohara_white", name: "Hồng Trắng Ohara Nhập Khẩu", unit: "cành", category: "flower_main" },
-            { id: "mat_rose_juliet", name: "Hồng Juliet David Austin", unit: "cành", category: "flower_main" },
-            { id: "mat_daisy_tana", name: "Cúc Tana Đà Lạt", unit: "nhánh", category: "flower_filler" },
-            { id: "mat_hydrangea_blue", name: "Cẩm Tú Cầu Xanh Pastel", unit: "bông", category: "flower_main" },
-            { id: "mat_tulip_dutch", name: "Tulip Hà Lan Trắng", unit: "cành", category: "flower_main" },
-            { id: "mat_foliage_eucalyptus", name: "Lá Khuynh Diệp Bạc (Eucalyptus)", unit: "nhánh", category: "foliage" }
-        ];
-        html += `<optgroup label="🌸 Cành Hoa Mặc Định">`;
-        defaults.forEach(m => {
-            html += `<option value="${m.id}" data-name="${m.name}" data-unit="${m.unit}" data-category="${m.category}">${m.name} (${m.unit})</option>`;
-        });
-        html += `</optgroup>`;
-    }
-
-    const directItems = (allAdminProducts || []).filter(p => p.productType === "direct" || p.category === "binh_hoa");
-    if (directItems.length > 0) {
-        html += `<optgroup label="🏺 Hàng Bán Trực Tiếp (products.json)">`;
-        directItems.forEach(p => {
-            html += `<option value="prod_${p.id}" data-name="${p.name}" data-unit="cái" data-category="accessory">${p.name} (cái)</option>`;
-        });
-        html += `</optgroup>`;
+        html += `<option value="" disabled>Chưa có sản phẩm direct nào trong kho materials.json</option>`;
     }
 
     select.innerHTML = html;
@@ -11095,25 +11074,19 @@ function addInboundItemRow() {
 
     const rowId = "inbound_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
 
-    let options = `<optgroup label="Cành Hoa Tươi & Phụ Liệu (materials.json)">`;
+    let options = "";
     if (allAdminMaterials && allAdminMaterials.length > 0) {
+        options += `<optgroup label="Cành Hoa & Hàng Trực Tiếp (materials.json)">`;
         allAdminMaterials.forEach(m => {
             const lower = (m.name || "").toLowerCase();
-            const defStems = (lower.includes("hồng") || lower.includes("rose")) ? 20 : (lower.includes("ly") || lower.includes("lily") || lower.includes("tana") || lower.includes("baby")) ? 10 : 20;
-            options += `<option value="mat:${m.id}" data-type="mat" data-name="${m.name}" data-price="${m.costPrice || 0}" data-unit="${m.unit || 'cành'}" data-default-stems="${defStems}">${m.name} (${m.unit || 'cành'} - ${Number(m.costPrice || 0).toLocaleString('vi-VN')}₫)</option>`;
-        });
-    } else {
-        options += `<option value="mat:mat_rose_red" data-type="mat" data-name="Hồng đỏ Pháp" data-price="12000" data-unit="cành" data-default-stems="20">Hồng đỏ Pháp (12.000₫/cành)</option>`;
-    }
-    options += `</optgroup>`;
-
-    const directProducts = (allAdminProducts || []).filter(p => p.productType === "direct" || p.category === "binh_hoa");
-    if (directProducts.length > 0) {
-        options += `<optgroup label="Bình Hoa & Hàng Bán Trực Tiếp (products.json)">`;
-        directProducts.forEach(p => {
-            options += `<option value="prod:${p.id}" data-type="prod" data-name="${p.name}" data-price="${Math.round((p.priceNumber || 0) * 0.5)}" data-unit="bình" data-default-stems="1">${p.name} (Bán trực tiếp - ${Number(p.priceNumber || 0).toLocaleString('vi-VN')}₫)</option>`;
+            const defStems = m.stemCount || ((lower.includes("hồng") || lower.includes("rose")) ? 20 : (lower.includes("ly") || lower.includes("lily") || lower.includes("tana") || lower.includes("baby")) ? 10 : (m.category === "binh_hoa" ? 1 : 20));
+            const unit = m.unit || (m.category === "binh_hoa" ? "bình" : "cành");
+            const cost = m.costPrice || Math.round((m.priceNumber || 0) * 0.5) || 0;
+            options += `<option value="${m.id}" data-type="mat" data-name="${m.name}" data-price="${cost}" data-unit="${unit}" data-default-stems="${defStems}">${m.name} (${unit} - ${Number(cost).toLocaleString('vi-VN')}₫)</option>`;
         });
         options += `</optgroup>`;
+    } else {
+        options = `<option value="" disabled>Chưa có sản phẩm direct nào trong kho materials.json</option>`;
     }
 
     const tr = document.createElement("tr");
@@ -11358,27 +11331,18 @@ async function handleInboundSubmit(event) {
 
         const unitCost = Math.max(0, parseInt(costInp?.value || 0, 10));
 
-        if (val.startsWith("mat:")) {
-            items.push({
-                materialId: val.replace("mat:", ""),
-                name: opt?.dataset.name || "Hoa cành",
-                unit: opt?.dataset.unit || "cành",
-                quantity: qty,
-                unitCost: unitCost,
-                importMode: mode,
-                bundles: bundles,
-                stemsPerBundle: stemsPerBundle
-            });
-        } else if (val.startsWith("prod:")) {
-            items.push({
-                productId: val.replace("prod:", ""),
-                name: opt?.dataset.name || "Sản phẩm",
-                unit: opt?.dataset.unit || "bình",
-                quantity: qty,
-                unitCost: unitCost,
-                importMode: mode
-            });
-        }
+        const cleanId = val.replace("mat:", "").replace("prod:", "");
+        items.push({
+            materialId: cleanId,
+            productId: cleanId,
+            name: opt?.dataset.name || "Hàng nhập",
+            unit: opt?.dataset.unit || "cành",
+            quantity: qty,
+            unitCost: unitCost,
+            importMode: mode,
+            bundles: bundles,
+            stemsPerBundle: stemsPerBundle
+        });
     });
 
     const payload = {

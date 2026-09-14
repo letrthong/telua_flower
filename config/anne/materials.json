@@ -1,0 +1,228 @@
+[
+  {
+    "id": "test_b64_1788062614",
+    "name": "Bình Hoa Gốm Nghệ Thuật Base64",
+    "nameTextId": null,
+    "category": "binh_hoa",
+    "productType": "direct",
+    "recipe": null,
+    "stemCount": 5,
+    "priceLevelId": "price_lvl_03",
+    "priceNumber": 1500000,
+    "salePrice": "1,500,000₫",
+    "originalPrice": "1,500,000₫",
+    "badge": "Mới",
+    "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg",
+    "i18n": null,
+    "stockByBranch": {
+      "branch_q10": 10,
+      "branch_q1": 5,
+      "branch_thao_dien": 5
+    },
+    "dailyQuota": 20,
+    "isActive": true,
+    "updatedAt": "2026-09-13T17:28:56Z",
+    "unit": "bình",
+    "costPrice": 750000,
+    "minStockAlert": 10,
+    "minAlertLevel": 10
+  },
+  {
+    "id": "binh_hoa_01",
+    "name": "Bình Thủy Tinh Hổ Phách Cao Cấp",
+    "category": "binh_hoa",
+    "priceLevelId": "price_lvl_01",
+    "originalPrice": "550,000₫",
+    "salePrice": "480,000₫",
+    "priceNumber": 480000,
+    "badge": "Hot",
+    "image": "/api/flower/v1/images/binh_hoa_01.webp",
+    "i18n": {
+      "en": {
+        "name": "Tranquil Amber Glass Flower Vase"
+      },
+      "ja": {
+        "name": "静寂の美 琥珀色のガラス花瓶"
+      },
+      "ko": {
+        "name": "고요한 쉼 앰버 글라스 플라워 화병"
+      },
+      "zh": {
+        "name": "静谧时光 琥珀艺术插花瓶"
+      }
+    },
+    "stockByBranch": {
+      "branch_q10": 40,
+      "branch_q1": 10,
+      "branch_thao_dien": 8
+    },
+    "dailyQuota": 58,
+    "isActive": true,
+    "updatedAt": "2026-09-14T07:37:34.111921+07:00",
+    "productType": "direct",
+    "unit": "bình",
+    "costPrice": 240000,
+    "minStockAlert": 10,
+    "minAlertLevel": 10
+  },
+  {
+    "id": "binh_hoa_02",
+    "name": "Bình Gốm Sứ Bắc Âu Phong Cách Vintage",
+    "nameTextId": null,
+    "category": "binh_hoa",
+    "priceLevelId": "price_lvl_02",
+    "priceNumber": 620000,
+    "salePrice": "620,000₫",
+    "originalPrice": "620,000₫",
+    "badge": "Mới",
+    "image": "/api/flower/v1/images/prod_1788078148_beea506d.jpg",
+    "i18n": {
+      "en": {
+        "name": "Nordic Vintage Ceramic Flower Vase"
+      },
+      "ja": {
+        "name": "北欧ヴィンテージ調 セラミック花瓶"
+      },
+      "ko": {
+        "name": "노르딕 빈티지 세라믹 플라워 화병"
+      },
+      "zh": {
+        "name": "北欧复古风 哑光陶瓷花瓶"
+      }
+    },
+    "stockByBranch": {
+      "branch_q10": 10,
+      "branch_q1": 6,
+      "branch_thao_dien": 5
+    },
+    "dailyQuota": 21,
+    "isActive": true,
+    "updatedAt": "2026-08-30T08:22:48Z",
+    "productType": "direct",
+    "unit": "bình",
+    "costPrice": 310000,
+    "minStockAlert": 10,
+    "minAlertLevel": 10
+  },
+  {
+    "id": "binh_hoa_03",
+    "name": "Bình Thủy Tinh Trong Suốt Dáng Trụ",
+    "nameTextId": null,
+    "category": "binh_hoa",
+    "priceLevelId": "price_lvl_01",
+    "priceNumber": 350000,
+    "salePrice": "350,000₫",
+    "originalPrice": "350,000₫",
+    "badge": "",
+    "image": "/api/flower/v1/images/prod_1788077639_9a057d6e.png",
+    "i18n": {
+      "en": {
+        "name": "Clear Cylindrical Glass Flower Vase"
+      },
+      "ja": {
+        "name": "透明円柱ガラス フラワーベース"
+      },
+      "ko": {
+        "name": "투명 실린더 글라스 플라워 화병"
+      },
+      "zh": {
+        "name": "高透圆柱玻璃 现代艺术花瓶"
+      }
+    },
+    "stockByBranch": {
+      "branch_q10": 20,
+      "branch_q1": 12,
+      "branch_thao_dien": 10
+    },
+    "dailyQuota": 42,
+    "isActive": true,
+    "updatedAt": "2026-08-30T08:14:02Z",
+    "productType": "direct",
+    "unit": "bình",
+    "costPrice": 175000,
+    "minStockAlert": 10,
+    "minAlertLevel": 10
+  },
+  {
+    "id": "binh_hoa_04",
+    "name": "Bình Gốm Cắm Hoa Nghệ Thuật Minimalist",
+    "nameTextId": null,
+    "category": "binh_hoa",
+    "productType": "direct",
+    "recipe": null,
+    "stemCount": 6,
+    "priceLevelId": "price_lvl_02",
+    "priceNumber": 690000,
+    "salePrice": "690,000₫",
+    "originalPrice": "690,000₫",
+    "badge": "Bán chạy",
+    "image": "/api/flower/v1/images/binh_hoa_04.jpg",
+    "i18n": {
+      "en": {
+        "name": "Minimalist Ceramic Art Flower Vase"
+      },
+      "ja": {
+        "name": "北欧ミニマリスト 陶器アート花瓶"
+      },
+      "ko": {
+        "name": "미니멀리스트 세라믹 플라워 화병"
+      },
+      "zh": {
+        "name": "极简北欧风 艺术陶瓷花瓶"
+      }
+    },
+    "stockByBranch": {
+      "branch_q10": 10,
+      "branch_q1": 5,
+      "branch_thao_dien": 4
+    },
+    "dailyQuota": 19,
+    "isActive": true,
+    "updatedAt": "2026-09-13T17:30:45Z",
+    "unit": "bình",
+    "costPrice": 345000,
+    "minStockAlert": 10,
+    "minAlertLevel": 10
+  },
+  {
+    "id": "lan_01",
+    "name": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+    "nameTextId": null,
+    "category": "lan_ho_diep",
+    "productType": "direct",
+    "recipe": null,
+    "stemCount": 0,
+    "priceLevelId": "price_lvl_04",
+    "priceNumber": 3500000,
+    "salePrice": "3,500,000₫",
+    "originalPrice": "3,500,000₫",
+    "badge": "Độc Bản VIP",
+    "image": "/api/flower/v1/images/lan_01.webp",
+    "i18n": {
+      "en": {
+        "name": "Prosperity Phalaenopsis Orchid Pot (5 Stems)"
+      },
+      "ja": {
+        "name": "富貴 黄金胡蝶蘭 鉢植え（5本立ち）"
+      },
+      "ko": {
+        "name": "부귀 황금 호접란 화분 (5대)"
+      },
+      "zh": {
+        "name": "大富大贵 黄金蝴蝶兰盆栽（5株）"
+      }
+    },
+    "stockByBranch": {
+      "branch_q10": 3,
+      "branch_q1": 2,
+      "branch_thao_dien": 2
+    },
+    "dailyQuota": 7,
+    "isActive": true,
+    "updatedAt": "2026-09-14T00:36:48Z",
+    "unit": "cành",
+    "costPrice": 1750000,
+    "minStockAlert": 10,
+    "minAlertLevel": 10
+  }
+]

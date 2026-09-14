@@ -944,84 +944,111 @@ def save_product_detail(product_id: str, product_data: Dict[str, Any]) -> bool:
     return success
 
 
+def sync_materials_from_products(products: Optional[List[Dict[str, Any]]] = None) -> bool:
+    """
+    Đồng bộ materials.json: materials.json chính là các sản phẩm từ products.json có productType == 'direct'.
+    """
+    if products is None:
+        products = get_products()
+
+    direct_products = []
+    for p in products:
+        p_type = p.get("productType") or ("direct" if p.get("category") == "binh_hoa" else "arranged")
+        if p_type == "direct":
+            item = dict(p)
+            item["productType"] = "direct"
+            if not item.get("unit"):
+                item["unit"] = "bình" if p.get("category") == "binh_hoa" else "cành"
+            if "costPrice" not in item or not item.get("costPrice"):
+                item["costPrice"] = int(p.get("priceNumber", 0) * 0.5) if p.get("priceNumber") else 0
+            if "minStockAlert" not in item:
+                item["minStockAlert"] = p.get("minAlertLevel", 10)
+            if "minAlertLevel" not in item:
+                item["minAlertLevel"] = item["minStockAlert"]
+            direct_products.append(item)
+
+    filepath = get_config_path("materials.json")
+    success = write_json(filepath, direct_products)
+    invalidate_file_cache(filepath)
+    return success
+
+
 def save_products(products: List[Dict[str, Any]]) -> bool:
-    """Lưu danh mục sản phẩm tóm tắt vào products.json."""
+    """Lưu danh mục sản phẩm tóm tắt vào products.json và tự động đồng bộ sang materials.json."""
     filepath = get_config_path("products.json")
     success = write_json(filepath, products)
     invalidate_file_cache(filepath)
+    if success:
+        sync_materials_from_products(products)
     return success
 
 
 def get_materials() -> List[Dict[str, Any]]:
-    """Lấy danh mục hoa cành & phụ liệu nguyên vật liệu từ materials.json (có RAM cache mtime)."""
-    return _normalize_list_of_dicts(read_json_cached(get_config_path("materials.json"), default=[]))
+    """Lấy danh mục hoa cành & phụ liệu nguyên vật liệu từ materials.json (chính là products.json có productType == 'direct')."""
+    filepath = get_config_path("materials.json")
+    if not os.path.exists(filepath):
+        sync_materials_from_products()
+    materials = _normalize_list_of_dicts(read_json_cached(filepath, default=[]))
+    if not materials:
+        sync_materials_from_products()
+        materials = _normalize_list_of_dicts(read_json_cached(filepath, default=[]))
+    return materials
 
 
 def save_materials(materials: List[Dict[str, Any]]) -> bool:
-    """Lưu danh mục hoa cành & phụ liệu nguyên vật liệu vào materials.json."""
+    """Lưu danh mục hoa cành & phụ liệu nguyên vật liệu vào materials.json và đồng bộ sang products.json."""
     filepath = get_config_path("materials.json")
     success = write_json(filepath, materials)
     invalidate_file_cache(filepath)
+
+    # Đồng bộ các cập nhật tồn kho / giá vốn ngược lại vào products.json
+    try:
+        products = get_products()
+        mat_map = {m.get("id"): m for m in materials if m.get("id")}
+        updated = False
+        now_iso = datetime.now(timezone(timedelta(hours=7))).isoformat()
+        for p in products:
+            p_id = p.get("id")
+            if p_id in mat_map:
+                m = mat_map[p_id]
+                if "stockByBranch" in m and isinstance(m["stockByBranch"], dict):
+                    p["stockByBranch"] = dict(m["stockByBranch"])
+                    p["dailyQuota"] = sum(int(v or 0) for v in p["stockByBranch"].values())
+                if "costPrice" in m:
+                    p["costPrice"] = m["costPrice"]
+                p["updatedAt"] = now_iso
+                updated = True
+        if updated:
+            p_path = get_config_path("products.json")
+            write_json(p_path, products)
+            invalidate_file_cache(p_path)
+    except Exception as e:
+        print(f"[SYNC_MATERIALS_ERROR] {e}")
+
     return success
 
 
 def get_material_by_id(material_id: str) -> Optional[Dict[str, Any]]:
-    """Tra cứu một loại nguyên vật liệu hoa cành theo ID."""
+    """Tra cứu một loại nguyên vật liệu hoa cành theo ID (hỗ trợ prefix mat: hoặc prod:)."""
     if not material_id:
         return None
+    clean_id = material_id.replace("prod:", "").replace("mat:", "")
     for m in get_materials():
-        if m.get("id") == material_id:
+        if m.get("id") == clean_id:
             return m
+    for p in get_products():
+        if p.get("id") == clean_id:
+            return p
     return None
 
 
 def sync(item_id: str = "", branch_id: str = "", delta: int = 0, item_type: str = "") -> bool:
     """
-    Synchronize stock between linked product and material.
-    item_type: "product" or "material" indicating the source of the update.
-    delta: change applied to the source item (new_stock - old_stock).
+    Đồng bộ tồn kho giữa materials.json và products.json (materials.json chính là products có productType == 'direct').
     """
     try:
-        from .data_service import get_products, get_materials, save_products, save_materials
-        if item_type == "product":
-            # Update linked material if exists
-            products = get_products()
-            for p in products:
-                if p.get("id") == item_id:
-                    linked_mat = p.get("linked_material_id")
-                    if linked_mat:
-                        materials = get_materials()
-                        for m in materials:
-                            if m.get("id") == linked_mat:
-                                if "stockByBranch" not in m or not isinstance(m["stockByBranch"], dict):
-                                    m["stockByBranch"] = {}
-                                current = int(m["stockByBranch"].get(branch_id, 0))
-                                m["stockByBranch"][branch_id] = max(0, current + delta)
-                                m["updatedAt"] = datetime.now(timezone(timedelta(hours=7))).isoformat()
-                                save_materials(materials)
-                                break
-                    break
-        elif item_type == "material":
-            # Update linked product if exists
-            materials = get_materials()
-            for m in materials:
-                if m.get("id") == item_id:
-                    linked_prod = m.get("linked_product_id")
-                    if linked_prod:
-                        products = get_products()
-                        for p in products:
-                            if p.get("id") == linked_prod:
-                                if "stockByBranch" not in p or not isinstance(p["stockByBranch"], dict):
-                                    p["stockByBranch"] = {}
-                                current = int(p["stockByBranch"].get(branch_id, 0))
-                                p["stockByBranch"][branch_id] = max(0, current + delta)
-                                p["updatedAt"] = datetime.now(timezone(timedelta(hours=7))).isoformat()
-                                # Recalculate dailyQuota for product
-                                p["dailyQuota"] = sum(int(v or 0) for v in p["stockByBranch"].values())
-                                save_products(products)
-                                break
-                    break
-        return True
+        clean_id = item_id.replace("prod:", "").replace("mat:", "")
+        return update_material_stock(clean_id, branch_id, delta)
     except Exception as e:
         print(f"[SYNC_ERROR] {e}")
         return False
@@ -1029,27 +1056,71 @@ def sync(item_id: str = "", branch_id: str = "", delta: int = 0, item_type: str 
 
 def update_material_stock(material_id: str, branch_id: str, delta: int) -> bool:
     """
-    Cập nhật tăng (+delta) hoặc giảm (-delta) số lượng tồn kho cành hoa tại một chi nhánh.
-    Đảm bảo tồn kho >= 0.
+    Cập nhật tăng (+delta) hoặc giảm (-delta) số lượng tồn kho cành hoa / hàng direct tại một chi nhánh.
+    Đảm bảo tồn kho >= 0 và đồng bộ giữa materials.json và products.json.
     """
+    clean_id = material_id.replace("prod:", "").replace("mat:", "")
+    now_iso = datetime.now(timezone(timedelta(hours=7))).isoformat()
+
+    # 1. Cập nhật trong materials.json
     materials = get_materials()
-    found = False
+    mat_found = False
     for m in materials:
-        if m.get("id") == material_id:
-            found = True
+        if m.get("id") == clean_id:
+            mat_found = True
             if "stockByBranch" not in m or not isinstance(m["stockByBranch"], dict):
                 m["stockByBranch"] = {}
             current_stock = int(m["stockByBranch"].get(branch_id, 0))
             new_stock = max(0, current_stock + delta)
             m["stockByBranch"][branch_id] = new_stock
-            m["updatedAt"] = datetime.now(timezone(timedelta(hours=7))).isoformat()
+            m["dailyQuota"] = sum(int(v or 0) for v in m["stockByBranch"].values())
+            m["updatedAt"] = now_iso
             break
-    if found:
-        success = save_materials(materials)
-        if success:
-            sync(material_id, branch_id, delta, "material")
-        return success
-    return False
+
+    if mat_found:
+        m_path = get_config_path("materials.json")
+        write_json(m_path, materials)
+        invalidate_file_cache(m_path)
+
+    # 2. Cập nhật trong products.json
+    products = get_products()
+    prod_found = False
+    for p in products:
+        if p.get("id") == clean_id:
+            prod_found = True
+            if "stockByBranch" not in p or not isinstance(p["stockByBranch"], dict):
+                p["stockByBranch"] = {}
+            current_p_stock = int(p["stockByBranch"].get(branch_id, 0))
+            new_p_stock = max(0, current_p_stock + delta)
+            p["stockByBranch"][branch_id] = new_p_stock
+            p["dailyQuota"] = sum(int(v or 0) for v in p["stockByBranch"].values())
+            p["updatedAt"] = now_iso
+
+            # Cập nhật chi tiết trong products/{clean_id}.json nếu tồn tại
+            try:
+                det_path = get_config_path(os.path.join("products", f"{clean_id}.json"))
+                if os.path.exists(det_path):
+                    det = read_json(det_path, {})
+                    if isinstance(det, dict) and det.get("id") == clean_id:
+                        det.setdefault("stockByBranch", {})
+                        det["stockByBranch"][branch_id] = new_p_stock
+                        det["dailyQuota"] = p["dailyQuota"]
+                        det["updatedAt"] = now_iso
+                        write_json(det_path, det)
+            except Exception:
+                pass
+            break
+
+    if prod_found:
+        p_path = get_config_path("products.json")
+        write_json(p_path, products)
+        invalidate_file_cache(p_path)
+
+    # Nếu cập nhật sản phẩm direct mà chưa có trong materials, đồng bộ lại
+    if prod_found and not mat_found:
+        sync_materials_from_products(products)
+
+    return mat_found or prod_found
 
 
 

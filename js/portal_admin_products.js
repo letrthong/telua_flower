@@ -552,36 +552,15 @@ export async function populateRecipeMaterialDropdown() {
     let html = `<option value="">-- Chọn cành hoa / nguyên phụ liệu từ kho --</option>`;
 
     if (cachedAdminMaterials && cachedAdminMaterials.length > 0) {
-        html += `<optgroup label="🌸 Cành Hoa Tươi & Phụ Liệu (Kho materials.json)">`;
+        html += `<optgroup label="🌸 Cành Hoa & Hàng Trực Tiếp (Kho materials.json)">`;
         cachedAdminMaterials.forEach(m => {
-            const unit = m.unit || "cành";
+            const unit = m.unit || (m.category === "binh_hoa" ? "bình" : "cành");
             const cost = m.costPrice ? `${Number(m.costPrice).toLocaleString('vi-VN')}₫` : "";
             html += `<option value="${m.id}" data-name="${m.name}" data-unit="${unit}" data-category="${m.category || 'flower_main'}">${m.name} (${unit}${cost ? ' - ' + cost : ''})</option>`;
         });
         html += `</optgroup>`;
     } else {
-        const defaults = [
-            { id: "mat_rose_ohara_white", name: "Hồng Trắng Ohara Nhập Khẩu", unit: "cành", category: "flower_main" },
-            { id: "mat_rose_juliet", name: "Hồng Juliet David Austin", unit: "cành", category: "flower_main" },
-            { id: "mat_daisy_tana", name: "Cúc Tana Đà Lạt", unit: "nhánh", category: "flower_filler" },
-            { id: "mat_hydrangea_blue", name: "Cẩm Tú Cầu Xanh Pastel", unit: "bông", category: "flower_main" },
-            { id: "mat_tulip_dutch", name: "Tulip Hà Lan Trắng", unit: "cành", category: "flower_main" },
-            { id: "mat_foliage_eucalyptus", name: "Lá Khuynh Diệp Bạc (Eucalyptus)", unit: "nhánh", category: "foliage" }
-        ];
-        html += `<optgroup label="🌸 Cành Hoa Mặc Định">`;
-        defaults.forEach(m => {
-            html += `<option value="${m.id}" data-name="${m.name}" data-unit="${m.unit}" data-category="${m.category}">${m.name} (${m.unit})</option>`;
-        });
-        html += `</optgroup>`;
-    }
-
-    const directItems = (allAdminProducts || []).filter(p => p.productType === "direct" || p.category === "binh_hoa");
-    if (directItems.length > 0) {
-        html += `<optgroup label="🏺 Hàng Bán Trực Tiếp (products.json)">`;
-        directItems.forEach(p => {
-            html += `<option value="prod_${p.id}" data-name="${p.name}" data-unit="cái" data-category="accessory">${p.name} (cái)</option>`;
-        });
-        html += `</optgroup>`;
+        html += `<option value="" disabled>Chưa có sản phẩm direct nào trong kho materials.json</option>`;
     }
 
     select.innerHTML = html;

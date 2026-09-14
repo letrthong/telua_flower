@@ -382,13 +382,13 @@
       }
     },
     "stockByBranch": {
-      "branch_q10": 15,
+      "branch_q10": 40,
       "branch_q1": 10,
       "branch_thao_dien": 8
     },
-    "dailyQuota": 33,
+    "dailyQuota": 58,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z",
+    "updatedAt": "2026-09-14T07:37:34.111921+07:00",
     "productType": "direct"
   },
   {
@@ -501,7 +501,11 @@
   {
     "id": "lan_01",
     "name": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+    "nameTextId": null,
     "category": "lan_ho_diep",
+    "productType": "direct",
+    "recipe": null,
+    "stemCount": 0,
     "priceLevelId": "price_lvl_04",
     "priceNumber": 3500000,
     "salePrice": "3,500,000₫",
@@ -529,8 +533,7 @@
     },
     "dailyQuota": 7,
     "isActive": true,
-    "updatedAt": "2026-08-24T15:18:45Z",
-    "productType": "arranged"
+    "updatedAt": "2026-09-14T00:36:48Z"
   },
   {
     "id": "hoa_cuoi_01",
