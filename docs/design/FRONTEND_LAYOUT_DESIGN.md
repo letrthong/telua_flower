@@ -315,6 +315,7 @@ Hệ thống quản lý chặt chẽ 3 file tạo tự động từ script build
 
 > **Quy Chuẩn Giao Diện & Điều Hướng:**
 > - **Vị trí nút "💼 Công Việc Của Tôi":** Đặt ở **vị trí số 1 (TRÊN HẾT)**, ngay phía trên nút "CMS (Hàng Hóa & Vận Hành)" trong menu tài khoản. Khi nhân sự nội bộ vào ca, nút này là điểm chạm trực tiếp giúp nhân viên biết ngay hôm nay mình cần làm gì (đơn cần cắm, đơn cần gọi xác nhận, đơn cần duyệt).
+> - **Vị trí nút "📦 Kho Hàng & Hao Hụt":** Đặt ngay phía dưới nút "CMS (Hàng Hóa & Vận Hành)" trong Menu Dropdown tài khoản và Mobile Drawer, cho phép Quản lý chi nhánh & Super Admin truy cập nhanh 1-chạm thẳng vào phân hệ Kho (với 4 tab con: 1. Hạn Mức Mở Bán, 2. Kho Cành Hoa & Phụ Liệu, 3. Phiếu Nhập & Báo Hủy, 4. Báo Cáo Nhập-Xuất-Tồn Tháng) mà không cần qua nhiều thao tác chuyển tab.
 > - **Phân hệ "Quản Lý Người Dùng" (`user_management`):** Tách bạch rõ ràng khối quản trị con người (`staff` và `customers`) ra khỏi khối hàng hóa (`cms`), giúp cấu trúc phân quyền và quản lý khoa học, mở rộng trong tương lai.
 > - **Modal `#userProfileModal`:** Chiều cao tối đa (`h-[92vh] max-h-[92vh]`), độ rộng `max-w-2xl` đồng bộ chuẩn với các Portal lớn (`#adminPortalModal`, `#customerPortalModal`).
 > - **Menu Dropdown Tài Khoản:** Tuân thủ phân cấp chặt chẽ theo `config_layout.js` — không hiển thị nút riêng độc lập cho các tab con (như "Cấu Hình Banner"), tất cả đều được truy cập thống nhất qua nút phân hệ mẹ tương ứng ("Cấu Hình Hệ Thống").

@@ -582,8 +582,17 @@ function renderStorefrontBranchButtons() {
             ? "px-4 py-2 bg-primary text-white font-bold text-xs sm:text-sm rounded-full shadow-md shadow-pink-200 border border-primary transition flex items-center"
             : "px-4 py-2 bg-white text-gray-700 hover:text-primary hover:bg-pink-50 font-bold text-xs sm:text-sm rounded-full shadow-xs border border-gray-200 transition flex items-center";
 
+        const statusInfo = getStoreOperatingStatus(b.openHours);
+        const dotColor = statusInfo.status === "open"
+            ? "bg-emerald-400"
+            : (statusInfo.status === "closing_soon" ? "bg-amber-400" : "bg-rose-400");
+        const dotTitle = statusInfo.status === "open"
+            ? "Đang mở cửa"
+            : (statusInfo.status === "closing_soon" ? "Sắp đóng cửa" : "Cửa hàng đã đóng cửa");
+
         html += `
-            <button onclick="selectShowroomBranch('${b.id}')" class="${btnClass}">
+            <button onclick="selectShowroomBranch('${b.id}')" class="${btnClass}" title="${dotTitle}">
+                <span class="w-2 h-2 rounded-full ${dotColor} mr-2 flex-shrink-0 ${statusInfo.status === 'open' ? 'animate-pulse' : ''}"></span>
                 <i class="fa-solid fa-store mr-1.5 ${isSelected ? 'text-white' : 'text-primary'}"></i>
                 <span>${b.name.replace("Nở Hoa Thả Bình - ", "")}</span>
             </button>
@@ -609,11 +618,111 @@ function selectShowroomBranch(branchId, saveCache = true) {
     }
 
     renderStorefrontBranchButtons();
+    renderSelectedBranchInfo(b);
+}
+
+function parseOperatingHours(hoursStr) {
+    if (!hoursStr || typeof hoursStr !== "string") return null;
+    const match = hoursStr.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
+    if (!match) return null;
+    const h1 = parseInt(match[1], 10);
+    const m1 = parseInt(match[2], 10);
+    const h2 = parseInt(match[3], 10);
+    const m2 = parseInt(match[4], 10);
+    if (h1 < 0 || h1 > 23 || m1 < 0 || m1 > 59 || h2 < 0 || h2 > 23 || m2 < 0 || m2 > 59) return null;
+    return {
+        openMinutes: h1 * 60 + m1,
+        closeMinutes: h2 * 60 + m2,
+        openFormatted: `${String(h1).padStart(2, '0')}:${String(m1).padStart(2, '0')}`,
+        closeFormatted: `${String(h2).padStart(2, '0')}:${String(m2).padStart(2, '0')}`
+    };
+}
+
+function getStoreOperatingStatus(hoursStr, customDate = null) {
+    const parsed = parseOperatingHours(hoursStr);
+    if (!parsed) {
+        return { status: "unknown", label: "Không xác định", badgeHtml: "" };
+    }
+    const now = customDate || new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const currentDayIdx = now.getDay(); // 0 là CN, 1 là T2, ..., 6 là T7
+
+    // Kiểm tra các ngày nghỉ cố định theo cấu hình
+    if (hoursStr.includes("Thứ 2 - Thứ 6") && (currentDayIdx === 0 || currentDayIdx === 6)) {
+        return {
+            status: "closed",
+            label: "Cửa hàng đã đóng cửa (Nghỉ cuối tuần)",
+            openFormatted: parsed.openFormatted,
+            closeFormatted: parsed.closeFormatted,
+            badgeHtml: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Cửa hàng đã đóng cửa • Nghỉ cuối tuần</span>`
+        };
+    }
+    if (hoursStr.includes("Thứ 2 - Thứ 7") && currentDayIdx === 0) {
+        return {
+            status: "closed",
+            label: "Cửa hàng đã đóng cửa (Nghỉ Chủ Nhật)",
+            openFormatted: parsed.openFormatted,
+            closeFormatted: parsed.closeFormatted,
+            badgeHtml: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Cửa hàng đã đóng cửa • Nghỉ Chủ Nhật</span>`
+        };
+    }
+
+    const { openMinutes, closeMinutes, openFormatted, closeFormatted } = parsed;
+
+    if (currentMinutes < openMinutes) {
+        return {
+            status: "closed_before_open",
+            label: "Chưa mở cửa",
+            openFormatted,
+            closeFormatted,
+            badgeHtml: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200"><span class="w-2 h-2 rounded-full bg-gray-400"></span> Chưa mở cửa • Mở lúc ${openFormatted} sáng nay</span>`
+        };
+    } else if (currentMinutes >= closeMinutes) {
+        return {
+            status: "closed",
+            label: "Cửa hàng đã đóng cửa",
+            openFormatted,
+            closeFormatted,
+            badgeHtml: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 shadow-2xs"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Cửa hàng đã đóng cửa • Mở lại lúc ${openFormatted} ngày mai</span>`
+        };
+    } else if (currentMinutes >= (closeMinutes - 30)) {
+        const remaining = closeMinutes - currentMinutes;
+        return {
+            status: "closing_soon",
+            label: `Sắp đóng cửa (${remaining} phút nữa)`,
+            openFormatted,
+            closeFormatted,
+            badgeHtml: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs"><span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> Sắp đóng cửa • Đóng lúc ${closeFormatted} (${remaining}p)</span>`
+        };
+    } else {
+        return {
+            status: "open",
+            label: "Đang mở cửa",
+            openFormatted,
+            closeFormatted,
+            badgeHtml: `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Đang mở cửa • Đóng lúc ${closeFormatted}</span>`
+        };
+    }
+}
+
+// Cập nhật thông tin chi nhánh đã chọn lên giao diện Storefront
+function renderSelectedBranchInfo(b) {
+    if (!b) return;
+
+    // Lưu vào LocalStorage
+    if (typeof localStorage !== "undefined") {
+        try {
+            localStorage.setItem(SELECTED_BRANCH_ID_KEY, b.id);
+            localStorage.setItem(SELECTED_BRANCH_DATA_KEY, JSON.stringify(b));
+            localStorage.setItem('telua_selected_branch_address_v1', b.address);
+        } catch (e) {}
+    }
 
     // Cập nhật thẻ thông tin
     const nameEl = document.getElementById("storeNameVal");
     const addrEl = document.getElementById("storeAddressVal");
     const hoursEl = document.getElementById("storeHoursVal");
+    const statusBadge = document.getElementById("storeStatusBadge");
     const hotlineLink = document.getElementById("storeHotlineLink");
     const amenitiesEl = document.getElementById("storeAmenitiesVal");
     const mapIframe = document.getElementById("storeMapIframe");
@@ -622,7 +731,32 @@ function selectShowroomBranch(branchId, saveCache = true) {
 
     if (nameEl) nameEl.textContent = b.name;
     if (addrEl) addrEl.textContent = b.address;
-    if (hoursEl) hoursEl.textContent = b.openHours || "07:30 - 21:00 (Thứ 2 - Chủ Nhật)";
+
+    const rawHours = b.openHours || "07:30 - 21:00 (Thứ 2 - Chủ Nhật)";
+    const statusInfo = getStoreOperatingStatus(rawHours);
+
+    // Cập nhật Badge trạng thái đóng / mở cửa trên tiêu đề Showroom Storefront
+    if (statusBadge) {
+        if (statusInfo.status === "closed" || statusInfo.status === "closed_before_open") {
+            statusBadge.className = "inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-rose-200 shadow-2xs";
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> <span id="storeStatusVal">Đã đóng cửa</span>`;
+        } else if (statusInfo.status === "closing_soon") {
+            statusBadge.className = "inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-amber-200 shadow-2xs";
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> <span id="storeStatusVal">Sắp đóng cửa</span>`;
+        } else {
+            statusBadge.className = "inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200 shadow-2xs";
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="storeStatusVal">Đang mở cửa</span>`;
+        }
+    }
+
+    if (hoursEl) {
+        hoursEl.innerHTML = `
+            <div class="flex items-center gap-2 flex-wrap mt-0.5">
+                ${statusInfo.badgeHtml}
+                <span class="text-xs text-gray-600 font-medium">${rawHours}</span>
+            </div>
+        `;
+    }
     if (hotlineLink) {
         hotlineLink.textContent = b.phone || "0976.491.322";
         hotlineLink.href = `tel:${(b.phone || "").replace(/\./g, "")}`;
@@ -727,6 +861,8 @@ if (typeof window !== "undefined") {
     window.loadAndRenderStorefrontBranches = loadAndRenderStorefrontBranches;
     window.reloadBranchesIfChanged = reloadBranchesIfChanged;
     window.removeVietnameseTones = removeVietnameseTones;
+    window.parseOperatingHours = parseOperatingHours;
+    window.getStoreOperatingStatus = getStoreOperatingStatus;
 }
 
 
@@ -3230,6 +3366,9 @@ function updateAuthUI() {
                     <button onclick="openAdminPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                         <i class="fa-solid fa-gauge-high mr-2"></i> CMS (Hàng Hóa & Vận Hành)
                     </button>
+                    <button onclick="openAdminPortalModal('inventory')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-amber-900 bg-amber-50/90 hover:bg-amber-100 transition rounded-xl border border-amber-200 shadow-2xs">
+                        <i class="fa-solid fa-boxes-stacked mr-2 text-amber-600"></i> Kho Hàng & Hao Hụt
+                    </button>
                     <button onclick="openUserManagementModal('staff')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50/80 hover:bg-purple-100 transition rounded-xl border border-purple-200">
                         <i class="fa-solid fa-users-gear mr-2 text-purple-600"></i> Quản Lý Người Dùng
                     </button>
@@ -3330,6 +3469,9 @@ function updateAuthUI() {
                             </button>
                             <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                                 <i class="fa-solid fa-gauge-high mr-2"></i> CMS (Hàng Hóa & Vận Hành)
+                            </button>
+                            <button onclick="openAdminPortalModal('inventory'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-amber-900 bg-amber-50/90 hover:bg-amber-100 transition rounded-xl border border-amber-200 shadow-2xs">
+                                <i class="fa-solid fa-boxes-stacked mr-2 text-amber-600"></i> Kho Hàng & Hao Hụt
                             </button>
                             <button onclick="openUserManagementModal('staff'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition rounded-xl border border-purple-200">
                                 <i class="fa-solid fa-users-gear mr-2 text-purple-600"></i> Quản Lý Người Dùng
@@ -6494,6 +6636,31 @@ function renderBranchesTable(branches) {
     tbody.innerHTML = html;
 }
 
+function syncBranchHoursFromControls() {
+    const openEl = document.getElementById("branchOpenTimeSelect");
+    const closeEl = document.getElementById("branchCloseTimeSelect");
+    const inputEl = document.getElementById("branchOpenHours");
+    if (!openEl || !closeEl || !inputEl) return;
+
+    const openTime = openEl.value || "07:30";
+    const closeTime = closeEl.value || "21:00";
+
+    const getDaysFn = typeof formatOperatingDays === "function" 
+        ? formatOperatingDays 
+        : (typeof window !== "undefined" && typeof window.formatOperatingDays === "function" ? window.formatOperatingDays : null);
+    
+    const activeDays = (typeof branchActiveDays !== "undefined") 
+        ? branchActiveDays 
+        : (typeof window !== "undefined" && window.branchActiveDays ? window.branchActiveDays : ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"]);
+    
+    const daysStr = getDaysFn ? getDaysFn(activeDays) : "Thứ 2 - Chủ Nhật";
+    if (daysStr && daysStr !== "Thứ 2 - Chủ Nhật") {
+        inputEl.value = `${openTime} - ${closeTime} (${daysStr})`;
+    } else {
+        inputEl.value = `${openTime} - ${closeTime}`;
+    }
+}
+
 function openBranchModal(isEdit = false) {
     const modal = document.getElementById("branchModal");
     const title = document.getElementById("branchModalTitle");
@@ -6507,9 +6674,24 @@ function openBranchModal(isEdit = false) {
         form.reset();
         document.getElementById("editBranchId").value = "";
         document.getElementById("branchRadius").value = 10;
-        document.getElementById("branchOpenHours").value = "07:30 - 21:00";
         document.getElementById("branchLat").value = 10.7769;
         document.getElementById("branchLng").value = 106.7009;
+        if (typeof populateOperatingTimeSelects === "function") {
+            populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+        } else if (typeof window !== "undefined" && typeof window.populateOperatingTimeSelects === "function") {
+            window.populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+        }
+
+        if (typeof window !== "undefined") {
+            window.branchActiveDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+        }
+        if (typeof renderOperatingDaysPills === "function") {
+            renderOperatingDaysPills("branch");
+        } else if (typeof window !== "undefined" && typeof window.renderOperatingDaysPills === "function") {
+            window.renderOperatingDaysPills("branch");
+        }
+
+        syncBranchHoursFromControls();
         if (title) title.textContent = "Mở Thêm Chi Nhánh Showroom Mới";
     }
 
@@ -6534,7 +6716,39 @@ function editBranch(branchId) {
     document.getElementById("branchCode").value = b.code || "";
     document.getElementById("branchAddress").value = b.address || "";
     document.getElementById("branchPhone").value = b.phone || "";
-    document.getElementById("branchOpenHours").value = b.openHours || "07:30 - 21:00";
+    
+    if (typeof populateOperatingTimeSelects === "function") {
+        populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+    } else if (typeof window !== "undefined" && typeof window.populateOperatingTimeSelects === "function") {
+        window.populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+    }
+
+    const rawHours = b.openHours || "07:30 - 21:00";
+    document.getElementById("branchOpenHours").value = rawHours;
+    const matchTime = rawHours.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+    if (matchTime) {
+        const openTime = matchTime[1].length === 4 ? `0${matchTime[1]}` : matchTime[1];
+        const closeTime = matchTime[2].length === 4 ? `0${matchTime[2]}` : matchTime[2];
+        const openEl = document.getElementById("branchOpenTimeSelect");
+        const closeEl = document.getElementById("branchCloseTimeSelect");
+        if (openEl) openEl.value = openTime;
+        if (closeEl) closeEl.value = closeTime;
+    }
+
+    const parseDaysFn = typeof parseDaysFromHoursString === "function" 
+        ? parseDaysFromHoursString 
+        : (typeof window !== "undefined" && typeof window.parseDaysFromHoursString === "function" ? window.parseDaysFromHoursString : null);
+    if (parseDaysFn && typeof window !== "undefined") {
+        window.branchActiveDays = parseDaysFn(rawHours);
+    }
+    if (typeof renderOperatingDaysPills === "function") {
+        renderOperatingDaysPills("branch");
+    } else if (typeof window !== "undefined" && typeof window.renderOperatingDaysPills === "function") {
+        window.renderOperatingDaysPills("branch");
+    }
+
+    syncBranchHoursFromControls();
+
     document.getElementById("branchLat").value = b.lat || 10.7769;
     document.getElementById("branchLng").value = b.lng || 106.7009;
     document.getElementById("branchRadius").value = b.deliveryRadiusKm || 10;
@@ -6641,6 +6855,7 @@ if (typeof window !== "undefined") {
     window.openBranchModal = openBranchModal;
     window.closeBranchModal = closeBranchModal;
     window.editBranch = editBranch;
+    window.syncBranchHoursFromControls = syncBranchHoursFromControls;
     window.handleBranchSubmit = handleBranchSubmit;
     window.toggleBranch = toggleBranch;
 }
@@ -7181,11 +7396,51 @@ async function loadAdminProducts() {
                     return normName.includes(normSearch) || id.includes(search) || normComp.includes(normSearch) || normDesc.includes(normSearch);
                 });
             }
+
+            // Sắp xếp danh sách sản phẩm theo tiêu chí người dùng chọn
+            const sortVal = document.getElementById("sortProductSelect")?.value || "updated_desc";
+            displayProducts = [...displayProducts].sort((a, b) => {
+                if (sortVal === "updated_desc") {
+                    const tA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                    const tB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                    return tB - tA;
+                } else if (sortVal === "updated_asc") {
+                    const tA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                    const tB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                    return tA - tB;
+                } else if (sortVal === "name_asc") {
+                    return (a.name || "").localeCompare(b.name || "", 'vi');
+                } else if (sortVal === "name_desc") {
+                    return (b.name || "").localeCompare(a.name || "", 'vi');
+                } else if (sortVal === "price_level_asc") {
+                    const pA = a.priceNumber || 0;
+                    const pB = b.priceNumber || 0;
+                    if (pA !== pB) return pA - pB;
+                    return (a.priceLevelId || "").localeCompare(b.priceLevelId || "");
+                } else if (sortVal === "price_level_desc") {
+                    const pA = a.priceNumber || 0;
+                    const pB = b.priceNumber || 0;
+                    if (pA !== pB) return pB - pA;
+                    return (b.priceLevelId || "").localeCompare(a.priceLevelId || "");
+                } else if (sortVal === "type_arranged") {
+                    const typeA = a.productType || (a.category === "binh_hoa" ? "direct" : "arranged");
+                    const typeB = b.productType || (b.category === "binh_hoa" ? "direct" : "arranged");
+                    if (typeA === typeB) return 0;
+                    return typeA === "arranged" ? -1 : 1;
+                } else if (sortVal === "type_direct") {
+                    const typeA = a.productType || (a.category === "binh_hoa" ? "direct" : "arranged");
+                    const typeB = b.productType || (b.category === "binh_hoa" ? "direct" : "arranged");
+                    if (typeA === typeB) return 0;
+                    return typeA === "direct" ? -1 : 1;
+                }
+                return 0;
+            });
+
             renderProductsTable(displayProducts);
         }
     } catch (e) {
         if (!allAdminProducts || allAdminProducts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
         }
     }
 }
@@ -7197,7 +7452,7 @@ function renderProductsTable(products) {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="p-12 text-center">
+                <td colspan="10" class="p-12 text-center">
                     <div class="flex flex-col items-center justify-center py-10 text-gray-400">
                         <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
                             <i class="fa-solid fa-spa"></i>
@@ -7232,24 +7487,43 @@ function renderProductsTable(products) {
                         <i class="fa-solid fa-wine-bottle text-amber-600"></i> Bán trực tiếp
                     </span>
                     <div class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
-                        <i class="fa-solid fa-seedling text-[9px] text-amber-500"></i> ${displayStems > 0 ? `${displayStems} cành/sp` : 'Chưa set cành'}
+                        <i class="fa-solid fa-ruler-combined text-[9px] text-amber-500"></i>
+                        <span>${p.specs?.bottleHeightCm ? p.specs.bottleHeightCm + 'cm' : 'Chuẩn'} (${p.specs?.bottleMaterial || 'Thủy tinh'})</span>
                     </div>
-                </div>`;
+                </div>
+            `;
         } else {
             typeBadge = `
                 <div class="space-y-0.5">
-                    <span class="bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
-                        <i class="fa-solid fa-fan text-purple-600"></i> Cắm Phối
+                    <span class="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                        <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i> Cắm phối
                     </span>
-                    <div class="text-[10px] text-purple-700 font-bold flex items-center gap-1">
-                        <i class="fa-solid fa-layer-group text-[9px] text-purple-500"></i> ${recipeCount > 0 ? `${displayStems} cành (${recipeCount} loại)` : (displayStems > 0 ? `${displayStems} cành` : 'Theo BOM')}
+                    <div class="text-[10px] text-gray-500 flex items-center gap-1">
+                        <i class="fa-solid fa-layer-group text-[9px] text-purple-400"></i>
+                        <span>${recipeCount} loại hoa • ${displayStems} cành</span>
                     </div>
-                </div>`;
+                </div>
+            `;
         }
 
         const stockQ10 = p.stockByBranch?.branch_q10 ?? 0;
         const stockQ1 = p.stockByBranch?.branch_q1 ?? 0;
         const stockTD = p.stockByBranch?.branch_thao_dien ?? 0;
+
+        const dateVal = p.updatedAt || p.createdAt;
+        let dateDisplay = "—";
+        if (dateVal) {
+            try {
+                const d = new Date(dateVal);
+                if (!isNaN(d.getTime())) {
+                    dateDisplay = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                } else {
+                    dateDisplay = dateVal;
+                }
+            } catch (e) {
+                dateDisplay = dateVal;
+            }
+        }
 
         html += `
             <tr class="hover:bg-pink-50/30 transition">
@@ -7268,6 +7542,9 @@ function renderProductsTable(products) {
                 <td class="p-4 font-bold text-primary text-sm">${p.salePrice || (p.priceNumber?.toLocaleString() + '₫')}</td>
                 <td class="p-4 text-[11px] font-semibold text-gray-600">
                     Q10: <b class="text-gray-900">${stockQ10}</b> • Q1: <b class="text-gray-900">${stockQ1}</b> • TD: <b class="text-gray-900">${stockTD}</b>
+                </td>
+                <td class="p-4 text-[11px] text-gray-500 font-mono whitespace-nowrap">
+                    <i class="fa-regular fa-clock text-gray-400 mr-1"></i>${dateDisplay}
                 </td>
                 <td class="p-4">${activeBadge}</td>
                 <td class="p-4 text-center">
@@ -8283,8 +8560,24 @@ async function toggleProduct(productId, productName, currentActive) {
     }
 }
 
+function sortProductsByColumn(col) {
+    const sel = document.getElementById("sortProductSelect");
+    if (!sel) return;
+    if (col === "name") {
+        sel.value = sel.value === "name_asc" ? "name_desc" : "name_asc";
+    } else if (col === "priceLevel") {
+        sel.value = sel.value === "price_level_asc" ? "price_level_desc" : "price_level_asc";
+    } else if (col === "type") {
+        sel.value = sel.value === "type_arranged" ? "type_direct" : "type_arranged";
+    } else if (col === "updated") {
+        sel.value = sel.value === "updated_desc" ? "updated_asc" : "updated_desc";
+    }
+    loadAdminProducts();
+}
+
 if (typeof window !== "undefined") {
     window.loadAdminProducts = loadAdminProducts;
+    window.sortProductsByColumn = sortProductsByColumn;
     window.openProductModal = openProductModal;
     window.closeProductModal = closeProductModal;
     window.editProduct = editProduct;
@@ -10178,6 +10471,139 @@ async function loadAdminCompanyInfo() {
     console.groupEnd();
 }
 
+const OPERATING_DAYS_MAP = [
+    { key: "T2", label: "Thứ 2", full: "Thứ 2" },
+    { key: "T3", label: "Thứ 3", full: "Thứ 3" },
+    { key: "T4", label: "Thứ 4", full: "Thứ 4" },
+    { key: "T5", label: "Thứ 5", full: "Thứ 5" },
+    { key: "T6", label: "Thứ 6", full: "Thứ 6" },
+    { key: "T7", label: "Thứ 7", full: "Thứ 7" },
+    { key: "CN", label: "Chủ Nhật", full: "Chủ Nhật" }
+];
+
+let companyActiveDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+let branchActiveDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+
+function formatOperatingDays(daysList) {
+    if (!daysList || daysList.length === 0) return "Thứ 2 - Chủ Nhật";
+    if (daysList.length === 7) return "Thứ 2 - Chủ Nhật";
+    const allWeekdays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    const isT2T7 = daysList.length === 6 && allWeekdays.every(d => daysList.includes(d));
+    if (isT2T7) return "Thứ 2 - Thứ 7";
+    const isT2T6 = daysList.length === 5 && ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"].every(d => daysList.includes(d));
+    if (isT2T6) return "Thứ 2 - Thứ 6";
+    return daysList.join(", ");
+}
+
+function parseDaysFromHoursString(hoursStr) {
+    if (!hoursStr || typeof hoursStr !== "string") return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    if (hoursStr.includes("Thứ 2 - Thứ 6")) {
+        return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"];
+    } else if (hoursStr.includes("Thứ 2 - Thứ 7")) {
+        return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    } else if (hoursStr.includes("Thứ 2 - Chủ Nhật") || hoursStr.includes("Hàng ngày")) {
+        return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    }
+    const matched = [];
+    ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"].forEach(d => {
+        if (hoursStr.includes(d)) matched.push(d);
+    });
+    return matched.length > 0 ? matched : ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+}
+
+function renderOperatingDaysPills(target = "company") {
+    const isCompany = target === "company";
+    const containerId = isCompany ? "companyDaysPills" : "branchDaysPills";
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const currentList = isCompany ? companyActiveDays : branchActiveDays;
+    let html = "";
+    OPERATING_DAYS_MAP.forEach(d => {
+        const isChecked = currentList.includes(d.full);
+        const btnClass = isChecked
+            ? "px-2.5 py-1 bg-primary text-white font-bold text-xs rounded-lg shadow-2xs transition flex items-center"
+            : "px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium text-xs rounded-lg transition flex items-center";
+        html += `<button type="button" onclick="toggleOperatingDay('${target}', '${d.full}')" class="${btnClass}">
+            <i class="fa-solid ${isChecked ? 'fa-circle-check text-white' : 'fa-circle text-gray-300'} text-[10px] mr-1"></i>${d.label}
+        </button>`;
+    });
+    el.innerHTML = html;
+
+    const formattedDays = formatOperatingDays(currentList);
+    const hiddenId = isCompany ? "companyDaysValue" : "branchDaysValue";
+    const hiddenEl = document.getElementById(hiddenId);
+    if (hiddenEl) hiddenEl.value = formattedDays;
+
+    if (isCompany) syncCompanyHoursFromControls();
+    else if (typeof syncBranchHoursFromControls === "function") syncBranchHoursFromControls();
+}
+
+function toggleOperatingDay(target, day) {
+    let list = target === "company" ? companyActiveDays : branchActiveDays;
+    if (list.includes(day)) {
+        if (list.length > 1) {
+            list = list.filter(d => d !== day);
+        }
+    } else {
+        list.push(day);
+    }
+    if (target === "company") companyActiveDays = list;
+    else branchActiveDays = list;
+    renderOperatingDaysPills(target);
+}
+
+function selectOperatingDaysPreset(target, preset) {
+    let list = [];
+    if (preset === "all") {
+        list = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    } else if (preset === "t2_t7") {
+        list = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    } else if (preset === "t2_t6") {
+        list = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"];
+    }
+    if (target === "company") companyActiveDays = list;
+    else branchActiveDays = list;
+    renderOperatingDaysPills(target);
+}
+
+function populateOperatingTimeSelects(openSelectId, closeSelectId, defaultOpen = "07:00", defaultClose = "21:00") {
+    const openEl = document.getElementById(openSelectId);
+    const closeEl = document.getElementById(closeSelectId);
+    if (!openEl || !closeEl) return;
+
+    let optionsHtml = '';
+    for (let h = 5; h <= 23; h++) {
+        for (let m = 0; m < 60; m += 30) {
+            const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            optionsHtml += `<option value="${timeStr}">${timeStr}</option>`;
+        }
+    }
+    openEl.innerHTML = optionsHtml;
+    closeEl.innerHTML = optionsHtml;
+    openEl.value = defaultOpen;
+    closeEl.value = defaultClose;
+}
+
+function syncCompanyHoursFromControls() {
+    const openEl = document.getElementById("companyOpenTimeSelect");
+    const closeEl = document.getElementById("companyCloseTimeSelect");
+    const inputEl = document.getElementById("companyHoursInput");
+    const displayEl = document.getElementById("companyHoursDisplay");
+    const previewEl = document.getElementById("previewCompanyHours");
+
+    if (!openEl || !closeEl || !inputEl) return;
+
+    const openTime = openEl.value || "07:00";
+    const closeTime = closeEl.value || "21:00";
+    const days = formatOperatingDays(companyActiveDays);
+
+    const formatted = `${days}: ${openTime} - ${closeTime}`;
+    inputEl.value = formatted;
+    if (displayEl) displayEl.textContent = formatted;
+    if (previewEl) previewEl.textContent = formatted;
+}
+
 function populateCompanyInfoForm(data) {
     if (!data) return;
     const setValue = (id, val) => {
@@ -10199,12 +10625,27 @@ function populateCompanyInfoForm(data) {
     setValue("companyHotlineInput", data.hotline || data.phone);
     setValue("companyPhoneInput", data.phone);
     setValue("companyEmailInput", data.email);
-    setValue("companyHoursInput", data.workingHours);
     setValue("companyFacebookInput", data.facebook);
     setValue("companyInstagramInput", data.instagram);
     setValue("companyZaloInput", data.zalo);
     setValue("companyMapUrlInput", data.mapUrl);
     setValue("companyMapEmbedUrlInput", data.mapEmbedUrl);
+
+    // Phân giải và đồng bộ Giờ Mở Cửa kiểu hh:mm vào select box
+    populateOperatingTimeSelects("companyOpenTimeSelect", "companyCloseTimeSelect", "07:00", "21:00");
+    const workingHours = data.workingHours || "Thứ 2 - Chủ Nhật: 07:00 - 21:00";
+    setValue("companyHoursInput", workingHours);
+
+    const matchTime = workingHours.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+    if (matchTime) {
+        const openTime = matchTime[1].length === 4 ? `0${matchTime[1]}` : matchTime[1];
+        const closeTime = matchTime[2].length === 4 ? `0${matchTime[2]}` : matchTime[2];
+        setValue("companyOpenTimeSelect", openTime);
+        setValue("companyCloseTimeSelect", closeTime);
+    }
+    companyActiveDays = parseDaysFromHoursString(workingHours);
+    renderOperatingDaysPills("company");
+    syncCompanyHoursFromControls();
 }
 
 function updateLiveCompanyPreview(data) {
@@ -10605,6 +11046,11 @@ if (typeof window !== "undefined") {
     window.DEFAULT_STATIC_COMPANY_INFO = DEFAULT_STATIC_COMPANY_INFO;
     window.loadAdminCompanyInfo = loadAdminCompanyInfo;
     window.handleCompanyInfoSubmit = handleCompanyInfoSubmit;
+    window.syncCompanyHoursFromControls = syncCompanyHoursFromControls;
+    window.populateOperatingTimeSelects = populateOperatingTimeSelects;
+    window.renderOperatingDaysPills = renderOperatingDaysPills;
+    window.toggleOperatingDay = toggleOperatingDay;
+    window.selectOperatingDaysPreset = selectOperatingDaysPreset;
     window.loadAdminPaymentConfig = loadAdminPaymentConfig;
     window.onPaymentMethodToggle = onPaymentMethodToggle;
     window.savePaymentConfig = savePaymentConfig;
@@ -12371,7 +12817,7 @@ if (typeof document !== "undefined" && document.readyState !== "loading") {
     loadAdminCompanyInfo();
 }
 
-function openAdminPortalModal(initialTab = null) {
+function openAdminPortalModal(initialTab = null, initialSubTab = null) {
     // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
     if (initialTab === "company" || initialTab === "translations" || initialTab === "banners") {
         openSystemConfigModal(initialTab);
@@ -12473,6 +12919,13 @@ function openAdminPortalModal(initialTab = null) {
     const targetTab = initialTab || ((typeof getDefaultTabForRole === "function") ? getDefaultTabForRole(user.role, "cms") : "orders");
     switchAdminTab(targetTab);
 
+    if (targetTab === "inventory" && initialSubTab) {
+        if (typeof switchInventorySubView === "function") {
+            switchInventorySubView(initialSubTab);
+        } else if (typeof window !== "undefined" && typeof window.switchInventorySubView === "function") {
+            window.switchInventorySubView(initialSubTab);
+        }
+    }
 }
 
 function closeAdminPortalModal() {
@@ -14301,7 +14754,30 @@ function applyStorefrontCompanyInfo(info) {
 
     if (info.workingHours) {
         setText('footerHours', info.workingHours);
-        setText('storeHoursVal', info.workingHours);
+        if (!activeBranch) {
+            const hoursEl = document.getElementById('storeHoursVal');
+            const statusBadge = document.getElementById('storeStatusBadge');
+            const statusInfo = typeof getStoreOperatingStatus === 'function' ? getStoreOperatingStatus(info.workingHours) : null;
+            if (statusBadge && statusInfo) {
+                if (statusInfo.status === "closed" || statusInfo.status === "closed_before_open") {
+                    statusBadge.className = "inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-rose-200 shadow-2xs";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> <span id="storeStatusVal">Đã đóng cửa</span>`;
+                } else if (statusInfo.status === "closing_soon") {
+                    statusBadge.className = "inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-amber-200 shadow-2xs";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> <span id="storeStatusVal">Sắp đóng cửa</span>`;
+                } else {
+                    statusBadge.className = "inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200 shadow-2xs";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="storeStatusVal">Đang mở cửa</span>`;
+                }
+            }
+            if (hoursEl) {
+                if (statusInfo) {
+                    hoursEl.innerHTML = `<div class="flex items-center gap-2 flex-wrap mt-0.5">${statusInfo.badgeHtml}<span class="text-xs text-gray-600 font-medium">${info.workingHours}</span></div>`;
+                } else {
+                    setText('storeHoursVal', info.workingHours);
+                }
+            }
+        }
     }
 
     if (info.companyName) {

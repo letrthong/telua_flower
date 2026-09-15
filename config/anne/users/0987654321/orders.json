@@ -1,5 +1,13 @@
 [
   {
+    "orderId": "ord_20260904_adm",
+    "orderCode": "NHTB-20260904-ADM",
+    "branchId": "branch_q10",
+    "yearMonth": "2026_09",
+    "status": "confirmed",
+    "createdAt": "2026-09-04T11:00:00Z"
+  },
+  {
     "id": "ord_20260822_001",
     "orderCode": "NHTB_20260822_001",
     "createdAt": "2026-08-22T07:15:00Z",

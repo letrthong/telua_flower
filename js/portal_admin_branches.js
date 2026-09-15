@@ -149,6 +149,31 @@ function renderBranchesTable(branches) {
     tbody.innerHTML = html;
 }
 
+export function syncBranchHoursFromControls() {
+    const openEl = document.getElementById("branchOpenTimeSelect");
+    const closeEl = document.getElementById("branchCloseTimeSelect");
+    const inputEl = document.getElementById("branchOpenHours");
+    if (!openEl || !closeEl || !inputEl) return;
+
+    const openTime = openEl.value || "07:30";
+    const closeTime = closeEl.value || "21:00";
+
+    const getDaysFn = typeof formatOperatingDays === "function" 
+        ? formatOperatingDays 
+        : (typeof window !== "undefined" && typeof window.formatOperatingDays === "function" ? window.formatOperatingDays : null);
+    
+    const activeDays = (typeof branchActiveDays !== "undefined") 
+        ? branchActiveDays 
+        : (typeof window !== "undefined" && window.branchActiveDays ? window.branchActiveDays : ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"]);
+    
+    const daysStr = getDaysFn ? getDaysFn(activeDays) : "Thứ 2 - Chủ Nhật";
+    if (daysStr && daysStr !== "Thứ 2 - Chủ Nhật") {
+        inputEl.value = `${openTime} - ${closeTime} (${daysStr})`;
+    } else {
+        inputEl.value = `${openTime} - ${closeTime}`;
+    }
+}
+
 export function openBranchModal(isEdit = false) {
     const modal = document.getElementById("branchModal");
     const title = document.getElementById("branchModalTitle");
@@ -162,9 +187,24 @@ export function openBranchModal(isEdit = false) {
         form.reset();
         document.getElementById("editBranchId").value = "";
         document.getElementById("branchRadius").value = 10;
-        document.getElementById("branchOpenHours").value = "07:30 - 21:00";
         document.getElementById("branchLat").value = 10.7769;
         document.getElementById("branchLng").value = 106.7009;
+        if (typeof populateOperatingTimeSelects === "function") {
+            populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+        } else if (typeof window !== "undefined" && typeof window.populateOperatingTimeSelects === "function") {
+            window.populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+        }
+
+        if (typeof window !== "undefined") {
+            window.branchActiveDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+        }
+        if (typeof renderOperatingDaysPills === "function") {
+            renderOperatingDaysPills("branch");
+        } else if (typeof window !== "undefined" && typeof window.renderOperatingDaysPills === "function") {
+            window.renderOperatingDaysPills("branch");
+        }
+
+        syncBranchHoursFromControls();
         if (title) title.textContent = "Mở Thêm Chi Nhánh Showroom Mới";
     }
 
@@ -189,7 +229,39 @@ export function editBranch(branchId) {
     document.getElementById("branchCode").value = b.code || "";
     document.getElementById("branchAddress").value = b.address || "";
     document.getElementById("branchPhone").value = b.phone || "";
-    document.getElementById("branchOpenHours").value = b.openHours || "07:30 - 21:00";
+    
+    if (typeof populateOperatingTimeSelects === "function") {
+        populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+    } else if (typeof window !== "undefined" && typeof window.populateOperatingTimeSelects === "function") {
+        window.populateOperatingTimeSelects("branchOpenTimeSelect", "branchCloseTimeSelect", "07:30", "21:00");
+    }
+
+    const rawHours = b.openHours || "07:30 - 21:00";
+    document.getElementById("branchOpenHours").value = rawHours;
+    const matchTime = rawHours.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+    if (matchTime) {
+        const openTime = matchTime[1].length === 4 ? `0${matchTime[1]}` : matchTime[1];
+        const closeTime = matchTime[2].length === 4 ? `0${matchTime[2]}` : matchTime[2];
+        const openEl = document.getElementById("branchOpenTimeSelect");
+        const closeEl = document.getElementById("branchCloseTimeSelect");
+        if (openEl) openEl.value = openTime;
+        if (closeEl) closeEl.value = closeTime;
+    }
+
+    const parseDaysFn = typeof parseDaysFromHoursString === "function" 
+        ? parseDaysFromHoursString 
+        : (typeof window !== "undefined" && typeof window.parseDaysFromHoursString === "function" ? window.parseDaysFromHoursString : null);
+    if (parseDaysFn && typeof window !== "undefined") {
+        window.branchActiveDays = parseDaysFn(rawHours);
+    }
+    if (typeof renderOperatingDaysPills === "function") {
+        renderOperatingDaysPills("branch");
+    } else if (typeof window !== "undefined" && typeof window.renderOperatingDaysPills === "function") {
+        window.renderOperatingDaysPills("branch");
+    }
+
+    syncBranchHoursFromControls();
+
     document.getElementById("branchLat").value = b.lat || 10.7769;
     document.getElementById("branchLng").value = b.lng || 106.7009;
     document.getElementById("branchRadius").value = b.deliveryRadiusKm || 10;
@@ -296,6 +368,7 @@ if (typeof window !== "undefined") {
     window.openBranchModal = openBranchModal;
     window.closeBranchModal = closeBranchModal;
     window.editBranch = editBranch;
+    window.syncBranchHoursFromControls = syncBranchHoursFromControls;
     window.handleBranchSubmit = handleBranchSubmit;
     window.toggleBranch = toggleBranch;
 }

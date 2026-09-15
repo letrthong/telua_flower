@@ -602,6 +602,139 @@ export async function loadAdminCompanyInfo() {
     console.groupEnd();
 }
 
+export const OPERATING_DAYS_MAP = [
+    { key: "T2", label: "Thứ 2", full: "Thứ 2" },
+    { key: "T3", label: "Thứ 3", full: "Thứ 3" },
+    { key: "T4", label: "Thứ 4", full: "Thứ 4" },
+    { key: "T5", label: "Thứ 5", full: "Thứ 5" },
+    { key: "T6", label: "Thứ 6", full: "Thứ 6" },
+    { key: "T7", label: "Thứ 7", full: "Thứ 7" },
+    { key: "CN", label: "Chủ Nhật", full: "Chủ Nhật" }
+];
+
+export let companyActiveDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+export let branchActiveDays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+
+export function formatOperatingDays(daysList) {
+    if (!daysList || daysList.length === 0) return "Thứ 2 - Chủ Nhật";
+    if (daysList.length === 7) return "Thứ 2 - Chủ Nhật";
+    const allWeekdays = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    const isT2T7 = daysList.length === 6 && allWeekdays.every(d => daysList.includes(d));
+    if (isT2T7) return "Thứ 2 - Thứ 7";
+    const isT2T6 = daysList.length === 5 && ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"].every(d => daysList.includes(d));
+    if (isT2T6) return "Thứ 2 - Thứ 6";
+    return daysList.join(", ");
+}
+
+export function parseDaysFromHoursString(hoursStr) {
+    if (!hoursStr || typeof hoursStr !== "string") return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    if (hoursStr.includes("Thứ 2 - Thứ 6")) {
+        return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"];
+    } else if (hoursStr.includes("Thứ 2 - Thứ 7")) {
+        return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    } else if (hoursStr.includes("Thứ 2 - Chủ Nhật") || hoursStr.includes("Hàng ngày")) {
+        return ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    }
+    const matched = [];
+    ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"].forEach(d => {
+        if (hoursStr.includes(d)) matched.push(d);
+    });
+    return matched.length > 0 ? matched : ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+}
+
+export function renderOperatingDaysPills(target = "company") {
+    const isCompany = target === "company";
+    const containerId = isCompany ? "companyDaysPills" : "branchDaysPills";
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const currentList = isCompany ? companyActiveDays : branchActiveDays;
+    let html = "";
+    OPERATING_DAYS_MAP.forEach(d => {
+        const isChecked = currentList.includes(d.full);
+        const btnClass = isChecked
+            ? "px-2.5 py-1 bg-primary text-white font-bold text-xs rounded-lg shadow-2xs transition flex items-center"
+            : "px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium text-xs rounded-lg transition flex items-center";
+        html += `<button type="button" onclick="toggleOperatingDay('${target}', '${d.full}')" class="${btnClass}">
+            <i class="fa-solid ${isChecked ? 'fa-circle-check text-white' : 'fa-circle text-gray-300'} text-[10px] mr-1"></i>${d.label}
+        </button>`;
+    });
+    el.innerHTML = html;
+
+    const formattedDays = formatOperatingDays(currentList);
+    const hiddenId = isCompany ? "companyDaysValue" : "branchDaysValue";
+    const hiddenEl = document.getElementById(hiddenId);
+    if (hiddenEl) hiddenEl.value = formattedDays;
+
+    if (isCompany) syncCompanyHoursFromControls();
+    else if (typeof syncBranchHoursFromControls === "function") syncBranchHoursFromControls();
+}
+
+export function toggleOperatingDay(target, day) {
+    let list = target === "company" ? companyActiveDays : branchActiveDays;
+    if (list.includes(day)) {
+        if (list.length > 1) {
+            list = list.filter(d => d !== day);
+        }
+    } else {
+        list.push(day);
+    }
+    if (target === "company") companyActiveDays = list;
+    else branchActiveDays = list;
+    renderOperatingDaysPills(target);
+}
+
+export function selectOperatingDaysPreset(target, preset) {
+    let list = [];
+    if (preset === "all") {
+        list = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    } else if (preset === "t2_t7") {
+        list = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    } else if (preset === "t2_t6") {
+        list = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"];
+    }
+    if (target === "company") companyActiveDays = list;
+    else branchActiveDays = list;
+    renderOperatingDaysPills(target);
+}
+
+export function populateOperatingTimeSelects(openSelectId, closeSelectId, defaultOpen = "07:00", defaultClose = "21:00") {
+    const openEl = document.getElementById(openSelectId);
+    const closeEl = document.getElementById(closeSelectId);
+    if (!openEl || !closeEl) return;
+
+    let optionsHtml = '';
+    for (let h = 5; h <= 23; h++) {
+        for (let m = 0; m < 60; m += 30) {
+            const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            optionsHtml += `<option value="${timeStr}">${timeStr}</option>`;
+        }
+    }
+    openEl.innerHTML = optionsHtml;
+    closeEl.innerHTML = optionsHtml;
+    openEl.value = defaultOpen;
+    closeEl.value = defaultClose;
+}
+
+export function syncCompanyHoursFromControls() {
+    const openEl = document.getElementById("companyOpenTimeSelect");
+    const closeEl = document.getElementById("companyCloseTimeSelect");
+    const inputEl = document.getElementById("companyHoursInput");
+    const displayEl = document.getElementById("companyHoursDisplay");
+    const previewEl = document.getElementById("previewCompanyHours");
+
+    if (!openEl || !closeEl || !inputEl) return;
+
+    const openTime = openEl.value || "07:00";
+    const closeTime = closeEl.value || "21:00";
+    const days = formatOperatingDays(companyActiveDays);
+
+    const formatted = `${days}: ${openTime} - ${closeTime}`;
+    inputEl.value = formatted;
+    if (displayEl) displayEl.textContent = formatted;
+    if (previewEl) previewEl.textContent = formatted;
+}
+
 function populateCompanyInfoForm(data) {
     if (!data) return;
     const setValue = (id, val) => {
@@ -623,12 +756,27 @@ function populateCompanyInfoForm(data) {
     setValue("companyHotlineInput", data.hotline || data.phone);
     setValue("companyPhoneInput", data.phone);
     setValue("companyEmailInput", data.email);
-    setValue("companyHoursInput", data.workingHours);
     setValue("companyFacebookInput", data.facebook);
     setValue("companyInstagramInput", data.instagram);
     setValue("companyZaloInput", data.zalo);
     setValue("companyMapUrlInput", data.mapUrl);
     setValue("companyMapEmbedUrlInput", data.mapEmbedUrl);
+
+    // Phân giải và đồng bộ Giờ Mở Cửa kiểu hh:mm vào select box
+    populateOperatingTimeSelects("companyOpenTimeSelect", "companyCloseTimeSelect", "07:00", "21:00");
+    const workingHours = data.workingHours || "Thứ 2 - Chủ Nhật: 07:00 - 21:00";
+    setValue("companyHoursInput", workingHours);
+
+    const matchTime = workingHours.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+    if (matchTime) {
+        const openTime = matchTime[1].length === 4 ? `0${matchTime[1]}` : matchTime[1];
+        const closeTime = matchTime[2].length === 4 ? `0${matchTime[2]}` : matchTime[2];
+        setValue("companyOpenTimeSelect", openTime);
+        setValue("companyCloseTimeSelect", closeTime);
+    }
+    companyActiveDays = parseDaysFromHoursString(workingHours);
+    renderOperatingDaysPills("company");
+    syncCompanyHoursFromControls();
 }
 
 function updateLiveCompanyPreview(data) {
@@ -1029,6 +1177,11 @@ if (typeof window !== "undefined") {
     window.DEFAULT_STATIC_COMPANY_INFO = DEFAULT_STATIC_COMPANY_INFO;
     window.loadAdminCompanyInfo = loadAdminCompanyInfo;
     window.handleCompanyInfoSubmit = handleCompanyInfoSubmit;
+    window.syncCompanyHoursFromControls = syncCompanyHoursFromControls;
+    window.populateOperatingTimeSelects = populateOperatingTimeSelects;
+    window.renderOperatingDaysPills = renderOperatingDaysPills;
+    window.toggleOperatingDay = toggleOperatingDay;
+    window.selectOperatingDaysPreset = selectOperatingDaysPreset;
     window.loadAdminPaymentConfig = loadAdminPaymentConfig;
     window.onPaymentMethodToggle = onPaymentMethodToggle;
     window.savePaymentConfig = savePaymentConfig;

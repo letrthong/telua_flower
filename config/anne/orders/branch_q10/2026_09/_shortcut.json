@@ -1,5 +1,58 @@
 [
   {
+    "id": "ord_20260904_adm",
+    "orderCode": "NHTB-20260904-ADM",
+    "createdAt": "2026-09-04T11:00:00Z",
+    "updatedAt": "2026-09-15T15:52:24Z",
+    "status": "confirmed",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "assignedBranchId": "branch_q10",
+    "assignedTo": "staff_001",
+    "assigneeName": "Trần Thị Mai (staff_001)",
+    "createdBy": "0987654321",
+    "creatorName": "Nguyễn Văn A",
+    "totalAmount": 0,
+    "financials": {
+      "totalAmount": 0,
+      "itemsTotal": 0.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "paid",
+      "method": "vietqr"
+    },
+    "recipient": {
+      "name": "Trần Thị Mai",
+      "phone": "0911223344",
+      "address": "Tòa nhà Bitexco, Tầng 12 - Số 2 Hải Triều, Q.1, TP.HCM"
+    },
+    "sender": {
+      "name": "Nguyễn Văn A",
+      "phone": "0987654321"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "",
+      "timeSlot": "09:00 - 11:00"
+    },
+    "items": [
+      {
+        "productId": "bo_hoa_01",
+        "productName": "Mây Trắng Bồng Bềnh",
+        "quantity": 1,
+        "unitPrice": 420000
+      }
+    ],
+    "itemSummary": "Mây Trắng Bồng Bềnh x1",
+    "itemCount": 1,
+    "requiresArranging": true,
+    "customerId": "",
+    "note": "",
+    "detailPath": "orders/branch_q10/2026_09/confirmed/ord_20260904_adm.json"
+  },
+  {
     "id": "ord_20260901_q10",
     "orderCode": "NHTB-20260901-Q10",
     "createdAt": "2026-09-01T08:30:00Z",

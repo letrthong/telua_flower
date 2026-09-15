@@ -1618,7 +1618,30 @@ export function applyStorefrontCompanyInfo(info) {
 
     if (info.workingHours) {
         setText('footerHours', info.workingHours);
-        setText('storeHoursVal', info.workingHours);
+        if (!activeBranch) {
+            const hoursEl = document.getElementById('storeHoursVal');
+            const statusBadge = document.getElementById('storeStatusBadge');
+            const statusInfo = typeof getStoreOperatingStatus === 'function' ? getStoreOperatingStatus(info.workingHours) : null;
+            if (statusBadge && statusInfo) {
+                if (statusInfo.status === "closed" || statusInfo.status === "closed_before_open") {
+                    statusBadge.className = "inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-rose-200 shadow-2xs";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> <span id="storeStatusVal">Đã đóng cửa</span>`;
+                } else if (statusInfo.status === "closing_soon") {
+                    statusBadge.className = "inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-amber-200 shadow-2xs";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span> <span id="storeStatusVal">Sắp đóng cửa</span>`;
+                } else {
+                    statusBadge.className = "inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200 shadow-2xs";
+                    statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span id="storeStatusVal">Đang mở cửa</span>`;
+                }
+            }
+            if (hoursEl) {
+                if (statusInfo) {
+                    hoursEl.innerHTML = `<div class="flex items-center gap-2 flex-wrap mt-0.5">${statusInfo.badgeHtml}<span class="text-xs text-gray-600 font-medium">${info.workingHours}</span></div>`;
+                } else {
+                    setText('storeHoursVal', info.workingHours);
+                }
+            }
+        }
     }
 
     if (info.companyName) {

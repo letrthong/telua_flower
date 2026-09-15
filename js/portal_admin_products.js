@@ -72,11 +72,51 @@ export async function loadAdminProducts() {
                     return normName.includes(normSearch) || id.includes(search) || normComp.includes(normSearch) || normDesc.includes(normSearch);
                 });
             }
+
+            // Sắp xếp danh sách sản phẩm theo tiêu chí người dùng chọn
+            const sortVal = document.getElementById("sortProductSelect")?.value || "updated_desc";
+            displayProducts = [...displayProducts].sort((a, b) => {
+                if (sortVal === "updated_desc") {
+                    const tA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                    const tB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                    return tB - tA;
+                } else if (sortVal === "updated_asc") {
+                    const tA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                    const tB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                    return tA - tB;
+                } else if (sortVal === "name_asc") {
+                    return (a.name || "").localeCompare(b.name || "", 'vi');
+                } else if (sortVal === "name_desc") {
+                    return (b.name || "").localeCompare(a.name || "", 'vi');
+                } else if (sortVal === "price_level_asc") {
+                    const pA = a.priceNumber || 0;
+                    const pB = b.priceNumber || 0;
+                    if (pA !== pB) return pA - pB;
+                    return (a.priceLevelId || "").localeCompare(b.priceLevelId || "");
+                } else if (sortVal === "price_level_desc") {
+                    const pA = a.priceNumber || 0;
+                    const pB = b.priceNumber || 0;
+                    if (pA !== pB) return pB - pA;
+                    return (b.priceLevelId || "").localeCompare(a.priceLevelId || "");
+                } else if (sortVal === "type_arranged") {
+                    const typeA = a.productType || (a.category === "binh_hoa" ? "direct" : "arranged");
+                    const typeB = b.productType || (b.category === "binh_hoa" ? "direct" : "arranged");
+                    if (typeA === typeB) return 0;
+                    return typeA === "arranged" ? -1 : 1;
+                } else if (sortVal === "type_direct") {
+                    const typeA = a.productType || (a.category === "binh_hoa" ? "direct" : "arranged");
+                    const typeB = b.productType || (b.category === "binh_hoa" ? "direct" : "arranged");
+                    if (typeA === typeB) return 0;
+                    return typeA === "direct" ? -1 : 1;
+                }
+                return 0;
+            });
+
             renderProductsTable(displayProducts);
         }
     } catch (e) {
         if (!allAdminProducts || allAdminProducts.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-red-500 font-bold">Lỗi tải sản phẩm: ${e.message}</td></tr>`;
         }
     }
 }
@@ -88,7 +128,7 @@ function renderProductsTable(products) {
     if (products.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="p-12 text-center">
+                <td colspan="10" class="p-12 text-center">
                     <div class="flex flex-col items-center justify-center py-10 text-gray-400">
                         <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-400 flex items-center justify-center text-2xl mb-3 shadow-inner">
                             <i class="fa-solid fa-spa"></i>
@@ -123,24 +163,43 @@ function renderProductsTable(products) {
                         <i class="fa-solid fa-wine-bottle text-amber-600"></i> Bán trực tiếp
                     </span>
                     <div class="text-[10px] text-amber-700 font-bold flex items-center gap-1">
-                        <i class="fa-solid fa-seedling text-[9px] text-amber-500"></i> ${displayStems > 0 ? `${displayStems} cành/sp` : 'Chưa set cành'}
+                        <i class="fa-solid fa-ruler-combined text-[9px] text-amber-500"></i>
+                        <span>${p.specs?.bottleHeightCm ? p.specs.bottleHeightCm + 'cm' : 'Chuẩn'} (${p.specs?.bottleMaterial || 'Thủy tinh'})</span>
                     </div>
-                </div>`;
+                </div>
+            `;
         } else {
             typeBadge = `
                 <div class="space-y-0.5">
-                    <span class="bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
-                        <i class="fa-solid fa-fan text-purple-600"></i> Cắm Phối
+                    <span class="bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-extrabold px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs whitespace-nowrap">
+                        <i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i> Cắm phối
                     </span>
-                    <div class="text-[10px] text-purple-700 font-bold flex items-center gap-1">
-                        <i class="fa-solid fa-layer-group text-[9px] text-purple-500"></i> ${recipeCount > 0 ? `${displayStems} cành (${recipeCount} loại)` : (displayStems > 0 ? `${displayStems} cành` : 'Theo BOM')}
+                    <div class="text-[10px] text-gray-500 flex items-center gap-1">
+                        <i class="fa-solid fa-layer-group text-[9px] text-purple-400"></i>
+                        <span>${recipeCount} loại hoa • ${displayStems} cành</span>
                     </div>
-                </div>`;
+                </div>
+            `;
         }
 
         const stockQ10 = p.stockByBranch?.branch_q10 ?? 0;
         const stockQ1 = p.stockByBranch?.branch_q1 ?? 0;
         const stockTD = p.stockByBranch?.branch_thao_dien ?? 0;
+
+        const dateVal = p.updatedAt || p.createdAt;
+        let dateDisplay = "—";
+        if (dateVal) {
+            try {
+                const d = new Date(dateVal);
+                if (!isNaN(d.getTime())) {
+                    dateDisplay = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                } else {
+                    dateDisplay = dateVal;
+                }
+            } catch (e) {
+                dateDisplay = dateVal;
+            }
+        }
 
         html += `
             <tr class="hover:bg-pink-50/30 transition">
@@ -159,6 +218,9 @@ function renderProductsTable(products) {
                 <td class="p-4 font-bold text-primary text-sm">${p.salePrice || (p.priceNumber?.toLocaleString() + '₫')}</td>
                 <td class="p-4 text-[11px] font-semibold text-gray-600">
                     Q10: <b class="text-gray-900">${stockQ10}</b> • Q1: <b class="text-gray-900">${stockQ1}</b> • TD: <b class="text-gray-900">${stockTD}</b>
+                </td>
+                <td class="p-4 text-[11px] text-gray-500 font-mono whitespace-nowrap">
+                    <i class="fa-regular fa-clock text-gray-400 mr-1"></i>${dateDisplay}
                 </td>
                 <td class="p-4">${activeBadge}</td>
                 <td class="p-4 text-center">
@@ -1174,8 +1236,24 @@ export async function toggleProduct(productId, productName, currentActive) {
     }
 }
 
+export function sortProductsByColumn(col) {
+    const sel = document.getElementById("sortProductSelect");
+    if (!sel) return;
+    if (col === "name") {
+        sel.value = sel.value === "name_asc" ? "name_desc" : "name_asc";
+    } else if (col === "priceLevel") {
+        sel.value = sel.value === "price_level_asc" ? "price_level_desc" : "price_level_asc";
+    } else if (col === "type") {
+        sel.value = sel.value === "type_arranged" ? "type_direct" : "type_arranged";
+    } else if (col === "updated") {
+        sel.value = sel.value === "updated_desc" ? "updated_asc" : "updated_desc";
+    }
+    loadAdminProducts();
+}
+
 if (typeof window !== "undefined") {
     window.loadAdminProducts = loadAdminProducts;
+    window.sortProductsByColumn = sortProductsByColumn;
     window.openProductModal = openProductModal;
     window.closeProductModal = closeProductModal;
     window.editProduct = editProduct;

@@ -623,8 +623,8 @@
                                     <span class="inline-block h-6 md:h-7 w-48 bg-gray-200 rounded animate-pulse"></span>
                                 </h3>
                             </div>
-                            <span id="storeStatusBadge" class="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-200">
-                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> <span id="storeStatusVal">Đang mở cửa</span>
+                            <span id="storeStatusBadge" class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200">
+                                <span class="w-2 h-2 rounded-full bg-gray-400"></span> <span id="storeStatusVal">Đang kiểm tra...</span>
                             </span>
                         </div>
 
@@ -2034,6 +2034,16 @@
                                 <option value="active">🟢 Đang bán (Active)</option>
                                 <option value="inactive">⚪ Đã ẩn (Inactive)</option>
                             </select>
+                            <select id="sortProductSelect" onchange="loadAdminProducts()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary text-gray-700">
+                                <option value="updated_desc">🕒 Mới cập nhật</option>
+                                <option value="updated_asc">🕒 Cập nhật cũ nhất</option>
+                                <option value="name_asc">🔤 Tên: A → Z</option>
+                                <option value="name_desc">🔤 Tên: Z → A</option>
+                                <option value="price_level_asc">🏷️ Tầng giá: Thấp → Cao</option>
+                                <option value="price_level_desc">🏷️ Tầng giá: Cao → Thấp</option>
+                                <option value="type_arranged">🌸 Loại: Cắm phối</option>
+                                <option value="type_direct">🏺 Loại: Bán trực tiếp</option>
+                            </select>
                             <button onclick="openProductModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center flex-shrink-0">
                                 <i class="fa-solid fa-plus mr-1"></i> Thêm Mẫu Hoa Mới
                             </button>
@@ -2047,12 +2057,21 @@
                                 <thead class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
                                     <tr>
                                         <th class="p-3">Hình ảnh</th>
-                                        <th class="p-3">Tên sản phẩm</th>
+                                        <th class="p-3 cursor-pointer select-none hover:text-primary transition" onclick="sortProductsByColumn('name')" title="Bấm để sắp xếp theo Tên">
+                                            Tên sản phẩm <i class="fa-solid fa-sort text-[10px] text-gray-400"></i>
+                                        </th>
                                         <th class="p-3">Danh mục</th>
-                                        <th class="p-3">Loại sản phẩm</th>
-                                        <th class="p-3">Tầng giá</th>
+                                        <th class="p-3 cursor-pointer select-none hover:text-primary transition" onclick="sortProductsByColumn('type')" title="Bấm để sắp xếp theo Loại sản phẩm">
+                                            Loại sản phẩm <i class="fa-solid fa-sort text-[10px] text-gray-400"></i>
+                                        </th>
+                                        <th class="p-3 cursor-pointer select-none hover:text-primary transition" onclick="sortProductsByColumn('priceLevel')" title="Bấm để sắp xếp theo Tầng giá">
+                                            Tầng giá <i class="fa-solid fa-sort text-[10px] text-gray-400"></i>
+                                        </th>
                                         <th class="p-3">Giá bán</th>
                                         <th class="p-3">Tồn kho Showroom</th>
+                                        <th class="p-3 cursor-pointer select-none hover:text-primary transition whitespace-nowrap" onclick="sortProductsByColumn('updated')" title="Bấm để sắp xếp theo Ngày Cập Nhật">
+                                            Cập Nhật <i class="fa-solid fa-sort text-[10px] text-gray-400"></i>
+                                        </th>
                                         <th class="p-3">Trạng thái</th>
                                         <th class="p-3 text-center">Thao tác</th>
                                     </tr>
@@ -2799,9 +2818,40 @@
                                         <label class="block text-xs font-bold text-gray-700 mb-1">Email Tiếp Nhận & CSKH *</label>
                                         <input type="email" id="companyEmailInput" value="cskh@nohoathabinh.vn" placeholder="cskh@nohoathabinh.vn" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition" required>
                                     </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-700 mb-1">Thời Gian Hoạt Động (Giờ Mở Cửa) *</label>
-                                        <input type="text" id="companyHoursInput" value="Thứ 2 - Chủ Nhật: 7:00 - 21:00" placeholder="Thứ 2 - Chủ Nhật: 7:00 - 21:00" class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary focus:bg-white transition" required>
+                                    <div class="space-y-2">
+                                        <label class="block text-xs font-bold text-gray-700">Thời Gian Hoạt Động (Giờ Mở Cửa) *</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <span class="text-[10px] text-gray-500 font-bold block mb-0.5">Giờ Mở Cửa:</span>
+                                                <select id="companyOpenTimeSelect" onchange="syncCompanyHoursFromControls()" class="w-full px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:border-primary">
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <span class="text-[10px] text-gray-500 font-bold block mb-0.5">Giờ Đóng Cửa:</span>
+                                                <select id="companyCloseTimeSelect" onchange="syncCompanyHoursFromControls()" class="w-full px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:border-primary">
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-[10px] text-gray-500 font-bold">Ngày Hoạt Động (Multi-select Box):</span>
+                                                <div class="flex gap-1">
+                                                    <button type="button" onclick="selectOperatingDaysPreset('company', 'all')" class="text-[9px] px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded">Cả tuần</button>
+                                                    <button type="button" onclick="selectOperatingDaysPreset('company', 't2_t7')" class="text-[9px] px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded">T2 - T7</button>
+                                                    <button type="button" onclick="selectOperatingDaysPreset('company', 't2_t6')" class="text-[9px] px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded">T2 - T6</button>
+                                                </div>
+                                            </div>
+                                            <div id="companyDaysPills" class="flex flex-wrap gap-1.5">
+                                            </div>
+                                            <input type="hidden" id="companyDaysValue" value="Thứ 2 - Chủ Nhật">
+                                        </div>
+                                        <div class="px-2.5 py-1.5 bg-pink-50/60 rounded-xl border border-pink-100 flex items-center justify-between">
+                                            <span class="text-[10px] text-gray-500 flex items-center gap-1 font-medium">
+                                                <i class="fa-solid fa-clock text-primary"></i> Hiển thị:
+                                            </span>
+                                            <span id="companyHoursDisplay" class="text-xs font-bold text-primary">Thứ 2 - Chủ Nhật: 07:00 - 21:00</span>
+                                        </div>
+                                        <input type="hidden" id="companyHoursInput" value="Thứ 2 - Chủ Nhật: 07:00 - 21:00">
                                     </div>
                                 </div>
                             </div>
@@ -3941,9 +3991,28 @@
                         <input type="tel" id="branchPhone" placeholder="0976.491.325" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white" required>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Giờ Mở Cửa</label>
-                        <input type="text" id="branchOpenHours" value="07:30 - 21:00" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Khung Giờ Mở Cửa (hh:mm) *</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <select id="branchOpenTimeSelect" onchange="syncBranchHoursFromControls()" class="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary">
+                            </select>
+                            <select id="branchCloseTimeSelect" onchange="syncBranchHoursFromControls()" class="w-full px-2.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-primary">
+                            </select>
+                        </div>
                     </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold text-gray-700">Ngày Mở Cửa Showroom (Multi-select Box) *</label>
+                        <div class="flex gap-1">
+                            <button type="button" onclick="selectOperatingDaysPreset('branch', 'all')" class="text-[9px] px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded">Cả tuần</button>
+                            <button type="button" onclick="selectOperatingDaysPreset('branch', 't2_t7')" class="text-[9px] px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded">T2 - T7</button>
+                        </div>
+                    </div>
+                    <div id="branchDaysPills" class="flex flex-wrap gap-1.5">
+                    </div>
+                    <input type="hidden" id="branchDaysValue" value="Thứ 2 - Chủ Nhật">
+                    <input type="hidden" id="branchOpenHours" value="07:30 - 21:00">
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">

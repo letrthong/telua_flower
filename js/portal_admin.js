@@ -248,7 +248,7 @@ if (typeof document !== "undefined" && document.readyState !== "loading") {
     loadAdminCompanyInfo();
 }
 
-export function openAdminPortalModal(initialTab = null) {
+export function openAdminPortalModal(initialTab = null, initialSubTab = null) {
     // Nếu yêu cầu tab cấu hình hệ thống, chuyển hướng trực tiếp sang modal Cấu Hình Hệ Thống
     if (initialTab === "company" || initialTab === "translations" || initialTab === "banners") {
         openSystemConfigModal(initialTab);
@@ -350,6 +350,13 @@ export function openAdminPortalModal(initialTab = null) {
     const targetTab = initialTab || ((typeof getDefaultTabForRole === "function") ? getDefaultTabForRole(user.role, "cms") : "orders");
     switchAdminTab(targetTab);
 
+    if (targetTab === "inventory" && initialSubTab) {
+        if (typeof switchInventorySubView === "function") {
+            switchInventorySubView(initialSubTab);
+        } else if (typeof window !== "undefined" && typeof window.switchInventorySubView === "function") {
+            window.switchInventorySubView(initialSubTab);
+        }
+    }
 }
 
 export function closeAdminPortalModal() {
