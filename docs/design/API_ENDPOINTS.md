@@ -175,6 +175,18 @@ Nhóm API độc lập dành riêng cho nhân viên thừa hành tác nghiệp c
 
 ---
 
+### 🏷️ 7. Nhóm Quản Lý Phân Tầng Mức Giá & Hạn Mức An Toàn (`/api/flower/v1/price-levels`)
+
+| Method | Endpoint | Quyền hạn | Mô tả |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/flower/v1/price-levels` | Public / Staff | Lấy danh sách các tầng mức giá và khoảng Min-Max (Hỗ trợ ETag Cache) |
+| `GET` | `/api/flower/v1/admin/price-levels` | Admin, Manager | Xem toàn bộ danh sách phân tầng giá thời gian thực phục vụ CMS Quản Trị |
+| `POST` | `/api/flower/v1/admin/price-levels` | `super_admin` | Thêm mới phân tầng giá (Validation: minPrice <= defaultPrice <= maxPrice, mã code duy nhất) |
+| `PUT` | `/api/flower/v1/admin/price-levels/<id>` | `super_admin` | Cập nhật thông tin, mô tả và khung giá trần/sàn |
+| `DELETE` | `/api/flower/v1/admin/price-levels/<id>` | `super_admin` | Xóa phân tầng giá (Tự động chặn nếu có mẫu hoa đang thuộc phân tầng này) |
+
+---
+
 ## 3. Bảng Mã Lỗi Chuẩn HTTP
 
 | Mã lỗi | Trạng thái | Ý nghĩa |

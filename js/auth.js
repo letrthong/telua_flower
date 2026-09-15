@@ -508,6 +508,9 @@ function updateAuthUI() {
                     <button onclick="openAdminPortalModal()" class="w-full flex items-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                         <i class="fa-solid fa-gauge-high mr-2"></i> CMS (Hàng Hóa & Vận Hành)
                     </button>
+                    <button onclick="openAdminPortalModal('inventory')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-amber-900 bg-amber-50/90 hover:bg-amber-100 transition rounded-xl border border-amber-200 shadow-2xs">
+                        <i class="fa-solid fa-boxes-stacked mr-2 text-amber-600"></i> Kho Hàng & Hao Hụt
+                    </button>
                     <button onclick="openUserManagementModal('staff')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50/80 hover:bg-purple-100 transition rounded-xl border border-purple-200">
                         <i class="fa-solid fa-users-gear mr-2 text-purple-600"></i> Quản Lý Người Dùng
                     </button>
@@ -608,6 +611,9 @@ function updateAuthUI() {
                             </button>
                             <button onclick="openAdminPortalModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-primary to-accent hover:opacity-95 transition rounded-xl shadow-xs">
                                 <i class="fa-solid fa-gauge-high mr-2"></i> CMS (Hàng Hóa & Vận Hành)
+                            </button>
+                            <button onclick="openAdminPortalModal('inventory'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-amber-900 bg-amber-50/90 hover:bg-amber-100 transition rounded-xl border border-amber-200 shadow-2xs">
+                                <i class="fa-solid fa-boxes-stacked mr-2 text-amber-600"></i> Kho Hàng & Hao Hụt
                             </button>
                             <button onclick="openUserManagementModal('staff'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition rounded-xl border border-purple-200">
                                 <i class="fa-solid fa-users-gear mr-2 text-purple-600"></i> Quản Lý Người Dùng

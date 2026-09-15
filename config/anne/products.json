@@ -21,7 +21,7 @@
     },
     "dailyQuota": 20,
     "isActive": true,
-    "updatedAt": "2026-09-13T17:28:56Z"
+    "updatedAt": "2026-09-14T16:04:44Z"
   },
   {
     "id": "lan_test_1787964482799",
@@ -42,7 +42,7 @@
     },
     "dailyQuota": 20,
     "isActive": true,
-    "updatedAt": "2026-08-30T03:51:11Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -76,7 +76,7 @@
     },
     "dailyQuota": 11,
     "isActive": false,
-    "updatedAt": "2026-08-25T14:10:21Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -111,7 +111,7 @@
     },
     "dailyQuota": 22,
     "isActive": false,
-    "updatedAt": "2026-08-25T14:15:27Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -146,7 +146,7 @@
     },
     "dailyQuota": 15,
     "isActive": true,
-    "updatedAt": "2026-08-30T04:18:44Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -181,7 +181,7 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-30T07:51:49Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -215,7 +215,7 @@
     },
     "dailyQuota": 14,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -250,7 +250,7 @@
     },
     "dailyQuota": 8,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:20:26Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -284,7 +284,7 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-24T12:00:00Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -319,7 +319,7 @@
     },
     "dailyQuota": 11,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:13:49Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -354,7 +354,7 @@
     },
     "dailyQuota": 8,
     "isActive": true,
-    "updatedAt": "2026-08-30T03:52:48Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -388,7 +388,7 @@
     },
     "dailyQuota": 58,
     "isActive": true,
-    "updatedAt": "2026-09-14T07:37:34.111921+07:00",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "direct"
   },
   {
@@ -423,7 +423,7 @@
     },
     "dailyQuota": 21,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:22:48Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "direct"
   },
   {
@@ -458,7 +458,7 @@
     },
     "dailyQuota": 42,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:14:02Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "direct"
   },
   {
@@ -496,7 +496,7 @@
     },
     "dailyQuota": 19,
     "isActive": true,
-    "updatedAt": "2026-09-13T17:30:45Z"
+    "updatedAt": "2026-09-14T16:04:44Z"
   },
   {
     "id": "lan_01",
@@ -533,7 +533,7 @@
     },
     "dailyQuota": 7,
     "isActive": true,
-    "updatedAt": "2026-09-14T00:36:48Z"
+    "updatedAt": "2026-09-14T16:04:44Z"
   },
   {
     "id": "hoa_cuoi_01",
@@ -567,7 +567,7 @@
     },
     "dailyQuota": 10,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:23:52Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   },
   {
@@ -602,7 +602,7 @@
     },
     "dailyQuota": 12,
     "isActive": true,
-    "updatedAt": "2026-08-30T08:27:10Z",
+    "updatedAt": "2026-09-14T16:04:44Z",
     "productType": "arranged"
   }
 ]

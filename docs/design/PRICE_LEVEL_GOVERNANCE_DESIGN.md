@@ -94,24 +94,48 @@ Hệ thống định nghĩa sẵn 4 phân tầng giá chuẩn do Admin cấu hì
 
 ## 5. Thiết Kế API Endpoints Quản Lý Phân Tầng Giá
 
+Các RESTful API endpoints phân quyền nghiêm ngặt theo chuẩn Blueprint `flower_connect_api`:
+
 | Method | Endpoint | Quyền hạn | Mô tả |
 | :--- | :--- | :---: | :--- |
-| `GET` | `/api/price-levels` | Staff, Manager, Admin | Xem danh sách các tầng mức giá và khoảng Min-Max |
-| `POST` | `/api/admin/price-levels` | `super_admin` | Tạo phân tầng mức giá mới |
-| `PUT` | `/api/admin/price-levels/<id>` | `super_admin` | Điều chỉnh giá sàn (`minPrice`) hoặc giá trần (`maxPrice`) của Level |
-| `PUT` | `/api/admin/products/<id>/price-level` | Manager, Admin | **Gán hoặc Đổi Level mức giá cho một mẫu hoa** |
+| `GET` | `/api/flower/v1/price-levels` | Public / Staff | Xem danh sách các tầng mức giá và khoảng Min-Max (Hỗ trợ ETag Cache) |
+| `GET` | `/api/flower/v1/admin/price-levels` | `super_admin`, `branch_manager` | Xem đầy đủ danh sách phân tầng giá thời gian thực cho Cổng Quản Trị |
+| `POST` | `/api/flower/v1/admin/price-levels` | `super_admin` | Tạo phân tầng mức giá mới (Xác thực minPrice <= defaultPrice <= maxPrice, code duy nhất) |
+| `PUT` | `/api/flower/v1/admin/price-levels/<id>` | `super_admin` | Điều chỉnh tên, mô tả, giá sàn (`minPrice`), giá trần (`maxPrice`), giá đề xuất |
+| `DELETE`| `/api/flower/v1/admin/price-levels/<id>` | `super_admin` | Xóa phân tầng giá (Có hàng rào an toàn chặn xóa nếu đang có sản phẩm sử dụng) |
 
-#### Backend Flask Validator Logic:
-```python
-def validate_product_price(product_id, new_price):
-    product = get_product_by_id(product_id)
-    price_level = get_price_level_by_id(product.get('priceLevelId'))
-    
-    if new_price < price_level['minPrice'] or new_price > price_level['maxPrice']:
-        raise ValidationError(
-            f"Giá bán {new_price:,.0f}₫ không hợp lệ! "
-            f"Mẫu hoa này thuộc phân tầng '{price_level['name']}', "
-            f"chỉ cho phép giá từ {price_level['minPrice']:,.0f}₫ đến {price_level['maxPrice']:,.0f}₫."
-        )
-    return True
-```
+---
+
+## 6. Hàng Rào An Toàn Khi Xóa (Deletion Safety Guardrail)
+
+Để ngăn chặn lỗi mất toàn vẹn dữ liệu (Orphaned Price Levels) khi Admin quản trị phân tầng giá:
+1. **Kiểm tra liên kết sản phẩm:** Khi gọi `DELETE /api/flower/v1/admin/price-levels/<level_id>`, hệ thống quét toàn bộ danh mục sản phẩm trong `products.json`.
+2. **Từ chối thao tác nếu đang sử dụng:** Nếu có bất kỳ mẫu hoa nào đang được gán `priceLevelId` tương ứng, hệ thống lập tức từ chối và trả về HTTP 400 kèm tên chi tiết của các sản phẩm đang dùng.
+3. **Bắt buộc duy trì mức giá tối thiểu:** Hệ thống không cho phép xóa nếu danh sách chỉ còn 1 phân tầng duy nhất.
+
+---
+
+## 7. Giao Diện Quản Trị & Động Hóa Dữ Liệu (No Hardcode JS)
+
+1. **Sub-Tab Quản Trị Trong Cấu Hình Hệ Thống (`index.html`):**
+   - Nằm trong modal Cấu hình hệ thống (`systemConfigModal`) với nút tab `tabSysBtnPriceLevels` (Icon `fa-layer-group`).
+   - Giao diện dạng thẻ trực quan hiển thị Mã (`code`), Tên, Giá Sàn, Giá Đề Xuất, Giá Trần và các nút Sửa / Xóa.
+   - Modal Thêm/Sửa Phân Tầng Giá (`#priceLevelModal`) với bộ kiểm tra số liệu thời gian thực (real-time validation).
+2. **Loại Bỏ Hoàn Toàn Dữ Liệu Tĩnh (Hardcoded) Trên Frontend:**
+   - [`js/portal_admin_state.js`](file:///d:/wmshare/telua_flower/js/portal_admin_state.js): Xóa bỏ đối tượng `PRICE_LEVEL_CONFIG` gán cứng. Dữ liệu được nạp động từ backend và đồng bộ qua hàm `setAdminPriceLevels()`.
+   - [`js/portal_admin_products.js`](file:///d:/wmshare/telua_flower/js/portal_admin_products.js): Hàm `populatePriceLevelSelect()` render động các thẻ `<option>` cho select box chọn mức giá mỗi khi mở modal tạo/sửa mẫu hoa.
+   - Thẻ `<select id="prodPriceLevel">` trong `index.html` loại bỏ các `<option>` tĩnh, bảo đảm tính nhất quán khi Admin tạo thêm tầng mới (ví dụ `LV_05`).
+
+---
+
+## 8. Kiểm Thử Tự Động (Automated Unit Tests)
+
+Toàn bộ các luồng nghiệp vụ trên được bảo vệ bởi bộ kiểm thử tự động tại [`src/unittest/test_admin_price_levels.py`](file:///d:/wmshare/telua_flower/src/unittest/test_admin_price_levels.py) (7/7 tests PASS):
+- `test_01_get_price_levels_public_and_admin`: Kiểm tra phân quyền truy cập.
+- `test_02_create_price_level_success`: Tạo mới mức giá thành công.
+- `test_03_create_price_level_validation_errors`: Chặn thiếu code, min > max, default nằm ngoài khoảng, trùng mã code.
+- `test_04_update_price_level`: Cập nhật thông tin và khoảng giá.
+- `test_05_delete_price_level_guardrail_prevents_in_use`: Chặn xóa mức giá đang có sản phẩm gán.
+- `test_06_delete_price_level_success`: Xóa thành công mức giá độc lập.
+- `test_07_price_governance_with_new_price_level`: Hàng rào kiểm soát giá nhận diện ngay mức giá mới tạo.
+

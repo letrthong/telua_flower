@@ -105,6 +105,10 @@ Tiến độ: [███████████████░] 62.5% (5/8 Task
 - [x] Viết `src/unittest/test_price_governance.py` và `js/unittest/test-portal-governance.js`.
 - [x] Bổ sung Unit Tests kiểm tra tính toàn vẹn Bundle & Global Event Bindings: `src/unittest/test_bundle_integrity.py` (Python) và `js/unittest/test-bundle-integrity.js` (JavaScript Node runner).
 - [x] Nâng cấp CMS Mẫu Hoa (`#productModal`): Giao diện động phân loại Sản Phẩm (`arranged` vs `direct`), tích hợp bộ chọn cành hoa định lượng BOM Recipe từ `materials.json` và quản lý số cành quy cách (`stemCount`) cho hàng bán trực tiếp.
+- [x] Quản trị Phân tầng mức giá trong Cấu hình hệ thống (`tabSysContentPriceLevels`, `price_levels.json`): CRUD RESTful API (`GET`, `POST`, `PUT`, `DELETE /api/flower/v1/admin/price-levels`), modal thêm/sửa mức giá, kiểm tra validation thời gian thực.
+- [x] Loại bỏ hoàn toàn hardcoded JS (`PRICE_LEVEL_CONFIG`, options tĩnh của select `#prodPriceLevel`), chuyển sang nạp động từ API qua `setAdminPriceLevels()` và `populatePriceLevelSelect()`.
+- [x] Thiết lập Hàng rào an toàn (Safety Guardrail) chặn xóa phân tầng giá nếu đang được sản phẩm trong `products.json` sử dụng.
+- [x] Viết bộ unit test chuyên biệt `src/unittest/test_admin_price_levels.py` (7/7 tests PASS).
 
 ---
 
