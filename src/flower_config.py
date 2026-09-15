@@ -128,6 +128,7 @@ PRICE_LEVELS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "price_levels.json")
 PROMOTIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "promotions.json")
 TRANSLATIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "translations.json")
 WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.json")
+PURCHASE_REQUESTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "purchase_requests.json")
 COMPANY_INFO_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "infoCompany.json")
 BANNERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "banners.json")
 

@@ -191,6 +191,47 @@ Hỗ trợ hủy hoa hỏng, dập cánh khi vận chuyển hoặc tồn úa cu�
 ]
 ```
 
+### 3.5. Phiếu Yêu Cầu Nhập Hàng Chi Nhánh (`config/anne/purchase_requests.json` & `config/anne/inventory/requests/{YYYY_MM}/`)
+Cho phép quản lý chi nhánh và thợ cắm hoa gửi đề xuất nhu cầu hoa cành/phụ liệu cần nhập cho đợt tiếp theo:
+
+```json
+[
+  {
+    "id": "req_1789400000_q10",
+    "requestCode": "YCNH_20260916_001",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10",
+    "requestedBy": "staff_001",
+    "requesterName": "Trần Thị Mai (Quản lý CN)",
+    "requestDate": "2026-09-16",
+    "expectedDate": "2026-09-17",
+    "items": [
+      {
+        "materialId": "mat_rose_ohara_white",
+        "name": "Hồng Trắng Ohara Nhập Khẩu",
+        "currentStock": 8,
+        "requestedQty": 100,
+        "unit": "cành",
+        "reason": "Chuẩn bị đơn tiệc cưới cuối tuần"
+      },
+      {
+        "materialId": "mat_daisy_tana",
+        "name": "Cúc Tana Đà Lạt",
+        "currentStock": 5,
+        "requestedQty": 50,
+        "unit": "nhánh",
+        "reason": "Kho cạn dưới mức tối thiểu"
+      }
+    ],
+    "status": "pending",
+    "approvedBy": null,
+    "fulfilledInboundId": null,
+    "notes": "Ưu tiên hoa tươi cành cứng chuẩn bị sự kiện",
+    "createdAt": "2026-09-16T08:00:00Z"
+  }
+]
+```
+
 ---
 
 ## 4. Các Luồng Nghiệp Vụ Chính Trong Mã Nguồn
@@ -234,6 +275,17 @@ Khi khách đặt đơn trên Website:
   $$\mathbf{Tồn\ Cuối\ Kỳ} = \mathbf{Tồn\ Đầu} + \mathbf{Nhập\ Trong\ Tháng} - \mathbf{Xuất\ Bán} - \mathbf{Hao\ Hụt}$$
 - Dữ liệu xuất ra gồm: Bảng tổng hợp số lượng, giá vốn COGS, giá trị tồn kho và tổng tiền thiệt hại do hoa hỏng.
 
+### 4.7. Chu trình Xử Lý Nhập Kho Dựa Vào Yêu Cầu Nhập Hàng (Requisition-based Inbound Fulfillment)
+1. **Bước 1 - Đề xuất nhu cầu (Sub-Tab 2: Yêu Cầu Nhập Hàng)**:
+   - Quản lý chi nhánh theo dõi tồn cành và bấm **"Lập Phiếu Yêu Cầu Nhập Hàng"** (chọn cành, số lượng cần, ngày cần, lý do).
+   - Phiếu ở trạng thái `pending` (Chờ duyệt).
+2. **Bước 2 - Gom đơn & Duyệt nhập (Sub-Tab 3: Xử Lý Nhập Kho & Báo Hủy)**:
+   - Super Admin duyệt yêu cầu, gom đơn đặt nhà vườn (`approved`).
+   - Khi xe hoa về showroom: Thủ kho click **"Duyệt & Nhập Kho Nhanh"**, hệ thống tự động điền danh sách mặt hàng vào Phiếu Nhập Kho (`Inbound Receipt`).
+3. **Bước 3 - Đối soát & Báo hủy**:
+   - Nếu hoa giao đủ và tươi: Xác nhận nhập kho $\rightarrow$ tự động cộng số cành vào `materials.json` của chi nhánh $\rightarrow$ chuyển trạng thái yêu cầu sang `fulfilled`.
+   - Nếu có hoa dập gãy khi vận chuyển: Tạo trực tiếp **Phiếu Báo Hủy (Wastage Report)** đính kèm ảnh chụp để làm bằng chứng đối soát với nhà vườn.
+
 ---
 
 ## 5. Ma Trận Phân Quyền Vai Trò (RBAC Matrix)
@@ -242,21 +294,25 @@ Khi khách đặt đơn trên Website:
 | :--- | :---: | :---: | :---: | :---: |
 | **Xem Ma trận tồn kho toàn chuỗi** | ✅ Toàn quyền | ⚠️ Xem được (mặc định lọc theo CN mình) | ⚠️ Xem được | ⚠️ Xem được |
 | **Sửa hạn mức mở bán (Batch Update)** | ✅ Mọi chi nhánh | ⚠️ **Chỉ sửa chi nhánh mình phụ trách** (`user.branchId`) | ❌ Không có quyền | ❌ Không có quyền |
-| **Tạo phiếu nhập kho (Inbound)** | ✅ Mọi chi nhánh | ✅ Chi nhánh mình | ❌ Không có quyền | ❌ Không có quyền |
-| **Tạo phiếu báo hủy hoa hỏng** | ✅ Mọi chi nhánh | ✅ Chi nhánh mình | ✅ **Chi nhánh mình** | ❌ Không có quyền |
+| **Tạo Yêu Cầu Nhập Hàng (Requisition)** | ✅ Mọi chi nhánh | ✅ **Chi nhánh mình phụ trách** | ✅ **Chi nhánh mình** | ❌ Không có quyền |
+| **Duyệt & Xử lý Nhập Kho theo Yêu Cầu** | ✅ Toàn quyền | ⚠️ **Chi nhánh mình phụ trách** | ❌ Không có quyền | ❌ Không có quyền |
+| **Tạo phiếu báo hủy hoa hỏng kèm ảnh** | ✅ Mọi chi nhánh | ✅ Chi nhánh mình | ✅ **Chi nhánh mình** | ❌ Không có quyền |
 | **Xem Báo cáo Nhập - Xuất - Tồn tháng** | ✅ Toàn quyền | ⚠️ Xem chi nhánh mình | ❌ Không có quyền | ❌ Không có quyền |
 
 ---
 
-## 6. Danh Sách RESTful API Endpoints Đang Hoạt Động
+## 6. Danh Sách RESTful API Endpoints
 
-Tất cả các endpoints đã được kiểm thử và đang vận hành tại [src/restful_blueprint_flower_connect.py](file:///d:/wmshare/telua_flower/src/restful_blueprint_flower_connect.py):
+Tất cả các endpoints vận hành tại [src/restful_blueprint_flower_connect.py](file:///d:/wmshare/telua_flower/src/restful_blueprint_flower_connect.py):
 
 | Method | Endpoint | Quyền (RBAC) | Chức năng thực tế trong Code |
 | :--- | :--- | :---: | :--- |
 | `GET` | `/api/flower/v1/admin/inventory/matrix` | Staff, Manager, Super Admin | Lấy dữ liệu bảng ma trận tồn kho toàn chuỗi (Hạn mức mở bán, Đã bán, Hao hụt, Tồn khả dụng). |
 | `PUT` / `POST` | `/api/flower/v1/admin/inventory/batch` | Manager, Super Admin | Cập nhật nhanh số lượng hạn mức mở bán cho nhiều sản phẩm/chi nhánh cùng lúc. |
 | `GET` | `/api/flower/v1/admin/inventory/materials` | Staff, Manager, Super Admin | Lấy danh sách cành hoa và phụ liệu trong kho (`materials.json`). |
+| `GET` | `/api/flower/v1/admin/inventory/requests` | Staff, Manager, Super Admin | Lấy danh sách các phiếu yêu cầu nhập hàng từ các chi nhánh (`purchase_requests.json`). |
+| `POST` | `/api/flower/v1/admin/inventory/requests` | Staff, Manager, Super Admin | Tạo phiếu yêu cầu nhập hoa cành/nguyên phụ liệu từ chi nhánh. |
+| `POST` | `/api/flower/v1/admin/inventory/requests/<id>/fulfill` | Manager, Super Admin | Xử lý yêu cầu nhập hàng, chuyển đổi thành Phiếu Nhập Kho và cập nhật tồn cành. |
 | `GET` | `/api/flower/v1/admin/inventory/inbounds` | Manager, Super Admin | Lấy danh sách các phiếu nhập hàng theo tháng và chi nhánh. |
 | `POST` | `/api/flower/v1/admin/inventory/inbounds` | Manager, Super Admin | Tạo phiếu nhập kho mới, tự động cộng dồn số lượng cành vào `materials.json` hoặc `products.json`. |
 | `GET` | `/api/flower/v1/admin/inventory/wastage` | Staff, Manager, Super Admin | Lấy danh sách lịch sử các phiếu báo hủy hoa hỏng. |
@@ -264,3 +320,4 @@ Tất cả các endpoints đã được kiểm thử và đang vận hành tại
 | `GET` | `/api/flower/v1/admin/inventory/monthly-report` | Manager, Super Admin | Lấy báo cáo Nhập – Xuất – Tồn theo tháng (hỗ trợ lọc tháng, chi nhánh, loại hàng). |
 | `GET` | `/api/flower/v1/products/<id>/stock` | Public Storefront | Lấy tồn kho thời gian thực của 1 mẫu hoa tại tất cả chi nhánh. |
 | `POST` | `/api/flower/v1/inventory/smart-route` | Internal / Orders | Xác định chi nhánh gần địa chỉ nhận nhất còn đủ tồn kho để giao hàng. |
+

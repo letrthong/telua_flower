@@ -7941,7 +7941,7 @@ function onProductTypeChange() {
     } else {
         if (directSec) directSec.classList.add("hidden");
         if (recipeSec) recipeSec.classList.remove("hidden");
-        populateRecipeMaterialDropdown();
+        await populateRecipeMaterialDropdown();
     }
 }
 
@@ -7953,6 +7953,9 @@ async function populateRecipeMaterialDropdown() {
         if (typeof window !== "undefined" && window.allAdminMaterials && window.allAdminMaterials.length > 0) {
             cachedAdminMaterials = window.allAdminMaterials;
         } else {
+            if (select.options.length <= 1) {
+                select.innerHTML = `<option value="">⏳ Đang tải cành hoa từ kho...</option>`;
+            }
             try {
                 const token = typeof getAuthToken === "function" ? getAuthToken() : "";
                 const res = await fetch(`${API_BASE}/admin/inventory/materials`, {
@@ -8167,7 +8170,7 @@ function openProductModal(isEdit = false) {
         if (prodTypeSelect) prodTypeSelect.value = "arranged";
         const stemInput = document.getElementById("prodStemCount");
         if (stemInput) stemInput.value = "";
-        onProductTypeChange();
+        await onProductTypeChange();
         renderProductModalStockFields({});
     }
 
@@ -8323,7 +8326,7 @@ async function editProduct(productId) {
         stemInput.value = (prod.stemCount !== undefined && prod.stemCount !== null) ? prod.stemCount : "";
     }
     editingProductRecipe = Array.isArray(prod.recipe) ? JSON.parse(JSON.stringify(prod.recipe)) : [];
-    onProductTypeChange();
+    await onProductTypeChange();
     renderEditingProductRecipe();
 
     await populatePriceLevelSelect(prod.priceLevelId);
@@ -11872,7 +11875,10 @@ function openInboundModal() {
 
     const tbody = document.getElementById("inboundItemsTableBody");
     if (tbody) tbody.innerHTML = "";
-    addInboundItemRow();
+    
+    // Đảm bảo dữ liệu cành hoa (materials) được tải đầy đủ trước khi mở modal
+    await ensureAdminMaterialsLoaded();
+    await addInboundItemRow();
 
     modal.style.display = "flex";
     modal.classList.remove("hidden");
@@ -11886,12 +11892,31 @@ function closeInboundModal() {
     }
 }
 
-function addInboundItemRow() {
-    const tbody = document.getElementById("inboundItemsTableBody");
-    if (!tbody) return;
+async function ensureAdminMaterialsLoaded() {
+    if (allAdminMaterials && allAdminMaterials.length > 0) return allAdminMaterials;
+    if (typeof window !== "undefined" && window.allAdminMaterials && window.allAdminMaterials.length > 0) {
+        allAdminMaterials = window.allAdminMaterials;
+        return allAdminMaterials;
+    }
+    try {
+        const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+        const res = await fetch(`${API_BASE}/admin/inventory/materials`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                allAdminMaterials = json.data;
+                if (typeof window !== "undefined") window.allAdminMaterials = json.data;
+            }
+        }
+    } catch (e) {
+        console.warn("Không thể tải danh sách materials cho inbound modal:", e);
+    }
+    return allAdminMaterials;
+}
 
-    const rowId = "inbound_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
-
+function getInboundMaterialOptionsHtml() {
     let options = "";
     if (allAdminMaterials && allAdminMaterials.length > 0) {
         options += `<optgroup label="Cành Hoa & Hàng Trực Tiếp (materials.json)">`;
@@ -11906,6 +11931,19 @@ function addInboundItemRow() {
     } else {
         options = `<option value="" disabled>Chưa có sản phẩm direct nào trong kho materials.json</option>`;
     }
+    return options;
+}
+
+async function addInboundItemRow() {
+    const tbody = document.getElementById("inboundItemsTableBody");
+    if (!tbody) return;
+
+    if (!allAdminMaterials || allAdminMaterials.length === 0) {
+        await ensureAdminMaterialsLoaded();
+    }
+
+    const rowId = "inbound_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+    const options = getInboundMaterialOptionsHtml();
 
     const tr = document.createElement("tr");
     tr.id = rowId;

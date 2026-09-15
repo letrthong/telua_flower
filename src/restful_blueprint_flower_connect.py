@@ -111,7 +111,11 @@ from inventory_service import (
     find_best_routing_branch,
     create_inbound_receipt,
     get_inbound_receipts,
-    get_monthly_inventory_report
+    get_monthly_inventory_report,
+    get_purchase_requests,
+    create_purchase_request,
+    update_purchase_request_status,
+    fulfill_purchase_request
 )
 from data_service import (
     get_materials,
@@ -1883,6 +1887,99 @@ def api_get_inbounds():
     return jsonify({
         "success": True,
         "data": receipts
+    }), 200
+
+
+# ---------------------------------------------------------------------------
+# API: YÊU CẦU NHẬP HÀNG & XỬ LÝ NHẬP KHO (PURCHASE REQUISITION & FULFILLMENT)
+# ---------------------------------------------------------------------------
+
+@flower_connect_api.route("/admin/inventory/requests", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_get_purchase_requests():
+    """Lấy danh sách các phiếu yêu cầu nhập hàng từ các chi nhánh."""
+    month_str = request.args.get("month")
+    branch_id = request.args.get("branchId")
+    status = request.args.get("status")
+
+    current_user = request.current_user
+    if current_user and current_user.get("role") in ["branch_manager", "florist"] and not branch_id:
+        branch_id = current_user.get("branchId")
+
+    requests_list = get_purchase_requests(month_str=month_str, branch_id=branch_id, status=status)
+    return jsonify({
+        "success": True,
+        "data": requests_list
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/requests", methods=["POST"])
+@require_role(["super_admin", "branch_manager", "florist"])
+def api_create_purchase_request():
+    """Tạo mới phiếu yêu cầu nhập hoa tươi / phụ liệu từ chi nhánh."""
+    data = request.get_json(silent=True) or {}
+    current_user = request.current_user
+
+    if current_user.get("role") not in ["super_admin"]:
+        data["branchId"] = current_user.get("branchId")
+
+    success, res = create_purchase_request(data, user_dict=current_user)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": res
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã tạo phiếu yêu cầu nhập hàng thành công!",
+        "data": res
+    }), 201
+
+
+@flower_connect_api.route("/admin/inventory/requests/<request_id>", methods=["PUT"])
+@require_role(["super_admin", "branch_manager"])
+def api_update_purchase_request(request_id):
+    """Cập nhật trạng thái phiếu yêu cầu (approved, rejected, etc.)."""
+    data = request.get_json(silent=True) or {}
+    new_status = data.get("status")
+    notes = data.get("processNotes") or data.get("notes")
+    current_user = request.current_user
+
+    success, res = update_purchase_request_status(request_id, new_status, user_dict=current_user, notes=notes)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": res
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": f"Đã cập nhật trạng thái phiếu yêu cầu sang '{new_status}'!",
+        "data": res
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/requests/<request_id>/fulfill", methods=["POST"])
+@require_role(["super_admin", "branch_manager", "florist"])
+def api_fulfill_purchase_request(request_id):
+    """
+    Xử lý Yêu cầu nhập hàng: Lập Phiếu Nhập Kho thực tế và gắn trạng thái fulfilled.
+    """
+    data = request.get_json(silent=True) or {}
+    current_user = request.current_user
+
+    success, res = fulfill_purchase_request(request_id, data, user_dict=current_user)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": res
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã xử lý nhập kho thành công từ yêu cầu nhập hàng!",
+        "data": res
     }), 200
 
 

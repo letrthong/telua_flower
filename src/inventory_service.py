@@ -685,6 +685,209 @@ def get_inbound_receipts(
     return receipts
 
 
+# ---------------------------------------------------------------------------
+# QUẢN LÝ YÊU CẦU NHẬP HÀNG (PURCHASE REQUISITIONS & FULFILLMENT)
+# ---------------------------------------------------------------------------
+
+def get_purchase_requests(
+    month_str: Optional[str] = None,
+    branch_id: Optional[str] = None,
+    status: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """Lấy danh sách các phiếu yêu cầu nhập hàng từ các chi nhánh."""
+    req_file = get_config_path("purchase_requests.json")
+    requests_list = read_json(req_file, default=[])
+    if not isinstance(requests_list, list):
+        requests_list = []
+
+    res = []
+    month_filter = month_str[:7].replace("_", "-") if month_str else None
+
+    for r in requests_list:
+        if not isinstance(r, dict):
+            continue
+        if branch_id and branch_id != "all" and r.get("branchId") != branch_id:
+            continue
+        if status and status != "all" and r.get("status") != status:
+            continue
+        if month_filter:
+            r_date = r.get("requestDate") or r.get("createdAt", "")[:10]
+            if not r_date.startswith(month_filter):
+                continue
+        res.append(r)
+
+    res.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
+    return res
+
+
+def create_purchase_request(
+    data: Dict[str, Any],
+    user_dict: Optional[Dict[str, Any]] = None
+) -> Tuple[bool, Union[Dict[str, Any], str]]:
+    """
+    Tạo phiếu yêu cầu nhập hoa tươi / phụ liệu từ chi nhánh.
+    Lưu vào config/anne/purchase_requests.json
+    """
+    if not data or not isinstance(data, dict):
+        return False, "Dữ liệu yêu cầu không hợp lệ"
+
+    branch_id = data.get("branchId")
+    if not branch_id:
+        return False, "Vui lòng chọn chi nhánh gửi yêu cầu"
+
+    items = data.get("items") or []
+    if not items or not isinstance(items, list):
+        return False, "Yêu cầu nhập hàng phải có ít nhất 1 mặt hàng"
+
+    parsed_items = []
+    total_stems = 0
+    estimated_cost = 0
+
+    for itm in items:
+        mat_id = itm.get("materialId") or itm.get("id")
+        qty = int(itm.get("requestedQty") or itm.get("quantity") or 0)
+        if qty <= 0:
+            continue
+        mat_info = get_material_by_id(mat_id) or {}
+        mat_name = itm.get("name") or itm.get("materialName") or mat_info.get("name") or "Cành hoa"
+        unit = itm.get("unit") or mat_info.get("unit") or "cành"
+        cost = int(itm.get("costPrice") or mat_info.get("costPrice") or 0)
+        current_stock = int(mat_info.get("stockByBranch", {}).get(branch_id, 0)) if mat_info else 0
+
+        parsed_items.append({
+            "materialId": mat_id,
+            "materialName": mat_name,
+            "currentStock": current_stock,
+            "requestedQty": qty,
+            "unit": unit,
+            "costPrice": cost,
+            "reason": (itm.get("reason") or "").strip()
+        })
+        total_stems += qty
+        estimated_cost += qty * cost
+
+    if not parsed_items:
+        return False, "Số lượng cành hoa yêu cầu phải lớn hơn 0"
+
+    now_dt = datetime.now(VN_TZ)
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    req_date = data.get("requestDate") or now_dt.strftime("%Y-%m-%d")
+    expected_date = data.get("expectedDate") or (now_dt + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    req_id = f"req_{int(now_dt.timestamp())}_{uuid.uuid4().hex[:4]}"
+    req_code = f"YCNH_{now_dt.strftime('%Y%m%d')}_{uuid.uuid4().hex[:3].upper()}"
+
+    requester_id = (user_dict.get("id") or user_dict.get("userId")) if user_dict else "staff"
+    requester_name = (user_dict.get("fullName") or user_dict.get("name")) if user_dict else data.get("requesterName", "Quản lý CN")
+
+    branch_info = get_branch_by_id(branch_id)
+    branch_name = branch_info.get("name", branch_id) if branch_info else branch_id
+
+    req_obj = {
+        "id": req_id,
+        "requestCode": req_code,
+        "branchId": branch_id,
+        "branchName": branch_name,
+        "requestedBy": requester_id,
+        "requesterName": requester_name,
+        "requestDate": req_date,
+        "expectedDate": expected_date,
+        "items": parsed_items,
+        "totalItems": len(parsed_items),
+        "totalStems": total_stems,
+        "estimatedCost": estimated_cost,
+        "status": "pending",
+        "approvedBy": None,
+        "fulfilledInboundId": None,
+        "notes": (data.get("notes") or "").strip(),
+        "createdAt": now_iso
+    }
+
+    req_file = get_config_path("purchase_requests.json")
+    all_reqs = read_json(req_file, default=[])
+    if not isinstance(all_reqs, list):
+        all_reqs = []
+    all_reqs.insert(0, req_obj)
+    write_json(req_file, all_reqs)
+
+    return True, req_obj
+
+
+def update_purchase_request_status(
+    request_id: str,
+    new_status: str,
+    user_dict: Optional[Dict[str, Any]] = None,
+    notes: Optional[str] = None
+) -> Tuple[bool, Union[Dict[str, Any], str]]:
+    """Cập nhật trạng thái phiếu yêu cầu (pending, approved, rejected, fulfilled)."""
+    valid_statuses = ["pending", "approved", "rejected", "fulfilled"]
+    if new_status not in valid_statuses:
+        return False, f"Trạng thái không hợp lệ: {new_status}"
+
+    req_file = get_config_path("purchase_requests.json")
+    all_reqs = read_json(req_file, default=[])
+    target = None
+
+    for r in all_reqs:
+        if r.get("id") == request_id or r.get("requestCode") == request_id:
+            target = r
+            break
+
+    if not target:
+        return False, "Không tìm thấy phiếu yêu cầu nhập hàng"
+
+    target["status"] = new_status
+    if user_dict and new_status == "approved":
+        target["approvedBy"] = user_dict.get("fullName") or user_dict.get("name") or user_dict.get("id")
+    if notes:
+        target["processNotes"] = notes.strip()
+    target["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    write_json(req_file, all_reqs)
+    return True, target
+
+
+def fulfill_purchase_request(
+    request_id: str,
+    inbound_data: Dict[str, Any],
+    user_dict: Optional[Dict[str, Any]] = None
+) -> Tuple[bool, Union[Dict[str, Any], str]]:
+    """
+    Xử lý Yêu cầu nhập hàng:
+    1. Tạo Phiếu Nhập Kho thực tế (create_inbound_receipt).
+    2. Gắn fulfilledInboundId vào phiếu yêu cầu và đổi trạng thái sang 'fulfilled'.
+    """
+    req_file = get_config_path("purchase_requests.json")
+    all_reqs = read_json(req_file, default=[])
+    target = None
+    for r in all_reqs:
+        if r.get("id") == request_id or r.get("requestCode") == request_id:
+            target = r
+            break
+
+    if not target:
+        return False, "Không tìm thấy phiếu yêu cầu nhập hàng để xử lý"
+
+    # Lập phiếu nhập kho
+    ok, receipt_or_err = create_inbound_receipt(inbound_data, user_dict=user_dict)
+    if not ok:
+        return False, receipt_or_err
+
+    receipt = receipt_or_err
+    target["status"] = "fulfilled"
+    target["fulfilledInboundId"] = receipt.get("id")
+    target["fulfilledInboundCode"] = receipt.get("inboundCode")
+    target["fulfilledAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if user_dict:
+        target["fulfilledBy"] = user_dict.get("fullName") or user_dict.get("name") or user_dict.get("id")
+
+    write_json(req_file, all_reqs)
+    return True, {
+        "request": target,
+        "inboundReceipt": receipt
+    }
+
+
 def deduct_order_materials(order_dict: Dict[str, Any], branch_id: str) -> Tuple[bool, str]:
     """
     Trừ hoa cành trong materials.json khi đơn hàng hoàn thành cắm hoa (status -> photo_sent/delivered).

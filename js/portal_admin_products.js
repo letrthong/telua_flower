@@ -617,7 +617,7 @@ export function onProductTypeChange() {
     } else {
         if (directSec) directSec.classList.add("hidden");
         if (recipeSec) recipeSec.classList.remove("hidden");
-        populateRecipeMaterialDropdown();
+        await populateRecipeMaterialDropdown();
     }
 }
 
@@ -629,6 +629,9 @@ export async function populateRecipeMaterialDropdown() {
         if (typeof window !== "undefined" && window.allAdminMaterials && window.allAdminMaterials.length > 0) {
             cachedAdminMaterials = window.allAdminMaterials;
         } else {
+            if (select.options.length <= 1) {
+                select.innerHTML = `<option value="">⏳ Đang tải cành hoa từ kho...</option>`;
+            }
             try {
                 const token = typeof getAuthToken === "function" ? getAuthToken() : "";
                 const res = await fetch(`${API_BASE}/admin/inventory/materials`, {
@@ -843,7 +846,7 @@ export function openProductModal(isEdit = false) {
         if (prodTypeSelect) prodTypeSelect.value = "arranged";
         const stemInput = document.getElementById("prodStemCount");
         if (stemInput) stemInput.value = "";
-        onProductTypeChange();
+        await onProductTypeChange();
         renderProductModalStockFields({});
     }
 
@@ -999,7 +1002,7 @@ export async function editProduct(productId) {
         stemInput.value = (prod.stemCount !== undefined && prod.stemCount !== null) ? prod.stemCount : "";
     }
     editingProductRecipe = Array.isArray(prod.recipe) ? JSON.parse(JSON.stringify(prod.recipe)) : [];
-    onProductTypeChange();
+    await onProductTypeChange();
     renderEditingProductRecipe();
 
     await populatePriceLevelSelect(prod.priceLevelId);

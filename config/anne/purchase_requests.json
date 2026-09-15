@@ -1,0 +1,39 @@
+[
+  {
+    "id": "req_1789400000_q10",
+    "requestCode": "YCNH_20260916_001",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10",
+    "requestedBy": "staff_001",
+    "requesterName": "Trần Thị Mai (Quản lý CN)",
+    "requestDate": "2026-09-16",
+    "expectedDate": "2026-09-17",
+    "items": [
+      {
+        "materialId": "mat_rose_ohara_white",
+        "materialName": "Hồng Trắng Ohara Nhập Khẩu",
+        "currentStock": 8,
+        "requestedQty": 100,
+        "unit": "cành",
+        "costPrice": 18000,
+        "reason": "Chuẩn bị đơn tiệc cưới cuối tuần"
+      },
+      {
+        "materialId": "mat_daisy_tana",
+        "materialName": "Cúc Tana Đà Lạt",
+        "currentStock": 5,
+        "requestedQty": 50,
+        "unit": "nhánh",
+        "costPrice": 8000,
+        "reason": "Kho cạn dưới mức tối thiểu"
+      }
+    ],
+    "totalStems": 150,
+    "estimatedCost": 2200000,
+    "status": "pending",
+    "approvedBy": null,
+    "fulfilledInboundId": null,
+    "notes": "Ưu tiên hoa tươi cành cứng chuẩn bị sự kiện thứ Bảy",
+    "createdAt": "2026-09-16T08:00:00Z"
+  }
+]
