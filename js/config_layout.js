@@ -79,16 +79,16 @@ export const ADMIN_NAVIGATION_CONFIG = [
           },
           {
             key: "materials",
-            label: "Kho Cành Hoa & Phụ Liệu",
-            icon: "fa-solid fa-seedling",
+            label: "2. Yêu Cầu Nhập Hàng",
+            icon: "fa-solid fa-clipboard-list",
             btnId: "subViewBtnMaterials",
             subViewId: "inventoryMaterialsSubView",
             roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT]
           },
           {
             key: "inbounds",
-            label: "Phiếu Nhập & Báo Hủy",
-            icon: "fa-solid fa-truck-ramp-box",
+            label: "3. Xử Lý Nhập Kho & Báo Hủy",
+            icon: "fa-solid fa-boxes-packing",
             btnId: "subViewBtnInbounds",
             subViewId: "inventoryInboundsSubView",
             roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]

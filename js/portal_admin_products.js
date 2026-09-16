@@ -606,7 +606,7 @@ export async function handleGalleryFileUpload(event) {
 let editingProductRecipe = [];
 let cachedAdminMaterials = [];
 
-export function onProductTypeChange() {
+export async function onProductTypeChange() {
     const pType = document.getElementById("prodProductType")?.value || "arranged";
     const directSec = document.getElementById("prodDirectStemsSection");
     const recipeSec = document.getElementById("prodRecipeSection");
@@ -793,7 +793,7 @@ export function renderEditingProductRecipe() {
     }
 }
 
-export function openProductModal(isEdit = false) {
+export async function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");
     const title = document.getElementById("productModalTitle");
     const form = document.getElementById("productForm");

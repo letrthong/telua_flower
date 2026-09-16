@@ -2180,10 +2180,10 @@
                                 <i class="fa-solid fa-table-cells"></i> 1. Hạn Mức Mở Bán
                             </button>
                             <button type="button" onclick="switchInventorySubView('materials')" id="subViewBtnMaterials" class="py-2.5 px-2 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-seedling text-emerald-600"></i> 2. Kho Cành Hoa & Phụ Liệu
+                                <i class="fa-solid fa-clipboard-list text-emerald-600"></i> 2. Yêu Cầu Nhập Hàng
                             </button>
                             <button type="button" onclick="switchInventorySubView('inbounds')" id="subViewBtnInbounds" class="py-2.5 px-2 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-truck-ramp-box text-blue-600"></i> 3. Phiếu Nhập & Báo Hủy
+                                <i class="fa-solid fa-boxes-packing text-blue-600"></i> 3. Xử Lý Nhập Kho & Báo Hủy
                             </button>
                             <button type="button" onclick="switchInventorySubView('monthly_report')" id="subViewBtnMonthlyReport" class="py-2.5 px-2 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-chart-pie text-purple-600"></i> 4. Báo Cáo Nhập-Xuất-Tồn Tháng
@@ -2231,62 +2231,141 @@
                         </div>
                     </div>
 
-                    <!-- VIEW 2: KHO CÀNH HOA & PHỤ LIỆU (RAW MATERIALS) -->
-                    <div id="inventoryMaterialsSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-4 p-4 sm:p-5">
+                    <!-- VIEW 2: YÊU CẦU NHẬP HÀNG & KHO CÀNH HOA -->
+                    <div id="inventoryMaterialsSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-6 p-4 sm:p-5">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
                             <div>
                                 <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-seedling text-emerald-600"></i> Kho Cành Hoa & Nguyên Vật Liệu Tươi
+                                    <i class="fa-solid fa-clipboard-list text-emerald-600"></i> Yêu Cầu Nhập Hàng & Tồn Kho Cành Hoa
                                 </h5>
-                                <p class="text-[11px] text-gray-400">Theo dõi số lượng cành hoa thực tế trong kho từng showroom, đơn giá vốn và cảnh báo cạn kho</p>
+                                <p class="text-[11px] text-gray-400">Lập đề xuất nhập hoa cành từ showroom, theo dõi số lượng cành thực tế và cảnh báo cạn kho</p>
                             </div>
                             <div class="flex items-center gap-2">
-                                <button type="button" onclick="loadAdminMaterials()" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                                <button type="button" onclick="loadAdminMaterials(); loadAdminPurchaseRequests();" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
                                     <i class="fa-solid fa-arrows-rotate"></i> Làm Mới
                                 </button>
-                                <button type="button" onclick="openInboundModal()" class="px-3.5 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
-                                    <i class="fa-solid fa-truck-ramp-box"></i> Nhập Thêm Hoa Cành
+                                <button type="button" onclick="openPurchaseRequestModal()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                                    <i class="fa-solid fa-file-circle-plus"></i> Lập Yêu Cầu Nhập Hàng
                                 </button>
                             </div>
                         </div>
-                        <div class="overflow-x-auto border border-gray-100 rounded-xl">
-                            <table class="w-full text-left text-xs" id="materialsTable">
-                                <thead id="materialsTableHeader" class="bg-emerald-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
-                                    <tr>
-                                        <th class="p-3">Mã Cành Hoa</th>
-                                        <th class="p-3">Tên Hoa Cành / Phụ Liệu</th>
-                                        <th class="p-3">Phân Loại</th>
-                                        <th class="p-3 text-center">ĐVT</th>
-                                        <th class="p-3 text-right">Đơn Giá Vốn (₫)</th>
-                                        <!-- Branch headers inserted by JS -->
-                                        <th class="p-3 text-center">Tồn Toàn Chuỗi</th>
-                                        <th class="p-3 text-center">Ngưỡng Tối Thiểu</th>
-                                        <th class="p-3 text-center">Trạng Thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="materialsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                    <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Đang tải kho cành hoa & nguyên liệu...</td></tr>
-                                </tbody>
-                            </table>
+
+                        <!-- Danh Sách Phiếu Yêu Cầu Nhập Hàng (Requisitions) -->
+                        <div class="space-y-3">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-list-check text-emerald-600"></i> Danh Sách Phiếu Đề Xuất Nhập Hàng (Purchase Requisitions)
+                                </h6>
+                                <div class="flex items-center gap-2">
+                                    <label class="text-[11px] text-gray-500 font-medium">Trạng thái:</label>
+                                    <select id="filterRequestStatus" onchange="filterAdminPurchaseRequests()" class="px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
+                                        <option value="ALL">Tất Cả</option>
+                                        <option value="PENDING">Chờ Duyệt (Pending)</option>
+                                        <option value="APPROVED">Đã Duyệt (Approved)</option>
+                                        <option value="FULFILLED">Đã Nhập Kho (Fulfilled)</option>
+                                        <option value="REJECTED">Từ Chối (Rejected)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                                <table class="w-full text-left text-xs" id="purchaseRequestsTable">
+                                    <thead class="bg-emerald-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-3">Mã Yêu Cầu</th>
+                                            <th class="p-3">Chi Nhánh</th>
+                                            <th class="p-3">Ngày Tạo</th>
+                                            <th class="p-3">Ngày Cần Hàng</th>
+                                            <th class="p-3">Người Lập</th>
+                                            <th class="p-3">Mặt Hàng Đề Xuất</th>
+                                            <th class="p-3 text-center">Ưu Tiên</th>
+                                            <th class="p-3 text-center">Trạng Thái</th>
+                                            <th class="p-3 text-center">Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="purchaseRequestsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                        <tr><td colspan="9" class="p-6 text-center text-gray-400 font-medium">Đang tải danh sách yêu cầu nhập hàng...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Kho Cành Hoa & Nguyên Vật Liệu Tươi -->
+                        <div class="space-y-3 pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-seedling text-emerald-600"></i> Tồn Kho Cành Hoa Tươi Hiện Tại (Raw Materials)
+                                </h6>
+                            </div>
+                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                                <table class="w-full text-left text-xs" id="materialsTable">
+                                    <thead id="materialsTableHeader" class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-3">Mã Cành Hoa</th>
+                                            <th class="p-3">Tên Hoa Cành / Phụ Liệu</th>
+                                            <th class="p-3">Phân Loại</th>
+                                            <th class="p-3 text-center">ĐVT</th>
+                                            <th class="p-3 text-right">Đơn Giá Vốn (₫)</th>
+                                            <!-- Branch headers inserted by JS -->
+                                            <th class="p-3 text-center">Tồn Toàn Chuỗi</th>
+                                            <th class="p-3 text-center">Ngưỡng Tối Thiểu</th>
+                                            <th class="p-3 text-center">Trạng Thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="materialsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                        <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Đang tải kho cành hoa & nguyên liệu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- VIEW 3: QUẢN LÝ NHẬP HÀNG & NHẬT KÝ BÁO HỦY -->
+                    <!-- VIEW 3: XỬ LÝ NHẬP KHO DỰA VÀO YÊU CẦU & NHẬT KÝ BÁO HỦY -->
                     <div id="inventoryInboundsSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-6 p-4 sm:p-5">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
                             <div>
                                 <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-truck-ramp-box text-blue-600"></i> Quản Lý Nhập Hàng & Báo Hủy Hoa Hỏng
+                                    <i class="fa-solid fa-boxes-packing text-blue-600"></i> Xử Lý Nhập Kho Dựa Vào Yêu Cầu & Báo Hủy
                                 </h5>
-                                <p class="text-[11px] text-gray-400">Ghi nhận phiếu nhập hoa cành từ nhà vườn Đà Lạt & phiếu báo hủy hoa dập nát</p>
+                                <p class="text-[11px] text-gray-400">Xử lý hàng đợi yêu cầu từ showroom, lập phiếu nhập hoa cành và phiếu báo hủy hoa dập nát</p>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap">
                                 <button type="button" onclick="openWastageModal()" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Báo Hủy Hoa Hỏng
                                 </button>
                                 <button type="button" onclick="openInboundModal()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
-                                    <i class="fa-solid fa-plus"></i> Lập Phiếu Nhập Kho
+                                    <i class="fa-solid fa-plus"></i> Lập Phiếu Nhập Thủ Công
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Hàng Đợi Yêu Cầu Nhập Hàng Chờ Xử Lý (Queue) -->
+                        <div class="space-y-3 bg-blue-50/40 p-4 rounded-xl border border-blue-100">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h6 class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-hourglass-half text-blue-600"></i> Hàng Đợi Yêu Cầu Chờ Nhập Kho (Pending Requisition Queue)
+                                    </h6>
+                                    <p class="text-[10px] text-blue-700">Các yêu cầu nhập hoa từ showroom đang chờ nhập kho thực tế khi hoa về</p>
+                                </div>
+                                <span id="pendingRequisitionCountBadge" class="px-2.5 py-0.5 bg-blue-200 text-blue-800 text-[10px] font-bold rounded-full">0 yêu cầu</span>
+                            </div>
+                            <div class="overflow-x-auto border border-blue-200/60 rounded-xl bg-white">
+                                <table class="w-full text-left text-xs" id="pendingFulfillmentTable">
+                                    <thead class="bg-blue-50/80 text-blue-900 font-bold uppercase tracking-wider border-b border-blue-100">
+                                        <tr>
+                                            <th class="p-2.5">Mã Yêu Cầu</th>
+                                            <th class="p-2.5">Chi Nhánh</th>
+                                            <th class="p-2.5">Ngày Cần Hàng</th>
+                                            <th class="p-2.5">Mặt Hàng Đề Xuất</th>
+                                            <th class="p-2.5 text-center">Ưu Tiên</th>
+                                            <th class="p-2.5 text-center">Trạng Thái</th>
+                                            <th class="p-2.5 text-center">Hành Động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pendingFulfillmentTableBody" class="divide-y divide-blue-50 font-medium text-gray-700">
+                                        <tr><td colspan="7" class="p-4 text-center text-gray-400 font-medium">Không có yêu cầu nhập hàng nào đang chờ xử lý.</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -4364,6 +4443,92 @@
         </div>
     </div>
 
+    <!-- ================= MODAL LẬP YÊU CẦU NHẬP HÀNG (PURCHASE REQUISITION) ================= -->
+    <div id="purchaseRequestModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4" style="display: none;">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-emerald-100 max-h-[92vh] flex flex-col animate-fadeIn">
+            <div class="px-6 py-4 bg-emerald-50/70 border-b border-emerald-100 flex justify-between items-center">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-gray-800">Lập Phiếu Đề Xuất / Yêu Cầu Nhập Hàng</h3>
+                        <p class="text-[11px] text-gray-500">Gửi yêu cầu nhập hoa cành cho showroom, chuyển sang hàng đợi xử lý khi hoa về</p>
+                    </div>
+                </div>
+                <button onclick="closePurchaseRequestModal()" class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <form id="purchaseRequestForm" onsubmit="handlePurchaseRequestSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                <div id="purchaseRequestModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Chi Nhánh Đề Xuất *</label>
+                        <select id="purchaseRequestBranchSelect" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-600 focus:bg-white" required>
+                            <!-- Dynamic branches -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Ngày Cần Hàng *</label>
+                        <input type="date" id="purchaseRequestNeededDateInput" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-600 focus:bg-white" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Mức Độ Ưu Tiên *</label>
+                        <select id="purchaseRequestPrioritySelect" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-emerald-600 focus:bg-white" required>
+                            <option value="normal">Bình thường (Normal)</option>
+                            <option value="high">Ưu tiên cao (High)</option>
+                            <option value="urgent">Khẩn cấp (Urgent)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Danh Sách Mặt Hàng Đề Xuất -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-seedling text-emerald-600"></i>
+                            Chi Tiết Mặt Hàng Cần Nhập *
+                        </label>
+                        <button type="button" onclick="addPurchaseRequestItemRow()" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-bold rounded-lg border border-emerald-200 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[10px]"></i> Thêm Mặt Hàng
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
+                                <tr>
+                                    <th class="p-2.5">Mặt Hàng (Cành Hoa / Phụ Liệu)</th>
+                                    <th class="p-2.5 w-32 text-center">Số Lượng Đề Xuất</th>
+                                    <th class="p-2.5 w-36">Ghi Chú Yêu Cầu</th>
+                                    <th class="p-2.5 w-10 text-center">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchaseRequestItemsTableBody" class="divide-y divide-gray-100">
+                                <!-- Dynamic rows via addPurchaseRequestItemRow() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Lý Do / Ghi Chú Đề Xuất</label>
+                    <textarea id="purchaseRequestNotesInput" rows="2" placeholder="VD: Bổ sung hoa cho sự kiện khai trương cuối tuần, tồn kho cành đỏ sắp hết..." class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-emerald-600 focus:bg-white resize-none"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+                    <button type="button" onclick="closePurchaseRequestModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
+                    <button type="submit" id="btnSubmitPurchaseRequest" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi Yêu Cầu Nhập Hàng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ================= MODAL LẬP PHIẾU NHẬP HÀNG (INBOUND RECEIPT) ================= -->
     <div id="inboundModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4" style="display: none;">
         <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden border border-blue-100 max-h-[92vh] flex flex-col animate-fadeIn">
@@ -4459,6 +4624,6 @@
     </div>
 
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="/js/bundle.js?v=20260910_02"></script>
+    <script src="/js/bundle.js?v=20260916_01"></script>
 </body>
 </html>

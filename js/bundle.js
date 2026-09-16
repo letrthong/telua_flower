@@ -1055,16 +1055,16 @@ const ADMIN_NAVIGATION_CONFIG = [
           },
           {
             key: "materials",
-            label: "Kho Cành Hoa & Phụ Liệu",
-            icon: "fa-solid fa-seedling",
+            label: "2. Yêu Cầu Nhập Hàng",
+            icon: "fa-solid fa-clipboard-list",
             btnId: "subViewBtnMaterials",
             subViewId: "inventoryMaterialsSubView",
             roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT]
           },
           {
             key: "inbounds",
-            label: "Phiếu Nhập & Báo Hủy",
-            icon: "fa-solid fa-truck-ramp-box",
+            label: "3. Xử Lý Nhập Kho & Báo Hủy",
+            icon: "fa-solid fa-boxes-packing",
             btnId: "subViewBtnInbounds",
             subViewId: "inventoryInboundsSubView",
             roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER]
@@ -7930,7 +7930,7 @@ async function handleGalleryFileUpload(event) {
 let editingProductRecipe = [];
 let cachedAdminMaterials = [];
 
-function onProductTypeChange() {
+async function onProductTypeChange() {
     const pType = document.getElementById("prodProductType")?.value || "arranged";
     const directSec = document.getElementById("prodDirectStemsSection");
     const recipeSec = document.getElementById("prodRecipeSection");
@@ -8117,7 +8117,7 @@ function renderEditingProductRecipe() {
     }
 }
 
-function openProductModal(isEdit = false) {
+async function openProductModal(isEdit = false) {
     const modal = document.getElementById("productModal");
     const title = document.getElementById("productModalTitle");
     const form = document.getElementById("productForm");
@@ -11311,6 +11311,8 @@ let currentInventoryBranches = [];
 let allAdminWastageReports = [];
 let allAdminMaterials = [];
 let allAdminInbounds = [];
+let allAdminPurchaseRequests = [];
+let currentFulfillingRequestId = null;
 let currentMonthlyReport = null;
 
 async function loadAdminInventory() {
@@ -11626,16 +11628,483 @@ function switchInventorySubView(view) {
         loadAdminInventory();
     } else if (view === "materials") {
         loadAdminMaterials();
+        loadAdminPurchaseRequests();
     } else if (view === "inbounds") {
         loadAdminInbounds();
         loadAdminWastageHistory();
+        loadAdminPurchaseRequests();
     } else if (view === "monthly_report") {
         loadMonthlyInventoryReport();
     }
 }
 
 // ----------------------------------------------------
-// SUB-TAB 2: KHO CÀNH HOA & PHỤ LIỆU (RAW MATERIALS)
+// SUB-TAB 2.1: YÊU CẦU NHẬP HÀNG (PURCHASE REQUISITIONS)
+// ----------------------------------------------------
+async function loadAdminPurchaseRequests() {
+    const tbody = document.getElementById("purchaseRequestsTableBody");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/inventory/requests`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        if (!res.ok) throw new Error("Không thể tải danh sách yêu cầu nhập hàng");
+        const json = await res.json();
+        if (json.success && json.data) {
+            allAdminPurchaseRequests = json.data;
+            if (typeof window !== "undefined") window.allAdminPurchaseRequests = allAdminPurchaseRequests;
+            renderAdminPurchaseRequestsTable();
+            renderPendingFulfillmentRequestsTable();
+        }
+    } catch (e) {
+        console.warn("Lỗi khi tải yêu cầu nhập hàng:", e);
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-medium">Lỗi: ${e.message}</td></tr>`;
+        }
+    }
+}
+
+function filterAdminPurchaseRequests() {
+    const filterSelect = document.getElementById("filterRequestStatus");
+    const status = filterSelect?.value || "ALL";
+    let list = allAdminPurchaseRequests;
+    if (status !== "ALL") {
+        list = list.filter(r => r.status === status);
+    }
+    renderAdminPurchaseRequestsTable(list);
+}
+
+function renderAdminPurchaseRequestsTable(requestsToRender) {
+    const tbody = document.getElementById("purchaseRequestsTableBody");
+    if (!tbody) return;
+
+    const list = requestsToRender || allAdminPurchaseRequests;
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400 font-medium">Chưa có đề xuất / yêu cầu nhập hàng nào.</td></tr>`;
+        return;
+    }
+
+    const branchMap = {};
+    if (Array.isArray(allAdminBranches)) {
+        allAdminBranches.forEach(b => {
+            branchMap[b.id] = b.code || b.name.replace("Nở Hoa Thả Bình - Showroom ", "");
+        });
+    }
+
+    let html = "";
+    list.forEach(req => {
+        const bName = branchMap[req.branchId] || req.branchId;
+        const reqDate = req.createdAt ? req.createdAt.substring(0, 10) : "--";
+        const needDate = req.neededDate || "--";
+        
+        let prioBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">Thường</span>`;
+        if (req.priority === "urgent") {
+            prioBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 animate-pulse">Khẩn cấp</span>`;
+        } else if (req.priority === "high") {
+            prioBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Ưu tiên</span>`;
+        }
+
+        let statusBadge = "";
+        if (req.status === "PENDING") {
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Chờ duyệt</span>`;
+        } else if (req.status === "APPROVED") {
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">Đã duyệt</span>`;
+        } else if (req.status === "FULFILLED") {
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Đã nhập kho</span>`;
+        } else if (req.status === "REJECTED") {
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">Từ chối</span>`;
+        }
+
+        const itemsSummary = (req.items || []).map(it => `<div>• <b>${it.name || it.materialId}</b>: ${it.quantity} ${it.unit || "cành"}</div>`).join("");
+
+        let actions = "";
+        if (req.status === "PENDING" || req.status === "APPROVED") {
+            actions = `
+                <button type="button" onclick="fulfillPurchaseRequestFromQueue('${req.id}')" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto" title="Xử lý nhập kho dựa theo yêu cầu này">
+                    <i class="fa-solid fa-bolt text-[10px]"></i> Nhập Kho
+                </button>
+            `;
+        } else if (req.status === "FULFILLED") {
+            actions = `<span class="text-[10px] text-emerald-700 font-mono font-bold">${req.inboundId || "Đã xong"}</span>`;
+        } else {
+            actions = `<span class="text-[10px] text-gray-400 italic">Không khả dụng</span>`;
+        }
+
+        html += `
+            <tr class="hover:bg-emerald-50/20 transition">
+                <td class="p-3 font-mono text-xs font-bold text-emerald-800">${req.id}</td>
+                <td class="p-3 font-bold text-gray-800">${bName}</td>
+                <td class="p-3 text-gray-500">${reqDate}</td>
+                <td class="p-3 font-semibold text-gray-700">${needDate}</td>
+                <td class="p-3 text-gray-600">${req.requestedBy || "admin"}</td>
+                <td class="p-3 text-xs text-gray-700">${itemsSummary || "--"}</td>
+                <td class="p-3 text-center">${prioBadge}</td>
+                <td class="p-3 text-center">${statusBadge}</td>
+                <td class="p-3 text-center">${actions}</td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+function renderPendingFulfillmentRequestsTable() {
+    const tbody = document.getElementById("pendingFulfillmentTableBody");
+    const badge = document.getElementById("pendingRequisitionCountBadge");
+    if (!tbody) return;
+
+    const pendingList = (allAdminPurchaseRequests || []).filter(r => r.status === "PENDING" || r.status === "APPROVED");
+    if (badge) {
+        badge.textContent = `${pendingList.length} yêu cầu`;
+    }
+
+    if (pendingList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400 font-medium">Không có yêu cầu nhập hàng nào đang chờ xử lý.</td></tr>`;
+        return;
+    }
+
+    const branchMap = {};
+    if (Array.isArray(allAdminBranches)) {
+        allAdminBranches.forEach(b => {
+            branchMap[b.id] = b.code || b.name.replace("Nở Hoa Thả Bình - Showroom ", "");
+        });
+    }
+
+    let html = "";
+    pendingList.forEach(req => {
+        const bName = branchMap[req.branchId] || req.branchId;
+        const needDate = req.neededDate || "--";
+
+        let prioBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">Thường</span>`;
+        if (req.priority === "urgent") {
+            prioBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">Khẩn cấp</span>`;
+        } else if (req.priority === "high") {
+            prioBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Ưu tiên</span>`;
+        }
+
+        const itemsSummary = (req.items || []).map(it => `<div>• <b>${it.name || it.materialId}</b>: ${it.quantity} ${it.unit || "cành"}</div>`).join("");
+
+        let statusText = req.status === "APPROVED" ? `<span class="text-blue-700 font-bold">Đã duyệt</span>` : `<span class="text-amber-700 font-bold">Chờ duyệt</span>`;
+
+        html += `
+            <tr class="hover:bg-blue-50/40 transition">
+                <td class="p-2.5 font-mono text-xs font-bold text-blue-900">${req.id}</td>
+                <td class="p-2.5 font-bold text-gray-800">${bName}</td>
+                <td class="p-2.5 font-semibold text-gray-700">${needDate}</td>
+                <td class="p-2.5 text-xs text-gray-700">${itemsSummary || "--"}</td>
+                <td class="p-2.5 text-center">${prioBadge}</td>
+                <td class="p-2.5 text-center text-xs">${statusText}</td>
+                <td class="p-2.5 text-center">
+                    <button type="button" onclick="fulfillPurchaseRequestFromQueue('${req.id}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition flex items-center gap-1.5 mx-auto">
+                        <i class="fa-solid fa-bolt text-[10px]"></i> Xử Lý Nhập Kho
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+async function openPurchaseRequestModal(prefillMaterialId) {
+    const modal = document.getElementById("purchaseRequestModal");
+    const branchSelect = document.getElementById("purchaseRequestBranchSelect");
+    const dateInput = document.getElementById("purchaseRequestNeededDateInput");
+    const notesInput = document.getElementById("purchaseRequestNotesInput");
+    const errBox = document.getElementById("purchaseRequestModalError");
+
+    if (!modal) return;
+    if (errBox) errBox.classList.add("hidden");
+    if (notesInput) notesInput.value = "";
+
+    if (dateInput) {
+        const target = new Date();
+        target.setDate(target.getDate() + 2);
+        const y = target.getFullYear();
+        const m = String(target.getMonth() + 1).padStart(2, '0');
+        const d = String(target.getDate()).padStart(2, '0');
+        dateInput.value = `${y}-${m}-${d}`;
+    }
+
+    if (branchSelect) {
+        branchSelect.innerHTML = "";
+        const currentUser = typeof getCurrentUser === "function" ? getCurrentUser() : null;
+        const isSuperAdmin = currentUser?.role === "super_admin";
+        const userBranch = currentUser?.branchId;
+
+        const branches = (allAdminBranches && allAdminBranches.length > 0)
+            ? allAdminBranches.filter(b => b.isActive !== false)
+            : [
+                { id: "branch_q10", name: "Showroom Q.10 (Flagship)", code: "CN_Q10" },
+                { id: "branch_q1", name: "Showroom Bến Nghé Q.1", code: "CN_Q1" },
+                { id: "branch_thao_dien", name: "Showroom Thảo Điền", code: "CN_Q2" }
+            ];
+
+        branches.forEach(b => {
+            const opt = document.createElement("option");
+            opt.value = b.id;
+            opt.textContent = b.code ? `${b.code} - ${b.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : b.name;
+            branchSelect.appendChild(opt);
+        });
+
+        if (!isSuperAdmin && userBranch) {
+            branchSelect.value = userBranch;
+            branchSelect.disabled = true;
+        } else {
+            branchSelect.disabled = false;
+        }
+    }
+
+    const tbody = document.getElementById("purchaseRequestItemsTableBody");
+    if (tbody) tbody.innerHTML = "";
+
+    await ensureAdminMaterialsLoaded();
+    await addPurchaseRequestItemRow(prefillMaterialId);
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+}
+
+function closePurchaseRequestModal() {
+    const modal = document.getElementById("purchaseRequestModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+async function addPurchaseRequestItemRow(preselectedId, defaultQty, defaultNotes) {
+    const tbody = document.getElementById("purchaseRequestItemsTableBody");
+    if (!tbody) return;
+
+    if (!allAdminMaterials || allAdminMaterials.length === 0) {
+        await ensureAdminMaterialsLoaded();
+    }
+
+    const rowId = "pr_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+    const options = getInboundMaterialOptionsHtml();
+
+    const tr = document.createElement("tr");
+    tr.id = rowId;
+    tr.className = "hover:bg-emerald-50/20 transition pr-item-row";
+    tr.innerHTML = `
+        <td class="p-2">
+            <select class="pr-item-select w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-emerald-600">
+                ${options}
+            </select>
+        </td>
+        <td class="p-2 w-32 text-center">
+            <input type="number" min="1" value="${defaultQty || 50}" class="pr-item-qty w-24 px-2 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-emerald-600">
+        </td>
+        <td class="p-2 w-36">
+            <input type="text" placeholder="Ghi chú..." value="${defaultNotes || ''}" class="pr-item-notes w-full px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600">
+        </td>
+        <td class="p-2 w-10 text-center">
+            <button type="button" onclick="removePurchaseRequestItemRow('${rowId}')" class="w-7 h-7 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition">
+                <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+
+    if (preselectedId) {
+        const sel = tr.querySelector(".pr-item-select");
+        if (sel) sel.value = preselectedId;
+    }
+}
+
+function removePurchaseRequestItemRow(rowId) {
+    const row = document.getElementById(rowId);
+    if (row) row.remove();
+}
+
+async function handlePurchaseRequestSubmit(event) {
+    if (event) event.preventDefault();
+    const branchSelect = document.getElementById("purchaseRequestBranchSelect");
+    const neededDateInput = document.getElementById("purchaseRequestNeededDateInput");
+    const prioritySelect = document.getElementById("purchaseRequestPrioritySelect");
+    const notesInput = document.getElementById("purchaseRequestNotesInput");
+    const errBox = document.getElementById("purchaseRequestModalError");
+
+    const branchId = branchSelect?.value;
+    const neededDate = neededDateInput?.value;
+    const priority = prioritySelect?.value || "normal";
+    const notes = notesInput?.value?.trim() || "";
+
+    if (!branchId || !neededDate) {
+        if (errBox) {
+            errBox.textContent = "Vui lòng chọn chi nhánh và ngày cần hàng";
+            errBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    const rows = document.querySelectorAll("#purchaseRequestItemsTableBody tr");
+    if (rows.length === 0) {
+        if (errBox) {
+            errBox.textContent = "Vui lòng thêm ít nhất một mặt hàng cần nhập";
+            errBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    const items = [];
+    rows.forEach(tr => {
+        const select = tr.querySelector(".pr-item-select");
+        const qtyInp = tr.querySelector(".pr-item-qty");
+        const noteInp = tr.querySelector(".pr-item-notes");
+
+        const val = select?.value || "";
+        const opt = select?.selectedOptions[0];
+        const qty = Math.max(1, parseInt(qtyInp?.value || 1, 10));
+        const itemNote = noteInp?.value?.trim() || "";
+        const cleanId = val.replace("mat:", "").replace("prod:", "");
+
+        items.push({
+            materialId: cleanId,
+            productId: cleanId,
+            name: opt?.dataset.name || "Cành hoa",
+            unit: opt?.dataset.unit || "cành",
+            quantity: qty,
+            notes: itemNote
+        });
+    });
+
+    const payload = {
+        branchId: branchId,
+        neededDate: neededDate,
+        priority: priority,
+        notes: notes,
+        items: items
+    };
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang gửi yêu cầu nhập hàng...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/inventory/requests`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        unlockScreen();
+
+        if (res.ok && json.success) {
+            notifyUser("Đã tạo yêu cầu nhập hàng thành công!", "success");
+            closePurchaseRequestModal();
+            loadAdminPurchaseRequests();
+        } else {
+            if (errBox) {
+                errBox.textContent = json.message || "Lỗi khi lưu yêu cầu nhập hàng";
+                errBox.classList.remove("hidden");
+            }
+        }
+    } catch (e) {
+        unlockScreen();
+        if (errBox) {
+            errBox.textContent = `Lỗi kết nối: ${e.message}`;
+            errBox.classList.remove("hidden");
+        }
+    }
+}
+
+async function fulfillPurchaseRequestFromQueue(reqId) {
+    const req = (allAdminPurchaseRequests || []).find(r => r.id === reqId);
+    if (!req) {
+        notifyUser("Không tìm thấy thông tin yêu cầu nhập hàng", "warning");
+        return;
+    }
+
+    currentFulfillingRequestId = req.id;
+    await openInboundModal();
+
+    // Set branch
+    const branchSelect = document.getElementById("inboundBranchSelect");
+    if (branchSelect && req.branchId) {
+        branchSelect.value = req.branchId;
+    }
+
+    // Set notes
+    const notesInput = document.getElementById("inboundNotesInput");
+    if (notesInput) {
+        notesInput.value = `[Nhập kho theo Đề Xuất ${req.id}] ${req.notes || ""}`.trim();
+    }
+
+    // Customize submit button
+    const btnSubmit = document.getElementById("btnSubmitInbound");
+    if (btnSubmit) {
+        btnSubmit.innerHTML = `<i class="fa-solid fa-bolt"></i> Duyệt & Nhập Kho Theo Đề Xuất`;
+    }
+
+    // Populate rows from req.items
+    const tbody = document.getElementById("inboundItemsTableBody");
+    if (tbody && Array.isArray(req.items) && req.items.length > 0) {
+        tbody.innerHTML = "";
+        for (const item of req.items) {
+            const rowId = "inbound_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+            const options = getInboundMaterialOptionsHtml();
+            const tr = document.createElement("tr");
+            tr.id = rowId;
+            tr.className = "hover:bg-blue-50/30 transition inbound-item-row";
+            tr.innerHTML = `
+                <td class="p-2">
+                    <select onchange="onInboundItemSelect('${rowId}')" class="inbound-item-select w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-primary">
+                        ${options}
+                    </select>
+                </td>
+                <td class="p-2 w-28">
+                    <select onchange="onInboundModeChange('${rowId}')" class="inbound-item-mode w-full px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 focus:outline-none focus:border-primary">
+                        <option value="stem" selected>🌿 Cành/Cái</option>
+                        <option value="bundle">💐 Theo Bó</option>
+                    </select>
+                </td>
+                <td class="p-2 w-48 text-center">
+                    <div class="inbound-bundle-inputs hidden items-center justify-center space-x-1">
+                        <div class="relative w-16">
+                            <input type="number" min="1" value="1" oninput="recalculateInboundTotals()" class="inbound-item-bundles w-full px-1.5 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary" title="Số lượng bó">
+                            <span class="text-[9px] text-gray-400 font-bold block mt-0.5">Bó</span>
+                        </div>
+                        <span class="text-xs text-gray-400 font-bold self-center mb-2">&times;</span>
+                        <div class="relative w-16">
+                            <input type="number" min="1" value="20" oninput="recalculateInboundTotals()" class="inbound-item-bundle-stems w-full px-1.5 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary" title="Số cành trên 1 bó">
+                            <span class="text-[9px] text-gray-400 font-bold block mt-0.5">Cành/bó</span>
+                        </div>
+                    </div>
+                    <div class="inbound-stem-inputs flex items-center justify-center space-x-1">
+                        <input type="number" min="1" value="${item.quantity || 1}" oninput="recalculateInboundTotals()" class="inbound-item-qty w-24 px-2 py-1 text-center bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary">
+                        <span class="text-xs text-gray-500 font-medium inbound-unit-label">${item.unit || "cành"}</span>
+                    </div>
+                </td>
+                <td class="p-2 w-32">
+                    <input type="number" min="0" step="500" value="${item.unitCost || 0}" oninput="recalculateInboundTotals()" class="inbound-item-cost w-full px-2 py-1 text-right bg-white border border-gray-200 rounded-lg text-xs font-bold focus:outline-none focus:border-primary">
+                </td>
+                <td class="p-2 w-28 text-right font-bold text-gray-800 inbound-item-subtotal">
+                    0₫
+                </td>
+                <td class="p-2 w-10 text-center">
+                    <button type="button" onclick="removeInboundItemRow('${rowId}')" class="w-7 h-7 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            const select = tr.querySelector(".inbound-item-select");
+            if (select && (item.materialId || item.productId)) {
+                select.value = item.materialId || item.productId;
+                onInboundItemSelect(rowId);
+            }
+        }
+        recalculateInboundTotals();
+    }
+}
+
+// ----------------------------------------------------
+// SUB-TAB 2.2: KHO CÀNH HOA & PHỤ LIỆU (RAW MATERIALS)
 // ----------------------------------------------------
 async function loadAdminMaterials() {
     const tbody = document.getElementById("materialsTableBody");
@@ -11825,7 +12294,7 @@ function renderAdminInboundsTable(receipts) {
     tbody.innerHTML = html;
 }
 
-function openInboundModal() {
+async function openInboundModal() {
     const modal = document.getElementById("inboundModal");
     const branchSelect = document.getElementById("inboundBranchSelect");
     const dateInput = document.getElementById("inboundDateInput");
@@ -11885,6 +12354,11 @@ function openInboundModal() {
 }
 
 function closeInboundModal() {
+    currentFulfillingRequestId = null;
+    const btnSubmit = document.getElementById("btnSubmitInbound");
+    if (btnSubmit) {
+        btnSubmit.innerHTML = `<i class="fa-solid fa-check"></i> Xác Nhận Nhập Kho`;
+    }
     const modal = document.getElementById("inboundModal");
     if (modal) {
         modal.style.display = "none";
@@ -12211,9 +12685,14 @@ async function handleInboundSubmit(event) {
     };
 
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-    lockScreen("Đang tạo phiếu nhập kho & cập nhật tồn cành hoa...");
+    const isFulfillingRequest = !!currentFulfillingRequestId;
+    const url = isFulfillingRequest 
+        ? `${API_BASE}/admin/inventory/requests/${currentFulfillingRequestId}/fulfill`
+        : `${API_BASE}/admin/inventory/inbounds`;
+
+    lockScreen(isFulfillingRequest ? "Đang duyệt yêu cầu & nhập kho..." : "Đang tạo phiếu nhập kho & cập nhật tồn cành hoa...");
     try {
-        const res = await fetch(`${API_BASE}/admin/inventory/inbounds`, {
+        const res = await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -12225,11 +12704,13 @@ async function handleInboundSubmit(event) {
         unlockScreen();
 
         if (res.ok && json.success) {
-            notifyUser("Đã lập phiếu nhập kho thành công!", "success");
+            notifyUser(isFulfillingRequest ? "Đã xử lý nhập kho theo yêu cầu thành công!" : "Đã lập phiếu nhập kho thành công!", "success");
+            currentFulfillingRequestId = null;
             closeInboundModal();
             loadAdminInbounds();
             loadAdminMaterials();
             loadAdminInventory();
+            loadAdminPurchaseRequests();
         } else {
             if (errBox) {
                 errBox.textContent = json.message || "Lỗi khi lưu phiếu nhập kho";
@@ -12791,6 +13272,17 @@ if (typeof window !== "undefined") {
     window.handleInboundSubmit = handleInboundSubmit;
     window.loadMonthlyInventoryReport = loadMonthlyInventoryReport;
     window.renderMonthlyInventoryReport = renderMonthlyInventoryReport;
+    window.allAdminPurchaseRequests = allAdminPurchaseRequests;
+    window.loadAdminPurchaseRequests = loadAdminPurchaseRequests;
+    window.filterAdminPurchaseRequests = filterAdminPurchaseRequests;
+    window.renderAdminPurchaseRequestsTable = renderAdminPurchaseRequestsTable;
+    window.renderPendingFulfillmentRequestsTable = renderPendingFulfillmentRequestsTable;
+    window.openPurchaseRequestModal = openPurchaseRequestModal;
+    window.closePurchaseRequestModal = closePurchaseRequestModal;
+    window.addPurchaseRequestItemRow = addPurchaseRequestItemRow;
+    window.removePurchaseRequestItemRow = removePurchaseRequestItemRow;
+    window.handlePurchaseRequestSubmit = handlePurchaseRequestSubmit;
+    window.fulfillPurchaseRequestFromQueue = fulfillPurchaseRequestFromQueue;
 }
 
 

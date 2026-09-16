@@ -36,6 +36,24 @@ class TestPurchaseRequestsLifecycle(unittest.TestCase):
         self.req_path = get_config_path("purchase_requests.json")
         self.original_content = read_json(self.req_path, default=[])
 
+        # Đảm bảo có sẵn 1 material cành hoa trong products/materials để test
+        from data_service import get_products, save_products
+        self.test_mat_rose = "test_mat_rose_requisition"
+        prods = get_products()
+        if not any(p.get("id") == self.test_mat_rose for p in prods):
+            prods.append({
+                "id": self.test_mat_rose,
+                "name": "Hồng Trắng Ohara Nhập Khẩu",
+                "category": "flower_main",
+                "productType": "direct",
+                "unit": "cành",
+                "costPrice": 18000,
+                "stockByBranch": {"branch_q10": 100, "branch_q1": 50, "branch_thao_dien": 30},
+                "dailyQuota": 180,
+                "isActive": True
+            })
+            save_products(prods)
+
     def tearDown(self):
         # Khôi phục file sau khi test
         if os.path.exists(self.req_path):
@@ -136,7 +154,7 @@ class TestPurchaseRequestsLifecycle(unittest.TestCase):
         - Chuyển trạng thái yêu cầu sang 'fulfilled' kèm fulfilledInboundId.
         """
         user = {"id": "staff_001", "fullName": "Trần Thị Mai", "branchId": "branch_q10"}
-        mat_id = "mat_rose_ohara_white"
+        mat_id = self.test_mat_rose
         
         # Đọc tồn kho ban đầu của cành hoa tại Q10
         mat_before = get_material_by_id(mat_id) or {}
