@@ -4378,11 +4378,11 @@
                             <span class="px-2 py-0.5 bg-rose-200 text-rose-800 text-[10px] font-bold rounded-full flex items-center gap-1">
                                 <i class="fa-solid fa-lock text-[9px]"></i> Đã khóa theo đợt nhập
                             </span>
-                            <span class="font-mono text-xs font-bold text-blue-900 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs flex items-center gap-1">
-                                <i class="fa-solid fa-receipt text-blue-500 text-[10px]"></i> <span id="wastageInboundCodeDisplay">---</span>
+                            <span class="font-mono text-xs font-bold text-blue-900 bg-white px-2.5 py-0.5 rounded border border-blue-200 shadow-2xs flex items-center gap-1.5" title="Mã Đợt Nhập Hàng">
+                                <i class="fa-solid fa-truck-ramp-box text-blue-600 text-[10px]"></i> Đợt nhập: <span id="wastageInboundCodeDisplay">---</span>
                             </span>
-                            <span class="font-mono text-xs font-bold text-purple-900 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 flex items-center gap-1" id="wastageRequestCodeContainer">
-                                <i class="fa-solid fa-clipboard-list text-purple-600 text-[10px]"></i> <span id="wastageRequestCodeDisplay">---</span>
+                            <span class="font-mono text-xs font-bold text-purple-900 bg-purple-50 px-2.5 py-0.5 rounded border border-purple-200 flex items-center gap-1.5 hidden" id="wastageRequestCodeContainer" title="Mã Đề Xuất Nhập Hàng">
+                                <i class="fa-solid fa-clipboard-list text-purple-600 text-[10px]"></i> Đề xuất: <span id="wastageRequestCodeDisplay">---</span>
                             </span>
                         </div>
                         <div id="wastageInboundDetailsDisplay" class="text-xs text-rose-900 font-medium flex items-center gap-3 flex-wrap pt-0.5">
@@ -4437,7 +4437,7 @@
                                 <tr>
                                     <th class="p-3">Loại Hoa Trong Đợt Nhập</th>
                                     <th class="p-3 w-28 text-center">Số Cành Hỏng</th>
-                                    <th class="p-3 w-32 text-right">Đơn Giá Vốn (₫)</th>
+                                    <th class="p-3 w-36 text-right">Đơn Giá Nhập (₫/cành)</th>
                                     <th class="p-3">Lý Do Hư Hỏng</th>
                                     <th class="p-3 w-28 text-right">Thiệt Hại</th>
                                     <th class="p-3 w-12 text-center">Đặt Lại</th>

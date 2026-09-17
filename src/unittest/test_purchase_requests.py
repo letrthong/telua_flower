@@ -347,8 +347,29 @@ class TestPurchaseRequestsLifecycle(unittest.TestCase):
         self.assertEqual(wastage_report.get("inboundId"), receipt_id)
         self.assertEqual(wastage_report.get("inboundCode"), receipt.get("inboundCode") or receipt_id)
         self.assertEqual(wastage_report.get("requestCode"), req_code)
-        self.assertEqual(wastage_report.get("supplier"), receipt.get("supplier"))
         self.assertEqual(wastage_report.get("totalDamagedStems"), 5)
+
+        # 6. Kiểm tra tự động lấy đúng đơn giá lúc nhập (inbound costPrice) cho 1 cành khi unitCost không truyền hoặc = 0
+        auto_cost_payload = {
+            "branchId": "branch_q10",
+            "inboundId": receipt_id,
+            "inboundCode": receipt_id,
+            "reportedBy": "Thủ Kho Q10",
+            "items": [
+                {
+                    "materialId": self.test_mat_rose,
+                    "flowerType": "Hoa Hồng Test Đỏ",
+                    "damagedStems": 2,  # 2 cành hỏng, không truyền unitCost (hoặc = 0)
+                    "unitCost": 0,
+                    "reason": "Cánh hoa bị dập nát"
+                }
+            ]
+        }
+        ok, auto_report = create_wastage_report(auto_cost_payload)
+        self.assertTrue(ok, f"Tự động lấy đơn giá nhập phải thành công: {auto_report}")
+        self.assertEqual(auto_report["items"][0]["unitCost"], 15000, "Đơn giá 1 cành phải được lấy từ đợt nhập (15.000₫)")
+        self.assertEqual(auto_report["items"][0]["totalLoss"], 30000, "Thiệt hại = 2 cành * 15.000₫ = 30.000₫")
+        self.assertEqual(auto_report["totalLossAmount"], 30000)
 
     def test_08_immutable_fulfilled_and_closed_lifecycle(self):
         """

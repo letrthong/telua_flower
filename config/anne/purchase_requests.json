@@ -138,13 +138,16 @@
     ],
     "totalStems": 150,
     "estimatedCost": 2200000,
-    "status": "approved",
+    "status": "fulfilled",
     "approvedBy": "Tổng Quản Trị Hệ Thống",
-    "fulfilledInboundId": null,
+    "fulfilledInboundId": "inb_20260917_213855_branch_q10_0ea6",
     "notes": "Ưu tiên hoa tươi cành cứng chuẩn bị sự kiện thứ Bảy",
     "createdAt": "2026-09-16T08:00:00Z",
     "approvedAt": "2026-09-17T00:25:43Z",
     "processNotes": "",
-    "updatedAt": "2026-09-17T00:25:43Z"
+    "updatedAt": "2026-09-17T00:25:43Z",
+    "fulfilledInboundCode": "NH_20260917_F86",
+    "fulfilledAt": "2026-09-17T14:38:55Z",
+    "fulfilledBy": "Tổng Quản Trị Hệ Thống"
   }
 ]

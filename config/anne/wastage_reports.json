@@ -1,5 +1,32 @@
 [
   {
+    "id": "wastage_20260917_213623_d324",
+    "inboundId": "inb_20260917_000721_branch_q10_bbb8",
+    "inboundCode": "NH_20260917_FDC",
+    "requestCode": "req_1789578365_55ac",
+    "supplier": "Vườn Hoa Đà Lạt Hasfarm",
+    "branchId": "branch_q10",
+    "date": "2026-09-17",
+    "reportedBy": "staff_admin",
+    "items": [
+      {
+        "productId": "lan_01",
+        "materialId": "lan_01",
+        "flowerType": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "damagedStems": 1,
+        "reason": "Dập cánh khi vận chuyển",
+        "unitCost": 1750000,
+        "costPrice": 1750000,
+        "totalLoss": 1750000
+      }
+    ],
+    "proofImages": [],
+    "totalDamagedStems": 1,
+    "totalLossAmount": 1750000,
+    "notes": "",
+    "createdAt": "2026-09-17T14:36:23Z"
+  },
+  {
     "id": "wastage_20260822_q10",
     "branchId": "branch_q10",
     "date": "2026-08-22",

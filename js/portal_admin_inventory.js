@@ -693,9 +693,16 @@ export async function openWastageModalForPurchaseRequest(reqId) {
     // Nếu vẫn chưa có targetInbound, tự động dựng từ chính đơn yêu cầu req (đã nhận hàng)
     if (!targetInbound) {
         await ensureAdminMaterialsLoaded();
+        const dStr = (req.fulfilledAt || req.createdAt || new Date().toISOString()).slice(0, 10).replace(/-/g, "");
+        const fallbackInbCode = (req.fulfilledInboundCode && !req.fulfilledInboundCode.startsWith("req_") && !req.fulfilledInboundCode.startsWith("YCNH_"))
+            ? req.fulfilledInboundCode
+            : (inbId && !inbId.startsWith("req_") && !inbId.startsWith("YCNH_")
+                ? inbId
+                : `NH_${dStr}_${(req.requestCode || req.id || "").slice(-3).toUpperCase()}`);
+
         targetInbound = {
-            id: inbId || `inb_req_${req.id}`,
-            inboundCode: req.fulfilledInboundCode || inbId || req.requestCode || req.id,
+            id: (inbId && !inbId.startsWith("req_")) ? inbId : `inb_${dStr}_${req.id.slice(-4)}`,
+            inboundCode: fallbackInbCode,
             purchaseRequestId: req.id,
             requestCode: req.requestCode || req.id,
             branchId: req.branchId,
@@ -2202,9 +2209,11 @@ export function renderAdminWastageTable(reports) {
         const bName = bObj ? (bObj.code ? `${bObj.code} - ${bObj.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : bObj.name) : r.branchId;
         const lossFmt = Number(r.totalLossAmount || 0).toLocaleString("vi-VN") + "₫";
 
-        let itemsSummary = (r.items || []).map(itm => 
-            `<div class="text-[11px]"><b class="text-rose-600">${itm.damagedStems} cành</b> ${itm.flowerType} <span class="text-gray-400 italic">(${itm.reason || "Hoa dập"})</span></div>`
-        ).join("");
+        let itemsSummary = (r.items || []).map(itm => {
+            const costPerStem = itm.unitCost || itm.costPrice || 0;
+            const costInfo = costPerStem > 0 ? ` <span class="text-blue-600 font-mono text-[10px] font-semibold">(@${Number(costPerStem).toLocaleString('vi-VN')}₫/cành)</span>` : '';
+            return `<div class="text-[11px]"><b class="text-rose-600">${itm.damagedStems} cành</b> ${itm.flowerType}${costInfo} <span class="text-gray-400 italic">(${itm.reason || "Hoa dập"})</span></div>`;
+        }).join("");
 
         let photosHtml = `<span class="text-gray-300 text-xs italic">Không có ảnh</span>`;
         if (r.proofImages && Array.isArray(r.proofImages) && r.proofImages.length > 0) {
@@ -2274,16 +2283,17 @@ export async function openWastageModalForInbound(inboundId) {
     }
 
     // Kiểm tra nếu đợt nhập này thuộc đơn yêu cầu đã đóng (closed)
+    let matchedReq = null;
     const reqRef = targetInbound.purchaseRequestId || targetInbound.requestCode;
     if (reqRef && Array.isArray(allAdminPurchaseRequests)) {
-        const matchedReq = allAdminPurchaseRequests.find(r => r.id === reqRef || r.requestCode === reqRef);
+        matchedReq = allAdminPurchaseRequests.find(r => r.id === reqRef || r.requestCode === reqRef);
         if (matchedReq && (matchedReq.status || "").toLowerCase() === "closed") {
             notifyUser(`Đợt nhập hàng ${inboundId} thuộc đơn đề xuất đã được Admin đóng chốt sổ (closed). Không thể báo hoa hỏng thêm!`, "warning");
             return;
         }
     }
 
-    await openWastageModal({ inbound: targetInbound });
+    await openWastageModal({ inbound: targetInbound, request: matchedReq });
 }
 
 export async function openWastageModal(options = {}) {
@@ -2361,11 +2371,38 @@ export async function openWastageModal(options = {}) {
         if (selectBox) selectBox.classList.add("hidden");
         if (btnAddWastageItem) btnAddWastageItem.classList.add("hidden");
 
-        const inbId = currentWastageInbound.inboundCode || currentWastageInbound.id || "inb_batch";
+        // 1. Xác định Mã Đợt Nhập Hàng (Inbound Code) - Bắt buộc là mã nhập kho, không được hiển thị mã yêu cầu
+        let inbId = currentWastageInbound.inboundCode || currentWastageInbound.id || "";
+        if (!inbId || inbId.startsWith("req_") || inbId.startsWith("YCNH_")) {
+            const matchedInb = (allAdminInbounds || []).find(i => 
+                (i.id && i.id === currentWastageInbound.id && !i.id.startsWith("req_")) ||
+                (i.purchaseRequestId && (i.purchaseRequestId === currentWastageInbound.id || i.purchaseRequestId === currentWastageInbound.purchaseRequestId))
+            );
+            if (matchedInb && matchedInb.inboundCode && !matchedInb.inboundCode.startsWith("req_")) {
+                inbId = matchedInb.inboundCode;
+            } else if (currentWastageInbound.fulfilledInboundCode && !currentWastageInbound.fulfilledInboundCode.startsWith("req_")) {
+                inbId = currentWastageInbound.fulfilledInboundCode;
+            } else if (currentWastageInbound.fulfilledInboundId && !currentWastageInbound.fulfilledInboundId.startsWith("req_")) {
+                inbId = currentWastageInbound.fulfilledInboundId;
+            } else {
+                const dStr = (currentWastageInbound.date || currentWastageInbound.importDate || "").replace(/-/g, "") || new Date().toISOString().slice(0, 10).replace(/-/g, "");
+                inbId = `NH_${dStr}_${(currentWastageInbound.id || "INB").slice(-4).toUpperCase()}`;
+            }
+        }
         if (inbCodeDisp) inbCodeDisp.textContent = inbId;
 
-        const reqCode = options.request?.requestCode || options.request?.id || currentWastageInbound.requestCode || currentWastageInbound.purchaseRequestId;
-        if (reqCode) {
+        // 2. Xác định Mã Đề Xuất / Yêu Cầu (Request Code) - Ưu tiên mã thân thiện YCNH_...
+        let reqCode = options.request?.requestCode || options.request?.id || currentWastageInbound.requestCode || currentWastageInbound.purchaseRequestId || "";
+        if (reqCode && Array.isArray(allAdminPurchaseRequests)) {
+            const matchedReq = allAdminPurchaseRequests.find(r => r.id === reqCode || r.requestCode === reqCode || r.fulfilledInboundId === currentWastageInbound.id || r.fulfilledInboundCode === inbId);
+            if (matchedReq && matchedReq.requestCode) {
+                reqCode = matchedReq.requestCode;
+            }
+        }
+
+        // 3. Chặn hiển thị 2 mã yêu cầu hoặc mã trùng lặp:
+        // Chỉ hiển thị huy hiệu Đề Xuất khi có mã đề xuất VÀ mã đó khác hoàn toàn với mã đợt nhập
+        if (reqCode && reqCode !== inbId && !inbId.includes(reqCode) && !reqCode.includes(inbId)) {
             if (reqCodeDisp) reqCodeDisp.textContent = reqCode;
             if (reqCodeCont) reqCodeCont.classList.remove("hidden");
         } else {
@@ -2470,11 +2507,19 @@ export function addWastageItemRowFromInbound(item, inbound) {
     const rowId = "wastage_inb_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
     const cleanId = (item.materialId || item.productId || "").replace("mat:", "").replace("prod:", "");
     const matchedMat = (allAdminMaterials || []).find(m => m.id === cleanId || m.id === item.materialId);
+    const matchedProd = (allAdminProducts || []).find(p => p.id === cleanId || p.id === item.productId);
     const flowerName = (item.name && item.name !== "Cành hoa" && item.name !== "Vật liệu" && item.name !== "Hàng nhập")
         ? item.name
-        : (item.materialName || item.flowerType || matchedMat?.name || cleanId || "Hoa cành");
+        : (item.materialName && item.materialName !== "Cành hoa" && item.materialName !== "Vật liệu" && item.materialName !== "Hàng nhập"
+            ? item.materialName
+            : (item.flowerType || matchedMat?.name || matchedProd?.name || cleanId || "Hoa cành"));
     const maxQty = Math.max(1, parseInt(item.quantity || 1, 10));
-    const defaultCost = Math.max(0, parseInt(item.unitCost || 0, 10));
+    const defaultCost = Math.max(
+        0,
+        parseInt(item.costPrice || item.unitCost || item.unitPrice || 0, 10) ||
+        (item.totalAmount && item.quantity ? Math.round(item.totalAmount / item.quantity) : 0) ||
+        parseInt(matchedMat?.costPrice || matchedMat?.unitCost || matchedMat?.priceNumber || 0, 10)
+    );
     const unit = item.unit || matchedMat?.unit || "cành";
 
     const tr = document.createElement("tr");
@@ -2511,8 +2556,14 @@ export function addWastageItemRowFromInbound(item, inbound) {
         </td>
         <td class="p-3">
             <div class="flex items-center justify-end space-x-1">
-                <input type="number" min="0" step="500" value="${defaultCost}" class="wastage-cost-input w-24 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:border-rose-400 focus:outline-none text-right font-mono" oninput="recalculateWastageTotals()">
-                <span class="text-xs text-gray-400">₫</span>
+                <input type="number" min="0" step="500" value="${defaultCost}" 
+                    class="wastage-cost-input w-28 px-2 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold focus:border-rose-400 focus:outline-none text-right font-mono" 
+                    oninput="recalculateWastageTotals()"
+                    title="Đơn giá lúc nhập kho cho 1 cành">
+                <span class="text-xs text-gray-500 font-bold">₫</span>
+            </div>
+            <div class="text-[10px] text-gray-400 font-medium text-right mt-0.5" title="Đơn giá gốc từ phiếu nhập">
+                Đơn giá nhập: <b class="text-blue-600 font-bold font-mono">${defaultCost.toLocaleString('vi-VN')}₫</b>/${unit}
             </div>
         </td>
         <td class="p-3">
@@ -2786,6 +2837,7 @@ export async function handleWastageSubmit(event) {
                 flowerType,
                 damagedStems,
                 unitCost,
+                costPrice: unitCost,
                 reason
             });
         }

@@ -398,6 +398,26 @@ def create_wastage_report(
                 return False, f"Số lượng báo hỏng ({damaged_stems} cành) vượt quá số lượng thực nhận ({allowed_qty} cành) của '{flower_type}' trong đợt nhập {inbound_code or inbound_id}"
 
         unit_cost = int(itm.get("unitCost") or itm.get("costPrice") or 0)
+
+        # Nếu unit_cost chưa có hoặc = 0, tự động tra cứu từ đợt nhập kho liên kết (inbound_obj)
+        if unit_cost <= 0 and inbound_obj and isinstance(inbound_obj.get("items"), list):
+            for inb_it in inbound_obj["items"]:
+                inb_mid = str(inb_it.get("materialId") or inb_it.get("productId") or "").replace("mat:", "").replace("prod:", "")
+                inb_name = (inb_it.get("name") or inb_it.get("materialName") or inb_it.get("flowerType") or "").strip().lower()
+                if (clean_mat_id and inb_mid == clean_mat_id) or (name_key and inb_name == name_key):
+                    inb_cost = int(inb_it.get("costPrice") or inb_it.get("unitCost") or inb_it.get("unitPrice") or 0)
+                    if inb_cost <= 0 and inb_it.get("totalAmount") and inb_it.get("quantity"):
+                        inb_cost = int(inb_it["totalAmount"]) // int(inb_it["quantity"])
+                    if inb_cost > 0:
+                        unit_cost = inb_cost
+                        break
+
+        # Nếu vẫn chưa có đơn giá, tra cứu từ bảng nguyên vật liệu materials.json
+        if unit_cost <= 0 and mat_id:
+            mat_info = get_material_by_id(clean_mat_id or mat_id)
+            if mat_info:
+                unit_cost = int(mat_info.get("costPrice") or mat_info.get("unitCost") or 0)
+
         item_loss = damaged_stems * unit_cost
         total_loss_amount += item_loss
 
@@ -412,6 +432,7 @@ def create_wastage_report(
             "damagedStems": damaged_stems,
             "reason": (itm.get("reason") or "Hoa dập/gãy cành do vận chuyển").strip(),
             "unitCost": unit_cost,
+            "costPrice": unit_cost,
             "totalLoss": item_loss
         })
 

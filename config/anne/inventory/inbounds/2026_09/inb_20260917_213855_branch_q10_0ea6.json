@@ -1,0 +1,43 @@
+{
+  "id": "inb_20260917_213855_branch_q10_0ea6",
+  "inboundCode": "NH_20260917_F86",
+  "purchaseRequestId": "req_1789400000_q10",
+  "requestCode": "req_1789400000_q10",
+  "branchId": "branch_q10",
+  "supplier": "xxxxxx",
+  "importDate": "2026-09-17",
+  "receivedBy": "staff_admin",
+  "receiverName": "Tổng Quản Trị Hệ Thống",
+  "paymentStatus": "paid",
+  "items": [
+    {
+      "materialId": "mat_rose_ohara_white",
+      "materialName": "Hồng Trắng Ohara Nhập Khẩu",
+      "requestedQty": 100,
+      "quantity": 100,
+      "bundles": null,
+      "stemsPerBundle": null,
+      "importMode": "stem",
+      "unit": "cành",
+      "costPrice": 18000,
+      "totalAmount": 1800000
+    },
+    {
+      "materialId": "mat_daisy_tana",
+      "materialName": "Cúc Tana Đà Lạt",
+      "requestedQty": 50,
+      "quantity": 50,
+      "bundles": null,
+      "stemsPerBundle": null,
+      "importMode": "stem",
+      "unit": "nhánh",
+      "costPrice": 8000,
+      "totalAmount": 400000
+    }
+  ],
+  "totalItems": 2,
+  "totalStems": 150,
+  "totalCost": 2200000,
+  "notes": "[Nhập kho đối soát theo Đề Xuất req_1789400000_q10] Ưu tiên hoa tươi cành cứng chuẩn bị sự kiện thứ Bảy",
+  "createdAt": "2026-09-17T14:38:55Z"
+}
