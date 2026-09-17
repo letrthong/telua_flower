@@ -4371,20 +4371,36 @@
             <form id="wastageForm" onsubmit="handleWastageSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
                 <div id="wastageModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
 
-                <!-- Đợt Nhập Hàng Cần Báo Hỏng (Inbound Link & Source Verification) -->
-                <div id="wastageInboundContextContainer" class="p-3.5 bg-rose-50/70 rounded-xl border border-rose-200 space-y-2">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                        <label class="block text-xs font-bold text-rose-900 flex items-center gap-1.5">
-                            <i class="fa-solid fa-link text-rose-600"></i> Đợt Nhập Hàng Cần Báo Hỏng (Inbound ID) *
-                        </label>
-                        <span id="wastageInboundLockBadge" class="hidden px-2 py-0.5 bg-rose-200 text-rose-800 text-[10px] font-bold rounded-full">
-                            <i class="fa-solid fa-lock text-[9px] mr-1"></i> Khóa theo đợt nhập đã chọn
-                        </span>
+                <!-- Banner Ngữ Cảnh Đợt Nhập & Đơn Yêu Cầu (Locked context) -->
+                <div id="wastageInboundContextContainer" class="p-3.5 bg-rose-50/80 rounded-xl border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2 py-0.5 bg-rose-200 text-rose-800 text-[10px] font-bold rounded-full flex items-center gap-1">
+                                <i class="fa-solid fa-lock text-[9px]"></i> Đã khóa theo đợt nhập
+                            </span>
+                            <span class="font-mono text-xs font-bold text-blue-900 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-2xs flex items-center gap-1">
+                                <i class="fa-solid fa-receipt text-blue-500 text-[10px]"></i> <span id="wastageInboundCodeDisplay">inb_xxx</span>
+                            </span>
+                            <span class="font-mono text-xs font-bold text-purple-900 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 flex items-center gap-1" id="wastageRequestCodeContainer">
+                                <i class="fa-solid fa-clipboard-list text-purple-600 text-[10px]"></i> <span id="wastageRequestCodeDisplay">YCNH_xxx</span>
+                            </span>
+                        </div>
+                        <div id="wastageInboundDetailsDisplay" class="text-xs text-rose-900 font-medium flex items-center gap-3 flex-wrap pt-0.5">
+                            <span id="wastageInboundSupplierText">Nhà vườn: <b>Hasfarm Đà Lạt</b></span>
+                            <span id="wastageInboundDateText">Ngày nhận: <b>2026-09-17</b></span>
+                            <span id="wastageInboundBranchText">Chi nhánh: <b>Showroom Q.10</b></span>
+                        </div>
                     </div>
-                    <select id="wastageInboundSelect" onchange="onWastageInboundSelectChange(this.value)" class="w-full px-3 py-2 bg-white border border-rose-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-rose-500 shadow-2xs" required>
-                        <option value="">-- Chọn đợt nhập hàng tương ứng để xác thực nguồn gốc đối soát --</option>
+                </div>
+
+                <!-- Hộp Chọn Đợt Nhập Hàng (Chỉ hiển thị dự phòng nếu không có đợt nhập) -->
+                <div id="wastageInboundSelectContainer" class="hidden p-3.5 bg-rose-50/70 rounded-xl border border-rose-200 space-y-2">
+                    <label class="block text-xs font-bold text-rose-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-link text-rose-600"></i> Chọn Đợt Nhập Hàng Cần Báo Hỏng *
+                    </label>
+                    <select id="wastageInboundSelect" onchange="onWastageInboundSelectChange(this.value)" class="w-full px-3 py-2 bg-white border border-rose-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-rose-500 shadow-2xs">
+                        <option value="">-- Chọn đợt nhập hàng đã nhận để báo hỏng --</option>
                     </select>
-                    <div id="wastageInboundDetailsText" class="text-[11px] text-rose-800 font-medium hidden flex items-center gap-2"></div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -4400,32 +4416,35 @@
                     </div>
                 </div>
 
-                <!-- Danh Sách Các Mục Hoa Hỏng -->
+                <!-- Danh Sách Các Mục Hoa Hỏng Của Đợt Nhập -->
                 <div class="space-y-2">
                     <div class="flex items-center justify-between">
-                        <label class="block text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                            <i class="fa-solid fa-list-check text-rose-500"></i>
-                            Chi Tiết Hoa Hư Hỏng Cần Hủy *
-                        </label>
-                        <button type="button" onclick="addWastageItemRow()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold rounded-lg border border-rose-200 transition flex items-center gap-1">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check text-rose-600"></i>
+                                Chi Tiết Hoa Hư Hỏng Của Đợt Nhập *
+                            </label>
+                            <p class="text-[10px] text-gray-500">Chỉ điền số cành hỏng cho loại hoa bị hư (hoa không hỏng giữ nguyên số 0)</p>
+                        </div>
+                        <button type="button" id="btnAddWastageItem" onclick="addWastageItemRow()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold rounded-lg border border-rose-200 transition flex items-center gap-1 hidden">
                             <i class="fa-solid fa-plus text-[10px]"></i> Thêm Dòng
                         </button>
                     </div>
 
-                    <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                    <div class="overflow-x-auto border border-gray-200 rounded-xl bg-white shadow-2xs">
                         <table class="w-full text-left text-xs">
-                            <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
+                            <thead class="bg-rose-50/60 text-rose-950 font-bold border-b border-rose-100 uppercase text-[11px] tracking-wider">
                                 <tr>
-                                    <th class="p-2.5">Loại Hoa / Mẫu Hoa</th>
-                                    <th class="p-2.5 w-24 text-center">Số Cành</th>
-                                    <th class="p-2.5 w-28">Đơn Giá Vốn (₫)</th>
-                                    <th class="p-2.5">Lý Do Hư Hỏng</th>
-                                    <th class="p-2.5 w-28 text-right">Thiệt Hại</th>
-                                    <th class="p-2.5 w-10 text-center">Xóa</th>
+                                    <th class="p-3">Loại Hoa Trong Đợt Nhập</th>
+                                    <th class="p-3 w-28 text-center">Số Cành Hỏng</th>
+                                    <th class="p-3 w-32 text-right">Đơn Giá Vốn (₫)</th>
+                                    <th class="p-3">Lý Do Hư Hỏng</th>
+                                    <th class="p-3 w-28 text-right">Thiệt Hại</th>
+                                    <th class="p-3 w-12 text-center">Đặt Lại</th>
                                 </tr>
                             </thead>
                             <tbody id="wastageItemsTableBody" class="divide-y divide-gray-100">
-                                <!-- Dynamic rows via addWastageItemRow() -->
+                                <!-- Dynamic rows via populateWastageItemsFromInbound() -->
                             </tbody>
                         </table>
                     </div>

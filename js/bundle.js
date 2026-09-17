@@ -11951,19 +11951,70 @@ async function openWastageModalForPurchaseRequest(reqId) {
         notifyUser("Đơn hàng này đã được đóng chốt sổ (closed). Không thể báo hoa hỏng thêm!", "warning");
         return;
     }
+
     let inbId = req.fulfilledInboundId || req.inboundId;
-    if (!inbId) {
+    let targetInbound = null;
+
+    if (inbId) {
         if (!allAdminInbounds || allAdminInbounds.length === 0) {
             await loadAdminInbounds();
         }
-        const found = (allAdminInbounds || []).find(i => i.purchaseRequestId === req.id || i.requestCode === req.id || i.purchaseRequestId === req.requestCode);
-        if (found) inbId = found.id;
+        targetInbound = (allAdminInbounds || []).find(i => i.id === inbId || i.inboundCode === inbId);
+        if (!targetInbound) {
+            try {
+                const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+                const res = await fetch(`${API_BASE}/admin/inventory/inbounds/${inbId}`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.success && json.data) targetInbound = json.data;
+                }
+            } catch (e) {
+                console.warn("Lỗi tải chi tiết đợt nhập:", e);
+            }
+        }
     }
-    if (inbId) {
-        await openWastageModalForInbound(inbId);
-    } else {
-        await openWastageModal();
+
+    if (!targetInbound) {
+        if (!allAdminInbounds || allAdminInbounds.length === 0) {
+            await loadAdminInbounds();
+        }
+        targetInbound = (allAdminInbounds || []).find(i => i.purchaseRequestId === req.id || i.requestCode === req.id || i.purchaseRequestId === req.requestCode);
     }
+
+    // Nếu vẫn chưa có targetInbound, tự động dựng từ chính đơn yêu cầu req (đã nhận hàng)
+    if (!targetInbound) {
+        await ensureAdminMaterialsLoaded();
+        targetInbound = {
+            id: inbId || `inb_req_${req.id}`,
+            inboundCode: req.fulfilledInboundCode || inbId || req.requestCode || req.id,
+            purchaseRequestId: req.id,
+            requestCode: req.requestCode || req.id,
+            branchId: req.branchId,
+            supplier: "Vườn Hoa Đà Lạt Hasfarm",
+            date: req.fulfilledAt?.slice(0, 10) || req.requestDate || new Date().toISOString().slice(0, 10),
+            items: (req.items || []).map(itm => {
+                const cleanId = (itm.materialId || itm.productId || itm.id || "").replace("mat:", "").replace("prod:", "");
+                const matchedMat = (allAdminMaterials || []).find(m => m.id === cleanId || m.id === itm.materialId);
+                const name = itm.materialName || itm.name || itm.flowerType || matchedMat?.name || cleanId || "Hoa tươi";
+                const unit = itm.unit || matchedMat?.unit || "cành";
+                const cost = itm.costPrice || itm.unitCost || matchedMat?.costPrice || 0;
+                const qty = itm.requestedQty || itm.quantity || 1;
+                return {
+                    materialId: cleanId,
+                    productId: cleanId,
+                    name: name,
+                    materialName: name,
+                    unit: unit,
+                    quantity: qty,
+                    unitCost: cost
+                };
+            })
+        };
+    }
+
+    await openWastageModal({ inbound: targetInbound, request: req });
 }
 
 function renderPendingFulfillmentRequestsTable() {
@@ -13578,8 +13629,12 @@ async function openWastageModal(options = {}) {
     const selectBox = document.getElementById("wastageInboundSelectContainer");
     const inbSelect = document.getElementById("wastageInboundSelect");
     const inbCodeDisp = document.getElementById("wastageInboundCodeDisplay");
-    const inbDetailsDisp = document.getElementById("wastageInboundDetailsDisplay");
-    const btnClearInb = document.getElementById("btnClearWastageInbound");
+    const reqCodeCont = document.getElementById("wastageRequestCodeContainer");
+    const reqCodeDisp = document.getElementById("wastageRequestCodeDisplay");
+    const supplierText = document.getElementById("wastageInboundSupplierText");
+    const dateText = document.getElementById("wastageInboundDateText");
+    const branchText = document.getElementById("wastageInboundBranchText");
+    const btnAddWastageItem = document.getElementById("btnAddWastageItem");
 
     if (options.inbound) {
         currentWastageInbound = options.inbound;
@@ -13589,21 +13644,36 @@ async function openWastageModal(options = {}) {
         }
         if (contextBox) contextBox.classList.remove("hidden");
         if (selectBox) selectBox.classList.add("hidden");
-        if (inbCodeDisp) inbCodeDisp.textContent = currentWastageInbound.inboundCode || currentWastageInbound.id;
-        if (inbDetailsDisp) {
-            const dateStr = currentWastageInbound.date || currentWastageInbound.createdAt?.slice(0, 10) || "—";
-            inbDetailsDisp.textContent = `Nhà vườn: ${currentWastageInbound.supplier || "Hasfarm"} | Ngày nhập: ${dateStr}`;
-        }
-        if (btnClearInb) btnClearInb.classList.remove("hidden");
+        if (btnAddWastageItem) btnAddWastageItem.classList.add("hidden");
 
+        const inbId = currentWastageInbound.inboundCode || currentWastageInbound.id || "inb_batch";
+        if (inbCodeDisp) inbCodeDisp.textContent = inbId;
+
+        const reqCode = options.request?.requestCode || options.request?.id || currentWastageInbound.requestCode || currentWastageInbound.purchaseRequestId;
+        if (reqCode) {
+            if (reqCodeDisp) reqCodeDisp.textContent = reqCode;
+            if (reqCodeCont) reqCodeCont.classList.remove("hidden");
+        } else {
+            if (reqCodeCont) reqCodeCont.classList.add("hidden");
+        }
+
+        const dateStr = currentWastageInbound.date || currentWastageInbound.createdAt?.slice(0, 10) || "—";
+        const supplierStr = currentWastageInbound.supplier || "Vườn Hoa Đà Lạt Hasfarm";
+        const bObj = (allAdminBranches || []).find(b => b.id === currentWastageInbound.branchId);
+        const bName = bObj ? (bObj.code ? `${bObj.code} - ${bObj.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : bObj.name) : (currentWastageInbound.branchId || "");
+
+        if (supplierText) supplierText.innerHTML = `Nhà vườn: <b>${supplierStr}</b>`;
+        if (dateText) dateText.innerHTML = `Ngày nhận: <b>${dateStr}</b>`;
+        if (branchText) branchText.innerHTML = `Chi nhánh: <b>${bName}</b>`;
+
+        await ensureAdminMaterialsLoaded();
         populateWastageItemsFromInbound(currentWastageInbound);
     } else {
         currentWastageInbound = null;
         if (contextBox) contextBox.classList.add("hidden");
         if (selectBox) selectBox.classList.remove("hidden");
-        if (btnClearInb) btnClearInb.classList.add("hidden");
+        if (btnAddWastageItem) btnAddWastageItem.classList.remove("hidden");
 
-        // Đảm bảo có danh sách đợt nhập để chọn
         if (!allAdminInbounds || allAdminInbounds.length === 0) {
             await loadAdminInbounds();
         }
@@ -13700,23 +13770,33 @@ function addWastageItemRowFromInbound(item, inbound) {
     tr.dataset.maxQty = maxQty;
     tr.innerHTML = `
         <td class="p-3">
-            <div class="font-bold text-gray-800 text-xs">${flowerName}</div>
-            <div class="text-[11px] text-blue-600 font-semibold mt-0.5 flex items-center gap-1">
-                <i class="fa-solid fa-box-open text-[10px]"></i> Thực nhận đợt này: <span class="font-extrabold text-blue-700">${maxQty}</span> ${unit}
+            <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-bold shrink-0 border border-rose-200 shadow-2xs">
+                    <i class="fa-solid fa-seedling text-sm text-rose-600"></i>
+                </span>
+                <div>
+                    <div class="font-extrabold text-gray-900 text-sm">${flowerName}</div>
+                    <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span class="text-[9px] bg-rose-50 text-rose-700 border border-rose-200 px-1.5 py-0.2 rounded font-mono font-semibold">Mã: ${cleanId}</span>
+                        <span class="text-[11px] text-blue-700 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-box-open text-[10px]"></i> Đã nhận đợt này: <b class="text-blue-900 font-extrabold">${maxQty}</b> ${unit}
+                        </span>
+                    </div>
+                </div>
             </div>
         </td>
         <td class="p-3 text-center">
             <div class="flex flex-col items-center">
                 <input type="number" min="0" max="${maxQty}" value="0" 
-                    class="wastage-stems-input w-24 px-2 py-1.5 bg-white border-2 border-rose-300 rounded-lg text-xs font-bold text-center text-rose-700 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200" 
+                    class="wastage-stems-input w-24 px-2 py-1.5 bg-white border-2 border-rose-300 rounded-lg text-xs font-bold text-center text-rose-700 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200 shadow-2xs" 
                     oninput="onWastageStemQtyInput(this, ${maxQty})" 
                     title="Nhập số cành hỏng (tối đa ${maxQty} cành)">
                 <span class="text-[10px] text-gray-400 font-semibold mt-0.5">Tối đa: ${maxQty} ${unit}</span>
             </div>
         </td>
         <td class="p-3">
-            <div class="flex items-center space-x-1">
-                <input type="number" min="0" step="500" value="${defaultCost}" class="wastage-cost-input w-24 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:border-rose-400 focus:outline-none text-right" oninput="recalculateWastageTotals()">
+            <div class="flex items-center justify-end space-x-1">
+                <input type="number" min="0" step="500" value="${defaultCost}" class="wastage-cost-input w-24 px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold focus:border-rose-400 focus:outline-none text-right font-mono" oninput="recalculateWastageTotals()">
                 <span class="text-xs text-gray-400">₫</span>
             </div>
         </td>
@@ -13730,7 +13810,7 @@ function addWastageItemRowFromInbound(item, inbound) {
                 <option value="Khác">Khác...</option>
             </select>
         </td>
-        <td class="p-3 text-right font-bold text-rose-600 wastage-row-loss">0₫</td>
+        <td class="p-3 text-right font-bold text-rose-600 font-mono wastage-row-loss">0₫</td>
         <td class="p-3 text-center">
             <button type="button" onclick="resetWastageRow('${rowId}')" class="px-2 py-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 text-xs font-bold transition" title="Đặt lại về 0">
                 <i class="fa-solid fa-rotate-left"></i>
