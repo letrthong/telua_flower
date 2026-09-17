@@ -13,14 +13,6 @@ TELUA_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
-# Khởi tạo Flask Application
-app = Flask(__name__, template_folder=TELUA_ROOT)
-
-# --- Register RESTful Blueprint (Kiến trúc tương tự Lu Quan /api/flower/v1 & tương thích ngược /api) ---
-from restful_blueprint_flower_connect import flower_connect_api
-app.register_blueprint(flower_connect_api)  # /api/flower/v1/*
-app.register_blueprint(flower_connect_api, name='flower_connect_api_legacy', url_prefix='/api')  # /api/*
-
 
 def get_index_file():
     """
@@ -75,78 +67,97 @@ def resolve_static_file(relative_path):
     return None
 
 
+def create_app():
+    """
+    Application Factory chuẩn Flask:
+    1. Khởi tạo tường minh cấu hình hệ thống & các thư mục lưu trữ qua init_config(verbose=False).
+    2. Khởi tạo Flask Application & CORS.
+    3. Đăng ký các RESTful Blueprints (/api/flower/v1 & /api).
+    4. Đăng ký các route phục vụ tài nguyên tĩnh & SPA index.html.
+    """
+    from flower_config import init_config
+    init_config(verbose=False)
 
-# ==========================================
-# PHỤC VỤ STATIC FILES & TRANG CHỦ SPA
-# ==========================================
+    app = Flask(__name__, template_folder=TELUA_ROOT)
 
-@app.route("/")
-@app.route("/index.html")
-@app.route("/search")
-@app.route("/portal")
-@app.route("/portal/<path:subpath>")
-@cross_origin()
-def index(subpath=None):
-    """Phục vụ file index.html cho trang chủ và các route SPA (/portal/admin...)"""
-    # Nếu subpath là tài nguyên tĩnh (.js, .css, images, fonts...), chuyển tiếp sang static_files
-    if subpath and ("." in subpath or subpath.startswith("js/") or subpath.startswith("css/") or subpath.startswith("images/")):
-        return static_files(subpath)
+    # --- Register RESTful Blueprint ---
+    from restful_blueprint_flower_connect import flower_connect_api
+    app.register_blueprint(flower_connect_api)  # /api/flower/v1/*
+    app.register_blueprint(flower_connect_api, name='flower_connect_api_legacy', url_prefix='/api')  # /api/*
 
-    index_path = get_index_file()
-    if index_path:
-        resp = send_file(index_path)
-        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        resp.headers["Pragma"] = "no-cache"
-        resp.headers["Expires"] = "0"
-        return resp
-    abort(404, description="index.html not found")
+    # ==========================================
+    # PHỤC VỤ STATIC FILES & TRANG CHỦ SPA
+    # ==========================================
 
+    @app.route("/")
+    @app.route("/index.html")
+    @app.route("/search")
+    @app.route("/portal")
+    @app.route("/portal/<path:subpath>")
+    @cross_origin()
+    def index(subpath=None):
+        """Phục vụ file index.html cho trang chủ và các route SPA (/portal/admin...)"""
+        # Nếu subpath là tài nguyên tĩnh (.js, .css, images, fonts...), chuyển tiếp sang static_files
+        if subpath and ("." in subpath or subpath.startswith("js/") or subpath.startswith("css/") or subpath.startswith("images/")):
+            return static_files(subpath)
 
-@app.route("/favicon.ico")
-@cross_origin()
-def favicon():
-    """Phục vụ favicon hoặc trả về icon SVG hoa tươi."""
-    file_path = resolve_static_file("favicon.ico")
-    if file_path:
-        return send_file(file_path)
-    svg_favicon = """<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"""
-    return svg_favicon, 200, {"Content-Type": "image/svg+xml"}
-
- 
-
-
-@app.route("/<path:filename>")
-@cross_origin()
-def static_files(filename):
-    """Phục vụ các file tĩnh (js, css, json, hình ảnh...) và fallback SPA"""
-    # Nếu là đường dẫn API không khớp route nào, trả về JSON 404 thay vì fallback index.html
-    if filename.startswith("api/") or filename.startswith("api"):
-        return jsonify({"success": False, "message": f"API endpoint không tồn tại: /{filename}"}), 404
-
-    file_path = resolve_static_file(filename)
-    if file_path:
-        resp = send_file(file_path)
-        if filename.endswith(".js") or filename.endswith(".html"):
-            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            resp.headers["Pragma"] = "no-cache"
-            resp.headers["Expires"] = "0"
-        return resp
-
-    # Nếu không có đuôi mở rộng, kiểm tra xem có file .html tương ứng không
-    if "." not in filename:
-        html_file = resolve_static_file(f"{filename}.html")
-        if html_file:
-            resp = send_file(html_file)
-            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            return resp
-        # Fallback SPA về index.html
         index_path = get_index_file()
         if index_path:
             resp = send_file(index_path)
             resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
+            resp.headers["Expires"] = "0"
+            return resp
+        abort(404, description="index.html not found")
+
+    @app.route("/favicon.ico")
+    @cross_origin()
+    def favicon():
+        """Phục vụ favicon hoặc trả về icon SVG hoa tươi."""
+        file_path = resolve_static_file("favicon.ico")
+        if file_path:
+            return send_file(file_path)
+        svg_favicon = """<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>"""
+        return svg_favicon, 200, {"Content-Type": "image/svg+xml"}
+
+    @app.route("/<path:filename>")
+    @cross_origin()
+    def static_files(filename):
+        """Phục vụ các file tĩnh (js, css, json, hình ảnh...) và fallback SPA"""
+        # Nếu là đường dẫn API không khớp route nào, trả về JSON 404 thay vì fallback index.html
+        if filename.startswith("api/") or filename.startswith("api"):
+            return jsonify({"success": False, "message": f"API endpoint không tồn tại: /{filename}"}), 404
+
+        file_path = resolve_static_file(filename)
+        if file_path:
+            resp = send_file(file_path)
+            if filename.endswith(".js") or filename.endswith(".html"):
+                resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+                resp.headers["Pragma"] = "no-cache"
+                resp.headers["Expires"] = "0"
             return resp
 
-    abort(404, description=f"File not found: {filename}")
+        # Nếu không có đuôi mở rộng, kiểm tra xem có file .html tương ứng không
+        if "." not in filename:
+            html_file = resolve_static_file(f"{filename}.html")
+            if html_file:
+                resp = send_file(html_file)
+                resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+                return resp
+            # Fallback SPA về index.html
+            index_path = get_index_file()
+            if index_path:
+                resp = send_file(index_path)
+                resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+                return resp
+
+        abort(404, description=f"File not found: {filename}")
+
+    return app
+
+
+# Khởi tạo đối tượng app mặc định cho WSGI servers (Gunicorn, Waitress) và Test Client
+app = create_app()
 
 
 if __name__ == "__main__":

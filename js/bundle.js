@@ -11992,7 +11992,7 @@ async function openWastageModalForPurchaseRequest(reqId) {
             purchaseRequestId: req.id,
             requestCode: req.requestCode || req.id,
             branchId: req.branchId,
-            supplier: "Vườn Hoa Đà Lạt Hasfarm",
+            supplier: req.supplier || req.supplierName || (allAdminInbounds || []).find(i => i.id === inbId)?.supplier || "Nhà vườn / Nhà cung cấp",
             date: req.fulfilledAt?.slice(0, 10) || req.requestDate || new Date().toISOString().slice(0, 10),
             items: (req.items || []).map(itm => {
                 const cleanId = (itm.materialId || itm.productId || itm.id || "").replace("mat:", "").replace("prod:", "");
@@ -12572,6 +12572,12 @@ async function fulfillPurchaseRequestFromQueue(reqId) {
         branchSelect.value = req.branchId;
     }
 
+    // Set supplier from request if available
+    const supplierInput = document.getElementById("inboundSupplierInput");
+    if (supplierInput) {
+        supplierInput.value = req.supplier || "";
+    }
+
     // Set notes
     const notesInput = document.getElementById("inboundNotesInput");
     if (notesInput) {
@@ -12901,6 +12907,8 @@ async function openInboundModal() {
     if (!modal) return;
     if (errBox) errBox.classList.add("hidden");
     if (notesInput) notesInput.value = "";
+    const supplierInput = document.getElementById("inboundSupplierInput");
+    if (supplierInput) supplierInput.value = "";
 
     if (dateInput) {
         const now = new Date();
@@ -13290,7 +13298,7 @@ async function handleInboundSubmit(event) {
         branchId: branchId,
         date: dateStr,
         importDate: dateStr,
-        supplier: supplier || "Vườn Hoa Đà Lạt Hasfarm",
+        supplier: supplier || "Nhà vườn / Nhà cung cấp",
         notes: notes,
         purchaseRequestId: currentFulfillingRequestId || undefined,
         requestCode: currentFulfillingRequestId || undefined,
@@ -13658,7 +13666,7 @@ async function openWastageModal(options = {}) {
         }
 
         const dateStr = currentWastageInbound.date || currentWastageInbound.createdAt?.slice(0, 10) || "—";
-        const supplierStr = currentWastageInbound.supplier || "Vườn Hoa Đà Lạt Hasfarm";
+        const supplierStr = currentWastageInbound.supplier || options.request?.supplier || "Nhà vườn / Nhà cung cấp";
         const bObj = (allAdminBranches || []).find(b => b.id === currentWastageInbound.branchId);
         const bName = bObj ? (bObj.code ? `${bObj.code} - ${bObj.name.replace("Nở Hoa Thả Bình - Showroom ", "")}` : bObj.name) : (currentWastageInbound.branchId || "");
 

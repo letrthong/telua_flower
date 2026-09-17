@@ -4,6 +4,7 @@ import logging
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Optional, Dict, Any
 
 # Cấu hình logger
 logger = logging.getLogger("flower_config")
@@ -97,51 +98,123 @@ def _detect_config_dir() -> str:
     return str(fallback)
 
 
-FLOWER_CONFIG_DIR = _detect_config_dir()
-
-# Sub-directories
-FLOWER_ORDERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "orders")
-PRODUCTS_DIR = os.path.join(FLOWER_CONFIG_DIR, "products")
-USERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "users")
-IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "images")
-PRODUCTS_IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "products", "images")
-PRODUCT_IMAGES_DIR = IMAGES_DIR
-WASTAGE_IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "wastage", "images")
 
 # API URL Prefixes chuẩn hóa
 API_V1_PREFIX = "/api/flower/v1"
 FLOWER_IMAGE_URL_PREFIX = f"{API_V1_PREFIX}/images"
 
-os.makedirs(IMAGES_DIR, exist_ok=True)
-os.makedirs(PRODUCTS_IMAGES_DIR, exist_ok=True)
-os.makedirs(WASTAGE_IMAGES_DIR, exist_ok=True)
+# Biến cấu hình module-level (được khởi tạo và cập nhật qua init_config)
+FLOWER_CONFIG_DIR = None
+FLOWER_ORDERS_DIR = None
+PRODUCTS_DIR = None
+USERS_DIR = None
+IMAGES_DIR = None
+PRODUCTS_IMAGES_DIR = None
+PRODUCT_IMAGES_DIR = None
+WASTAGE_IMAGES_DIR = None
+
+USERS_FILE_PATH = None
+STAFF_USERS_FILE_PATH = None
+CUSTOMERS_FILE_PATH = None
+BRANCHES_FILE_PATH = None
+PRODUCTS_FILE_PATH = None
+CATEGORIES_FILE_PATH = None
+PRICE_LEVELS_FILE_PATH = None
+PROMOTIONS_FILE_PATH = None
+TRANSLATIONS_FILE_PATH = None
+WASTAGE_REPORTS_FILE_PATH = None
+PURCHASE_REQUESTS_FILE_PATH = None
+COMPANY_INFO_FILE_PATH = None
+BANNERS_FILE_PATH = None
+CACHE_VERSION_FILE = None
 
 
-# File paths chuẩn hóa
-USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "staff_users.json") if os.path.exists(os.path.join(FLOWER_CONFIG_DIR, "staff_users.json")) else os.path.join(FLOWER_CONFIG_DIR, "users.json")
-STAFF_USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "staff_users.json")
-CUSTOMERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "customers.json")
-BRANCHES_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "branches.json")
-PRODUCTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "products.json")
-CATEGORIES_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "categories.json")
-PRICE_LEVELS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "price_levels.json")
-PROMOTIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "promotions.json")
-TRANSLATIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "translations.json")
-WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.json")
-PURCHASE_REQUESTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "purchase_requests.json")
-COMPANY_INFO_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "infoCompany.json")
-BANNERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "banners.json")
+def init_config(custom_config_dir: Optional[str] = None, verbose: bool = False) -> Dict[str, Any]:
+    """
+    Khởi tạo tường minh cấu hình hệ thống, thiết lập toàn bộ thư mục lưu trữ và đường dẫn file dữ liệu.
+    Được gọi tường minh từ src/app.py khi khởi động ứng dụng Flask hoặc từ các scripts/kiểm thử.
+    """
+    global FLOWER_CONFIG_DIR, FLOWER_ORDERS_DIR, PRODUCTS_DIR, USERS_DIR, IMAGES_DIR
+    global PRODUCTS_IMAGES_DIR, PRODUCT_IMAGES_DIR, WASTAGE_IMAGES_DIR
+    global USERS_FILE_PATH, STAFF_USERS_FILE_PATH, CUSTOMERS_FILE_PATH, BRANCHES_FILE_PATH
+    global PRODUCTS_FILE_PATH, CATEGORIES_FILE_PATH, PRICE_LEVELS_FILE_PATH, PROMOTIONS_FILE_PATH
+    global TRANSLATIONS_FILE_PATH, WASTAGE_REPORTS_FILE_PATH, PURCHASE_REQUESTS_FILE_PATH
+    global COMPANY_INFO_FILE_PATH, BANNERS_FILE_PATH, CACHE_VERSION_FILE
 
-# File cache version - dùng để đồng bộ cache giữa các workers / instances
-CACHE_VERSION_FILE = os.path.join(FLOWER_CONFIG_DIR, "cache_version.json")
+    if custom_config_dir:
+        target_path = Path(os.path.abspath(custom_config_dir))
+        target_path.mkdir(parents=True, exist_ok=True)
+        workspace_config = _find_workspace_config_dir()
+        if target_path.resolve() != workspace_config.resolve():
+            _sync_test_config(workspace_config, target_path)
+        FLOWER_CONFIG_DIR = str(target_path)
+    else:
+        FLOWER_CONFIG_DIR = _detect_config_dir()
 
-# Log thông tin debug cấu hình ra stdout (hiện ngay trong Docker console)
-print(f"[FLOWER CONFIG] ROOT_DIR: {ROOT_DIR}", flush=True)
-print(f"[FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR} (exists: {os.path.exists(FLOWER_CONFIG_DIR)})", flush=True)
-print(f"[FLOWER CONFIG] STAFF_USERS_FILE_PATH: {STAFF_USERS_FILE_PATH} (exists: {os.path.exists(STAFF_USERS_FILE_PATH)})", flush=True)
-print(f"[FLOWER CONFIG] CUSTOMERS_FILE_PATH: {CUSTOMERS_FILE_PATH} (exists: {os.path.exists(CUSTOMERS_FILE_PATH)})", flush=True)
-print(f"[FLOWER CONFIG] PRODUCTS_FILE_PATH: {PRODUCTS_FILE_PATH} (exists: {os.path.exists(PRODUCTS_FILE_PATH)})", flush=True)
-print(f"[FLOWER CONFIG] BRANCHES_FILE_PATH: {BRANCHES_FILE_PATH} (exists: {os.path.exists(BRANCHES_FILE_PATH)})", flush=True)
+    # Sub-directories
+    FLOWER_ORDERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "orders")
+    PRODUCTS_DIR = os.path.join(FLOWER_CONFIG_DIR, "products")
+    USERS_DIR = os.path.join(FLOWER_CONFIG_DIR, "users")
+    IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "images")
+    PRODUCTS_IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "products", "images")
+    PRODUCT_IMAGES_DIR = IMAGES_DIR
+    WASTAGE_IMAGES_DIR = os.path.join(FLOWER_CONFIG_DIR, "wastage", "images")
 
-logger.info(f"[FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR}")
+    # Tạo các thư mục lưu trữ cần thiết
+    for d in [FLOWER_ORDERS_DIR, PRODUCTS_DIR, USERS_DIR, IMAGES_DIR, PRODUCTS_IMAGES_DIR, WASTAGE_IMAGES_DIR]:
+        os.makedirs(d, exist_ok=True)
+
+    # File paths chuẩn hóa
+    STAFF_USERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "staff_users.json")
+    USERS_FILE_PATH = STAFF_USERS_FILE_PATH if os.path.exists(STAFF_USERS_FILE_PATH) else os.path.join(FLOWER_CONFIG_DIR, "users.json")
+    CUSTOMERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "customers.json")
+    BRANCHES_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "branches.json")
+    PRODUCTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "products.json")
+    CATEGORIES_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "categories.json")
+    PRICE_LEVELS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "price_levels.json")
+    PROMOTIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "promotions.json")
+    TRANSLATIONS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "translations.json")
+    WASTAGE_REPORTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "wastage_reports.json")
+    PURCHASE_REQUESTS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "purchase_requests.json")
+    COMPANY_INFO_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "infoCompany.json")
+    BANNERS_FILE_PATH = os.path.join(FLOWER_CONFIG_DIR, "banners.json")
+    CACHE_VERSION_FILE = os.path.join(FLOWER_CONFIG_DIR, "cache_version.json")
+
+    if verbose:
+        print(f"[FLOWER CONFIG] ROOT_DIR: {ROOT_DIR}", flush=True)
+        print(f"[FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR} (exists: {os.path.exists(FLOWER_CONFIG_DIR)})", flush=True)
+        print(f"[FLOWER CONFIG] STAFF_USERS_FILE_PATH: {STAFF_USERS_FILE_PATH} (exists: {os.path.exists(STAFF_USERS_FILE_PATH)})", flush=True)
+        print(f"[FLOWER CONFIG] CUSTOMERS_FILE_PATH: {CUSTOMERS_FILE_PATH} (exists: {os.path.exists(CUSTOMERS_FILE_PATH)})", flush=True)
+        print(f"[FLOWER CONFIG] PRODUCTS_FILE_PATH: {PRODUCTS_FILE_PATH} (exists: {os.path.exists(PRODUCTS_FILE_PATH)})", flush=True)
+        print(f"[FLOWER CONFIG] BRANCHES_FILE_PATH: {BRANCHES_FILE_PATH} (exists: {os.path.exists(BRANCHES_FILE_PATH)})", flush=True)
+
+    logger.info(f"[FLOWER CONFIG] FLOWER_CONFIG_DIR: {FLOWER_CONFIG_DIR}")
+
+    return {
+        "FLOWER_CONFIG_DIR": FLOWER_CONFIG_DIR,
+        "FLOWER_ORDERS_DIR": FLOWER_ORDERS_DIR,
+        "PRODUCTS_DIR": PRODUCTS_DIR,
+        "USERS_DIR": USERS_DIR,
+        "IMAGES_DIR": IMAGES_DIR,
+        "PRODUCTS_IMAGES_DIR": PRODUCTS_IMAGES_DIR,
+        "PRODUCT_IMAGES_DIR": PRODUCT_IMAGES_DIR,
+        "WASTAGE_IMAGES_DIR": WASTAGE_IMAGES_DIR,
+        "STAFF_USERS_FILE_PATH": STAFF_USERS_FILE_PATH,
+        "CUSTOMERS_FILE_PATH": CUSTOMERS_FILE_PATH,
+        "BRANCHES_FILE_PATH": BRANCHES_FILE_PATH,
+        "PRODUCTS_FILE_PATH": PRODUCTS_FILE_PATH,
+        "CATEGORIES_FILE_PATH": CATEGORIES_FILE_PATH,
+        "PRICE_LEVELS_FILE_PATH": PRICE_LEVELS_FILE_PATH,
+        "PROMOTIONS_FILE_PATH": PROMOTIONS_FILE_PATH,
+        "TRANSLATIONS_FILE_PATH": TRANSLATIONS_FILE_PATH,
+        "WASTAGE_REPORTS_FILE_PATH": WASTAGE_REPORTS_FILE_PATH,
+        "PURCHASE_REQUESTS_FILE_PATH": PURCHASE_REQUESTS_FILE_PATH,
+        "COMPANY_INFO_FILE_PATH": COMPANY_INFO_FILE_PATH,
+        "BANNERS_FILE_PATH": BANNERS_FILE_PATH,
+    }
+
+
+# Khởi tạo mặc định tự động để tương thích hoàn toàn các module import trực tiếp
+init_config(verbose=False)
+
 
