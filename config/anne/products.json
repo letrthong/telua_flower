@@ -15,13 +15,13 @@
     "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg",
     "i18n": null,
     "stockByBranch": {
-      "branch_q10": 10,
+      "branch_q10": 60,
       "branch_q1": 5,
       "branch_thao_dien": 5
     },
-    "dailyQuota": 20,
+    "dailyQuota": 70,
     "isActive": true,
-    "updatedAt": "2026-09-14T16:04:44Z"
+    "updatedAt": "2026-09-17T07:27:36.903929+07:00"
   },
   {
     "id": "lan_test_1787964482799",
@@ -527,13 +527,13 @@
       }
     },
     "stockByBranch": {
-      "branch_q10": 3,
+      "branch_q10": 4,
       "branch_q1": 2,
       "branch_thao_dien": 2
     },
-    "dailyQuota": 7,
+    "dailyQuota": 8,
     "isActive": true,
-    "updatedAt": "2026-09-14T16:04:44Z"
+    "updatedAt": "2026-09-17T00:07:21.292368+07:00"
   },
   {
     "id": "hoa_cuoi_01",

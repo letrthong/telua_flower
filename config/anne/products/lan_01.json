@@ -49,11 +49,11 @@
     }
   },
   "stockByBranch": {
-    "branch_q10": 3,
+    "branch_q10": 4,
     "branch_q1": 2,
     "branch_thao_dien": 2
   },
-  "dailyQuota": 7,
+  "dailyQuota": 8,
   "isActive": true,
-  "updatedAt": "2026-09-14T00:36:48Z"
+  "updatedAt": "2026-09-17T00:07:21.292368+07:00"
 }

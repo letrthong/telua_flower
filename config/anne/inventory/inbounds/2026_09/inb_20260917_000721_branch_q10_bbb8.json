@@ -1,0 +1,31 @@
+{
+  "id": "inb_20260917_000721_branch_q10_bbb8",
+  "inboundCode": "NH_20260917_FDC",
+  "purchaseRequestId": "req_1789578365_55ac",
+  "requestCode": "req_1789578365_55ac",
+  "branchId": "branch_q10",
+  "supplier": "Vườn Hoa Đà Lạt Hasfarm",
+  "importDate": "2026-09-17",
+  "receivedBy": "staff_admin",
+  "receiverName": "Tổng Quản Trị Hệ Thống",
+  "paymentStatus": "paid",
+  "items": [
+    {
+      "materialId": "lan_01",
+      "materialName": "Cành hoa",
+      "requestedQty": 1,
+      "quantity": 1,
+      "bundles": null,
+      "stemsPerBundle": null,
+      "importMode": "stem",
+      "unit": "cành",
+      "costPrice": 1750000,
+      "totalAmount": 1750000
+    }
+  ],
+  "totalItems": 1,
+  "totalStems": 1,
+  "totalCost": 1750000,
+  "notes": "[Nhập kho đối soát theo Đề Xuất req_1789578365_55ac]",
+  "createdAt": "2026-09-16T17:07:21Z"
+}

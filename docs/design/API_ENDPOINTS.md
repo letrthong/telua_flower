@@ -153,6 +153,10 @@ Nhóm API độc lập dành riêng cho nhân viên thừa hành tác nghiệp c
 | `PUT` | `/api/admin/branches/<id>` | `super_admin` | Cập nhật thông tin chi nhánh, bán kính giao 2H |
 | `GET` | `/api/admin/inventory/matrix` | Manager / Admin | Xem ma trận tồn kho toàn chuỗi theo ngày (Daily Live Matrix) |
 | `PUT` | `/api/admin/inventory/batch` | Manager / Admin | Cập nhật nhanh số lượng hạn mức bán hôm nay hàng loạt |
+| `GET` | `/api/flower/v1/admin/inventory/requests` | Staff / Manager / Admin | Lấy danh sách các phiếu yêu cầu nhập hoa từ showroom (`purchase_requests.json`) |
+| `POST` | `/api/flower/v1/admin/inventory/requests` | Staff / Manager / Admin | Lập phiếu yêu cầu nhập hoa cành/phụ liệu mới cho chi nhánh |
+| `PUT` | `/api/flower/v1/admin/inventory/requests/<id>` | Manager / Admin | Cập nhật trạng thái phiếu yêu cầu (`approved`, `rejected`, `pending`) kèm ghi chú |
+| `POST` | `/api/flower/v1/admin/inventory/requests/<id>/fulfill` | Manager / Admin | Chuyển đổi yêu cầu đã duyệt thành Phiếu Nhập Kho thực tế và cộng tồn cành |
 | `GET` | `/api/flower/v1/admin/inventory/monthly-report` | Manager / Admin | **Báo Cáo Nhập – Xuất – Tồn theo tháng (Hỗ trợ lọc tháng, chi nhánh, loại hàng)** |
 | `GET` | `/api/flower/v1/admin/inventory/inbounds` | Manager / Admin | Lấy danh sách các phiếu nhập hoa tươi từ nhà vườn theo tháng |
 | `POST` | `/api/flower/v1/admin/inventory/inbounds` | Manager / Admin | Tạo phiếu nhập hoa tươi mới (tự động cộng dồn vào `materials.json`) |

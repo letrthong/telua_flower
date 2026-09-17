@@ -23,11 +23,11 @@
   "careTips": "Để nơi thoáng mát, phun sương mỗi ngày .",
   "i18n": null,
   "stockByBranch": {
-    "branch_q10": 10,
+    "branch_q10": 60,
     "branch_q1": 5,
     "branch_thao_dien": 5
   },
-  "dailyQuota": 20,
+  "dailyQuota": 70,
   "isActive": true,
-  "updatedAt": "2026-09-13T17:28:56Z"
+  "updatedAt": "2026-09-17T07:27:36.903929+07:00"
 }

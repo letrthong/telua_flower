@@ -66,7 +66,7 @@ export const ADMIN_NAVIGATION_CONFIG = [
         icon: "fa-solid fa-boxes-stacked",
         module: "portal_admin_inventory.js",
         loadFn: "loadAdminInventory",
-        action: "switchAdminTab('inventory')",
+        action: "openInventoryManagementModal()",
         roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT],
         subTabs: [
           {

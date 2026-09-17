@@ -111,6 +111,7 @@ from inventory_service import (
     find_best_routing_branch,
     create_inbound_receipt,
     get_inbound_receipts,
+    get_inbound_receipt_by_id,
     get_monthly_inventory_report,
     get_purchase_requests,
     create_purchase_request,
@@ -1887,6 +1888,22 @@ def api_get_inbounds():
     return jsonify({
         "success": True,
         "data": receipts
+    }), 200
+
+
+@flower_connect_api.route("/admin/inventory/inbounds/<receipt_id>", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant", "accountant"])
+def api_get_inbound_detail(receipt_id):
+    """Lấy chi tiết 1 phiếu nhập kho theo ID hoặc inboundCode."""
+    receipt = get_inbound_receipt_by_id(receipt_id)
+    if not receipt:
+        return jsonify({
+            "success": False,
+            "message": "Không tìm thấy phiếu nhập kho"
+        }), 404
+    return jsonify({
+        "success": True,
+        "data": receipt
     }), 200
 
 

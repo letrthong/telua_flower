@@ -19,7 +19,8 @@ from inventory_service import (
     get_purchase_requests,
     create_purchase_request,
     update_purchase_request_status,
-    fulfill_purchase_request
+    fulfill_purchase_request,
+    create_wastage_report
 )
 from data_service import (
     get_config_path,
@@ -198,6 +199,232 @@ class TestPurchaseRequestsLifecycle(unittest.TestCase):
         stock_after = int(mat_after.get("stockByBranch", {}).get("branch_q10", 0))
         self.assertEqual(stock_after, stock_before + qty_to_import, "Tồn kho materials.json tại Q10 phải tăng thêm đúng số lượng nhập")
 
+    def test_06_update_status_approve_reject_scenarios(self):
+        """Kiểm thử chi tiết các kịch bản Approve / Reject / Rollback / Quyền chi nhánh."""
+        user = {"id": "staff_001", "fullName": "Nguyễn Văn A", "branchId": "branch_q10"}
+        ok, req = create_purchase_request({
+            "branchId": "branch_q10",
+            "items": [{"materialId": self.test_mat_rose, "requestedQty": 10}]
+        }, user_dict=user)
+        self.assertTrue(ok)
+        req_id = req["id"]
+
+        # 1. Từ chối yêu cầu (Reject) kèm lý do
+        manager_user = {"id": "mgr_001", "fullName": "Quản Lý Q10", "role": "branch_manager", "branchId": "branch_q10"}
+        ok, rejected = update_purchase_request_status(req_id, "REJECTED", user_dict=manager_user, notes="Hoa tồn kho còn đủ, chưa cần nhập thêm")
+        self.assertTrue(ok)
+        self.assertEqual(rejected["status"], "rejected")
+        self.assertEqual(rejected["rejectedBy"], "Quản Lý Q10")
+        self.assertEqual(rejected["processNotes"], "Hoa tồn kho còn đủ, chưa cần nhập thêm")
+        self.assertIsNotNone(rejected.get("rejectedAt"))
+
+        # 2. Xem xét lại và Duyệt yêu cầu (Approve)
+        ok, approved = update_purchase_request_status(req_id, "approved", user_dict=manager_user, notes="Đã duyệt sau khi kiểm tra lại")
+        self.assertTrue(ok)
+        self.assertEqual(approved["status"], "approved")
+        self.assertEqual(approved["approvedBy"], "Quản Lý Q10")
+        self.assertEqual(approved["processNotes"], "Đã duyệt sau khi kiểm tra lại")
+
+        # 3. Trạng thái không hợp lệ bị từ chối
+        ok, err = update_purchase_request_status(req_id, "invalid_status", user_dict=manager_user)
+        self.assertFalse(ok)
+        self.assertIn("không hợp lệ", str(err))
+
+        # 4. Quản lý chi nhánh khác không có quyền can thiệp vào phiếu của Q10
+        other_branch_mgr = {"id": "mgr_q1", "fullName": "Quản Lý Q1", "role": "branch_manager", "branchId": "branch_q1"}
+        ok, err = update_purchase_request_status(req_id, "rejected", user_dict=other_branch_mgr)
+        self.assertFalse(ok)
+        self.assertIn("chi nhánh mình", str(err))
+
+        # 5. Super Admin duyệt được mọi chi nhánh
+        super_admin = {"id": "admin", "fullName": "Super Admin", "role": "super_admin"}
+        ok, admin_updated = update_purchase_request_status(req_id, "approved", user_dict=super_admin)
+        self.assertTrue(ok)
+        self.assertEqual(admin_updated["status"], "approved")
+        self.assertEqual(admin_updated["approvedBy"], "Super Admin")
+
+
+    def test_07_inbound_actual_qty_and_inbound_linked_wastage(self):
+        """Kiểm thử nhập kho đối soát số thực tế (actual qty) và báo hỏng bắt buộc liên kết đợt nhập (inbound-linked wastage)."""
+        from src.inventory_service import (
+            get_inbound_receipt_by_id, 
+            create_wastage_report, 
+            get_wastage_reports
+        )
+        staff_user = {"id": "staff_001", "fullName": "Thủ Kho Q10", "branchId": "branch_q10"}
+
+        # 1. Tạo yêu cầu nhập hàng đề xuất 50 cành hồng
+        ok, req = create_purchase_request({
+            "branchId": "branch_q10",
+            "notes": "Đề xuất nhập 50 cành hồng đỏ cho cuối tuần",
+            "items": [
+                {
+                    "materialId": self.test_mat_rose,
+                    "requestedQty": 50,
+                    "unitCost": 15000
+                }
+            ]
+        }, user_dict=staff_user)
+        self.assertTrue(ok)
+        req_id = req["id"]
+        req_code = req.get("requestCode", req_id)
+
+        # 2. Xử lý nhập kho thực nhận: Xe hoa về chỉ giao thực tế 40 cành (thực nhận < đề xuất)
+        inbound_payload = {
+            "branchId": "branch_q10",
+            "supplier": "Vườn Lan - Hasfarm Đà Lạt",
+            "importDate": "2026-09-16",
+            "notes": f"Đối soát thực nhận theo Đề Xuất {req_code}",
+            "purchaseRequestId": req_id,
+            "requestCode": req_code,
+            "items": [
+                {
+                    "materialId": self.test_mat_rose,
+                    "quantity": 40,        # Thực nhận
+                    "requestedQty": 50,    # Đề xuất ban đầu
+                    "unitCost": 15000
+                }
+            ]
+        }
+        ok, fulfill_res = fulfill_purchase_request(req_id, inbound_payload, user_dict=staff_user)
+        self.assertTrue(ok, f"Fulfill thất bại: {fulfill_res}")
+        receipt = fulfill_res.get("inboundReceipt", {})
+        receipt_id = receipt.get("id")
+        self.assertIsNotNone(receipt_id)
+        self.assertEqual(receipt.get("purchaseRequestId"), req_id)
+        self.assertEqual(receipt.get("requestCode"), req_code)
+
+        # 3. Kiểm tra hàm get_inbound_receipt_by_id
+        found_receipt = get_inbound_receipt_by_id(receipt_id)
+        self.assertIsNotNone(found_receipt, f"Không tìm thấy phiếu nhập {receipt_id}")
+        self.assertEqual(found_receipt.get("id"), receipt_id)
+        self.assertEqual(len(found_receipt.get("items", [])), 1)
+        self.assertEqual(found_receipt["items"][0]["quantity"], 40)
+        self.assertEqual(found_receipt["items"][0]["requestedQty"], 50)
+
+        # 4. Kịch bản báo hoa hỏng trái quy định: Báo 45 cành hỏng (vượt quá 40 cành thực nhận của đợt nhập)
+        overflow_wastage_payload = {
+            "branchId": "branch_q10",
+            "inboundId": receipt_id,
+            "inboundCode": receipt_id,
+            "supplier": receipt.get("supplier"),
+            "requestCode": req_code,
+            "reportedBy": "Thủ Kho Q10",
+            "items": [
+                {
+                    "materialId": self.test_mat_rose,
+                    "flowerType": "Hoa Hồng Test Đỏ",
+                    "damagedStems": 45,  # VƯỢT QUÁ 40
+                    "unitCost": 15000,
+                    "reason": "Dập cánh khi vận chuyển"
+                }
+            ]
+        }
+        ok, err = create_wastage_report(overflow_wastage_payload)
+        self.assertFalse(ok, "Phải chặn báo hỏng khi số lượng vượt quá số thực nhận")
+        self.assertIn("vượt quá số lượng thực nhận", str(err))
+
+        # 5. Kịch bản báo hoa hỏng hợp lệ: Báo 5 cành hỏng (<= 40 cành thực nhận)
+        valid_wastage_payload = {
+            "branchId": "branch_q10",
+            "inboundId": receipt_id,
+            "inboundCode": receipt_id,
+            "supplier": receipt.get("supplier"),
+            "requestCode": req_code,
+            "reportedBy": "Thủ Kho Q10",
+            "items": [
+                {
+                    "materialId": self.test_mat_rose,
+                    "flowerType": "Hoa Hồng Test Đỏ",
+                    "damagedStems": 5,   # HỢP LỆ <= 40
+                    "unitCost": 15000,
+                    "reason": "Dập cánh khi vận chuyển"
+                }
+            ]
+        }
+        ok, wastage_report = create_wastage_report(valid_wastage_payload)
+        self.assertTrue(ok, f"Báo hỏng hợp lệ phải thành công: {wastage_report}")
+        self.assertEqual(wastage_report.get("inboundId"), receipt_id)
+        self.assertEqual(wastage_report.get("inboundCode"), receipt.get("inboundCode") or receipt_id)
+        self.assertEqual(wastage_report.get("requestCode"), req_code)
+        self.assertEqual(wastage_report.get("supplier"), receipt.get("supplier"))
+        self.assertEqual(wastage_report.get("totalDamagedStems"), 5)
+
+    def test_08_immutable_fulfilled_and_closed_lifecycle(self):
+        """
+        Kiểm thử Tính Bất Biến khi đã Nhận Hàng (fulfilled) và vòng đời Đóng Đơn (closed):
+        1. Đơn hàng fulfilled KHÔNG THỂ quay lại pending, approved, rejected.
+        2. Nhân viên/Thủ kho không thể tự ý đóng đơn.
+        3. Super Admin có quyền đóng đơn hàng (closed) sau 2-3 ngày theo dõi.
+        4. Đơn hàng closed là bất biến (không thể đổi sang trạng thái khác).
+        5. Đợt nhập thuộc đơn hàng closed KHÔNG THỂ báo hoa hỏng thêm.
+        """
+        user_mgr = {"id": "staff_001", "fullName": "Trần Thị Mai", "role": "branch_manager", "branchId": "branch_q10"}
+        user_admin = {"id": "staff_admin", "fullName": "Tổng Quản Trị", "role": "super_admin"}
+
+        # 1. Tạo đơn và duyệt
+        ok, req = create_purchase_request({
+            "branchId": "branch_q10",
+            "items": [{"materialId": self.test_mat_rose, "requestedQty": 30, "costPrice": 18000}]
+        }, user_dict=user_mgr)
+        self.assertTrue(ok)
+        req_id = req["id"]
+
+        ok, _ = update_purchase_request_status(req_id, "approved", user_dict=user_admin)
+        self.assertTrue(ok)
+
+        # 2. Xử lý nhập kho thực tế -> fulfilled
+        inbound_payload = {
+            "branchId": "branch_q10",
+            "supplier": "Vườn Hasfarm",
+            "importDate": "2026-09-17",
+            "items": [{"materialId": self.test_mat_rose, "quantity": 30, "costPrice": 18000}]
+        }
+        ok, res = fulfill_purchase_request(req_id, inbound_payload, user_dict=user_mgr)
+        self.assertTrue(ok)
+        receipt_id = res["inboundReceipt"]["id"]
+
+        # 3. Khóa Bất Biến: Thử đổi ngược fulfilled -> pending, approved, rejected => PHẢI THẤT BẠI
+        for invalid_status in ["pending", "approved", "rejected"]:
+            ok, err = update_purchase_request_status(req_id, invalid_status, user_dict=user_admin)
+            self.assertFalse(ok, f"Không được phép đổi trạng thái fulfilled sang {invalid_status}")
+            self.assertIn("không thể quay lại trạng thái khác", str(err))
+
+        # 4. Phân quyền đóng đơn: Branch manager thử đóng đơn => PHẢI THẤT BẠI
+        ok, err = update_purchase_request_status(req_id, "closed", user_dict=user_mgr)
+        self.assertFalse(ok, "Branch manager không được phép đóng đơn hàng")
+        self.assertIn("Chỉ Super Admin", str(err))
+
+        # 5. Báo hoa hỏng hợp lệ khi đơn còn đang fulfilled (trong 1-2 ngày theo dõi)
+        ok, w_rep = create_wastage_report({
+            "branchId": "branch_q10",
+            "inboundId": receipt_id,
+            "items": [{"materialId": self.test_mat_rose, "damagedStems": 2, "unitCost": 18000}]
+        })
+        self.assertTrue(ok, "Báo hỏng trong thời gian theo dõi phải thành công")
+
+        # 6. Super Admin đóng đơn hàng (closed) sau 2-3 ngày
+        ok, closed_req = update_purchase_request_status(req_id, "closed", user_dict=user_admin, notes="Đã chốt công nợ với nhà vườn Hasfarm")
+        self.assertTrue(ok, "Super Admin đóng đơn hàng phải thành công")
+        self.assertEqual(closed_req.get("status"), "closed")
+        self.assertEqual(closed_req.get("closedBy"), "Tổng Quản Trị")
+
+        # 7. Khóa Bất Biến khi đã closed: Thử đổi sang bất kỳ trạng thái nào => PHẢI THẤT BẠI
+        for any_status in ["pending", "approved", "rejected", "fulfilled"]:
+            ok, err = update_purchase_request_status(req_id, any_status, user_dict=user_admin)
+            self.assertFalse(ok, f"Không được phép đổi trạng thái closed sang {any_status}")
+            self.assertIn("Đơn hàng đã đóng hoàn tất", str(err))
+
+        # 8. Khóa Báo Hỏng: Thử báo hoa hỏng khi đơn đã closed => PHẢI THẤT BẠI
+        ok, err = create_wastage_report({
+            "branchId": "branch_q10",
+            "inboundId": receipt_id,
+            "items": [{"materialId": self.test_mat_rose, "damagedStems": 1, "unitCost": 18000}]
+        })
+        self.assertFalse(ok, "Không được phép báo hỏng khi đơn hàng đã đóng")
+        self.assertIn("đã được Admin đóng chốt sổ", str(err))
+
 
 if __name__ == "__main__":
     unittest.main()
+

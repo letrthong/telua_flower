@@ -215,7 +215,9 @@ export {
     recalculateInboundTotals,
     handleInboundSubmit,
     loadMonthlyInventoryReport,
-    renderMonthlyInventoryReport
+    renderMonthlyInventoryReport,
+    openInventoryManagementModal,
+    closeInventoryManagementModal
 } from './portal_admin_inventory.js';
 
 import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loadAdminBanners, loadAdminPriceLevels, openSystemConfigModal, closeSystemConfigModal, switchSystemConfigTab } from './portal_admin_sysconfig.js';
@@ -485,6 +487,13 @@ export function switchAdminTab(tabName) {
     if (tabName === "staff" || tabName === "customers" || tabName === "users") {
         closeAdminPortalModal();
         openUserManagementModal(tabName === "customers" ? "customers" : "staff");
+        return;
+    }
+
+    // Nếu yêu cầu tab Quản lý Kho & Hao hụt, tự động mở Inventory Management Dialog độc lập toàn màn hình
+    if (tabName === "inventory") {
+        closeAdminPortalModal();
+        openInventoryManagementModal();
         return;
     }
 

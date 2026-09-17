@@ -1907,6 +1907,9 @@
                 </div>
 
                 <div class="flex items-center space-x-2">
+                    <button onclick="openInventoryManagementModal()" type="button" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold rounded-xl border border-amber-200 transition shadow-2xs" title="Mở Phân Hệ Quản Lý Kho & Hao Hụt (Toàn Màn Hình)">
+                        <i class="fa-solid fa-boxes-stacked text-amber-600"></i> Kho & Hao Hụt
+                    </button>
                     <button onclick="openUserManagementModal('staff')" type="button" class="flex items-center gap-1.5 px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-xl border border-purple-200 transition shadow-2xs" title="Mở Quản Lý Người Dùng & Phân Quyền">
                         <i class="fa-solid fa-users-gear text-purple-600"></i> Quản Lý Người Dùng
                     </button>
@@ -1927,7 +1930,7 @@
                 <button onclick="switchAdminTab('products')" id="tabBtnProducts" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-spa mr-1.5 text-base"></i> Mẫu Hoa & Bảng Giá
                 </button>
-                <button onclick="switchAdminTab('inventory')" id="tabBtnInventory" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
+                <button onclick="openInventoryManagementModal()" id="tabBtnInventory" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
                     <i class="fa-solid fa-boxes-stacked mr-1.5 text-base text-amber-600"></i> Kho & Hao Hụt
                 </button>
                 <button onclick="switchAdminTab('categories')" id="tabBtnCategories" class="py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0">
@@ -2085,417 +2088,19 @@
                 </section>
 
                 <!-- ================= TAB: QUẢN LÝ TỒN KHO & HAO HỤT (TASK 06) ================= -->
-                <section id="tabContentInventory" class="space-y-5 hidden">
-                    <!-- Top Control & Filter Bar -->
-                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                <section id="tabContentInventory" class="space-y-4 hidden">
+                    <div class="bg-gradient-to-r from-amber-50/90 via-orange-50/70 to-amber-50/90 border border-amber-200/90 rounded-2xl p-6 sm:p-10 text-center space-y-4 shadow-2xs">
+                        <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                        </div>
                         <div>
-                            <div class="flex items-center gap-2">
-                                <h4 class="text-sm font-bold text-gray-800">Ma Trận Tồn Kho Thời Gian Thực & Quản Lý Hao Hụt</h4>
-                                <span id="inventorySyncStatusBadge" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    <i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Thời gian thực
-                                </span>
-                            </div>
-                            <p class="text-[11px] text-gray-500">Vòng đời tồn kho: Nhập (Daily Quota) → Bán (Sold) → Hao hụt (Wastage) → Khả dụng (Available)</p>
+                            <h4 class="text-base sm:text-lg font-bold text-gray-800">Phân Hệ Quản Lý Kho & Hao Hụt (Cửa Sổ Toàn Màn Hình)</h4>
+                            <p class="text-xs sm:text-sm text-gray-500 max-w-xl mx-auto mt-1">Phân hệ Kho đã được tách thành cửa sổ chuyên dụng kích thước lớn với 4 thanh công cụ trên cùng để mở rộng tối đa không gian thao tác ma trận, đề xuất nhập hàng và báo cáo kế toán.</p>
                         </div>
-                        <div class="flex items-center gap-2 w-full lg:w-auto flex-wrap justify-end">
-                            <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
-                                <i class="fa-solid fa-calendar-day text-xs text-gray-400"></i>
-                                <input type="date" id="filterInventoryDate" onchange="loadAdminInventory()" class="bg-transparent text-xs font-semibold text-gray-700 focus:outline-none">
-                            </div>
-                            <select id="filterInventoryBranch" onchange="loadAdminInventory()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
-                                <option value="all">Toàn bộ chi nhánh</option>
-                            </select>
-                            <div class="relative w-full sm:w-44">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
-                                <input type="text" id="searchInventoryInput" oninput="filterInventoryMatrixTable()" placeholder="Tìm mẫu hoa..." class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary">
-                            </div>
-                            <button type="button" onclick="openWastageModal()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Báo Hủy Hoa Hỏng
+                        <div class="pt-2">
+                            <button type="button" onclick="openInventoryManagementModal()" class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition inline-flex items-center gap-2">
+                                <i class="fa-solid fa-up-right-from-square"></i> Mở Cửa Sổ Quản Lý Kho & Hao Hụt
                             </button>
-                        </div>
-                    </div>
-
-                    <!-- 5 KPI Summary Cards -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-                        <div class="bg-white p-3.5 rounded-xl border border-blue-100 shadow-2xs flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-truck-ramp-box"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Hạn Mức Mở Bán</span>
-                                <div id="invKpiImported" class="text-base sm:text-lg font-bold text-blue-600 leading-tight">--</div>
-                                <span class="text-[10px] text-gray-400">cành/bình đợt nhập</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-basket-shopping"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Đã Bán Hôm Nay</span>
-                                <div id="invKpiSold" class="text-base sm:text-lg font-bold text-emerald-600 leading-tight">--</div>
-                                <span class="text-[10px] text-gray-400">sản phẩm đã đặt</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-3.5 rounded-xl border border-rose-100 shadow-2xs flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Hao Hụt / Hỏng</span>
-                                <div id="invKpiWastage" class="text-base sm:text-lg font-bold text-rose-600 leading-tight">--</div>
-                                <span id="invKpiLossAmount" class="text-[10px] text-rose-400 font-semibold line-clamp-1">0₫ vốn mất</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-3.5 rounded-xl border border-indigo-100 shadow-2xs flex items-center space-x-3">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-boxes-stacked"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Tồn Khả Dụng</span>
-                                <div id="invKpiAvailable" class="text-base sm:text-lg font-bold text-indigo-600 leading-tight">--</div>
-                                <span class="text-[10px] text-gray-400">có thể bán tiếp</span>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-3.5 rounded-xl border border-amber-100 shadow-2xs flex items-center space-x-3 col-span-2 sm:col-span-1">
-                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-bell"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <span class="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Cảnh Báo Tồn</span>
-                                <div id="invKpiAlerts" class="text-base sm:text-lg font-bold text-amber-600 leading-tight">--</div>
-                                <span class="text-[10px] text-amber-500 font-medium">sắp hết / hết hàng</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Sub-navigation: 4 Sub-Tabs Chuyên Nghiệp -->
-                    <div class="flex items-center justify-between border-b border-gray-200 overflow-x-auto">
-                        <div class="flex space-x-1 sm:space-x-3 shrink-0">
-                            <button type="button" onclick="switchInventorySubView('matrix')" id="subViewBtnMatrix" class="py-2.5 px-2 font-bold text-xs border-b-2 border-primary text-primary transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-table-cells"></i> 1. Hạn Mức Mở Bán
-                            </button>
-                            <button type="button" onclick="switchInventorySubView('materials')" id="subViewBtnMaterials" class="py-2.5 px-2 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-clipboard-list text-emerald-600"></i> 2. Yêu Cầu Nhập Hàng
-                            </button>
-                            <button type="button" onclick="switchInventorySubView('inbounds')" id="subViewBtnInbounds" class="py-2.5 px-2 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-boxes-packing text-blue-600"></i> 3. Xử Lý Nhập Kho & Báo Hủy
-                            </button>
-                            <button type="button" onclick="switchInventorySubView('monthly_report')" id="subViewBtnMonthlyReport" class="py-2.5 px-2 font-bold text-xs border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-chart-pie text-purple-600"></i> 4. Báo Cáo Nhập-Xuất-Tồn Tháng
-                            </button>
-                        </div>
-                        <div class="text-xs text-gray-400 italic hidden lg:block shrink-0">
-                            * Vòng đời: Tồn đầu + Nhập = Bán + Báo hủy + Tồn cuối
-                        </div>
-                    </div>
-
-                    <!-- VIEW 1: MATRIX TABLE CONTAINER (HẠN MỨC NGÀY THEO CHI NHÁNH) -->
-                    <div id="inventoryMatrixSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden space-y-4 p-4 sm:p-5">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                            <div>
-                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-table-cells text-primary"></i> Hạn Mức Mở Bán Theo Ngày & Chi Nhánh
-                                </h5>
-                                <p class="text-[11px] text-gray-400">Điều chỉnh số lượng hoa mở bán hôm nay cho từng showroom, kiểm soát tồn khả dụng tự động</p>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap justify-end">
-                                <button type="button" onclick="loadAdminInventory()" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-arrows-rotate"></i> Tải Lại
-                                </button>
-                                <button type="button" onclick="saveBatchInventory()" id="btnSaveBatchInventory" class="px-4 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
-                                    <i class="fa-solid fa-floppy-disk"></i> Lưu Hạn Mức Mở Bán
-                                </button>
-                            </div>
-                        </div>
-                        <div class="overflow-x-auto border border-gray-100 rounded-xl">
-                            <table class="w-full text-left text-xs" id="inventoryMatrixTable">
-                                <thead id="inventoryMatrixHeader" class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
-                                    <tr>
-                                        <th class="p-3">Mẫu Hoa</th>
-                                        <th class="p-3">Danh Mục</th>
-                                        <th class="p-3">Giá Bán</th>
-                                        <!-- Dynamic branch headers inserted by JS -->
-                                        <th class="p-3 text-center">Tổng Toàn Chuỗi</th>
-                                        <th class="p-3 text-center">Trạng Thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="inventoryMatrixBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                    <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải ma trận tồn kho chi nhánh...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- VIEW 2: YÊU CẦU NHẬP HÀNG & KHO CÀNH HOA -->
-                    <div id="inventoryMaterialsSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-6 p-4 sm:p-5">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                            <div>
-                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-clipboard-list text-emerald-600"></i> Yêu Cầu Nhập Hàng & Tồn Kho Cành Hoa
-                                </h5>
-                                <p class="text-[11px] text-gray-400">Lập đề xuất nhập hoa cành từ showroom, theo dõi số lượng cành thực tế và cảnh báo cạn kho</p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="loadAdminMaterials(); loadAdminPurchaseRequests();" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-arrows-rotate"></i> Làm Mới
-                                </button>
-                                <button type="button" onclick="openPurchaseRequestModal()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
-                                    <i class="fa-solid fa-file-circle-plus"></i> Lập Yêu Cầu Nhập Hàng
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Danh Sách Phiếu Yêu Cầu Nhập Hàng (Requisitions) -->
-                        <div class="space-y-3">
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-list-check text-emerald-600"></i> Danh Sách Phiếu Đề Xuất Nhập Hàng (Purchase Requisitions)
-                                </h6>
-                                <div class="flex items-center gap-2">
-                                    <label class="text-[11px] text-gray-500 font-medium">Trạng thái:</label>
-                                    <select id="filterRequestStatus" onchange="filterAdminPurchaseRequests()" class="px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
-                                        <option value="ALL">Tất Cả</option>
-                                        <option value="PENDING">Chờ Duyệt (Pending)</option>
-                                        <option value="APPROVED">Đã Duyệt (Approved)</option>
-                                        <option value="FULFILLED">Đã Nhập Kho (Fulfilled)</option>
-                                        <option value="REJECTED">Từ Chối (Rejected)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
-                                <table class="w-full text-left text-xs" id="purchaseRequestsTable">
-                                    <thead class="bg-emerald-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
-                                        <tr>
-                                            <th class="p-3">Mã Yêu Cầu</th>
-                                            <th class="p-3">Chi Nhánh</th>
-                                            <th class="p-3">Ngày Tạo</th>
-                                            <th class="p-3">Ngày Cần Hàng</th>
-                                            <th class="p-3">Người Lập</th>
-                                            <th class="p-3">Mặt Hàng Đề Xuất</th>
-                                            <th class="p-3 text-center">Ưu Tiên</th>
-                                            <th class="p-3 text-center">Trạng Thái</th>
-                                            <th class="p-3 text-center">Thao Tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="purchaseRequestsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                        <tr><td colspan="9" class="p-6 text-center text-gray-400 font-medium">Đang tải danh sách yêu cầu nhập hàng...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Kho Cành Hoa & Nguyên Vật Liệu Tươi -->
-                        <div class="space-y-3 pt-4 border-t border-gray-100">
-                            <div class="flex items-center justify-between">
-                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-seedling text-emerald-600"></i> Tồn Kho Cành Hoa Tươi Hiện Tại (Raw Materials)
-                                </h6>
-                            </div>
-                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
-                                <table class="w-full text-left text-xs" id="materialsTable">
-                                    <thead id="materialsTableHeader" class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
-                                        <tr>
-                                            <th class="p-3">Mã Cành Hoa</th>
-                                            <th class="p-3">Tên Hoa Cành / Phụ Liệu</th>
-                                            <th class="p-3">Phân Loại</th>
-                                            <th class="p-3 text-center">ĐVT</th>
-                                            <th class="p-3 text-right">Đơn Giá Vốn (₫)</th>
-                                            <!-- Branch headers inserted by JS -->
-                                            <th class="p-3 text-center">Tồn Toàn Chuỗi</th>
-                                            <th class="p-3 text-center">Ngưỡng Tối Thiểu</th>
-                                            <th class="p-3 text-center">Trạng Thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="materialsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                        <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Đang tải kho cành hoa & nguyên liệu...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- VIEW 3: XỬ LÝ NHẬP KHO DỰA VÀO YÊU CẦU & NHẬT KÝ BÁO HỦY -->
-                    <div id="inventoryInboundsSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-6 p-4 sm:p-5">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                            <div>
-                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-boxes-packing text-blue-600"></i> Xử Lý Nhập Kho Dựa Vào Yêu Cầu & Báo Hủy
-                                </h5>
-                                <p class="text-[11px] text-gray-400">Xử lý hàng đợi yêu cầu từ showroom, lập phiếu nhập hoa cành và phiếu báo hủy hoa dập nát</p>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <button type="button" onclick="openWastageModal()" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> Báo Hủy Hoa Hỏng
-                                </button>
-                                <button type="button" onclick="openInboundModal()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
-                                    <i class="fa-solid fa-plus"></i> Lập Phiếu Nhập Thủ Công
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Hàng Đợi Yêu Cầu Nhập Hàng Chờ Xử Lý (Queue) -->
-                        <div class="space-y-3 bg-blue-50/40 p-4 rounded-xl border border-blue-100">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h6 class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                                        <i class="fa-solid fa-hourglass-half text-blue-600"></i> Hàng Đợi Yêu Cầu Chờ Nhập Kho (Pending Requisition Queue)
-                                    </h6>
-                                    <p class="text-[10px] text-blue-700">Các yêu cầu nhập hoa từ showroom đang chờ nhập kho thực tế khi hoa về</p>
-                                </div>
-                                <span id="pendingRequisitionCountBadge" class="px-2.5 py-0.5 bg-blue-200 text-blue-800 text-[10px] font-bold rounded-full">0 yêu cầu</span>
-                            </div>
-                            <div class="overflow-x-auto border border-blue-200/60 rounded-xl bg-white">
-                                <table class="w-full text-left text-xs" id="pendingFulfillmentTable">
-                                    <thead class="bg-blue-50/80 text-blue-900 font-bold uppercase tracking-wider border-b border-blue-100">
-                                        <tr>
-                                            <th class="p-2.5">Mã Yêu Cầu</th>
-                                            <th class="p-2.5">Chi Nhánh</th>
-                                            <th class="p-2.5">Ngày Cần Hàng</th>
-                                            <th class="p-2.5">Mặt Hàng Đề Xuất</th>
-                                            <th class="p-2.5 text-center">Ưu Tiên</th>
-                                            <th class="p-2.5 text-center">Trạng Thái</th>
-                                            <th class="p-2.5 text-center">Hành Động</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="pendingFulfillmentTableBody" class="divide-y divide-blue-50 font-medium text-gray-700">
-                                        <tr><td colspan="7" class="p-4 text-center text-gray-400 font-medium">Không có yêu cầu nhập hàng nào đang chờ xử lý.</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Lịch Sử Phiếu Nhập Hàng -->
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-receipt text-blue-600"></i> Lịch Sử Phiếu Nhập Kho (Inbound Receipts)
-                                </h6>
-                                <div class="flex items-center gap-2">
-                                    <label class="text-[11px] text-gray-500 font-medium">Tháng:</label>
-                                    <input type="month" id="filterInboundMonth" onchange="loadAdminInbounds()" class="px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
-                                </div>
-                            </div>
-                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
-                                <table class="w-full text-left text-xs">
-                                    <thead class="bg-blue-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
-                                        <tr>
-                                            <th class="p-3">Mã Phiếu</th>
-                                            <th class="p-3">Chi Nhánh</th>
-                                            <th class="p-3">Ngày Nhập</th>
-                                            <th class="p-3">Nhà Cung Cấp</th>
-                                            <th class="p-3">Người Nhập</th>
-                                            <th class="p-3">Chi Tiết Mặt Hàng</th>
-                                            <th class="p-3 text-right">Tổng Tiền (₫)</th>
-                                            <th class="p-3">Ghi Chú</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="inventoryInboundsBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                        <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Đang tải lịch sử nhập hàng...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Lịch Sử Báo Hủy Hao Hụt -->
-                        <div class="space-y-3 pt-4 border-t border-gray-100">
-                            <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                                <i class="fa-solid fa-trash-can text-rose-500"></i> Lịch Sử Báo Hủy Hoa Hỏng & Thiệt Hại (Wastage Reports)
-                            </h6>
-                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
-                                <table class="w-full text-left text-xs">
-                                    <thead class="bg-rose-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
-                                        <tr>
-                                            <th class="p-3">Mã Phiếu</th>
-                                            <th class="p-3">Chi Nhánh</th>
-                                            <th class="p-3">Ngày Lập</th>
-                                            <th class="p-3">Người Báo Cáo</th>
-                                            <th class="p-3">Chi Tiết Hao Hụt</th>
-                                            <th class="p-3 text-center">Ảnh Minh Chứng</th>
-                                            <th class="p-3 text-right">Thiệt Hại Chi Phí</th>
-                                            <th class="p-3">Ghi Chú</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="inventoryWastageBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                        <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Đang tải nhật ký báo hủy...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- VIEW 4: BÁO CÁO NHẬP - XUẤT - TỒN THÁNG (MONTHLY BALANCE & PNL) -->
-                    <div id="inventoryMonthlyReportSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-5 p-4 sm:p-5">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
-                            <div>
-                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                                    <i class="fa-solid fa-chart-pie text-purple-600"></i> Báo Cáo Nhập – Xuất – Tồn & Lợi Nhuận Gộp Tháng
-                                </h5>
-                                <p class="text-[11px] text-gray-400">Công thức chuẩn kế toán: Tồn Cuối = Tồn Đầu + Nhập - Xuất Bán - Báo Hủy</p>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
-                                    <i class="fa-solid fa-calendar text-xs text-gray-400"></i>
-                                    <input type="month" id="filterMonthlyReportMonth" onchange="loadMonthlyInventoryReport()" class="bg-transparent text-xs font-semibold text-gray-700 focus:outline-none">
-                                </div>
-                                <select id="filterMonthlyReportBranch" onchange="loadMonthlyInventoryReport()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
-                                    <option value="all">Toàn bộ chi nhánh</option>
-                                </select>
-                                <button type="button" onclick="loadMonthlyInventoryReport()" class="px-3.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-rotate"></i> Xem Báo Cáo
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 4 KPI Cards for Monthly Financials -->
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                            <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-2xs">
-                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Doanh Thu Bán Hàng</span>
-                                <div id="monthlyKpiRevenue" class="text-lg sm:text-xl font-extrabold text-emerald-600 mt-1">0₫</div>
-                                <span class="text-[10px] text-emerald-700 font-medium">tổng doanh thu tháng</span>
-                            </div>
-                            <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 shadow-2xs">
-                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Giá Vốn Hàng Bán (COGS)</span>
-                                <div id="monthlyKpiCogs" class="text-lg sm:text-xl font-extrabold text-blue-600 mt-1">0₫</div>
-                                <span class="text-[10px] text-blue-700 font-medium">chi phí hoa cành + phụ liệu</span>
-                            </div>
-                            <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100 shadow-2xs">
-                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Lợi Nhuận Gộp (Gross Profit)</span>
-                                <div id="monthlyKpiGrossProfit" class="text-lg sm:text-xl font-extrabold text-purple-600 mt-1">0₫</div>
-                                <span class="text-[10px] text-purple-700 font-medium">Doanh thu - Giá vốn</span>
-                            </div>
-                            <div class="bg-pink-50/50 p-4 rounded-xl border border-pink-100 shadow-2xs">
-                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Biên Lợi Nhuận Gộp</span>
-                                <div id="monthlyKpiMargin" class="text-lg sm:text-xl font-extrabold text-primary mt-1">0.0%</div>
-                                <span class="text-[10px] text-primary font-medium">Gross Margin Ratio</span>
-                            </div>
-                        </div>
-
-                        <!-- 10-Column Balance Table -->
-                        <div class="overflow-x-auto border border-gray-200 rounded-xl">
-                            <table class="w-full text-left text-xs" id="monthlyBalanceTable">
-                                <thead class="bg-gray-50 text-gray-700 font-bold uppercase tracking-wider border-b border-gray-200">
-                                    <tr>
-                                        <th class="p-3">Mã Hàng</th>
-                                        <th class="p-3">Tên Sản Phẩm / Cành Hoa</th>
-                                        <th class="p-3">Phân Loại</th>
-                                        <th class="p-3 text-center">ĐVT</th>
-                                        <th class="p-3 text-center bg-gray-100/60 font-bold">Tồn Đầu</th>
-                                        <th class="p-3 text-center bg-blue-50/60 text-blue-700 font-bold">Nhập</th>
-                                        <th class="p-3 text-center bg-emerald-50/60 text-emerald-700 font-bold">Xuất Bán</th>
-                                        <th class="p-3 text-center bg-rose-50/60 text-rose-700 font-bold">Báo Hủy</th>
-                                        <th class="p-3 text-center bg-purple-50/60 text-purple-700 font-bold">Tồn Cuối</th>
-                                        <th class="p-3 text-right font-bold">Giá Trị Tồn Cuối (₫)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="monthlyBalanceBody" class="divide-y divide-gray-100 font-medium text-gray-700">
-                                    <tr><td colspan="10" class="p-8 text-center text-gray-400 font-medium">Đang tải báo cáo Nhập - Xuất - Tồn...</td></tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </section>
@@ -2644,6 +2249,415 @@
                         </div>
                     </div>
                 </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= INVENTORY MANAGEMENT MODAL (QUẢN LÝ TỒN KHO & HAO HỤT - DIALOG ĐỘC LẬP TOÀN MÀN HÌNH) ================= -->
+    <div id="inventoryManagementModal" onclick="if (event.target === this) closeInventoryManagementModal();" class="fixed inset-0 bg-black/75 backdrop-blur-md z-[212] items-center justify-center p-1 sm:p-2.5" style="display: none;">
+        <div class="bg-white w-full max-w-[99vw] xl:max-w-[98vw] 2xl:max-w-[1780px] h-[97vh] max-h-[97vh] rounded-2xl shadow-2xl overflow-hidden border border-gray-200 flex flex-col animate-fadeIn relative">
+            
+            <!-- TOP BAR 1: Dialog Header & Controls -->
+            <div class="px-4 sm:px-6 py-2.5 bg-white border-b border-gray-200 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 flex-shrink-0">
+                <!-- Left: Title & Live Badge -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center text-base shadow-inner flex-shrink-0">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-serif text-base sm:text-lg font-bold text-gray-800">Quản Lý Kho & Hao Hụt (Inventory & Wastage)</h3>
+                            <span id="inventorySyncStatusBadge" class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Thời gian thực
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-gray-400 hidden sm:block">Kiểm soát vòng đời hoa tươi toàn chuỗi showroom: Tồn đầu + Nhập = Bán + Báo hủy + Tồn cuối</p>
+                    </div>
+                </div>
+
+                <!-- Right: Quick Filters & Actions -->
+                <div class="flex items-center gap-2 flex-wrap justify-end">
+                    <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-xl">
+                        <i class="fa-solid fa-calendar-day text-xs text-gray-400"></i>
+                        <input type="date" id="filterInventoryDate" onchange="loadAdminInventory()" class="bg-transparent text-xs font-semibold text-gray-700 focus:outline-none">
+                    </div>
+                    <select id="filterInventoryBranch" onchange="loadAdminInventory()" class="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
+                        <option value="all">Toàn bộ chi nhánh</option>
+                    </select>
+                    <div class="relative w-36 sm:w-44">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                        <input type="text" id="searchInventoryInput" oninput="filterInventoryMatrixTable()" placeholder="Tìm mẫu hoa..." class="w-full pl-7 pr-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary">
+                    </div>
+                    <button onclick="closeInventoryManagementModal(); openAdminPortalModal();" type="button" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-primary text-xs font-bold rounded-xl border border-pink-200 transition shadow-2xs" title="Quay lại Cổng Quản Trị CMS">
+                        <i class="fa-solid fa-gauge-high text-primary"></i> CMS Nghiệp Vụ
+                    </button>
+                    <button onclick="closeInventoryManagementModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition flex-shrink-0" title="Đóng cửa sổ">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TOP BAR 2: 4 SUB-TABS ON THE VERY TOP + COMPACT KPI RIBBON -->
+            <div class="flex items-center justify-between border-b border-gray-200 bg-gray-50/90 px-4 sm:px-6 flex-shrink-0 overflow-x-auto gap-4">
+                <!-- 4 Sub-Tabs moved to the top bar -->
+                <div class="flex space-x-1 sm:space-x-4 shrink-0">
+                    <button type="button" onclick="switchInventorySubView('matrix')" id="subViewBtnMatrix" class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-table-cells"></i> 1. Hạn Mức Mở Bán
+                    </button>
+                    <button type="button" onclick="switchInventorySubView('materials')" id="subViewBtnMaterials" class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-clipboard-list text-emerald-600"></i> 2. Yêu Cầu Nhập Hàng
+                    </button>
+                    <button type="button" onclick="switchInventorySubView('inbounds')" id="subViewBtnInbounds" class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-boxes-packing text-blue-600"></i> 3. Xử Lý Nhập Kho & Báo Hủy
+                    </button>
+                    <button type="button" onclick="switchInventorySubView('monthly_report')" id="subViewBtnMonthlyReport" class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-chart-pie text-purple-600"></i> 4. Báo Cáo Nhập-Xuất-Tồn Tháng
+                    </button>
+                </div>
+
+                <!-- 5 Realtime Mini KPI Chips in top bar to save vertical space -->
+                <div class="hidden lg:flex items-center gap-2 py-1.5 shrink-0">
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-blue-100 rounded-lg shadow-2xs text-[11px]" title="Tổng hạn mức mở bán hôm nay">
+                        <i class="fa-solid fa-truck-ramp-box text-blue-500 text-[10px]"></i>
+                        <span class="text-gray-400 font-medium">Hạn mức:</span>
+                        <b id="invKpiImported" class="text-blue-600 font-bold">--</b>
+                    </div>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-emerald-100 rounded-lg shadow-2xs text-[11px]" title="Tổng số lượng đã bán hôm nay">
+                        <i class="fa-solid fa-basket-shopping text-emerald-500 text-[10px]"></i>
+                        <span class="text-gray-400 font-medium">Đã bán:</span>
+                        <b id="invKpiSold" class="text-emerald-600 font-bold">--</b>
+                    </div>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-rose-100 rounded-lg shadow-2xs text-[11px]" title="Tổng hao hụt / báo hủy hôm nay">
+                        <i class="fa-solid fa-trash-can text-rose-500 text-[10px]"></i>
+                        <span class="text-gray-400 font-medium">Hao hụt:</span>
+                        <b id="invKpiWastage" class="text-rose-600 font-bold">--</b>
+                        <span id="invKpiLossAmount" class="text-[10px] text-rose-400 font-semibold hidden xl:inline">(0₫)</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-indigo-100 rounded-lg shadow-2xs text-[11px]" title="Tồn khả dụng có thể bán tiếp">
+                        <i class="fa-solid fa-boxes-stacked text-indigo-500 text-[10px]"></i>
+                        <span class="text-gray-400 font-medium">Khả dụng:</span>
+                        <b id="invKpiAvailable" class="text-indigo-600 font-bold">--</b>
+                    </div>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-white border border-amber-100 rounded-lg shadow-2xs text-[11px]" title="Cảnh báo sắp hết / hết hàng">
+                        <i class="fa-solid fa-bell text-amber-500 text-[10px]"></i>
+                        <span class="text-gray-400 font-medium">Cảnh báo:</span>
+                        <b id="invKpiAlerts" class="text-amber-600 font-bold">--</b>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN WORKSPACE BODY: FULL MAXIMUM SPACE FOR DATA TABLES -->
+            <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4 bg-gray-50/50">
+                <!-- VIEW 1: MATRIX TABLE CONTAINER (HẠN MỨC NGÀY THEO CHI NHÁNH) -->
+                    <div id="inventoryMatrixSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden space-y-4 p-4 sm:p-5">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fa-solid fa-table-cells text-primary"></i> Hạn Mức Mở Bán Theo Ngày & Chi Nhánh
+                                </h5>
+                                <p class="text-[11px] text-gray-400">Điều chỉnh số lượng hoa mở bán hôm nay cho từng showroom, kiểm soát tồn khả dụng tự động</p>
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap justify-end">
+                                <button type="button" onclick="loadAdminInventory()" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Tải Lại
+                                </button>
+                                <button type="button" onclick="saveBatchInventory()" id="btnSaveBatchInventory" class="px-4 py-1.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md">
+                                    <i class="fa-solid fa-floppy-disk"></i> Lưu Hạn Mức Mở Bán
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                            <table class="w-full text-left text-xs" id="inventoryMatrixTable">
+                                <thead id="inventoryMatrixHeader" class="bg-pink-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Mẫu Hoa</th>
+                                        <th class="p-3">Danh Mục</th>
+                                        <th class="p-3">Giá Bán</th>
+                                        <!-- Dynamic branch headers inserted by JS -->
+                                        <th class="p-3 text-center">Tổng Toàn Chuỗi</th>
+                                        <th class="p-3 text-center">Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryMatrixBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tải ma trận tồn kho chi nhánh...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 2: YÊU CẦU NHẬP HÀNG & KHO CÀNH HOA -->
+                    <div id="inventoryMaterialsSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-6 p-4 sm:p-5">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fa-solid fa-clipboard-list text-emerald-600"></i> Yêu Cầu Nhập Hàng & Tồn Kho Cành Hoa
+                                </h5>
+                                <p class="text-[11px] text-gray-400">Lập đề xuất nhập hoa cành từ showroom, theo dõi số lượng cành thực tế và cảnh báo cạn kho</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="loadAdminMaterials(); loadAdminPurchaseRequests();" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Làm Mới
+                                </button>
+                                <button type="button" onclick="openPurchaseRequestModal()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs">
+                                    <i class="fa-solid fa-file-circle-plus"></i> Lập Yêu Cầu Nhập Hàng
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Danh Sách Phiếu Yêu Cầu Nhập Hàng (Requisitions) -->
+                        <div class="space-y-3">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-list-check text-emerald-600"></i> Danh Sách Phiếu Đề Xuất Nhập Hàng (Purchase Requisitions)
+                                </h6>
+                                <div class="flex items-center gap-2">
+                                    <label class="text-[11px] text-gray-500 font-medium">Trạng thái:</label>
+                                    <select id="filterRequestStatus" onchange="filterAdminPurchaseRequests()" class="px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
+                                        <option value="ALL">Tất Cả</option>
+                                        <option value="PENDING">Chờ Duyệt (Pending)</option>
+                                        <option value="APPROVED">Đã Duyệt (Approved)</option>
+                                        <option value="FULFILLED">Đã Nhập Kho (Fulfilled)</option>
+                                        <option value="REJECTED">Từ Chối (Rejected)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                                <table class="w-full text-left text-xs" id="purchaseRequestsTable">
+                                    <thead class="bg-emerald-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-3">Mã Yêu Cầu</th>
+                                            <th class="p-3">Chi Nhánh</th>
+                                            <th class="p-3">Ngày Tạo</th>
+                                            <th class="p-3">Ngày Cần Hàng</th>
+                                            <th class="p-3">Người Lập</th>
+                                            <th class="p-3">Mặt Hàng Đề Xuất</th>
+                                            <th class="p-3 text-center">Ưu Tiên</th>
+                                            <th class="p-3 text-center">Trạng Thái</th>
+                                            <th class="p-3 text-center">Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="purchaseRequestsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                        <tr><td colspan="9" class="p-6 text-center text-gray-400 font-medium">Đang tải danh sách yêu cầu nhập hàng...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Kho Cành Hoa & Nguyên Vật Liệu Tươi -->
+                        <div class="space-y-3 pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-seedling text-emerald-600"></i> Tồn Kho Cành Hoa Tươi Hiện Tại (Raw Materials)
+                                </h6>
+                            </div>
+                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                                <table class="w-full text-left text-xs" id="materialsTable">
+                                    <thead id="materialsTableHeader" class="bg-gray-50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-3">Mã Cành Hoa</th>
+                                            <th class="p-3">Tên Hoa Cành / Phụ Liệu</th>
+                                            <th class="p-3">Phân Loại</th>
+                                            <th class="p-3 text-center">ĐVT</th>
+                                            <th class="p-3 text-right">Đơn Giá Vốn (₫)</th>
+                                            <!-- Branch headers inserted by JS -->
+                                            <th class="p-3 text-center">Tồn Toàn Chuỗi</th>
+                                            <th class="p-3 text-center">Ngưỡng Tối Thiểu</th>
+                                            <th class="p-3 text-center">Trạng Thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="materialsTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                        <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Đang tải kho cành hoa & nguyên liệu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 3: XỬ LÝ NHẬP KHO DỰA VÀO YÊU CẦU & NHẬT KÝ BÁO HỦY -->
+                    <div id="inventoryInboundsSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-6 p-4 sm:p-5">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fa-solid fa-boxes-packing text-blue-600"></i> Xử Lý Nhập Kho Dựa Vào Yêu Cầu & Báo Hủy
+                                </h5>
+                                <p class="text-[11px] text-gray-400">Xử lý hàng đợi yêu cầu từ showroom, lập phiếu nhập hoa cành và phiếu báo hủy hoa dập nát</p>
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="px-3 py-1.5 bg-blue-50 text-blue-800 border border-blue-200 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-2xs" title="Mọi đợt nhập kho đều đối soát qua Đơn Yêu Cầu, báo hỏng trực tiếp theo ID đợt nhập">
+                                    <i class="fa-solid fa-shield-halved text-blue-600"></i> Nhập Kho Theo Yêu Cầu & Báo Hỏng Gắn ID Đợt
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Hàng Đợi Yêu Cầu Nhập Hàng Chờ Xử Lý & Theo Dõi Báo Hỏng -->
+                        <div class="space-y-3 bg-blue-50/40 p-4 rounded-xl border border-blue-100">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                <div>
+                                    <h6 class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-boxes-stacked text-blue-600"></i> Tiến Độ Xử Lý Nhập Kho & Theo Dõi Sau Nhận Hàng
+                                    </h6>
+                                    <p class="text-[10px] text-blue-700">Kiểm đếm thực tế khi xe hoa về (Xử Lý Nhập Kho) & Báo hoa hư hỏng sau 1-2 ngày lưu kho lạnh</p>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <div class="inline-flex rounded-lg border border-blue-200 bg-white p-0.5 text-xs font-semibold shadow-2xs" id="queueFilterGroup">
+                                        <button type="button" onclick="setQueueFilter('all')" id="btnFilterQueueAll" class="px-2.5 py-1 rounded-md bg-blue-600 text-white font-bold text-[11px] transition shadow-2xs">Tất cả</button>
+                                        <button type="button" onclick="setQueueFilter('approved')" id="btnFilterQueueApproved" class="px-2.5 py-1 rounded-md text-gray-600 hover:text-blue-700 text-[11px] transition">Chờ nhận (<span id="countFilterApproved">0</span>)</button>
+                                        <button type="button" onclick="setQueueFilter('fulfilled')" id="btnFilterQueueFulfilled" class="px-2.5 py-1 rounded-md text-gray-600 hover:text-emerald-700 text-[11px] transition">Đã nhận hàng - Báo hỏng (<span id="countFilterFulfilled">0</span>)</button>
+                                    </div>
+                                    <span id="pendingRequisitionCountBadge" class="px-2.5 py-1 bg-blue-200 text-blue-900 text-[10px] font-bold rounded-lg border border-blue-300 shadow-2xs">0 chờ nhận</span>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto border border-blue-200/60 rounded-xl bg-white">
+                                <table class="w-full text-left text-xs" id="pendingFulfillmentTable">
+                                    <thead class="bg-blue-50/80 text-blue-900 font-bold uppercase tracking-wider border-b border-blue-100">
+                                        <tr>
+                                            <th class="p-2.5">Mã Yêu Cầu</th>
+                                            <th class="p-2.5">Chi Nhánh</th>
+                                            <th class="p-2.5">Ngày Cần Hàng</th>
+                                            <th class="p-2.5">Mặt Hàng Đề Xuất</th>
+                                            <th class="p-2.5 text-center">Ưu Tiên</th>
+                                            <th class="p-2.5 text-center">Trạng Thái</th>
+                                            <th class="p-2.5 text-center">Hành Động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pendingFulfillmentTableBody" class="divide-y divide-blue-50 font-medium text-gray-700">
+                                        <tr><td colspan="7" class="p-4 text-center text-gray-400 font-medium">Không có yêu cầu nhập hàng nào đang chờ xử lý.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Lịch Sử Phiếu Nhập Hàng -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-receipt text-blue-600"></i> Lịch Sử Phiếu Nhập Kho (Inbound Receipts)
+                                </h6>
+                                <div class="flex items-center gap-2">
+                                    <label class="text-[11px] text-gray-500 font-medium">Tháng:</label>
+                                    <input type="month" id="filterInboundMonth" onchange="loadAdminInbounds()" class="px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-blue-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-3">Mã Phiếu (ID)</th>
+                                            <th class="p-3">Chi Nhánh</th>
+                                            <th class="p-3">Ngày Nhập</th>
+                                            <th class="p-3">Nhà Cung Cấp</th>
+                                            <th class="p-3">Người Nhập</th>
+                                            <th class="p-3">Chi Tiết Mặt Hàng (Thực Nhận)</th>
+                                            <th class="p-3 text-right">Tổng Tiền (₫)</th>
+                                            <th class="p-3">Ghi Chú</th>
+                                            <th class="p-3 text-center">Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventoryInboundsBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                        <tr><td colspan="9" class="p-8 text-center text-gray-400 font-medium">Đang tải lịch sử nhập hàng...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Lịch Sử Báo Hủy Hao Hụt -->
+                        <div class="space-y-3 pt-4 border-t border-gray-100">
+                            <h6 class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                <i class="fa-solid fa-trash-can text-rose-500"></i> Lịch Sử Báo Hủy Hoa Hỏng & Thiệt Hại (Wastage Reports)
+                            </h6>
+                            <div class="overflow-x-auto border border-gray-100 rounded-xl">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-rose-50/50 text-gray-600 font-bold uppercase tracking-wider border-b border-gray-200">
+                                        <tr>
+                                            <th class="p-3">Mã Phiếu</th>
+                                            <th class="p-3">Đợt Nhập Hàng (ID)</th>
+                                            <th class="p-3">Chi Nhánh</th>
+                                            <th class="p-3">Ngày Lập</th>
+                                            <th class="p-3">Người Báo Cáo</th>
+                                            <th class="p-3">Chi Tiết Hao Hụt</th>
+                                            <th class="p-3 text-center">Ảnh Minh Chứng</th>
+                                            <th class="p-3 text-right">Thiệt Hại Chi Phí</th>
+                                            <th class="p-3">Ghi Chú</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventoryWastageBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                        <tr><td colspan="9" class="p-8 text-center text-gray-400 font-medium">Đang tải nhật ký báo hủy...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VIEW 4: BÁO CÁO NHẬP - XUẤT - TỒN THÁNG (MONTHLY BALANCE & PNL) -->
+                    <div id="inventoryMonthlyReportSubView" class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden hidden space-y-5 p-4 sm:p-5">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="fa-solid fa-chart-pie text-purple-600"></i> Báo Cáo Nhập – Xuất – Tồn & Lợi Nhuận Gộp Tháng
+                                </h5>
+                                <p class="text-[11px] text-gray-400">Công thức chuẩn kế toán: Tồn Cuối = Tồn Đầu + Nhập - Xuất Bán - Báo Hủy</p>
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl">
+                                    <i class="fa-solid fa-calendar text-xs text-gray-400"></i>
+                                    <input type="month" id="filterMonthlyReportMonth" onchange="loadMonthlyInventoryReport()" class="bg-transparent text-xs font-semibold text-gray-700 focus:outline-none">
+                                </div>
+                                <select id="filterMonthlyReportBranch" onchange="loadMonthlyInventoryReport()" class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-primary">
+                                    <option value="all">Toàn bộ chi nhánh</option>
+                                </select>
+                                <button type="button" onclick="loadMonthlyInventoryReport()" class="px-3.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-rotate"></i> Xem Báo Cáo
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 KPI Cards for Monthly Financials -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                            <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 shadow-2xs">
+                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Doanh Thu Bán Hàng</span>
+                                <div id="monthlyKpiRevenue" class="text-lg sm:text-xl font-extrabold text-emerald-600 mt-1">0₫</div>
+                                <span class="text-[10px] text-emerald-700 font-medium">tổng doanh thu tháng</span>
+                            </div>
+                            <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 shadow-2xs">
+                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Giá Vốn Hàng Bán (COGS)</span>
+                                <div id="monthlyKpiCogs" class="text-lg sm:text-xl font-extrabold text-blue-600 mt-1">0₫</div>
+                                <span class="text-[10px] text-blue-700 font-medium">chi phí hoa cành + phụ liệu</span>
+                            </div>
+                            <div class="bg-purple-50/50 p-4 rounded-xl border border-purple-100 shadow-2xs">
+                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Lợi Nhuận Gộp (Gross Profit)</span>
+                                <div id="monthlyKpiGrossProfit" class="text-lg sm:text-xl font-extrabold text-purple-600 mt-1">0₫</div>
+                                <span class="text-[10px] text-purple-700 font-medium">Doanh thu - Giá vốn</span>
+                            </div>
+                            <div class="bg-pink-50/50 p-4 rounded-xl border border-pink-100 shadow-2xs">
+                                <span class="text-[10px] uppercase font-bold text-gray-500 block tracking-wider">Biên Lợi Nhuận Gộp</span>
+                                <div id="monthlyKpiMargin" class="text-lg sm:text-xl font-extrabold text-primary mt-1">0.0%</div>
+                                <span class="text-[10px] text-primary font-medium">Gross Margin Ratio</span>
+                            </div>
+                        </div>
+
+                        <!-- 10-Column Balance Table -->
+                        <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                            <table class="w-full text-left text-xs" id="monthlyBalanceTable">
+                                <thead class="bg-gray-50 text-gray-700 font-bold uppercase tracking-wider border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-3">Mã Hàng</th>
+                                        <th class="p-3">Tên Sản Phẩm / Cành Hoa</th>
+                                        <th class="p-3">Phân Loại</th>
+                                        <th class="p-3 text-center">ĐVT</th>
+                                        <th class="p-3 text-center bg-gray-100/60 font-bold">Tồn Đầu</th>
+                                        <th class="p-3 text-center bg-blue-50/60 text-blue-700 font-bold">Nhập</th>
+                                        <th class="p-3 text-center bg-emerald-50/60 text-emerald-700 font-bold">Xuất Bán</th>
+                                        <th class="p-3 text-center bg-rose-50/60 text-rose-700 font-bold">Báo Hủy</th>
+                                        <th class="p-3 text-center bg-purple-50/60 text-purple-700 font-bold">Tồn Cuối</th>
+                                        <th class="p-3 text-right font-bold">Giá Trị Tồn Cuối (₫)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthlyBalanceBody" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <tr><td colspan="10" class="p-8 text-center text-gray-400 font-medium">Đang tải báo cáo Nhập - Xuất - Tồn...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
             </div>
         </div>
     </div>
@@ -4357,6 +4371,22 @@
             <form id="wastageForm" onsubmit="handleWastageSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
                 <div id="wastageModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
 
+                <!-- Đợt Nhập Hàng Cần Báo Hỏng (Inbound Link & Source Verification) -->
+                <div id="wastageInboundContextContainer" class="p-3.5 bg-rose-50/70 rounded-xl border border-rose-200 space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <label class="block text-xs font-bold text-rose-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-link text-rose-600"></i> Đợt Nhập Hàng Cần Báo Hỏng (Inbound ID) *
+                        </label>
+                        <span id="wastageInboundLockBadge" class="hidden px-2 py-0.5 bg-rose-200 text-rose-800 text-[10px] font-bold rounded-full">
+                            <i class="fa-solid fa-lock text-[9px] mr-1"></i> Khóa theo đợt nhập đã chọn
+                        </span>
+                    </div>
+                    <select id="wastageInboundSelect" onchange="onWastageInboundSelectChange(this.value)" class="w-full px-3 py-2 bg-white border border-rose-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-rose-500 shadow-2xs" required>
+                        <option value="">-- Chọn đợt nhập hàng tương ứng để xác thực nguồn gốc đối soát --</option>
+                    </select>
+                    <div id="wastageInboundDetailsText" class="text-[11px] text-rose-800 font-medium hidden flex items-center gap-2"></div>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Chi Nhánh Phát Sinh Hao Hụt *</label>
@@ -4497,14 +4527,14 @@
                         </button>
                     </div>
 
-                    <div class="overflow-x-auto border border-gray-200 rounded-xl">
+                    <div class="border border-gray-200 rounded-xl overflow-visible min-h-[300px] bg-white shadow-2xs">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                                 <tr>
-                                    <th class="p-2.5">Mặt Hàng (Cành Hoa / Phụ Liệu)</th>
+                                    <th class="p-2.5 min-w-[340px]">Mặt Hàng (Cành Hoa / Phụ Liệu)</th>
                                     <th class="p-2.5 w-32 text-center">Số Lượng Đề Xuất</th>
                                     <th class="p-2.5 w-36">Ghi Chú Yêu Cầu</th>
-                                    <th class="p-2.5 w-10 text-center">Xóa</th>
+                                    <th class="p-2.5 w-12 text-center">Xóa</th>
                                 </tr>
                             </thead>
                             <tbody id="purchaseRequestItemsTableBody" class="divide-y divide-gray-100">
@@ -4550,6 +4580,18 @@
             <form id="inboundForm" onsubmit="handleInboundSubmit(event)" class="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
                 <div id="inboundModalError" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 font-medium"></div>
 
+                <!-- Banner thông tin yêu cầu nhập hàng đang đối soát -->
+                <div id="inboundRequestBanner" class="hidden p-3 bg-blue-50/80 rounded-xl border border-blue-200 text-xs text-blue-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold"><i class="fa-solid fa-clipboard-check"></i></span>
+                        <div>
+                            <span class="font-bold text-blue-950" id="inboundRequestBannerTitle">Xử lý theo Yêu Cầu Nhập Hàng</span>
+                            <span class="text-[11px] text-blue-700 block" id="inboundRequestBannerSubtitle">Đối chiếu số lượng đề xuất và cập nhật số thực tế nhận khi hoa về</span>
+                        </div>
+                    </div>
+                    <span id="inboundRequestCodeBadge" class="px-2.5 py-1 bg-blue-100 text-blue-800 font-mono font-bold rounded-lg text-xs"></span>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-bold text-gray-700 mb-1">Chi Nhánh Nhập Hàng *</label>
@@ -4574,7 +4616,7 @@
                             <i class="fa-solid fa-boxes-packing text-blue-600"></i>
                             Chi Tiết Mặt Hàng Nhập Kho *
                         </label>
-                        <button type="button" onclick="addInboundItemRow()" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg border border-blue-200 transition flex items-center gap-1">
+                        <button type="button" id="btnAddInboundItem" onclick="addInboundItemRow()" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold rounded-lg border border-blue-200 transition flex items-center gap-1">
                             <i class="fa-solid fa-plus text-[10px]"></i> Thêm Mặt Hàng
                         </button>
                     </div>
@@ -4624,6 +4666,6 @@
     </div>
 
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="/js/bundle.js?v=20260916_01"></script>
+    <script src="/js/bundle.js?v=20260916_03"></script>
 </body>
 </html>

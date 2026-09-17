@@ -336,6 +336,28 @@ def create_wastage_report(
         if user_role not in ["super_admin", "admin"] and user_branch and branch_id != user_branch:
             return False, f"Bạn chỉ có quyền lập phiếu hủy cho chi nhánh {user_branch}"
 
+    # Kiểm tra liên kết đợt nhập kho (Inbound-Linked Wastage)
+    inbound_id = data.get("inboundId")
+    inbound_code = data.get("inboundCode")
+    inbound_obj = None
+    if inbound_id:
+        inbound_obj = get_inbound_receipt_by_id(inbound_id)
+        if inbound_obj:
+            inbound_code = inbound_obj.get("inboundCode") or inbound_id
+            if inbound_obj.get("branchId") and inbound_obj.get("branchId") != branch_id:
+                return False, f"Chi nhánh báo hủy không khớp với chi nhánh của đợt nhập {inbound_code}"
+            
+            # Kiểm tra xem đợt nhập này có gắn với đơn đề xuất đã đóng (closed) hay không
+            req_file = get_config_path("purchase_requests.json")
+            reqs = read_json(req_file, default=[])
+            req_ref = inbound_obj.get("purchaseRequestId") or inbound_obj.get("requestCode")
+            matched_req = next((r for r in reqs if (req_ref and (r.get("id") == req_ref or r.get("requestCode") == req_ref)) 
+                                or r.get("fulfilledInboundId") == inbound_id 
+                                or r.get("fulfilledInboundCode") == inbound_id
+                                or (inbound_code and r.get("fulfilledInboundCode") == inbound_code)), None)
+            if matched_req and (matched_req.get("status") or "").lower() == "closed":
+                return False, "Đợt nhập hàng này thuộc đơn đề xuất đã được Admin đóng chốt sổ (closed), không thể báo hoa hỏng thêm"
+
     raw_items = data.get("items")
     if not raw_items or not isinstance(raw_items, list):
         if data.get("materialId") or data.get("productId") or data.get("flowerType") or data.get("productName"):
@@ -346,27 +368,49 @@ def create_wastage_report(
     parsed_items = []
     total_loss_amount = 0
 
+    # Lập bản đồ số lượng nhận của đợt nhập nếu có
+    inbound_items_map = {}
+    if inbound_obj and isinstance(inbound_obj.get("items"), list):
+        for inb_it in inbound_obj["items"]:
+            m_id = inb_it.get("materialId") or inb_it.get("productId") or ""
+            clean_m_id = str(m_id).replace("mat:", "").replace("prod:", "")
+            name_key = (inb_it.get("name") or inb_it.get("materialName") or "").strip().lower()
+            rec_qty = int(inb_it.get("quantity") or 0)
+            if clean_m_id:
+                inbound_items_map[clean_m_id] = inbound_items_map.get(clean_m_id, 0) + rec_qty
+            if name_key:
+                inbound_items_map[name_key] = inbound_items_map.get(name_key, 0) + rec_qty
+
     for itm in raw_items:
         flower_type = (itm.get("flowerType") or itm.get("productName") or "").strip()
         damaged_stems = int(itm.get("damagedStems") or itm.get("quantity") or 0)
         if damaged_stems <= 0:
             continue
 
+        mat_id = itm.get("materialId")
+        clean_mat_id = str(mat_id).replace("mat:", "").replace("prod:", "") if mat_id else ""
+        name_key = flower_type.lower()
+
+        # Nếu có đợt nhập, kiểm tra số lượng hỏng không vượt quá số thực nhận
+        if inbound_items_map:
+            allowed_qty = inbound_items_map.get(clean_mat_id) or inbound_items_map.get(name_key)
+            if allowed_qty is not None and damaged_stems > allowed_qty:
+                return False, f"Số lượng báo hỏng ({damaged_stems} cành) vượt quá số lượng thực nhận ({allowed_qty} cành) của '{flower_type}' trong đợt nhập {inbound_code or inbound_id}"
+
         unit_cost = int(itm.get("unitCost") or itm.get("costPrice") or 0)
         item_loss = damaged_stems * unit_cost
         total_loss_amount += item_loss
 
         # Tự động trừ kho hoa cành nếu có materialId
-        mat_id = itm.get("materialId")
         if mat_id:
-            update_material_stock(mat_id, branch_id, delta=-damaged_stems)
+            update_material_stock(clean_mat_id or mat_id, branch_id, delta=-damaged_stems)
 
         parsed_items.append({
             "productId": itm.get("productId") or None,
             "materialId": mat_id or None,
             "flowerType": flower_type or "Hoa tươi",
             "damagedStems": damaged_stems,
-            "reason": (itm.get("reason") or "Hoa dập/gãy cành").strip(),
+            "reason": (itm.get("reason") or "Hoa dập/gãy cành do vận chuyển").strip(),
             "unitCost": unit_cost,
             "totalLoss": item_loss
         })
@@ -386,13 +430,23 @@ def create_wastage_report(
     if isinstance(proof_images, str):
         proof_images = [proof_images]
 
+    supplier = data.get("supplier") or (inbound_obj.get("supplier") if inbound_obj else None)
+    request_code = data.get("requestCode") or (inbound_obj.get("requestCode") if inbound_obj else None)
+
+    total_damaged_stems = sum(x.get("damagedStems", 0) for x in parsed_items)
+
     new_report = {
         "id": report_id,
+        "inboundId": inbound_id,
+        "inboundCode": inbound_code,
+        "requestCode": request_code,
+        "supplier": supplier,
         "branchId": branch_id,
         "date": date_str,
         "reportedBy": reported_by,
         "items": parsed_items,
         "proofImages": proof_images,
+        "totalDamagedStems": total_damaged_stems,
         "totalLossAmount": total_loss_amount,
         "notes": (data.get("notes") or "").strip(),
         "createdAt": now_iso
@@ -591,6 +645,7 @@ def create_inbound_receipt(
         parsed_items.append({
             "materialId": mat_id,
             "materialName": mat_name,
+            "requestedQty": int(itm.get("requestedQty") or itm.get("quantity") or 0),
             "quantity": qty,
             "bundles": bundles,
             "stemsPerBundle": stems_per_bundle,
@@ -617,6 +672,8 @@ def create_inbound_receipt(
     receipt = {
         "id": receipt_id,
         "inboundCode": inbound_code,
+        "purchaseRequestId": data.get("purchaseRequestId"),
+        "requestCode": data.get("requestCode"),
         "branchId": branch_id,
         "supplier": data.get("supplier") or "Nhà vườn Đà Lạt",
         "importDate": import_date,
@@ -685,6 +742,30 @@ def get_inbound_receipts(
     return receipts
 
 
+def get_inbound_receipt_by_id(receipt_id: str) -> Optional[Dict[str, Any]]:
+    """Tìm phiếu nhập kho theo id hoặc inboundCode."""
+    if not receipt_id:
+        return None
+    inbounds_base = os.path.join(get_config_path("inventory"), "inbounds")
+    if not os.path.exists(inbounds_base):
+        return None
+
+    for entry in os.listdir(inbounds_base):
+        sub_p = os.path.join(inbounds_base, entry)
+        if os.path.isdir(sub_p):
+            for fn in os.listdir(sub_p):
+                if fn.endswith(".json"):
+                    fp = os.path.join(sub_p, fn)
+                    try:
+                        rec = read_json(fp, default={})
+                        if isinstance(rec, dict):
+                            if rec.get("id") == receipt_id or rec.get("inboundCode") == receipt_id:
+                                return rec
+                    except Exception:
+                        pass
+    return None
+
+
 # ---------------------------------------------------------------------------
 # QUẢN LÝ YÊU CẦU NHẬP HÀNG (PURCHASE REQUISITIONS & FULFILLMENT)
 # ---------------------------------------------------------------------------
@@ -708,8 +789,9 @@ def get_purchase_requests(
             continue
         if branch_id and branch_id != "all" and r.get("branchId") != branch_id:
             continue
-        if status and status != "all" and r.get("status") != status:
-            continue
+        if status and str(status).lower() != "all":
+            if (r.get("status") or "").lower() != str(status).lower():
+                continue
         if month_filter:
             r_date = r.get("requestDate") or r.get("createdAt", "")[:10]
             if not r_date.startswith(month_filter):
@@ -819,8 +901,12 @@ def update_purchase_request_status(
     user_dict: Optional[Dict[str, Any]] = None,
     notes: Optional[str] = None
 ) -> Tuple[bool, Union[Dict[str, Any], str]]:
-    """Cập nhật trạng thái phiếu yêu cầu (pending, approved, rejected, fulfilled)."""
-    valid_statuses = ["pending", "approved", "rejected", "fulfilled"]
+    """Cập nhật trạng thái phiếu yêu cầu (pending, approved, rejected, fulfilled, closed)."""
+    if not new_status:
+        return False, "Vui lòng chỉ định trạng thái mới"
+
+    new_status = str(new_status).strip().lower()
+    valid_statuses = ["pending", "approved", "rejected", "fulfilled", "closed"]
     if new_status not in valid_statuses:
         return False, f"Trạng thái không hợp lệ: {new_status}"
 
@@ -836,12 +922,50 @@ def update_purchase_request_status(
     if not target:
         return False, "Không tìm thấy phiếu yêu cầu nhập hàng"
 
+    curr_status = (target.get("status") or "pending").lower()
+
+    # Khóa bất biến 1: Đơn đã đóng (closed) thì không thể thay đổi bất kỳ trạng thái nào
+    if curr_status == "closed":
+        return False, "Đơn hàng đã đóng hoàn tất (closed), không thể thay đổi trạng thái"
+
+    # Khóa bất biến 2: Đơn đã nhận hàng (fulfilled) chỉ có thể chuyển sang 'closed'
+    if curr_status == "fulfilled" and new_status != "closed":
+        return False, "Đơn hàng đã xác nhận nhận hàng (fulfilled), không thể quay lại trạng thái khác ngoài việc đóng đơn"
+
+    # Phân quyền: Chỉ super_admin / admin mới có quyền đóng đơn hàng (closed)
+    if new_status == "closed":
+        user_role = user_dict.get("role") if user_dict else None
+        if user_dict and user_role not in ["super_admin", "admin"]:
+            return False, "Chỉ Super Admin mới có quyền đóng chốt đơn hàng sau thời gian theo dõi"
+
+    # Kiểm tra quyền chi nhánh nếu là branch_manager
+    if user_dict and user_dict.get("role") == "branch_manager":
+        user_branch = user_dict.get("branchId")
+        if user_branch and target.get("branchId") and target.get("branchId") != user_branch:
+            return False, "Bạn chỉ có quyền cập nhật phiếu yêu cầu của chi nhánh mình"
+
     target["status"] = new_status
-    if user_dict and new_status == "approved":
-        target["approvedBy"] = user_dict.get("fullName") or user_dict.get("name") or user_dict.get("id")
-    if notes:
-        target["processNotes"] = notes.strip()
-    target["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    actor_name = (user_dict.get("fullName") or user_dict.get("name") or user_dict.get("id")) if user_dict else "admin"
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if new_status == "approved":
+        target["approvedBy"] = actor_name
+        target["approvedAt"] = now_iso
+    elif new_status == "rejected":
+        target["rejectedBy"] = actor_name
+        target["rejectedAt"] = now_iso
+    elif new_status == "closed":
+        target["closedBy"] = actor_name
+        target["closedAt"] = now_iso
+    elif new_status == "pending":
+        target["approvedBy"] = None
+        target["approvedAt"] = None
+        target["rejectedBy"] = None
+        target["rejectedAt"] = None
+
+    if notes is not None:
+        target["processNotes"] = str(notes).strip()
+    target["updatedAt"] = now_iso
 
     write_json(req_file, all_reqs)
     return True, target
@@ -868,8 +992,18 @@ def fulfill_purchase_request(
     if not target:
         return False, "Không tìm thấy phiếu yêu cầu nhập hàng để xử lý"
 
+    curr_status = (target.get("status") or "pending").lower()
+    if curr_status in ["fulfilled", "closed", "rejected"]:
+        return False, f"Không thể xử lý nhập kho cho yêu cầu ở trạng thái '{curr_status}'"
+
     # Lập phiếu nhập kho
-    ok, receipt_or_err = create_inbound_receipt(inbound_data, user_dict=user_dict)
+    inbound_data_copy = dict(inbound_data)
+    if not inbound_data_copy.get("purchaseRequestId"):
+        inbound_data_copy["purchaseRequestId"] = target.get("id")
+    if not inbound_data_copy.get("requestCode"):
+        inbound_data_copy["requestCode"] = target.get("requestCode")
+
+    ok, receipt_or_err = create_inbound_receipt(inbound_data_copy, user_dict=user_dict)
     if not ok:
         return False, receipt_or_err
 

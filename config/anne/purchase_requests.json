@@ -1,5 +1,75 @@
 [
   {
+    "id": "req_1789578365_55ac",
+    "requestCode": "YCNH_20260917_C9C",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "requestedBy": "staff_admin",
+    "requesterName": "Tổng Quản Trị Hệ Thống",
+    "requestDate": "2026-09-17",
+    "expectedDate": "2026-09-18",
+    "items": [
+      {
+        "materialId": "lan_01",
+        "materialName": "Chậu Lan Hồ Điệp Phú Quý (5 Cành)",
+        "currentStock": 3,
+        "requestedQty": 50,
+        "unit": "cành",
+        "costPrice": 1750000,
+        "reason": ""
+      }
+    ],
+    "totalItems": 1,
+    "totalStems": 50,
+    "estimatedCost": 87500000,
+    "status": "fulfilled",
+    "approvedBy": "Tổng Quản Trị Hệ Thống",
+    "fulfilledInboundId": "inb_20260917_000721_branch_q10_bbb8",
+    "notes": "",
+    "createdAt": "2026-09-16T17:06:05Z",
+    "approvedAt": "2026-09-16T17:06:26Z",
+    "processNotes": "",
+    "updatedAt": "2026-09-16T17:06:26Z",
+    "fulfilledInboundCode": "NH_20260917_FDC",
+    "fulfilledAt": "2026-09-16T17:07:21Z",
+    "fulfilledBy": "Tổng Quản Trị Hệ Thống"
+  },
+  {
+    "id": "req_1789573188_d69a",
+    "requestCode": "YCNH_20260916_1DE",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "requestedBy": "staff_admin",
+    "requesterName": "Tổng Quản Trị Hệ Thống",
+    "requestDate": "2026-09-16",
+    "expectedDate": "2026-09-17",
+    "items": [
+      {
+        "materialId": "test_b64_1788062614",
+        "materialName": "Bình Hoa Gốm Nghệ Thuật Base64",
+        "currentStock": 10,
+        "requestedQty": 50,
+        "unit": "bình",
+        "costPrice": 750000,
+        "reason": ""
+      }
+    ],
+    "totalItems": 1,
+    "totalStems": 50,
+    "estimatedCost": 37500000,
+    "status": "fulfilled",
+    "approvedBy": "Tổng Quản Trị Hệ Thống",
+    "fulfilledInboundId": "inb_20260917_072736_branch_q10_24ae",
+    "notes": "",
+    "createdAt": "2026-09-16T15:39:48Z",
+    "approvedAt": "2026-09-16T15:40:05Z",
+    "processNotes": "",
+    "updatedAt": "2026-09-16T15:40:05Z",
+    "fulfilledInboundCode": "NH_20260917_78C",
+    "fulfilledAt": "2026-09-17T00:27:39Z",
+    "fulfilledBy": "Tổng Quản Trị Hệ Thống"
+  },
+  {
     "id": "req_1789519286_8832",
     "requestCode": "YCNH_20260916_833",
     "branchId": "branch_q10",
@@ -68,10 +138,13 @@
     ],
     "totalStems": 150,
     "estimatedCost": 2200000,
-    "status": "pending",
-    "approvedBy": null,
+    "status": "approved",
+    "approvedBy": "Tổng Quản Trị Hệ Thống",
     "fulfilledInboundId": null,
     "notes": "Ưu tiên hoa tươi cành cứng chuẩn bị sự kiện thứ Bảy",
-    "createdAt": "2026-09-16T08:00:00Z"
+    "createdAt": "2026-09-16T08:00:00Z",
+    "approvedAt": "2026-09-17T00:25:43Z",
+    "processNotes": "",
+    "updatedAt": "2026-09-17T00:25:43Z"
   }
 ]

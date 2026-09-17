@@ -275,16 +275,113 @@ Khi khách đặt đơn trên Website:
   $$\mathbf{Tồn\ Cuối\ Kỳ} = \mathbf{Tồn\ Đầu} + \mathbf{Nhập\ Trong\ Tháng} - \mathbf{Xuất\ Bán} - \mathbf{Hao\ Hụt}$$
 - Dữ liệu xuất ra gồm: Bảng tổng hợp số lượng, giá vốn COGS, giá trị tồn kho và tổng tiền thiệt hại do hoa hỏng.
 
-### 4.7. Chu trình Xử Lý Nhập Kho Dựa Vào Yêu Cầu Nhập Hàng (Requisition-based Inbound Fulfillment)
-1. **Bước 1 - Đề xuất nhu cầu (Sub-Tab 2: Yêu Cầu Nhập Hàng)**:
-   - Quản lý chi nhánh theo dõi tồn cành và bấm **"Lập Phiếu Yêu Cầu Nhập Hàng"** (chọn cành, số lượng cần, ngày cần, lý do).
-   - Phiếu ở trạng thái `pending` (Chờ duyệt).
-2. **Bước 2 - Gom đơn & Duyệt nhập (Sub-Tab 3: Xử Lý Nhập Kho & Báo Hủy)**:
-   - Super Admin duyệt yêu cầu, gom đơn đặt nhà vườn (`approved`).
-   - Khi xe hoa về showroom: Thủ kho click **"Duyệt & Nhập Kho Nhanh"**, hệ thống tự động điền danh sách mặt hàng vào Phiếu Nhập Kho (`Inbound Receipt`).
-3. **Bước 3 - Đối soát & Báo hủy**:
-   - Nếu hoa giao đủ và tươi: Xác nhận nhập kho $\rightarrow$ tự động cộng số cành vào `materials.json` của chi nhánh $\rightarrow$ chuyển trạng thái yêu cầu sang `fulfilled`.
-   - Nếu có hoa dập gãy khi vận chuyển: Tạo trực tiếp **Phiếu Báo Hủy (Wastage Report)** đính kèm ảnh chụp để làm bằng chứng đối soát với nhà vườn.
+### 4.7. Chu Trình Quản Trị Nhập Kho Khép Kín & Báo Hỏng 5 Bước (Standardized 5-Step Inbound Lifecycle)
+
+Nhằm triệt tiêu hoàn toàn nguy cơ thất thoát, gian lận và sai lệch kế toán, hệ thống **bãi bỏ hoàn toàn việc lập phiếu nhập kho thủ công tự do** và **báo hoa hỏng độc lập**. Mọi đợt nhập hoa đều phải tuân thủ nghiêm ngặt chu trình 5 bước:
+
+```mermaid
+graph TD
+    S1["<b>Bước 1: Đề Xuất Nhập Hàng</b><br>(status: pending)"] -->|Quản lý / Super Admin duyệt| S2["<b>Bước 2: Phê Duyệt Ngân Sách</b><br>(status: approved)"]
+    S1 -.->|Không đạt kế hoạch| S1_REJ["Từ chối (rejected)<br>Lưu lý do từ chối"]
+    
+    S2 -->|Xuất hiện ở Hàng Đợi Tab Xử Lý Nhập Kho| S3["<b>Bước 3: Nhận Hàng & Đối Soát Kiểm Kê</b><br>Popup xác nhận: ĐỒNG Ý -> ĐÃ NHẬN HÀNG"]
+    
+    S3 -->|Khóa Bất Biến (Immutable)| S4["<b>Bước 4: Theo Dõi Kho Lạnh 1-2 Ngày</b><br>(status: fulfilled)<br>Nút [Báo Hỏng] tại Tab Xử Lý Nhập Kho"]
+    
+    S4 -->|Sau 2-3 ngày theo dõi| S5["<b>Bước 5: Chốt Đóng Đơn (Closed)</b><br>(status: closed)<br>Super Admin bấm [Đóng Đơn] -> Khóa vĩnh viễn"]
+    
+    S5 --> S_ACC["Phòng Kế Toán chốt công nợ:<br><b>Thanh toán = Thực Nhận - Hoa Hỏng</b>"]
+```
+
+#### Chi tiết 5 bước vận hành thực tế:
+
+1. **Bước 1 - Lập Phiếu Đề Xuất / Yêu Cầu Nhập Hàng (`status: pending`)**:
+   - Nhân viên / Quản lý chi nhánh theo dõi tồn cành hoa và bấm **"Lập Phiếu Yêu Cầu Nhập Hàng"**.
+   - Hỗ trợ ô chọn mặt hàng dạng **SelectBox tìm kiếm thông minh (Auto-complete / Combobox)**: Gõ tên hoa hoặc mã cành để lọc nhanh giữa hàng trăm loại hoa.
+   - Bảng chi tiết mặt hàng cần nhập được thiết kế rộng rãi, tự động giãn dòng, hiển thị đầy đủ tên hoa, tồn kho hiện tại, đơn giá vốn, ô nhập số lượng đề xuất ban đầu (`requestedQty`) và đơn vị tính (`cành`/`bình`/`bó`).
+   - Mỗi đơn được cấp một mã duy nhất định danh (`id` dạng `req_...` và `requestCode` dạng `YCNH_...`).
+
+2. **Bước 2 - Thẩm Định & Phê Duyệt (`approved` / `rejected`)**:
+   - Quản lý chi nhánh hoặc Super Admin thẩm định nhu cầu kinh doanh và ngân sách.
+   - Thao tác trực tiếp: Bấm nút `[Duyệt]` hoặc `[Từ chối]` (kèm lý do lưu vào `processNotes`).
+   - **Quy tắc phân luồng**: **CHỈ CÁC ĐƠN ĐÃ DUYỆT (`approved`)** mới được đẩy sang Hàng Đợi Xe Về tại Tab **Xử Lý Nhập Kho**. Các đơn `pending` hoặc `rejected` tuyệt đối không thể nhập kho.
+
+3. **Bước 3 - Xe Hoa Về: Kiểm Đếm Thực Tế & Nhận Hàng (Đối Soát Trực Quan)**:
+   - Tại Tab **Xử Lý Nhập Kho**, hàng đợi xe về hiển thị đơn `approved` với nút **`[⚡ Xử Lý Nhập Kho]`**.
+   - Khi bấm, Modal Phiếu Nhập Kho mở ra với giao diện hỗ trợ kiểm kê tối đa:
+     - **Tên mặt hàng in đậm, nổi bật**: Hiển thị rõ ràng tên hoa (vd: **Chậu Lan Hồ Điệp Phú Quý (5 Cành)**, **Hoa Hồng Đỏ Ecuador**).
+     - **Mã định danh SKU**: Badge `Mã: lan_01` sắc nét.
+     - **Khóa loại hàng**: Nhãn `<i class="fa-solid fa-lock"></i> Đã khóa` (không cho phép tự ý đổi loại hoa khác với đề xuất đã duyệt).
+     - **Đối soát số lượng**: Hiển thị rõ ràng dòng: `Đề xuất ban đầu: X cành/bình`.
+     - **Cột Số Thực Nhận**: Ô nhập số lượng viền xanh nổi bật với nhãn **"SỐ THỰC NHẬN"** để thủ kho đếm thực tế xe hoa giao tới và cập nhật vào (nếu vườn giao thiếu hoặc dôi dư).
+   - **Popup Xác Nhận Bất Biến**: Khi bấm gửi phiếu, hệ thống hiển thị xác nhận:
+     > *"Xác nhận đã nhận hàng thực tế từ xe hoa? Sau khi bấm ĐỒNG Ý, hệ thống sẽ chốt số lượng hoa vào kho và chuyển đơn hàng sang trạng thái [ĐÃ NHẬN HÀNG] (khóa bất biến, không thể sửa/hủy)."*
+   - Sau khi bấm Đồng ý:
+     - Hệ thống sinh Phiếu Nhập Kho (`inbound_receipts.json`) gắn mã `purchaseRequestId` / `requestCode`.
+     - Tự động cộng số lượng thực nhận vào kho cành `materials.json` của chi nhánh.
+     - Đơn chuyển sang trạng thái **`fulfilled` (ĐÃ NHẬN HÀNG)**.
+     - **Tính bất biến (Immutable)**: Chặn hoàn toàn việc quay lui trạng thái về `pending`, `approved` hay `rejected`.
+
+4. **Bước 4 - Theo Dõi Tại Kho Lạnh (1-2 Ngày) & Báo Hoa Hỏng Ngay Tại Tab Xử Lý Nhập Kho**:
+   - **Vị trí nút Báo Hỏng**: Sau khi đã xác nhận nhận hàng, đơn `fulfilled` vẫn nằm trực tiếp trên Bảng tiến độ tại Tab **Xử Lý Nhập Kho** (và Tab Đề xuất) với nút **`[⚠️ Báo Hỏng]`** nổi bật.
+   - **Bộ lọc nhanh 3 chế độ (Pill Filter)**:
+     - `Tất cả`: Xem toàn bộ đơn hàng đợi và theo dõi.
+     - `Chờ nhận (Approved)`: Danh sách đơn xe hoa đang về chờ kiểm đếm.
+     - `Đã nhận hàng - Báo hỏng (Fulfilled)`: Danh sách các đơn vừa nhận hàng trong 1-2 ngày để thủ kho tập trung theo dõi và báo hoa hỏng.
+   - **Kiểm soát chặt chẽ**:
+     - Bấm **`[⚠️ Báo Hỏng]`** sẽ tự động liên kết với chính xác mã đợt nhập của đơn đó.
+     - Khống chế số cành báo hỏng $\le$ số cành thực nhận của đợt nhập.
+     - Hệ thống trừ thẳng số cành hỏng ra khỏi kho `materials.json` và lưu ảnh chụp minh chứng.
+
+5. **Bước 5 - Đóng Đơn Hàng Sau 2-3 Ngày (Closed) & Chốt Sổ Công Nợ**:
+   - Sau thời gian theo dõi hoa tươi trong kho lạnh (thông thường 2 - 3 ngày), **Super Admin** có nút **`[🔒 Đóng Đơn]`** trực tiếp trên dòng đơn hàng.
+   - Khi bấm Đóng Đơn: Trạng thái chuyển thành badge xám **`Đã đóng đơn (Closed) / Đã chốt sổ`**.
+   - **Khóa vĩnh viễn**: Kể từ lúc này, hệ thống khóa hoàn toàn tính năng báo hoa hỏng đối với đợt nhập này.
+   - Kế toán chốt số liệu công nợ cuối cùng để chuyển khoản cho nhà vườn:
+     $$\mathbf{Sản\ Lượng\ Thanh\ Toán} = Q_{\text{received}} - Q_{\text{damaged}}$$
+
+---
+
+### 4.8. Mô Hình Đối Soát 4 Chỉ Số Vận Hành (Requested $\rightarrow$ Received $\rightarrow$ Damaged $\rightarrow$ Usable)
+
+Để kiểm soát chặt chẽ thất thoát và tối ưu giá vốn hàng bán (COGS), chu kỳ nhập – kiểm – hủy tuân thủ mô hình 4 chỉ số cân bằng khép kín:
+
+```mermaid
+graph LR
+    REQ["1. ĐỀ XUẤT BAN ĐẦU<br><b>Q_req</b> (purchase_requests)"] -->|Xe hoa về giao hàng| REC["2. THỰC TẾ NHẬN<br><b>Q_received</b> (inbound_receipts)"]
+    REC -->|Theo dõi 1-2 ngày kho lạnh| DAM["3. HOA HƯ HỎNG<br><b>Q_damaged</b> (wastage_reports)"]
+    REC -->|Sau khi trừ hoa hỏng| USE["4. ĐẠT CHUẨN CẮM / BÁN<br><b>Q_usable</b> (materials.json)"]
+    DAM -.->|Trừ trực tiếp khỏi kho cành| USE
+```
+
+#### 1. Các công thức đối soát chuẩn nghiệp vụ:
+
+| Chỉ số | Ký hiệu | Công thức xác định | Ý nghĩa quản trị |
+| :--- | :---: | :--- | :--- |
+| **Số lượng Đề Xuất** | $Q_{\text{req}}$ | Lấy từ `requestedQty` trên đơn yêu cầu nhập hàng. | Nhu cầu dự kiến theo kế hoạch kinh doanh của showroom. |
+| **Số lượng Thực Nhận** | $Q_{\text{received}}$ | Nhập vào ô "Số thực nhận" trên phiếu nhập kho khi kiểm xe hoa. | Số lượng thực tế nhà vườn giao tới cửa hàng. |
+| **Số lượng Hoa Hỏng** | $Q_{\text{damaged}}$ | Lập trên phiếu báo hủy gắn với ID đợt nhập ($Q_{\text{damaged}} \le Q_{\text{received}}$). | Số cành bị dập cánh, gãy cành, thối gốc không sử dụng được. |
+| **Số lượng Đạt Chuẩn** | $Q_{\text{usable}}$ | $$\mathbf{Q_{\text{usable}} = Q_{\text{received}} - Q_{\text{damaged}}}$$ | **Số cành hoa lành lặn thực tế đưa vào kho lạnh để cắm và bán.** |
+
+#### 2. Các chỉ số KPI đánh giá rủi ro & hiệu quả:
+
+- **Tỷ lệ cung ứng của Nhà Vườn (Supplier Fulfillment Rate)**:
+  $$\text{Tỷ lệ cung ứng} = \frac{Q_{\text{received}}}{Q_{\text{req}}} \times 100\%$$
+  - $\ge 95\%$: Nhà vườn uy tín, cung ứng đúng cam kết đơn hàng.
+  - $< 90\%$: Nhà vườn giao thiếu hàng, cần bổ sung nguồn dự phòng.
+
+- **Tỷ lệ hao hụt / hư hỏng của Đợt Nhập (Inbound Wastage Rate)**:
+  $$\text{Tỷ lệ hỏng} = \frac{Q_{\text{damaged}}}{Q_{\text{received}}} \times 100\%$$
+  - $\le 3\%$: Hao hụt tự nhiên cho phép trong quá trình đóng thùng vận chuyển.
+  - $3\% - 7\%$: Hao hụt trung bình (do thời tiết nắng nóng hoặc đi đường xa).
+  - $> 7\%$: **Cảnh báo đỏ (Critical Warning)**: Kích hoạt biên bản khiếu nại nhà vườn, yêu cầu trừ tiền công nợ hoặc gửi hoa bù ở chuyến tiếp theo.
+
+- **Tỷ lệ thu hồi hoa đạt chuẩn (Yield / Usability Rate)**:
+  $$\text{Tỷ lệ đạt chuẩn} = \frac{Q_{\text{usable}}}{Q_{\text{received}}} \times 100\% = 100\% - \text{Tỷ lệ hỏng}$$
+
+- **Giá vốn thực tế trên mỗi cành hoa đạt chuẩn (Effective Cost Per Usable Stem)**:
+  $$\text{COGS thực tế / cành đạt} = \frac{\text{Tổng tiền thanh toán đợt nhập} - \text{Tiền nhà vườn bồi thường hỏng}}{Q_{\text{usable}}}$$
+  *(Giúp thợ hoa và kế toán tính toán đúng biên lợi nhuận của từng mẫu hoa phối, không bị lỗ do hao hụt ngầm).*
 
 ---
 
@@ -295,8 +392,10 @@ Khi khách đặt đơn trên Website:
 | **Xem Ma trận tồn kho toàn chuỗi** | ✅ Toàn quyền | ⚠️ Xem được (mặc định lọc theo CN mình) | ⚠️ Xem được | ⚠️ Xem được |
 | **Sửa hạn mức mở bán (Batch Update)** | ✅ Mọi chi nhánh | ⚠️ **Chỉ sửa chi nhánh mình phụ trách** (`user.branchId`) | ❌ Không có quyền | ❌ Không có quyền |
 | **Tạo Yêu Cầu Nhập Hàng (Requisition)** | ✅ Mọi chi nhánh | ✅ **Chi nhánh mình phụ trách** | ✅ **Chi nhánh mình** | ❌ Không có quyền |
-| **Duyệt & Xử lý Nhập Kho theo Yêu Cầu** | ✅ Toàn quyền | ⚠️ **Chi nhánh mình phụ trách** | ❌ Không có quyền | ❌ Không có quyền |
-| **Tạo phiếu báo hủy hoa hỏng kèm ảnh** | ✅ Mọi chi nhánh | ✅ Chi nhánh mình | ✅ **Chi nhánh mình** | ❌ Không có quyền |
+| **Duyệt / Từ Chối Yêu Cầu (Approve / Reject)** | ✅ Toàn quyền | ⚠️ **Chi nhánh mình phụ trách** | ❌ Không có quyền | ❌ Không có quyền |
+| **Xử lý Nhập Kho theo Đơn Đã Duyệt** | ✅ Toàn quyền | ⚠️ **Chi nhánh mình phụ trách** | ❌ Không có quyền | ❌ Không có quyền |
+| **Báo hoa hỏng gắn đợt nhập (1-2 ngày)** | ✅ Mọi chi nhánh | ✅ Chi nhánh mình | ✅ **Chi nhánh mình (bắt buộc gắn ID đợt)** | ❌ Không có quyền |
+| **Đóng Đơn Hàng Sau 2-3 Ngày (`closed`)** | ✅ **Toàn quyền (Duy nhất Super Admin)** | ❌ Không có quyền | ❌ Không có quyền | ❌ Không có quyền |
 | **Xem Báo cáo Nhập - Xuất - Tồn tháng** | ✅ Toàn quyền | ⚠️ Xem chi nhánh mình | ❌ Không có quyền | ❌ Không có quyền |
 
 ---
@@ -310,13 +409,15 @@ Tất cả các endpoints vận hành tại [src/restful_blueprint_flower_connec
 | `GET` | `/api/flower/v1/admin/inventory/matrix` | Staff, Manager, Super Admin | Lấy dữ liệu bảng ma trận tồn kho toàn chuỗi (Hạn mức mở bán, Đã bán, Hao hụt, Tồn khả dụng). |
 | `PUT` / `POST` | `/api/flower/v1/admin/inventory/batch` | Manager, Super Admin | Cập nhật nhanh số lượng hạn mức mở bán cho nhiều sản phẩm/chi nhánh cùng lúc. |
 | `GET` | `/api/flower/v1/admin/inventory/materials` | Staff, Manager, Super Admin | Lấy danh sách cành hoa và phụ liệu trong kho (`materials.json`). |
-| `GET` | `/api/flower/v1/admin/inventory/requests` | Staff, Manager, Super Admin | Lấy danh sách các phiếu yêu cầu nhập hàng từ các chi nhánh (`purchase_requests.json`). |
+| `GET` | `/api/flower/v1/admin/inventory/requests` | Staff, Manager, Super Admin | Lấy danh sách các phiếu yêu cầu nhập hàng từ các chi nhánh (`purchase_requests.json`). Hỗ trợ lọc theo `branchId`, `status`, `month`. |
 | `POST` | `/api/flower/v1/admin/inventory/requests` | Staff, Manager, Super Admin | Tạo phiếu yêu cầu nhập hoa cành/nguyên phụ liệu từ chi nhánh. |
-| `POST` | `/api/flower/v1/admin/inventory/requests/<id>/fulfill` | Manager, Super Admin | Xử lý yêu cầu nhập hàng, chuyển đổi thành Phiếu Nhập Kho và cập nhật tồn cành. |
+| `PUT` | `/api/flower/v1/admin/inventory/requests/<id>` | Manager, Super Admin | Cập nhật trạng thái phiếu yêu cầu (`approved`, `rejected`, `closed`) kèm ghi chú xử lý `processNotes` và truy vết người duyệt/từ chối/đóng đơn. |
+| `POST` | `/api/flower/v1/admin/inventory/requests/<id>/fulfill` | Manager, Super Admin | Xử lý yêu cầu nhập hàng, đối soát số lượng thực tế nhận với số lượng đề xuất, tạo Phiếu Nhập Kho và cập nhật tồn cành (chuyển sang `fulfilled` bất biến). |
 | `GET` | `/api/flower/v1/admin/inventory/inbounds` | Manager, Super Admin | Lấy danh sách các phiếu nhập hàng theo tháng và chi nhánh. |
+| `GET` | `/api/flower/v1/admin/inventory/inbounds/<id>` | Staff, Manager, Super Admin | Lấy chi tiết một phiếu nhập kho kèm danh sách cành hoa và số lượng thực nhận phục vụ báo hỏng. |
 | `POST` | `/api/flower/v1/admin/inventory/inbounds` | Manager, Super Admin | Tạo phiếu nhập kho mới, tự động cộng dồn số lượng cành vào `materials.json` hoặc `products.json`. |
-| `GET` | `/api/flower/v1/admin/inventory/wastage` | Staff, Manager, Super Admin | Lấy danh sách lịch sử các phiếu báo hủy hoa hỏng. |
-| `POST` | `/api/flower/v1/admin/inventory/wastage` | Staff, Manager, Super Admin | Tạo phiếu báo hủy hoa hỏng mới (trừ trực tiếp vào tồn kho khả dụng). |
+| `GET` | `/api/flower/v1/admin/inventory/wastage` | Staff, Manager, Super Admin | Lấy danh sách lịch sử các phiếu báo hủy hoa hỏng (có kèm thông tin đợt nhập ID và NCC). |
+| `POST` | `/api/flower/v1/admin/inventory/wastage` | Staff, Manager, Super Admin | Tạo phiếu báo hủy hoa hỏng bắt buộc gắn với `inboundId`, kiểm tra không vượt quá số cành thực nhận của đợt nhập và chặn nếu đơn đã `closed`. |
 | `GET` | `/api/flower/v1/admin/inventory/monthly-report` | Manager, Super Admin | Lấy báo cáo Nhập – Xuất – Tồn theo tháng (hỗ trợ lọc tháng, chi nhánh, loại hàng). |
 | `GET` | `/api/flower/v1/products/<id>/stock` | Public Storefront | Lấy tồn kho thời gian thực của 1 mẫu hoa tại tất cả chi nhánh. |
 | `POST` | `/api/flower/v1/inventory/smart-route` | Internal / Orders | Xác định chi nhánh gần địa chỉ nhận nhất còn đủ tồn kho để giao hàng. |

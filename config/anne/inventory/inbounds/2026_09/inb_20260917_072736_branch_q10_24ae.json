@@ -1,0 +1,31 @@
+{
+  "id": "inb_20260917_072736_branch_q10_24ae",
+  "inboundCode": "NH_20260917_78C",
+  "purchaseRequestId": "req_1789573188_d69a",
+  "requestCode": "req_1789573188_d69a",
+  "branchId": "branch_q10",
+  "supplier": "Vườn Hoa Đà Lạt Hasfarm",
+  "importDate": "2026-09-17",
+  "receivedBy": "staff_admin",
+  "receiverName": "Tổng Quản Trị Hệ Thống",
+  "paymentStatus": "paid",
+  "items": [
+    {
+      "materialId": "test_b64_1788062614",
+      "materialName": "Bình Hoa Gốm Nghệ Thuật Base64",
+      "requestedQty": 50,
+      "quantity": 50,
+      "bundles": null,
+      "stemsPerBundle": null,
+      "importMode": "stem",
+      "unit": "bình",
+      "costPrice": 750000,
+      "totalAmount": 37500000
+    }
+  ],
+  "totalItems": 1,
+  "totalStems": 50,
+  "totalCost": 37500000,
+  "notes": "[Nhập kho đối soát theo Đề Xuất req_1789573188_d69a]",
+  "createdAt": "2026-09-17T00:27:36Z"
+}
