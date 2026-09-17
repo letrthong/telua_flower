@@ -1,5 +1,46 @@
 [
   {
+    "id": "req_1789662200_c875",
+    "requestCode": "YCNH_20260917_516",
+    "branchId": "branch_q10",
+    "branchName": "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
+    "requestedBy": "staff_admin",
+    "requesterName": "Tổng Quản Trị Hệ Thống",
+    "requestDate": "2026-09-17",
+    "expectedDate": "2026-09-18",
+    "items": [
+      {
+        "materialId": "binh_hoa_03",
+        "materialName": "Bình Thủy Tinh Trong Suốt Dáng Trụ",
+        "currentStock": 20,
+        "requestedQty": 50,
+        "unit": "bình",
+        "costPrice": 175000,
+        "reason": ""
+      },
+      {
+        "materialId": "binh_hoa_01",
+        "materialName": "Bình Thủy Tinh Hổ Phách Cao Cấp",
+        "currentStock": 40,
+        "requestedQty": 50,
+        "unit": "bình",
+        "costPrice": 240000,
+        "reason": ""
+      }
+    ],
+    "totalItems": 2,
+    "totalStems": 100,
+    "estimatedCost": 20750000,
+    "status": "approved",
+    "approvedBy": "Tổng Quản Trị Hệ Thống",
+    "fulfilledInboundId": null,
+    "notes": "",
+    "createdAt": "2026-09-17T16:23:20Z",
+    "approvedAt": "2026-09-17T16:23:44Z",
+    "processNotes": "",
+    "updatedAt": "2026-09-17T16:23:44Z"
+  },
+  {
     "id": "req_1789578365_55ac",
     "requestCode": "YCNH_20260917_C9C",
     "branchId": "branch_q10",
