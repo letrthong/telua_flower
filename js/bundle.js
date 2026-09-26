@@ -15868,7 +15868,7 @@ function renderDynamicStorefrontSections(categories, products) {
                 <section class="py-8 bg-white">
                     <div class="container mx-auto max-w-7xl px-4">
                         <div class="relative rounded-2xl overflow-hidden h-48 md:h-60 shadow-md group img-skeleton">
-                            <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no_100_01.jpg"
+                            <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no_100_03.jpg"
                                 alt="Banner Hoa Chúc Mừng" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement.classList.remove('img-skeleton');"
                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
