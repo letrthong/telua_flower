@@ -1,6 +1,6 @@
 import { getAuthToken } from './auth.js';
 import { API_BASE, showConfirmDialog } from './utils.js';
-import { lockScreen, unlockScreen, notifyUser, setAdminPriceLevels } from './portal_admin_state.js';
+import { lockScreen, unlockScreen, notifyUser, setAdminPriceLevels, allAdminCategories } from './portal_admin_state.js';
 
 // ==========================================
 // CẤU HÌNH THÔNG TIN DOANH NGHIỆP (infoCompany.json)
@@ -243,6 +243,59 @@ export let adminBannersConfig = {
     autoplay: true,
     banners: []
 };
+export let adminBannerCategories = [];
+
+export async function fetchBannerCategoriesIfNeeded() {
+    if (Array.isArray(adminBannerCategories) && adminBannerCategories.length > 0) {
+        return adminBannerCategories;
+    }
+    if (typeof allAdminCategories !== 'undefined' && Array.isArray(allAdminCategories) && allAdminCategories.length > 0) {
+        adminBannerCategories = allAdminCategories;
+        return adminBannerCategories;
+    }
+    if (typeof window !== 'undefined' && Array.isArray(window.allAdminCategories) && window.allAdminCategories.length > 0) {
+        adminBannerCategories = window.allAdminCategories;
+        return adminBannerCategories;
+    }
+    try {
+        const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+        const res = await fetch(`${API_BASE}/admin/categories`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                adminBannerCategories = json.data;
+                if (typeof window !== 'undefined') window.allAdminCategories = adminBannerCategories;
+                return adminBannerCategories;
+            }
+        }
+    } catch (e) {}
+
+    try {
+        const pubRes = await fetch(`${API_BASE}/categories?_t=${Date.now()}`);
+        if (pubRes.ok) {
+            const json = await pubRes.json();
+            if (json.success && Array.isArray(json.data)) {
+                adminBannerCategories = json.data;
+                return adminBannerCategories;
+            }
+        }
+    } catch (e) {}
+
+    try {
+        const fbRes = await fetch(`config/anne/categories.json?_t=${Date.now()}`);
+        if (fbRes.ok) {
+            const data = await fbRes.json();
+            if (Array.isArray(data)) {
+                adminBannerCategories = data;
+                return adminBannerCategories;
+            }
+        }
+    } catch (e) {}
+
+    return adminBannerCategories;
+}
 
 export async function loadAdminBanners() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -300,6 +353,7 @@ export async function loadAdminBanners() {
         }
     }
 
+    await fetchBannerCategoriesIfNeeded();
     renderAdminBanners();
 }
 
@@ -344,6 +398,12 @@ export function renderAdminBanners() {
         return;
     }
 
+    const activeCats = (Array.isArray(adminBannerCategories) && adminBannerCategories.length > 0)
+        ? adminBannerCategories
+        : ((typeof allAdminCategories !== 'undefined' && Array.isArray(allAdminCategories) && allAdminCategories.length > 0)
+            ? allAdminCategories
+            : ((typeof window !== 'undefined' && Array.isArray(window.allAdminCategories)) ? window.allAdminCategories : []));
+
     let html = '';
     banners.forEach((b, idx) => {
         const active = b.active !== false;
@@ -351,6 +411,20 @@ export function renderAdminBanners() {
         const title = b.title || '';
         const link = b.link || '#products';
         const order = b.order || (idx + 1);
+
+        const isProductLink = link === '#products';
+        const isAboutLink = link === '#about';
+        const isContactLink = link === '#contact';
+        const matchedCat = activeCats.find(c => {
+            const catId = c.id;
+            return link === `#cat-${catId}` || link === `#${catId}` || (c.slug && link === `#${c.slug}`);
+        });
+
+        let selectVal = 'custom';
+        if (isProductLink) selectVal = '#products';
+        else if (isAboutLink) selectVal = '#about';
+        else if (isContactLink) selectVal = '#contact';
+        else if (matchedCat) selectVal = `#cat-${matchedCat.id}`;
 
         html += `
             <div class="bg-white rounded-2xl border ${active ? 'border-gray-200' : 'border-dashed border-gray-300 opacity-60'} p-4 shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-4 items-start relative group" data-banner-idx="${idx}">
@@ -378,18 +452,39 @@ export function renderAdminBanners() {
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-                        <!-- Link đích khi click -->
-                        <div class="sm:col-span-8">
-                            <label class="block text-[11px] font-bold text-gray-600 mb-1">Link chuyển đến khi click</label>
-                            <input type="text" value="${link}" oninput="updateAdminBannerField(${idx}, 'link', this.value)" placeholder="vd: #products hoặc /#bo-hoa" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                        <!-- Chọn nhanh danh mục hoa / đích đến -->
+                        <div class="sm:col-span-6">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1 flex items-center justify-between">
+                                <span class="flex items-center gap-1"><i class="fa-solid fa-layer-group text-primary"></i> Đích đến (Danh mục hoa)</span>
+                                <span class="text-[10px] text-gray-400 font-normal">Chọn nhanh</span>
+                            </label>
+                            <select id="adminBannerSelect_${idx}" onchange="handleAdminBannerTargetSelect(${idx}, this.value)" class="w-full px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition cursor-pointer">
+                                <option value="#products" ${selectVal === '#products' ? 'selected' : ''}>Toàn bộ sản phẩm (#products)</option>
+                                ${activeCats && activeCats.length > 0 ? `
+                                <optgroup label="Danh mục hoa tươi">
+                                    ${activeCats.map(cat => {
+                                        const catTarget = `#cat-${cat.id}`;
+                                        const catName = cat.name || cat.id;
+                                        const isSel = selectVal === catTarget;
+                                        return `<option value="${catTarget}" ${isSel ? 'selected' : ''}>🌸 ${catName} (${catTarget})</option>`;
+                                    }).join('')}
+                                </optgroup>` : ''}
+                                <optgroup label="Khu vực khác trên trang">
+                                    <option value="#about" ${selectVal === '#about' ? 'selected' : ''}>Về chúng tôi (#about)</option>
+                                    <option value="#contact" ${selectVal === '#contact' ? 'selected' : ''}>Liên hệ & Đặt hàng (#contact)</option>
+                                </optgroup>
+                                <option value="custom" ${selectVal === 'custom' ? 'selected' : ''}>🔗 Tùy chỉnh (Nhập link riêng)...</option>
+                            </select>
                         </div>
 
-                        <!-- Gợi ý ngôn ngữ -->
-                        <div class="sm:col-span-4 flex items-end">
-                            <div class="text-[10px] text-gray-400 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-100 w-full">
-                                <i class="fa-solid fa-language text-purple-600 mr-1"></i> Alt: <b>Gửi Trọn Vẹn Cảm Xúc</b> (Đa ngữ)
-                            </div>
+                        <!-- Đường dẫn link thực tế -->
+                        <div class="sm:col-span-6">
+                            <label class="block text-[11px] font-bold text-gray-700 mb-1 flex items-center justify-between">
+                                <span class="flex items-center gap-1"><i class="fa-solid fa-link text-gray-400"></i> Link chuyển đến khi click</span>
+                                <span class="text-[10px] text-gray-400 font-normal">Tự động đồng bộ</span>
+                            </label>
+                            <input type="text" id="adminBannerLinkInput_${idx}" value="${link}" oninput="handleAdminBannerLinkCustomInput(${idx}, this.value)" placeholder="vd: #products hoặc #cat-bo_hoa" class="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-800 focus:outline-none focus:border-primary focus:bg-white transition">
                         </div>
                     </div>
 
@@ -439,6 +534,30 @@ export function addAdminBannerItem() {
     renderAdminBanners();
 }
 
+export function handleAdminBannerTargetSelect(idx, value) {
+    const input = document.getElementById(`adminBannerLinkInput_${idx}`);
+    if (value === 'custom') {
+        if (input) {
+            input.focus();
+            input.select();
+        }
+        return;
+    }
+    updateAdminBannerField(idx, 'link', value);
+    if (input) {
+        input.value = value;
+    }
+}
+
+export function handleAdminBannerLinkCustomInput(idx, value) {
+    updateAdminBannerField(idx, 'link', value);
+    const select = document.getElementById(`adminBannerSelect_${idx}`);
+    if (select) {
+        const hasOption = Array.from(select.options).some(opt => opt.value === value);
+        select.value = hasOption ? value : 'custom';
+    }
+}
+
 export function removeAdminBannerItem(idx) {
     if (!adminBannersConfig.banners || !adminBannersConfig.banners[idx]) return;
     if (adminBannersConfig.banners.length <= 1) {
@@ -486,9 +605,17 @@ export async function saveAdminBanners() {
             }
         } catch (e) {}
 
-        // Đồng bộ tức thời lên storefront
+        // Đồng bộ tức thời lên LocalStorage cache và giao diện storefront
+        try {
+            localStorage.setItem('telua_hero_banners_cache', JSON.stringify({
+                etag: '',
+                data: adminBannersConfig,
+                updatedAt: adminBannersConfig.updatedAt || new Date().toISOString()
+            }));
+        } catch (e) {}
+
         if (typeof window !== 'undefined' && typeof window.applyHeroBannersConfig === 'function') {
-            window.applyHeroBannersConfig(adminBannersConfig);
+            window.applyHeroBannersConfig(adminBannersConfig, true);
         }
 
         renderAdminBanners();
@@ -1189,6 +1316,8 @@ if (typeof window !== "undefined") {
     window.saveAddonConfig = saveAddonConfig;
     window.loadAdminBanners = loadAdminBanners;
     window.renderAdminBanners = renderAdminBanners;
+    window.handleAdminBannerTargetSelect = handleAdminBannerTargetSelect;
+    window.handleAdminBannerLinkCustomInput = handleAdminBannerLinkCustomInput;
     window.updateAdminBannerField = updateAdminBannerField;
     window.addAdminBannerItem = addAdminBannerItem;
     window.removeAdminBannerItem = removeAdminBannerItem;

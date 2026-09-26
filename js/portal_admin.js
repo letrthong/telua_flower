@@ -165,6 +165,8 @@ export {
     loadAdminBanners,
     renderAdminBanners,
     updateAdminBannerField,
+    handleAdminBannerTargetSelect,
+    handleAdminBannerLinkCustomInput,
     addAdminBannerItem,
     removeAdminBannerItem,
     saveAdminBanners,

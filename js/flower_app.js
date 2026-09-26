@@ -1064,7 +1064,7 @@ export function renderDynamicStorefrontSections(categories, products) {
                 <section class="py-8 bg-white">
                     <div class="container mx-auto max-w-7xl px-4">
                         <div class="relative rounded-2xl overflow-hidden h-48 md:h-60 shadow-md group img-skeleton">
-                            <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                            <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no_100_01.jpg"
                                 alt="Banner Hoa Chúc Mừng" loading="lazy" decoding="async" onload="this.classList.add('loaded'); this.parentElement.classList.remove('img-skeleton');"
                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -1780,43 +1780,89 @@ let _heroBannersData = [];
 export async function loadHeroBanners(forceRefresh = false) {
     if (typeof document === 'undefined') return;
     try {
-        let loaded = false;
-        // 1. Thử tải từ API
+        let cached = null;
         try {
-            const res = await fetch(`${API_BASE}/banners?_t=${Date.now()}`);
+            const rawCache = localStorage.getItem('telua_hero_banners_cache');
+            if (rawCache) {
+                cached = JSON.parse(rawCache);
+            }
+        } catch (e) {}
+
+        // 1. Tận dụng cache LocalStorage: Render ngay lập tức nếu có dữ liệu hợp lệ (0ms, không đợi network)
+        let renderedFromCache = false;
+        if (cached && cached.data && Array.isArray(cached.data.banners) && cached.data.banners.length > 0) {
+            applyHeroBannersConfig(cached.data, false);
+            renderedFromCache = true;
+        }
+
+        // 2. Gửi request kiểm tra xem JSON trên server có thay đổi không (dùng ETag để nhận 304 Not Modified)
+        let loaded = false;
+        try {
+            const headers = {};
+            if (cached && cached.etag && !forceRefresh) {
+                headers['If-None-Match'] = cached.etag;
+            }
+            const res = await fetch(`${API_BASE}/banners`, { headers });
+
+            // HTTP 304 Not Modified: JSON trên server CHƯA ĐỔI -> Giữ nguyên cache hiện tại
+            if (res.status === 304) {
+                loaded = true;
+                return;
+            }
+
+            // HTTP 200 OK: JSON trên server ĐÃ ĐỔI -> Cập nhật cache mới & re-render
             if (res.ok) {
                 const json = await res.json();
                 const data = json.data || json;
+                const newEtag = res.headers.get("ETag") || res.headers.get("etag") || "";
                 if (data && Array.isArray(data.banners) && data.banners.length > 0) {
-                    applyHeroBannersConfig(data);
+                    const isDataDifferent = !cached || JSON.stringify(cached.data) !== JSON.stringify(data);
+                    try {
+                        localStorage.setItem('telua_hero_banners_cache', JSON.stringify({
+                            etag: newEtag,
+                            data: data,
+                            updatedAt: data.updatedAt || new Date().toISOString()
+                        }));
+                    } catch (e) {}
+
+                    if (isDataDifferent || !renderedFromCache) {
+                        applyHeroBannersConfig(data, false);
+                    }
                     loaded = true;
                 }
             }
         } catch (e) {
-            // API offline / fallback
+            // API offline / lỗi mạng
         }
 
-        // 2. Thử fallback tải từ file config tĩnh
-        if (!loaded) {
+        // 3. Fallback tải từ file tĩnh config/anne/banners.json nếu chưa có cache và API không chạy
+        if (!loaded && !renderedFromCache) {
             try {
-                const staticRes = await fetch(`config/anne/banners.json?_t=${Date.now()}`);
+                const staticRes = await fetch(`config/anne/banners.json`);
                 if (staticRes.ok) {
                     const data = await staticRes.json();
                     if (data && Array.isArray(data.banners) && data.banners.length > 0) {
-                        applyHeroBannersConfig(data);
+                        try {
+                            localStorage.setItem('telua_hero_banners_cache', JSON.stringify({
+                                etag: '',
+                                data: data,
+                                updatedAt: data.updatedAt || new Date().toISOString()
+                            }));
+                        } catch (e) {}
+                        applyHeroBannersConfig(data, false);
                         loaded = true;
                     }
                 }
             } catch (e) {
-                // Ignore fallback error
+                // Bỏ qua lỗi fallback
             }
         }
     } catch (err) {
-        console.warn("[HERO-BANNER] Dùng banner mặc định:", err.message);
+        console.warn("[HERO-BANNER] Lỗi nạp banner:", err.message);
     }
 }
 
-export function applyHeroBannersConfig(config) {
+export function applyHeroBannersConfig(config, shouldUpdateStorage = true) {
     if (typeof document === 'undefined' || !config) return;
     
     if (config.interval && typeof config.interval === 'number' && config.interval >= 1000) {
@@ -1832,11 +1878,24 @@ export function applyHeroBannersConfig(config) {
 
     _heroBannersData = activeList;
 
+    // Lưu vào LocalStorage cache khi có cập nhật mới (ví dụ Admin lưu từ portal)
+    if (shouldUpdateStorage) {
+        try {
+            const rawCache = localStorage.getItem('telua_hero_banners_cache');
+            const existing = rawCache ? JSON.parse(rawCache) : {};
+            localStorage.setItem('telua_hero_banners_cache', JSON.stringify({
+                etag: existing.etag || '',
+                data: config,
+                updatedAt: config.updatedAt || new Date().toISOString()
+            }));
+        } catch (e) {}
+    }
+
     const slidesContainer = document.getElementById('heroBannerSlides');
     const dotsContainer = document.getElementById('heroBannerDots');
     if (!slidesContainer) return;
 
-    // Tải trước (preload) toàn bộ ảnh banner để khi bấm Next/Prev hoặc tự chuyển thì ảnh hiện ngay lập tức
+    // Tải trước (preload) toàn bộ ảnh banner để khi chuyển slide ảnh hiện ngay lập tức
     _heroBannersData.forEach((b) => {
         if (b.image) {
             const preImg = new Image();
@@ -1844,7 +1903,7 @@ export function applyHeroBannersConfig(config) {
         }
     });
 
-    // Render động các slides
+    // Render động các slides từ dữ liệu JSON
     let slidesHtml = '';
     _heroBannersData.forEach((b, idx) => {
         const isFirst = idx === 0;
@@ -1855,7 +1914,7 @@ export function applyHeroBannersConfig(config) {
         const heroTitle = (trans[lang] && trans[lang].hero_heading) ? trans[lang].hero_heading : 'Gửi Trọn Vẹn Cảm Xúc';
         const altText = b.title || heroTitle;
         const link = b.link || '#products';
-        const linkTagOpen = link ? `<a href="${link}" class="block w-full h-full">` : '';
+        const linkTagOpen = link ? `<a href="${link}" onclick="handleHeroBannerClick(event, '${link}')" class="block w-full h-full cursor-pointer">` : '';
         const linkTagClose = link ? `</a>` : '';
 
         slidesHtml += `
@@ -1869,7 +1928,7 @@ export function applyHeroBannersConfig(config) {
     });
     slidesContainer.innerHTML = slidesHtml;
 
-    // Render động các dots
+    // Render động các dots theo số lượng ảnh từ JSON
     if (dotsContainer) {
         let dotsHtml = '';
         _heroBannersData.forEach((_, idx) => {
@@ -1965,6 +2024,7 @@ export function resetHeroSlideTimer() {
     }, _heroSlideInterval);
 }
 
+let _heroSliderEventsBound = false;
 export function initHeroBannerSlider() {
     if (typeof document === 'undefined') return;
     const container = document.getElementById('heroBannerCarousel');
@@ -1972,6 +2032,9 @@ export function initHeroBannerSlider() {
     if (!container || !slides || slides.length === 0) return;
 
     changeHeroSlide(0);
+
+    if (_heroSliderEventsBound) return;
+    _heroSliderEventsBound = true;
 
     // Tạm dừng khi rê chuột vào, tiếp tục khi rời chuột
     container.addEventListener('mouseenter', () => {
@@ -2015,6 +2078,67 @@ export function initHeroBannerSlider() {
     }, { passive: true });
 }
 
+/**
+ * Điều hướng mượt mà khi người dùng nhấp vào ảnh Hero Banner
+ * Hỗ trợ:
+ * - #products -> cuộn mượt mà đến khu vực danh mục hoa / sản phẩm
+ * - #cat-xxx hoặc #xxx -> cuộn mượt mà đến danh mục hoa tương ứng (gọi scrollToCategory)
+ * - #tim-cua-hang, #about, #contact -> cuộn đến section tương ứng
+ * - External link / URL khác -> chuyển hướng bình thường
+ */
+export function handleHeroBannerClick(event, link) {
+    if (!link) return;
+
+    if (link.startsWith('#')) {
+        if (event && typeof event.preventDefault === 'function') {
+            event.preventDefault();
+        }
+
+        const rawTarget = link.replace(/^#\/?/, '').trim();
+        if (!rawTarget) return;
+
+        // Nếu đang hiển thị kết quả tìm kiếm thì xóa tìm kiếm trước để đưa về danh mục bình thường
+        const searchInput = document.getElementById('storefrontSearchInput');
+        const searchSection = document.getElementById('search-results-section');
+        if (searchSection || (searchInput && searchInput.value.trim())) {
+            clearStorefrontSearch(false);
+        }
+
+        if (rawTarget === 'products' || rawTarget === 'dynamicCategorySections') {
+            const sec = document.getElementById('products') || document.getElementById('dynamicCategorySections') || document.getElementById('storefrontQuickCategories');
+            if (sec) {
+                sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            return;
+        }
+
+        // Kiểm tra nếu là danh mục hoa: #cat-xxx hoặc #xxx
+        const catId = rawTarget.startsWith('cat-') ? rawTarget.substring(4) : rawTarget;
+        const catEl = document.getElementById(`cat-${catId}`) || document.getElementById(rawTarget);
+        if (catEl) {
+            if (typeof scrollToCategory === 'function') {
+                scrollToCategory(catId);
+            } else {
+                catEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            return;
+        }
+
+        // Kiểm tra các phần tử section khác (vd: tim-cua-hang, about, contact...)
+        const otherEl = document.getElementById(rawTarget);
+        if (otherEl) {
+            otherEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+
+        // Fallback: nếu không tìm thấy target cụ thể, cuộn tới danh mục sản phẩm
+        const fallbackSec = document.getElementById('products') || document.getElementById('dynamicCategorySections') || document.getElementById('storefrontQuickCategories');
+        if (fallbackSec) {
+            fallbackSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+
 // 5. Khởi chạy khi tải xong trang (DOM Content Loaded - Đảm bảo chỉ chạy duy nhất 1 lần để tránh rò rỉ listener)
 let _hasInitApp = false;
 async function initApp() {
@@ -2046,7 +2170,27 @@ async function initApp() {
             if (q) {
                 searchStorefrontProducts(q, false);
             } else {
-                clearStorefrontSearch(false);
+                // Chỉ xóa tìm kiếm nếu giao diện đang ở chế độ tìm kiếm
+                const searchInput = document.getElementById('storefrontSearchInput');
+                const searchSection = document.getElementById('search-results-section');
+                if (searchSection || (searchInput && searchInput.value.trim())) {
+                    clearStorefrontSearch(false);
+                }
+
+                // Nếu URL Hash chứa anchor danh mục hoặc sản phẩm thì điều hướng mượt mà
+                const currentHash = window.location.hash || '';
+                if (currentHash.startsWith('#')) {
+                    const hashTarget = currentHash.replace(/^#\/?/, '').trim();
+                    if (hashTarget === 'products') {
+                        const sec = document.getElementById('products') || document.getElementById('dynamicCategorySections') || document.getElementById('storefrontQuickCategories');
+                        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else if (hashTarget.startsWith('cat-') || (activeStorefrontCategories && activeStorefrontCategories.some(c => c && c.id === hashTarget))) {
+                        const catId = hashTarget.startsWith('cat-') ? hashTarget.substring(4) : hashTarget;
+                        if (typeof scrollToCategory === 'function') {
+                            scrollToCategory(catId);
+                        }
+                    }
+                }
             }
         };
 
@@ -2159,6 +2303,7 @@ if (typeof window !== 'undefined') {
     window.initHeroBannerSlider = initHeroBannerSlider;
     window.loadHeroBanners = loadHeroBanners;
     window.applyHeroBannersConfig = applyHeroBannersConfig;
+    window.handleHeroBannerClick = handleHeroBannerClick;
 
     // Tự động kiểm tra thay đổi của file addons.json / addonConfig.json / infoCompany.json khi người dùng chuyển lại tab
     const handleAddonsVisibilityOrFocus = () => {

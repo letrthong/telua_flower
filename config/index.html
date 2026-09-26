@@ -434,39 +434,36 @@
             </div>
             <!-- Hero Banner Slideshow (Tự động chuyển 5s/lần & thanh điều hướng danh sách ảnh) -->
             <div id="heroBannerCarousel" class="w-full md:w-1/2 h-[340px] md:h-[500px] relative overflow-hidden rounded-bl-[60px] md:rounded-bl-[100px] shadow-lg group select-none bg-pink-100">
-                <!-- Danh sách các ảnh Banner -->
+                <!-- Danh sách các ảnh Banner (Nạp động 100% từ banners.json và cache trình duyệt) -->
                 <div id="heroBannerSlides" class="relative w-full h-full">
-                    <!-- Slide 1 -->
-                    <div class="hero-slide absolute inset-0 opacity-100 z-10" data-index="0">
-                        <img src="https://images.unsplash.com/photo-1563241527-3004b7be0ffd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                            alt="Gửi Trọn Vẹn Cảm Xúc - Bó hoa tình yêu" fetchpriority="high" class="w-full h-full object-cover object-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
-                    </div>
-                    <!-- Slide 2 -->
-                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="1">
-                        <img src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                            alt="Bộ Sưu Tập Hoa Tươi Thiết Kế" class="w-full h-full object-cover object-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
-                    </div>
-                    <!-- Slide 3 -->
-                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="2">
-                        <img src="https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                            alt="Hoa Tươi Phong Cách Lãng Mạn" class="w-full h-full object-cover object-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
-                    </div>
-                    <!-- Slide 4 -->
-                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="3">
-                        <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                            alt="Bình Hoa Tươi Sang Trọng Độc Bản" class="w-full h-full object-cover object-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
-                    </div>
-                    <!-- Slide 5 -->
-                    <div class="hero-slide absolute inset-0 opacity-0 z-0 pointer-events-none" data-index="4">
-                        <img src="https://images.unsplash.com/photo-1508610048659-a06b669e3321?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                            alt="Nở Hoa Thả Bình - Trao Gửi Yêu Thương" class="w-full h-full object-cover object-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
+                    <!-- Skeleton placeholder ban đầu trong khi nạp danh sách banner động -->
+                    <div class="hero-slide absolute inset-0 opacity-100 z-10 img-skeleton flex items-center justify-center bg-pink-100">
+                        <i class="fa-solid fa-fan text-pink-300 text-3xl animate-spin"></i>
                     </div>
                 </div>
+
+                <!-- Hydration script: Khôi phục ảnh banner tức thì từ LocalStorage Cache nếu có (0ms FCP/LCP) -->
+                <script>
+                    (function() {
+                        try {
+                            var cached = JSON.parse(localStorage.getItem('telua_hero_banners_cache') || 'null');
+                            if (cached && cached.data && Array.isArray(cached.data.banners) && cached.data.banners.length > 0) {
+                                var b0 = cached.data.banners.find(function(b) { return b.active !== false; });
+                                if (b0 && b0.image) {
+                                    var container = document.getElementById('heroBannerSlides');
+                                    if (container) {
+                                        container.innerHTML = '<div class="hero-slide absolute inset-0 opacity-100 z-10" data-index="0">' +
+                                            '<a href="' + (b0.link || '#products') + '" onclick="if(typeof handleHeroBannerClick===\'function\'){handleHeroBannerClick(event, \'' + (b0.link || '#products') + '\');}" class="block w-full h-full cursor-pointer">' +
+                                                '<img src="' + b0.image + '" alt="' + (b0.title || 'Nở Hoa Thả Bình') + '" fetchpriority="high" class="w-full h-full object-cover object-center loaded" style="opacity: 1 !important;">' +
+                                                '<div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>' +
+                                            '</a>' +
+                                        '</div>';
+                                    }
+                                }
+                            }
+                        } catch(e) {}
+                    })();
+                </script>
 
                 <!-- Nút điều hướng Trái / Phải (Hiện mượt khi hover) -->
                 <button type="button" onclick="prevHeroSlide()" aria-label="Ảnh trước"
@@ -478,14 +475,8 @@
                     <i class="fa-solid fa-chevron-right text-sm md:text-base"></i>
                 </button>
 
-                <!-- Thanh danh sách chỉ số ảnh (Dots Navigation Bar) -->
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20 shadow-md" id="heroBannerDots">
-                    <button type="button" onclick="changeHeroSlide(0)" aria-label="Ảnh 1" class="hero-dot w-6 h-2 rounded-full bg-primary transition-all duration-300 shadow-sm cursor-pointer"></button>
-                    <button type="button" onclick="changeHeroSlide(1)" aria-label="Ảnh 2" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
-                    <button type="button" onclick="changeHeroSlide(2)" aria-label="Ảnh 3" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
-                    <button type="button" onclick="changeHeroSlide(3)" aria-label="Ảnh 4" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
-                    <button type="button" onclick="changeHeroSlide(4)" aria-label="Ảnh 5" class="hero-dot w-2 h-2 rounded-full bg-white/70 hover:bg-white transition-all duration-300 shadow-sm cursor-pointer"></button>
-                </div>
+                <!-- Thanh danh sách chỉ số ảnh (Dots Navigation Bar - Tự động tạo theo dữ liệu JSON) -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20 shadow-md" id="heroBannerDots"></div>
 
                 <!-- Thanh tiến trình thời gian 5 giây -->
                 <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-20 overflow-hidden pointer-events-none">
@@ -559,7 +550,8 @@
     </section>
 
     <!-- DYNAMIC STOREFRONT CATEGORY SECTIONS (Tự động tạo & hiển thị theo categories.json & API) -->
-    <div id="dynamicCategorySections">
+    <div id="products" class="scroll-mt-20"></div>
+    <div id="dynamicCategorySections" class="scroll-mt-20">
         <!-- Render tự động qua JS flower_app.js -->
     </div>
 
