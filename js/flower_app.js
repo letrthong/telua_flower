@@ -146,8 +146,8 @@ export function renderProducts(products, containerId) {
     const btnText = (trans && trans[lang] && trans[lang].btn_add_to_cart) ? trans[lang].btn_add_to_cart : "Thêm giỏ hàng";
 
     products.forEach(product => {
-        const origPrice = product.originalPrice || `${(product.priceNumber || 420000).toLocaleString()}₫`;
-        const salePrice = product.salePrice || `${(product.priceNumber || 420000).toLocaleString()}₫`;
+        const origPrice = product.originalPrice || `${(product.priceNumber || 0).toLocaleString()}₫`;
+        const salePrice = product.salePrice || `${(product.priceNumber || 0).toLocaleString()}₫`;
         const hasDiscount = origPrice !== salePrice;
 
         const displayBadge = getProductBadge(product);
@@ -159,7 +159,7 @@ export function renderProducts(products, containerId) {
                <span class="text-primary font-bold text-sm md:text-base">${salePrice}</span>`
             : `<span class="text-primary font-bold text-sm md:text-base">${salePrice}</span>`;
 
-        const numericPrice = product.priceNumber || parseInt(salePrice.replace(/[^\d]/g, ''), 10) || 420000;
+        const numericPrice = product.priceNumber || parseInt(salePrice.replace(/[^\d]/g, ''), 10) || 0;
         const prodDisplayName = getProductName(product);
         const safeName = (prodDisplayName || product.name || "").replace(/'/g, "\\'");
         const prodId = product.id || `prod_${(product.name || 'hoa').toLowerCase().replace(/\s+/g, '_')}`;
@@ -215,7 +215,7 @@ export function populateProductDetailModalContent(prod, currentAppLang, productI
     const body = document.getElementById("detailContentBody");
     if (!modal || !prod) return;
 
-    const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "420000").replace(/[^\d]/g, ''), 10) || 420000;
+    const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "0").replace(/[^\d]/g, ''), 10) || 0;
     const prodDisplayName = getProductName(prod);
     const prodCompText = getProductComposition(prod);
     const prodDescText = getProductDescription(prod);
@@ -1647,6 +1647,18 @@ export function applyStorefrontCompanyInfo(info) {
     if (info.companyName) {
         const yr = new Date().getFullYear();
         setText('footerCopyright', `© ${yr} Bản quyền thuộc về ${info.companyName}.`);
+    }
+
+    if (info.facebook) {
+        setHref('footerFacebookLink', info.facebook);
+    }
+
+    if (info.instagram) {
+        setHref('footerInstagramLink', info.instagram);
+    }
+
+    if (info.tiktok) {
+        setHref('footerTiktokLink', info.tiktok);
     }
 
     if (info.zalo) {

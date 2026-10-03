@@ -470,43 +470,9 @@ export async function reloadBranchesIfChanged(forceRefresh = false) {
         }
     }
 
-    // Fallback mặc định cuối cùng nếu danh sách rỗng
-    if (!storefrontBranches || storefrontBranches.length === 0) {
-        storefrontBranches = [
-            {
-                id: "branch_q10",
-                code: "CN_Q10",
-                name: "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
-                address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
-                phone: "0976.491.322",
-                openHours: "07:00 - 21:00 (Thứ 2 - Chủ Nhật)",
-                amenities: "Đậu xe ô tô/xe máy miễn phí • Cắm hoa nghệ thuật tại chỗ • Phòng lạnh bảo quản hoa",
-                lat: 10.7725,
-                lng: 106.6698
-            },
-            {
-                id: "branch_q1",
-                code: "CN_Q1",
-                name: "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
-                address: "Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
-                phone: "0976.491.323",
-                openHours: "08:00 - 21:30 (Thứ 2 - Chủ Nhật)",
-                amenities: "Giao hoa hỏa tốc văn phòng Bitexco • Gói quà cao cấp",
-                lat: 10.7715,
-                lng: 106.7042
-            },
-            {
-                id: "branch_thao_dien",
-                code: "CN_Q2",
-                name: "Nở Hoa Thả Bình - Showroom Thảo Điền",
-                address: "68 Xuân Thủy, Phường Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-                phone: "0976.491.324",
-                openHours: "07:30 - 21:00 (Thứ 2 - Chủ Nhật)",
-                amenities: "Không gian workshop cắm hoa • Hoa nhập khẩu cao cấp Hà Lan & Ecuador",
-                lat: 10.8035,
-                lng: 106.7328
-            }
-        ];
+    // Đảm bảo storefrontBranches luôn là mảng chuẩn (nếu file rỗng thì giữ rỗng, không hardcode)
+    if (!Array.isArray(storefrontBranches)) {
+        storefrontBranches = [];
     }
 
     _lastBranchesSyncTime = Date.now();
@@ -530,6 +496,16 @@ export async function reloadBranchesIfChanged(forceRefresh = false) {
 
         if (targetBranch) {
             selectShowroomBranch(targetBranch.id, true);
+        } else {
+            currentSelectedBranch = null;
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.removeItem(SELECTED_BRANCH_ID_KEY);
+                    localStorage.removeItem(SELECTED_BRANCH_DATA_KEY);
+                    localStorage.removeItem('telua_selected_branch_address_v1');
+                } catch (e) {}
+            }
+            renderSelectedBranchInfo(null);
         }
     }
 
@@ -563,6 +539,11 @@ export async function loadAndRenderStorefrontBranches() {
 function renderStorefrontBranchButtons() {
     const navContainer = document.getElementById("storeBranchNav");
     if (!navContainer) return;
+
+    if (!storefrontBranches || storefrontBranches.length === 0) {
+        navContainer.innerHTML = '<span class="text-xs text-gray-500 italic py-1 px-3">Chưa có chi nhánh khả dụng</span>';
+        return;
+    }
 
     let html = "";
     storefrontBranches.forEach((b, idx) => {
@@ -696,17 +677,6 @@ export function getStoreOperatingStatus(hoursStr, customDate = null) {
 
 // Cập nhật thông tin chi nhánh đã chọn lên giao diện Storefront
 export function renderSelectedBranchInfo(b) {
-    if (!b) return;
-
-    // Lưu vào LocalStorage
-    if (typeof localStorage !== "undefined") {
-        try {
-            localStorage.setItem(SELECTED_BRANCH_ID_KEY, b.id);
-            localStorage.setItem(SELECTED_BRANCH_DATA_KEY, JSON.stringify(b));
-            localStorage.setItem('telua_selected_branch_address_v1', b.address);
-        } catch (e) {}
-    }
-
     // Cập nhật thẻ thông tin
     const nameEl = document.getElementById("storeNameVal");
     const addrEl = document.getElementById("storeAddressVal");
@@ -717,6 +687,34 @@ export function renderSelectedBranchInfo(b) {
     const mapIframe = document.getElementById("storeMapIframe");
     const directionsLink = document.getElementById("storeDirectionsLink");
     const largerMapLink = document.getElementById("storeLargerMapLink");
+
+    if (!b) {
+        if (nameEl) nameEl.textContent = "Chưa có showroom hoạt động";
+        if (addrEl) addrEl.textContent = "Vui lòng liên hệ hotline để được phục vụ và giao hoa tận nơi";
+        if (hoursEl) hoursEl.innerHTML = "";
+        if (statusBadge) {
+            statusBadge.className = "inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 shadow-2xs";
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-gray-400"></span> <span id="storeStatusVal">Tạm ngừng hoạt động</span>`;
+        }
+        if (hotlineLink) {
+            hotlineLink.textContent = "0976.491.324";
+            hotlineLink.href = "tel:0976491324";
+        }
+        if (amenitiesEl) amenitiesEl.textContent = "Hỗ trợ đặt hoa trực tuyến & giao tận nơi toàn quốc";
+        if (mapIframe) mapIframe.src = "about:blank";
+        if (directionsLink) directionsLink.href = "#";
+        if (largerMapLink) largerMapLink.href = "#";
+        return;
+    }
+
+    // Lưu vào LocalStorage
+    if (typeof localStorage !== "undefined") {
+        try {
+            localStorage.setItem(SELECTED_BRANCH_ID_KEY, b.id);
+            localStorage.setItem(SELECTED_BRANCH_DATA_KEY, JSON.stringify(b));
+            localStorage.setItem('telua_selected_branch_address_v1', b.address);
+        } catch (e) {}
+    }
 
     if (nameEl) nameEl.textContent = b.name;
     if (addrEl) addrEl.textContent = b.address;

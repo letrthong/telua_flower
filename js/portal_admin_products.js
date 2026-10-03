@@ -243,21 +243,19 @@ export async function populatePriceLevelSelect(selectedId = null) {
     const lvlSelect = document.getElementById("prodPriceLevel");
     if (!lvlSelect) return;
 
-    if (!allAdminPriceLevels || allAdminPriceLevels.length === 0) {
-        try {
-            const res = await fetch(`${API_BASE}/price-levels?_t=${Date.now()}`);
-            if (res.ok) {
-                const json = await res.json();
-                if (json.success && Array.isArray(json.data)) {
-                    setAdminPriceLevels(json.data);
-                }
+    try {
+        const res = await fetch(`${API_BASE}/price-levels?_t=${Date.now()}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                setAdminPriceLevels(json.data);
             }
-        } catch (e) {
-            console.warn("Không thể tải danh sách price-levels:", e);
         }
+    } catch (e) {
+        console.warn("Không thể tải danh sách price-levels:", e);
     }
 
-    const currentVal = selectedId || lvlSelect.value || (allAdminPriceLevels[0]?.id || "price_lvl_01");
+    const currentVal = selectedId || lvlSelect.value || (allAdminPriceLevels[0]?.id || "");
     if (allAdminPriceLevels && allAdminPriceLevels.length > 0) {
         lvlSelect.innerHTML = allAdminPriceLevels.map(lvl => {
             const minStr = (Number(lvl.minPrice) || 0).toLocaleString();
@@ -270,44 +268,106 @@ export async function populatePriceLevelSelect(selectedId = null) {
     if (currentVal) {
         lvlSelect.value = currentVal;
     }
-    onPriceLevelChange();
+    onPriceLevelChange(false);
 }
 
-export function onPriceLevelChange() {
+export function onPriceLevelChange(autoSuggest = true) {
     const lvlSelect = document.getElementById("prodPriceLevel");
-    const hint = document.getElementById("priceRangeHint");
-    if (!lvlSelect || !hint) return;
+    const hint = document.getElementById("priceRangeHint") || document.getElementById("priceValidationMsg");
+    const priceInput = document.getElementById("prodPriceNumber");
+    if (!lvlSelect) return;
 
     const lvl = PRICE_LEVEL_CONFIG[lvlSelect.value];
     if (lvl) {
-        hint.textContent = `Khung giá: ${lvl.min.toLocaleString()}₫ - ${lvl.max.toLocaleString()}₫`;
+        if (hint) {
+            const minStr = (lvl.min || 0).toLocaleString();
+            const maxStr = (lvl.max || 0).toLocaleString();
+            const defStr = (lvl.defaultPrice || lvl.min || 0).toLocaleString();
+            hint.textContent = `Khung giá: ${minStr}₫ - ${maxStr}₫ (Gợi ý: ${defStr}₫)`;
+            hint.classList.remove("hidden");
+        }
+
+        if (priceInput) {
+            priceInput.min = lvl.min;
+            priceInput.max = lvl.max;
+            priceInput.placeholder = String(lvl.defaultPrice || lvl.min);
+
+            const val = parseInt(priceInput.value, 10);
+            if (autoSuggest) {
+                // Tự động gán giá gợi ý nếu ô giá trống hoặc không nằm trong khung giá của tầng mới
+                if (isNaN(val) || val < lvl.min || val > lvl.max) {
+                    priceInput.value = lvl.defaultPrice || lvl.min;
+                }
+            }
+        }
     }
     validateLivePrice();
+}
+
+export function selectSuggestedPriceLevel(levelId) {
+    const lvlSelect = document.getElementById("prodPriceLevel");
+    if (lvlSelect && levelId) {
+        lvlSelect.value = levelId;
+        onPriceLevelChange(false);
+    }
 }
 
 export function validateLivePrice() {
     const lvlSelect = document.getElementById("prodPriceLevel");
     const priceInput = document.getElementById("prodPriceNumber");
-    const warn = document.getElementById("livePriceWarning");
-    if (!lvlSelect || !priceInput || !warn) return true;
+    const warn = document.getElementById("livePriceWarning") || document.getElementById("priceValidationMsg");
+    if (!lvlSelect || !priceInput) return true;
 
     const val = parseInt(priceInput.value, 10);
     const lvl = PRICE_LEVEL_CONFIG[lvlSelect.value];
     if (!lvl || isNaN(val)) {
-        warn.classList.add("hidden");
+        if (warn) {
+            warn.textContent = "";
+            warn.classList.add("hidden");
+        }
         return true;
     }
 
     if (val < lvl.min) {
-        warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) thấp hơn giá sàn (${lvl.min.toLocaleString()}₫)!`;
-        warn.classList.remove("hidden");
+        if (warn) {
+            const matchingLvlKey = Object.keys(PRICE_LEVEL_CONFIG).find(k => {
+                const l = PRICE_LEVEL_CONFIG[k];
+                return val >= l.min && val <= l.max;
+            });
+            if (matchingLvlKey) {
+                const targetLvl = PRICE_LEVEL_CONFIG[matchingLvlKey];
+                const targetName = targetLvl.rawName || targetLvl.name || targetLvl.code;
+                warn.innerHTML = `⚠️ Giá bán (${val.toLocaleString()}₫) thấp hơn giá sàn tầng ${lvl.rawName || lvl.name} (${lvl.min.toLocaleString()}₫). <button type="button" onclick="selectSuggestedPriceLevel('${targetLvl.id}')" class="underline font-bold text-indigo-700 hover:text-indigo-900 ml-1 cursor-pointer">Chuyển sang ${targetName} (${targetLvl.min.toLocaleString()}₫ - ${targetLvl.max.toLocaleString()}₫)</button>`;
+            } else {
+                warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) thấp hơn giá sàn (${lvl.min.toLocaleString()}₫)!`;
+            }
+            warn.className = "text-[10px] text-red-600 font-semibold mt-0.5 block";
+            warn.classList.remove("hidden");
+        }
         return false;
     } else if (val > lvl.max) {
-        warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) vượt quá giá trần (${lvl.max.toLocaleString()}₫)!`;
-        warn.classList.remove("hidden");
+        if (warn) {
+            const matchingLvlKey = Object.keys(PRICE_LEVEL_CONFIG).find(k => {
+                const l = PRICE_LEVEL_CONFIG[k];
+                return val >= l.min && val <= l.max;
+            });
+            if (matchingLvlKey) {
+                const targetLvl = PRICE_LEVEL_CONFIG[matchingLvlKey];
+                const targetName = targetLvl.rawName || targetLvl.name || targetLvl.code;
+                warn.innerHTML = `⚠️ Giá bán (${val.toLocaleString()}₫) vượt giá trần tầng ${lvl.rawName || lvl.name} (${lvl.max.toLocaleString()}₫). <button type="button" onclick="selectSuggestedPriceLevel('${targetLvl.id}')" class="underline font-bold text-indigo-700 hover:text-indigo-900 ml-1 cursor-pointer">Chuyển sang ${targetName} (${targetLvl.min.toLocaleString()}₫ - ${targetLvl.max.toLocaleString()}₫)</button>`;
+            } else {
+                warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) vượt quá giá trần (${lvl.max.toLocaleString()}₫)!`;
+            }
+            warn.className = "text-[10px] text-red-600 font-semibold mt-0.5 block";
+            warn.classList.remove("hidden");
+        }
         return false;
     } else {
-        warn.classList.add("hidden");
+        if (warn) {
+            warn.textContent = `✓ Giá hợp lệ (${val.toLocaleString()}₫ trong khung ${lvl.min.toLocaleString()}₫ - ${lvl.max.toLocaleString()}₫)`;
+            warn.className = "text-[10px] text-emerald-600 font-medium mt-0.5 block";
+            warn.classList.remove("hidden");
+        }
         return true;
     }
 }
@@ -815,10 +875,6 @@ export async function openProductModal(isEdit = false) {
     if (errBox) errBox.classList.add("hidden");
     if (fileInput) fileInput.value = "";
 
-    // Nạp danh sách Text ID vào các SelectBox của Mẫu Hoa
-    populateProductTextIdDropdowns(allAdminTranslations);
-    populatePriceLevelSelect();
-
     if (!isEdit && form) {
         form.reset();
         document.getElementById("editProductId").value = "";
@@ -856,9 +912,23 @@ export async function openProductModal(isEdit = false) {
         populateCategoryDropdowns(window.default_categories);
     }
 
+    // Nạp danh sách Text ID vào các SelectBox của Mẫu Hoa
+    populateProductTextIdDropdowns(allAdminTranslations);
+    await populatePriceLevelSelect();
+
+    if (!isEdit) {
+        const defaultLevel = allAdminPriceLevels[0];
+        const defaultLevelId = defaultLevel?.id || "";
+        if (defaultLevelId) {
+            document.getElementById("prodPriceLevel").value = defaultLevelId;
+        }
+        const defaultPrice = defaultLevel?.defaultPrice || defaultLevel?.minPrice || "";
+        document.getElementById("prodPriceNumber").value = defaultPrice;
+    }
+
     modal.style.display = "flex";
     modal.classList.remove("hidden");
-    onPriceLevelChange();
+    onPriceLevelChange(!isEdit);
 }
 
 export function updateProductModalTotalQuota() {
@@ -974,7 +1044,7 @@ export async function editProduct(productId) {
     let prod = (allAdminProducts || []).find((p) => p.id === productId);
     if (!prod) return;
 
-    openProductModal(true);
+    await openProductModal(true);
     const title = document.getElementById("productModalTitle");
     if (title) title.textContent = `Đang tải chi tiết: ${prod.name}...`;
 
@@ -1006,8 +1076,14 @@ export async function editProduct(productId) {
     renderEditingProductRecipe();
 
     await populatePriceLevelSelect(prod.priceLevelId);
-    document.getElementById("prodPriceLevel").value = prod.priceLevelId || (allAdminPriceLevels[0]?.id || "price_lvl_01");
-    document.getElementById("prodPriceNumber").value = prod.priceNumber || 420000;
+    const chosenLevel = prod.priceLevelId || allAdminPriceLevels[0]?.id || "";
+    if (chosenLevel) {
+        document.getElementById("prodPriceLevel").value = chosenLevel;
+    }
+    const defaultLevelObj = PRICE_LEVEL_CONFIG[chosenLevel] || allAdminPriceLevels[0];
+    const fallbackPrice = defaultLevelObj?.defaultPrice || defaultLevelObj?.min || "";
+    document.getElementById("prodPriceNumber").value = (prod.priceNumber !== undefined && prod.priceNumber !== null && prod.priceNumber !== "") ? prod.priceNumber : fallbackPrice;
+    onPriceLevelChange(false);
     
     // Gán dữ liệu Text ID vào 3 SelectBox của Mẫu Hoa
     const setFieldTextId = (selectId, containerId, customId, targetKey) => {
@@ -1076,8 +1152,25 @@ export async function handleProductSubmit(event) {
     if (event) event.preventDefault();
 
     if (!validateLivePrice()) {
-        alert("Giá bán không hợp lệ theo khung phân tầng! Vui lòng điều chỉnh lại.");
-        return;
+        const priceInput = document.getElementById("prodPriceNumber");
+        const val = parseInt(priceInput ? priceInput.value : "0", 10);
+        const matchingLvlKey = Object.keys(PRICE_LEVEL_CONFIG).find(k => {
+            const l = PRICE_LEVEL_CONFIG[k];
+            return val >= l.min && val <= l.max;
+        });
+        if (matchingLvlKey) {
+            const target = PRICE_LEVEL_CONFIG[matchingLvlKey];
+            const targetName = target.rawName || target.name || target.code;
+            const confirmSwitch = confirm(`Mức giá ${val.toLocaleString()}₫ không nằm trong khung phân tầng hiện tại, nhưng phù hợp với tầng "${targetName}" (${target.min.toLocaleString()}₫ - ${target.max.toLocaleString()}₫).\n\nBạn có muốn tự động chuyển sang tầng "${targetName}" và lưu mẫu hoa không?`);
+            if (confirmSwitch) {
+                selectSuggestedPriceLevel(target.id);
+            } else {
+                return;
+            }
+        } else {
+            alert("Giá bán không hợp lệ theo khung phân tầng! Vui lòng điều chỉnh lại.");
+            return;
+        }
     }
 
     saveCurrentProdI18nDraft();
@@ -1266,6 +1359,7 @@ if (typeof window !== "undefined") {
     window.toggleProduct = toggleProduct;
     window.onPriceLevelChange = onPriceLevelChange;
     window.validateLivePrice = validateLivePrice;
+    window.selectSuggestedPriceLevel = selectSuggestedPriceLevel;
     window.populateProductTextIdDropdowns = populateProductTextIdDropdowns;
     window.onProductTextIdChange = onProductTextIdChange;
     window.switchProductLangTab = switchProductLangTab;

@@ -164,12 +164,20 @@ def create_or_update_product(
 
     name = (product_data.get("name") or "").strip()
     category = product_data.get("category") or "bo_hoa"
-    price_level_id = product_data.get("priceLevelId") or "price_lvl_01"
+    price_level_id = product_data.get("priceLevelId")
+    if not price_level_id:
+        available_levels = get_price_levels(use_cache=False)
+        price_level_id = available_levels[0].get("id") if (available_levels and isinstance(available_levels[0], dict)) else "price_lvl_01"
     
-    try:
-        price_number = int(product_data.get("priceNumber") or 0)
-    except (ValueError, TypeError):
-        return False, None, "Giá bán sản phẩm phải là số nguyên hợp lệ"
+    raw_price = product_data.get("priceNumber")
+    if raw_price is None or raw_price == "":
+        level_obj = get_price_level_by_id(price_level_id)
+        price_number = int(level_obj.get("defaultPrice") or level_obj.get("minPrice") or 0) if level_obj else 0
+    else:
+        try:
+            price_number = int(raw_price)
+        except (ValueError, TypeError):
+            return False, None, "Giá bán sản phẩm phải là số nguyên hợp lệ"
 
     if not name:
         return False, None, "Vui lòng nhập tên sản phẩm hoa tươi"

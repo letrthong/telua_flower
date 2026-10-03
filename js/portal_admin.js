@@ -87,6 +87,7 @@ export {
     loadAdminProducts,
     onPriceLevelChange,
     validateLivePrice,
+    selectSuggestedPriceLevel,
     compressAndConvertToBase64,
     switchProductLangTab,
     saveCurrentProdI18nDraft,

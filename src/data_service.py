@@ -354,20 +354,23 @@ def toggle_branch_active(branch_id: str) -> Tuple[bool, Optional[Dict[str, Any]]
 
 
 
-# 2. Phân Tầng Mức Giá (Price Levels) - Hỗ trợ cache LRU & mtime
-@functools.lru_cache(maxsize=32)
+# 2. Phân Tầng Mức Giá (Price Levels) - Hỗ trợ cache RAM theo file mtime
 def _get_cached_price_levels() -> List[Dict[str, Any]]:
     return _normalize_list_of_dicts(read_json_cached(get_config_path("price_levels.json"), default=[]))
 
+# Giữ tương thích ngược với các lời gọi cache_clear()
+_get_cached_price_levels.cache_clear = lambda: None
+
 
 def get_price_levels(use_cache: bool = True) -> List[Dict[str, Any]]:
+    target_path = get_config_path("price_levels.json")
     if use_cache:
-        return _get_cached_price_levels()
-    return _normalize_list_of_dicts(read_json_cached(get_config_path("price_levels.json"), default=[]))
+        return _normalize_list_of_dicts(read_json_cached(target_path, default=[]))
+    return _normalize_list_of_dicts(read_json(target_path, default=[]))
 
 
 def get_price_level_by_id(price_lvl_id: str) -> Optional[Dict[str, Any]]:
-    levels = get_price_levels()
+    levels = get_price_levels(use_cache=False)
     for lvl in levels:
         if isinstance(lvl, dict) and (lvl.get("id") == price_lvl_id or lvl.get("code") == price_lvl_id):
             return lvl

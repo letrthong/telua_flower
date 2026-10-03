@@ -43,7 +43,7 @@ export function addToCart(productId, name, priceNumber, image, category = "bo_ho
         items.push({
             productId: productId || `prod_${Date.now()}`,
             name: name || "Sản phẩm hoa tươi",
-            price: parseInt(priceNumber, 10) || 420000,
+            price: parseInt(priceNumber, 10) || 0,
             image: image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=400",
             category: category,
             quantity: quantity

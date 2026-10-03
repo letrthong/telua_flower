@@ -481,43 +481,9 @@ async function reloadBranchesIfChanged(forceRefresh = false) {
         }
     }
 
-    // Fallback mặc định cuối cùng nếu danh sách rỗng
-    if (!storefrontBranches || storefrontBranches.length === 0) {
-        storefrontBranches = [
-            {
-                id: "branch_q10",
-                code: "CN_Q10",
-                name: "Nở Hoa Thả Bình - Showroom Quận 10 (Flagship)",
-                address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
-                phone: "0976.491.322",
-                openHours: "07:00 - 21:00 (Thứ 2 - Chủ Nhật)",
-                amenities: "Đậu xe ô tô/xe máy miễn phí • Cắm hoa nghệ thuật tại chỗ • Phòng lạnh bảo quản hoa",
-                lat: 10.7725,
-                lng: 106.6698
-            },
-            {
-                id: "branch_q1",
-                code: "CN_Q1",
-                name: "Nở Hoa Thả Bình - Showroom Bến Nghé Quận 1",
-                address: "Số 2 Hải Triều, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
-                phone: "0976.491.323",
-                openHours: "08:00 - 21:30 (Thứ 2 - Chủ Nhật)",
-                amenities: "Giao hoa hỏa tốc văn phòng Bitexco • Gói quà cao cấp",
-                lat: 10.7715,
-                lng: 106.7042
-            },
-            {
-                id: "branch_thao_dien",
-                code: "CN_Q2",
-                name: "Nở Hoa Thả Bình - Showroom Thảo Điền",
-                address: "68 Xuân Thủy, Phường Thảo Điền, TP. Thủ Đức, TP. Hồ Chí Minh",
-                phone: "0976.491.324",
-                openHours: "07:30 - 21:00 (Thứ 2 - Chủ Nhật)",
-                amenities: "Không gian workshop cắm hoa • Hoa nhập khẩu cao cấp Hà Lan & Ecuador",
-                lat: 10.8035,
-                lng: 106.7328
-            }
-        ];
+    // Đảm bảo storefrontBranches luôn là mảng chuẩn (nếu file rỗng thì giữ rỗng, không hardcode)
+    if (!Array.isArray(storefrontBranches)) {
+        storefrontBranches = [];
     }
 
     _lastBranchesSyncTime = Date.now();
@@ -541,6 +507,16 @@ async function reloadBranchesIfChanged(forceRefresh = false) {
 
         if (targetBranch) {
             selectShowroomBranch(targetBranch.id, true);
+        } else {
+            currentSelectedBranch = null;
+            if (typeof localStorage !== 'undefined') {
+                try {
+                    localStorage.removeItem(SELECTED_BRANCH_ID_KEY);
+                    localStorage.removeItem(SELECTED_BRANCH_DATA_KEY);
+                    localStorage.removeItem('telua_selected_branch_address_v1');
+                } catch (e) {}
+            }
+            renderSelectedBranchInfo(null);
         }
     }
 
@@ -574,6 +550,11 @@ async function loadAndRenderStorefrontBranches() {
 function renderStorefrontBranchButtons() {
     const navContainer = document.getElementById("storeBranchNav");
     if (!navContainer) return;
+
+    if (!storefrontBranches || storefrontBranches.length === 0) {
+        navContainer.innerHTML = '<span class="text-xs text-gray-500 italic py-1 px-3">Chưa có chi nhánh khả dụng</span>';
+        return;
+    }
 
     let html = "";
     storefrontBranches.forEach((b, idx) => {
@@ -707,17 +688,6 @@ function getStoreOperatingStatus(hoursStr, customDate = null) {
 
 // Cập nhật thông tin chi nhánh đã chọn lên giao diện Storefront
 function renderSelectedBranchInfo(b) {
-    if (!b) return;
-
-    // Lưu vào LocalStorage
-    if (typeof localStorage !== "undefined") {
-        try {
-            localStorage.setItem(SELECTED_BRANCH_ID_KEY, b.id);
-            localStorage.setItem(SELECTED_BRANCH_DATA_KEY, JSON.stringify(b));
-            localStorage.setItem('telua_selected_branch_address_v1', b.address);
-        } catch (e) {}
-    }
-
     // Cập nhật thẻ thông tin
     const nameEl = document.getElementById("storeNameVal");
     const addrEl = document.getElementById("storeAddressVal");
@@ -728,6 +698,34 @@ function renderSelectedBranchInfo(b) {
     const mapIframe = document.getElementById("storeMapIframe");
     const directionsLink = document.getElementById("storeDirectionsLink");
     const largerMapLink = document.getElementById("storeLargerMapLink");
+
+    if (!b) {
+        if (nameEl) nameEl.textContent = "Chưa có showroom hoạt động";
+        if (addrEl) addrEl.textContent = "Vui lòng liên hệ hotline để được phục vụ và giao hoa tận nơi";
+        if (hoursEl) hoursEl.innerHTML = "";
+        if (statusBadge) {
+            statusBadge.className = "inline-flex items-center gap-1.5 bg-gray-50 text-gray-600 text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-200 shadow-2xs";
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-gray-400"></span> <span id="storeStatusVal">Tạm ngừng hoạt động</span>`;
+        }
+        if (hotlineLink) {
+            hotlineLink.textContent = "0976.491.324";
+            hotlineLink.href = "tel:0976491324";
+        }
+        if (amenitiesEl) amenitiesEl.textContent = "Hỗ trợ đặt hoa trực tuyến & giao tận nơi toàn quốc";
+        if (mapIframe) mapIframe.src = "about:blank";
+        if (directionsLink) directionsLink.href = "#";
+        if (largerMapLink) largerMapLink.href = "#";
+        return;
+    }
+
+    // Lưu vào LocalStorage
+    if (typeof localStorage !== "undefined") {
+        try {
+            localStorage.setItem(SELECTED_BRANCH_ID_KEY, b.id);
+            localStorage.setItem(SELECTED_BRANCH_DATA_KEY, JSON.stringify(b));
+            localStorage.setItem('telua_selected_branch_address_v1', b.address);
+        } catch (e) {}
+    }
 
     if (nameEl) nameEl.textContent = b.name;
     if (addrEl) addrEl.textContent = b.address;
@@ -1923,7 +1921,7 @@ function addToCart(productId, name, priceNumber, image, category = "bo_hoa", qua
         items.push({
             productId: productId || `prod_${Date.now()}`,
             name: name || "Sản phẩm hoa tươi",
-            price: parseInt(priceNumber, 10) || 420000,
+            price: parseInt(priceNumber, 10) || 0,
             image: image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=400",
             category: category,
             quantity: quantity
@@ -7567,21 +7565,19 @@ async function populatePriceLevelSelect(selectedId = null) {
     const lvlSelect = document.getElementById("prodPriceLevel");
     if (!lvlSelect) return;
 
-    if (!allAdminPriceLevels || allAdminPriceLevels.length === 0) {
-        try {
-            const res = await fetch(`${API_BASE}/price-levels?_t=${Date.now()}`);
-            if (res.ok) {
-                const json = await res.json();
-                if (json.success && Array.isArray(json.data)) {
-                    setAdminPriceLevels(json.data);
-                }
+    try {
+        const res = await fetch(`${API_BASE}/price-levels?_t=${Date.now()}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+                setAdminPriceLevels(json.data);
             }
-        } catch (e) {
-            console.warn("Không thể tải danh sách price-levels:", e);
         }
+    } catch (e) {
+        console.warn("Không thể tải danh sách price-levels:", e);
     }
 
-    const currentVal = selectedId || lvlSelect.value || (allAdminPriceLevels[0]?.id || "price_lvl_01");
+    const currentVal = selectedId || lvlSelect.value || (allAdminPriceLevels[0]?.id || "");
     if (allAdminPriceLevels && allAdminPriceLevels.length > 0) {
         lvlSelect.innerHTML = allAdminPriceLevels.map(lvl => {
             const minStr = (Number(lvl.minPrice) || 0).toLocaleString();
@@ -7594,44 +7590,106 @@ async function populatePriceLevelSelect(selectedId = null) {
     if (currentVal) {
         lvlSelect.value = currentVal;
     }
-    onPriceLevelChange();
+    onPriceLevelChange(false);
 }
 
-function onPriceLevelChange() {
+function onPriceLevelChange(autoSuggest = true) {
     const lvlSelect = document.getElementById("prodPriceLevel");
-    const hint = document.getElementById("priceRangeHint");
-    if (!lvlSelect || !hint) return;
+    const hint = document.getElementById("priceRangeHint") || document.getElementById("priceValidationMsg");
+    const priceInput = document.getElementById("prodPriceNumber");
+    if (!lvlSelect) return;
 
     const lvl = PRICE_LEVEL_CONFIG[lvlSelect.value];
     if (lvl) {
-        hint.textContent = `Khung giá: ${lvl.min.toLocaleString()}₫ - ${lvl.max.toLocaleString()}₫`;
+        if (hint) {
+            const minStr = (lvl.min || 0).toLocaleString();
+            const maxStr = (lvl.max || 0).toLocaleString();
+            const defStr = (lvl.defaultPrice || lvl.min || 0).toLocaleString();
+            hint.textContent = `Khung giá: ${minStr}₫ - ${maxStr}₫ (Gợi ý: ${defStr}₫)`;
+            hint.classList.remove("hidden");
+        }
+
+        if (priceInput) {
+            priceInput.min = lvl.min;
+            priceInput.max = lvl.max;
+            priceInput.placeholder = String(lvl.defaultPrice || lvl.min);
+
+            const val = parseInt(priceInput.value, 10);
+            if (autoSuggest) {
+                // Tự động gán giá gợi ý nếu ô giá trống hoặc không nằm trong khung giá của tầng mới
+                if (isNaN(val) || val < lvl.min || val > lvl.max) {
+                    priceInput.value = lvl.defaultPrice || lvl.min;
+                }
+            }
+        }
     }
     validateLivePrice();
+}
+
+function selectSuggestedPriceLevel(levelId) {
+    const lvlSelect = document.getElementById("prodPriceLevel");
+    if (lvlSelect && levelId) {
+        lvlSelect.value = levelId;
+        onPriceLevelChange(false);
+    }
 }
 
 function validateLivePrice() {
     const lvlSelect = document.getElementById("prodPriceLevel");
     const priceInput = document.getElementById("prodPriceNumber");
-    const warn = document.getElementById("livePriceWarning");
-    if (!lvlSelect || !priceInput || !warn) return true;
+    const warn = document.getElementById("livePriceWarning") || document.getElementById("priceValidationMsg");
+    if (!lvlSelect || !priceInput) return true;
 
     const val = parseInt(priceInput.value, 10);
     const lvl = PRICE_LEVEL_CONFIG[lvlSelect.value];
     if (!lvl || isNaN(val)) {
-        warn.classList.add("hidden");
+        if (warn) {
+            warn.textContent = "";
+            warn.classList.add("hidden");
+        }
         return true;
     }
 
     if (val < lvl.min) {
-        warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) thấp hơn giá sàn (${lvl.min.toLocaleString()}₫)!`;
-        warn.classList.remove("hidden");
+        if (warn) {
+            const matchingLvlKey = Object.keys(PRICE_LEVEL_CONFIG).find(k => {
+                const l = PRICE_LEVEL_CONFIG[k];
+                return val >= l.min && val <= l.max;
+            });
+            if (matchingLvlKey) {
+                const targetLvl = PRICE_LEVEL_CONFIG[matchingLvlKey];
+                const targetName = targetLvl.rawName || targetLvl.name || targetLvl.code;
+                warn.innerHTML = `⚠️ Giá bán (${val.toLocaleString()}₫) thấp hơn giá sàn tầng ${lvl.rawName || lvl.name} (${lvl.min.toLocaleString()}₫). <button type="button" onclick="selectSuggestedPriceLevel('${targetLvl.id}')" class="underline font-bold text-indigo-700 hover:text-indigo-900 ml-1 cursor-pointer">Chuyển sang ${targetName} (${targetLvl.min.toLocaleString()}₫ - ${targetLvl.max.toLocaleString()}₫)</button>`;
+            } else {
+                warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) thấp hơn giá sàn (${lvl.min.toLocaleString()}₫)!`;
+            }
+            warn.className = "text-[10px] text-red-600 font-semibold mt-0.5 block";
+            warn.classList.remove("hidden");
+        }
         return false;
     } else if (val > lvl.max) {
-        warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) vượt quá giá trần (${lvl.max.toLocaleString()}₫)!`;
-        warn.classList.remove("hidden");
+        if (warn) {
+            const matchingLvlKey = Object.keys(PRICE_LEVEL_CONFIG).find(k => {
+                const l = PRICE_LEVEL_CONFIG[k];
+                return val >= l.min && val <= l.max;
+            });
+            if (matchingLvlKey) {
+                const targetLvl = PRICE_LEVEL_CONFIG[matchingLvlKey];
+                const targetName = targetLvl.rawName || targetLvl.name || targetLvl.code;
+                warn.innerHTML = `⚠️ Giá bán (${val.toLocaleString()}₫) vượt giá trần tầng ${lvl.rawName || lvl.name} (${lvl.max.toLocaleString()}₫). <button type="button" onclick="selectSuggestedPriceLevel('${targetLvl.id}')" class="underline font-bold text-indigo-700 hover:text-indigo-900 ml-1 cursor-pointer">Chuyển sang ${targetName} (${targetLvl.min.toLocaleString()}₫ - ${targetLvl.max.toLocaleString()}₫)</button>`;
+            } else {
+                warn.textContent = `⚠️ Giá bán (${val.toLocaleString()}₫) vượt quá giá trần (${lvl.max.toLocaleString()}₫)!`;
+            }
+            warn.className = "text-[10px] text-red-600 font-semibold mt-0.5 block";
+            warn.classList.remove("hidden");
+        }
         return false;
     } else {
-        warn.classList.add("hidden");
+        if (warn) {
+            warn.textContent = `✓ Giá hợp lệ (${val.toLocaleString()}₫ trong khung ${lvl.min.toLocaleString()}₫ - ${lvl.max.toLocaleString()}₫)`;
+            warn.className = "text-[10px] text-emerald-600 font-medium mt-0.5 block";
+            warn.classList.remove("hidden");
+        }
         return true;
     }
 }
@@ -8139,10 +8197,6 @@ async function openProductModal(isEdit = false) {
     if (errBox) errBox.classList.add("hidden");
     if (fileInput) fileInput.value = "";
 
-    // Nạp danh sách Text ID vào các SelectBox của Mẫu Hoa
-    populateProductTextIdDropdowns(allAdminTranslations);
-    populatePriceLevelSelect();
-
     if (!isEdit && form) {
         form.reset();
         document.getElementById("editProductId").value = "";
@@ -8180,9 +8234,23 @@ async function openProductModal(isEdit = false) {
         populateCategoryDropdowns(window.default_categories);
     }
 
+    // Nạp danh sách Text ID vào các SelectBox của Mẫu Hoa
+    populateProductTextIdDropdowns(allAdminTranslations);
+    await populatePriceLevelSelect();
+
+    if (!isEdit) {
+        const defaultLevel = allAdminPriceLevels[0];
+        const defaultLevelId = defaultLevel?.id || "";
+        if (defaultLevelId) {
+            document.getElementById("prodPriceLevel").value = defaultLevelId;
+        }
+        const defaultPrice = defaultLevel?.defaultPrice || defaultLevel?.minPrice || "";
+        document.getElementById("prodPriceNumber").value = defaultPrice;
+    }
+
     modal.style.display = "flex";
     modal.classList.remove("hidden");
-    onPriceLevelChange();
+    onPriceLevelChange(!isEdit);
 }
 
 function updateProductModalTotalQuota() {
@@ -8298,7 +8366,7 @@ async function editProduct(productId) {
     let prod = (allAdminProducts || []).find((p) => p.id === productId);
     if (!prod) return;
 
-    openProductModal(true);
+    await openProductModal(true);
     const title = document.getElementById("productModalTitle");
     if (title) title.textContent = `Đang tải chi tiết: ${prod.name}...`;
 
@@ -8330,8 +8398,14 @@ async function editProduct(productId) {
     renderEditingProductRecipe();
 
     await populatePriceLevelSelect(prod.priceLevelId);
-    document.getElementById("prodPriceLevel").value = prod.priceLevelId || (allAdminPriceLevels[0]?.id || "price_lvl_01");
-    document.getElementById("prodPriceNumber").value = prod.priceNumber || 420000;
+    const chosenLevel = prod.priceLevelId || allAdminPriceLevels[0]?.id || "";
+    if (chosenLevel) {
+        document.getElementById("prodPriceLevel").value = chosenLevel;
+    }
+    const defaultLevelObj = PRICE_LEVEL_CONFIG[chosenLevel] || allAdminPriceLevels[0];
+    const fallbackPrice = defaultLevelObj?.defaultPrice || defaultLevelObj?.min || "";
+    document.getElementById("prodPriceNumber").value = (prod.priceNumber !== undefined && prod.priceNumber !== null && prod.priceNumber !== "") ? prod.priceNumber : fallbackPrice;
+    onPriceLevelChange(false);
     
     // Gán dữ liệu Text ID vào 3 SelectBox của Mẫu Hoa
     const setFieldTextId = (selectId, containerId, customId, targetKey) => {
@@ -8400,8 +8474,25 @@ async function handleProductSubmit(event) {
     if (event) event.preventDefault();
 
     if (!validateLivePrice()) {
-        alert("Giá bán không hợp lệ theo khung phân tầng! Vui lòng điều chỉnh lại.");
-        return;
+        const priceInput = document.getElementById("prodPriceNumber");
+        const val = parseInt(priceInput ? priceInput.value : "0", 10);
+        const matchingLvlKey = Object.keys(PRICE_LEVEL_CONFIG).find(k => {
+            const l = PRICE_LEVEL_CONFIG[k];
+            return val >= l.min && val <= l.max;
+        });
+        if (matchingLvlKey) {
+            const target = PRICE_LEVEL_CONFIG[matchingLvlKey];
+            const targetName = target.rawName || target.name || target.code;
+            const confirmSwitch = confirm(`Mức giá ${val.toLocaleString()}₫ không nằm trong khung phân tầng hiện tại, nhưng phù hợp với tầng "${targetName}" (${target.min.toLocaleString()}₫ - ${target.max.toLocaleString()}₫).\n\nBạn có muốn tự động chuyển sang tầng "${targetName}" và lưu mẫu hoa không?`);
+            if (confirmSwitch) {
+                selectSuggestedPriceLevel(target.id);
+            } else {
+                return;
+            }
+        } else {
+            alert("Giá bán không hợp lệ theo khung phân tầng! Vui lòng điều chỉnh lại.");
+            return;
+        }
     }
 
     saveCurrentProdI18nDraft();
@@ -8590,6 +8681,7 @@ if (typeof window !== "undefined") {
     window.toggleProduct = toggleProduct;
     window.onPriceLevelChange = onPriceLevelChange;
     window.validateLivePrice = validateLivePrice;
+    window.selectSuggestedPriceLevel = selectSuggestedPriceLevel;
     window.populateProductTextIdDropdowns = populateProductTextIdDropdowns;
     window.onProductTextIdChange = onProductTextIdChange;
     window.switchProductLangTab = switchProductLangTab;
@@ -9881,7 +9973,7 @@ if (typeof window !== "undefined") {
 const DEFAULT_STATIC_COMPANY_INFO = {
     companyName: "NỞ HOA THẢ BÌNH",
     brandSlogan: "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình Nghệ Thuật",
-    address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
+    address: "62A, Nguyễn Hồng Đào, Phường Tân Bình, TP. Hồ Chí Minh",
     phone: "0976.491.322",
     hotline: "0976.491.322",
     email: "cskh@nohoathabinh.vn",
@@ -10023,7 +10115,7 @@ async function savePaymentConfig() {
         adminPaymentConfig = json.data;
         renderPaymentMethods(adminPaymentConfig);
         if (typeof window !== "undefined" && typeof window.reloadPaymentConfigIfChanged === "function") {
-            window.reloadPaymentConfigIfChanged(true).catch(() => {});
+            window.reloadPaymentConfigIfChanged(true).catch(() => { });
         }
         notifyUser("Đã lưu cấu hình phương thức thanh toán thành công!", "success");
     } catch (e) {
@@ -10094,7 +10186,7 @@ async function saveAddonConfig() {
         adminAddonConfig = json.data;
         renderAddonConfig(adminAddonConfig);
         if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
-            window.reloadAddonsIfChanged(true).catch(() => {});
+            window.reloadAddonsIfChanged(true).catch(() => { });
         }
         notifyUser(
             adminAddonConfig.showAddons
@@ -10142,7 +10234,7 @@ async function fetchBannerCategoriesIfNeeded() {
                 return adminBannerCategories;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     try {
         const pubRes = await fetch(`${API_BASE}/categories?_t=${Date.now()}`);
@@ -10153,7 +10245,7 @@ async function fetchBannerCategoriesIfNeeded() {
                 return adminBannerCategories;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     try {
         const fbRes = await fetch(`config/anne/categories.json?_t=${Date.now()}`);
@@ -10164,7 +10256,7 @@ async function fetchBannerCategoriesIfNeeded() {
                 return adminBannerCategories;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     return adminBannerCategories;
 }
@@ -10193,7 +10285,7 @@ async function loadAdminBanners() {
                     loaded = true;
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
 
         if (!loaded) {
             try {
@@ -10203,7 +10295,7 @@ async function loadAdminBanners() {
                     adminBannersConfig = json.data || json;
                     loaded = true;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (!loaded) {
@@ -10336,11 +10428,11 @@ function renderAdminBanners() {
                                 ${activeCats && activeCats.length > 0 ? `
                                 <optgroup label="Danh mục hoa tươi">
                                     ${activeCats.map(cat => {
-                                        const catTarget = `#cat-${cat.id}`;
-                                        const catName = cat.name || cat.id;
-                                        const isSel = selectVal === catTarget;
-                                        return `<option value="${catTarget}" ${isSel ? 'selected' : ''}>🌸 ${catName} (${catTarget})</option>`;
-                                    }).join('')}
+            const catTarget = `#cat-${cat.id}`;
+            const catName = cat.name || cat.id;
+            const isSel = selectVal === catTarget;
+            return `<option value="${catTarget}" ${isSel ? 'selected' : ''}>🌸 ${catName} (${catTarget})</option>`;
+        }).join('')}
                                 </optgroup>` : ''}
                                 <optgroup label="Khu vực khác trên trang">
                                     <option value="#about" ${selectVal === '#about' ? 'selected' : ''}>Về chúng tôi (#about)</option>
@@ -10475,7 +10567,7 @@ async function saveAdminBanners() {
                     saved = true;
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
 
         // Đồng bộ tức thời lên LocalStorage cache và giao diện storefront
         try {
@@ -10484,7 +10576,7 @@ async function saveAdminBanners() {
                 data: adminBannersConfig,
                 updatedAt: adminBannersConfig.updatedAt || new Date().toISOString()
             }));
-        } catch (e) {}
+        } catch (e) { }
 
         if (typeof window !== 'undefined' && typeof window.applyHeroBannersConfig === 'function') {
             window.applyHeroBannersConfig(adminBannersConfig, true);
@@ -10787,7 +10879,7 @@ function updateLiveCompanyPreview(data) {
 
     setText("previewCompanyName", data.companyName || "NỞ HOA THẢ BÌNH");
     setText("previewCompanySlogan", data.brandSlogan || "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình");
-    setText("previewCompanyAddress", data.address || "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh");
+    setText("previewCompanyAddress", data.address || "62A, Nguyễn Hồng Đào, Phường Tân Bình, TP. Hồ Chí Minh");
     setText("previewCompanyHotline", data.hotline || data.phone || "0976.491.322");
     setText("previewCompanyEmail", data.email || "cskh@nohoathabinh.vn");
     setText("previewCompanyHours", data.workingHours || "Thứ 2 - Chủ Nhật: 7:00 - 21:00");
@@ -10797,7 +10889,7 @@ function bindLiveCompanyInfoInputs() {
     const inputs = [
         { id: "companyNameInput", target: "previewCompanyName", fallback: "NỞ HOA THẢ BÌNH" },
         { id: "companySloganInput", target: "previewCompanySlogan", fallback: "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình" },
-        { id: "companyAddressInput", target: "previewCompanyAddress", fallback: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh" },
+        { id: "companyAddressInput", target: "previewCompanyAddress", fallback: "62A, Nguyễn Hồng Đào, Phường Tân Bình, TP. Hồ Chí Minh" },
         { id: "companyHotlineInput", target: "previewCompanyHotline", fallback: "0976.491.322" },
         { id: "companyEmailInput", target: "previewCompanyEmail", fallback: "cskh@nohoathabinh.vn" },
         { id: "companyHoursInput", target: "previewCompanyHours", fallback: "Thứ 2 - Chủ Nhật: 7:00 - 21:00" }
@@ -10853,17 +10945,17 @@ async function handleCompanyInfoSubmit(event) {
         if (res.ok && json.success) {
             adminCompanyInfo = json.data || payload;
             updateLiveCompanyPreview(adminCompanyInfo);
-            
+
             // Cập nhật ngay lên giao diện bán hàng và làm mới cache ETag
             if (typeof window !== "undefined") {
                 if (typeof window.applyStorefrontCompanyInfo === "function") {
                     window.applyStorefrontCompanyInfo(adminCompanyInfo);
                 }
                 if (typeof window.loadStorefrontCompanyInfo === "function") {
-                    window.loadStorefrontCompanyInfo(true).catch(() => {});
+                    window.loadStorefrontCompanyInfo(true).catch(() => { });
                 }
             }
-            
+
             notifyUser("Đã cập nhật thông tin doanh nghiệp thành công!", 'success');
         } else {
             notifyUser("Lỗi lưu thông tin: " + (json.message || "Không xác định"), 'error');
@@ -14950,8 +15042,8 @@ function renderProducts(products, containerId) {
     const btnText = (trans && trans[lang] && trans[lang].btn_add_to_cart) ? trans[lang].btn_add_to_cart : "Thêm giỏ hàng";
 
     products.forEach(product => {
-        const origPrice = product.originalPrice || `${(product.priceNumber || 420000).toLocaleString()}₫`;
-        const salePrice = product.salePrice || `${(product.priceNumber || 420000).toLocaleString()}₫`;
+        const origPrice = product.originalPrice || `${(product.priceNumber || 0).toLocaleString()}₫`;
+        const salePrice = product.salePrice || `${(product.priceNumber || 0).toLocaleString()}₫`;
         const hasDiscount = origPrice !== salePrice;
 
         const displayBadge = getProductBadge(product);
@@ -14963,7 +15055,7 @@ function renderProducts(products, containerId) {
                <span class="text-primary font-bold text-sm md:text-base">${salePrice}</span>`
             : `<span class="text-primary font-bold text-sm md:text-base">${salePrice}</span>`;
 
-        const numericPrice = product.priceNumber || parseInt(salePrice.replace(/[^\d]/g, ''), 10) || 420000;
+        const numericPrice = product.priceNumber || parseInt(salePrice.replace(/[^\d]/g, ''), 10) || 0;
         const prodDisplayName = getProductName(product);
         const safeName = (prodDisplayName || product.name || "").replace(/'/g, "\\'");
         const prodId = product.id || `prod_${(product.name || 'hoa').toLowerCase().replace(/\s+/g, '_')}`;
@@ -15019,7 +15111,7 @@ function populateProductDetailModalContent(prod, currentAppLang, productId, isPa
     const body = document.getElementById("detailContentBody");
     if (!modal || !prod) return;
 
-    const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "420000").replace(/[^\d]/g, ''), 10) || 420000;
+    const numericPrice = prod.priceNumber || parseInt((prod.salePrice || "0").replace(/[^\d]/g, ''), 10) || 0;
     const prodDisplayName = getProductName(prod);
     const prodCompText = getProductComposition(prod);
     const prodDescText = getProductDescription(prod);
@@ -16451,6 +16543,18 @@ function applyStorefrontCompanyInfo(info) {
     if (info.companyName) {
         const yr = new Date().getFullYear();
         setText('footerCopyright', `© ${yr} Bản quyền thuộc về ${info.companyName}.`);
+    }
+
+    if (info.facebook) {
+        setHref('footerFacebookLink', info.facebook);
+    }
+
+    if (info.instagram) {
+        setHref('footerInstagramLink', info.instagram);
+    }
+
+    if (info.tiktok) {
+        setHref('footerTiktokLink', info.tiktok);
     }
 
     if (info.zalo) {

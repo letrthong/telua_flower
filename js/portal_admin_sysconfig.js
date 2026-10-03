@@ -9,7 +9,7 @@ import { lockScreen, unlockScreen, notifyUser, setAdminPriceLevels, allAdminCate
 export const DEFAULT_STATIC_COMPANY_INFO = {
     companyName: "NỞ HOA THẢ BÌNH",
     brandSlogan: "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình Nghệ Thuật",
-    address: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh",
+    address: "62A, Nguyễn Hồng Đào, Phường Tân Bình, TP. Hồ Chí Minh",
     phone: "0976.491.322",
     hotline: "0976.491.322",
     email: "cskh@nohoathabinh.vn",
@@ -151,7 +151,7 @@ export async function savePaymentConfig() {
         adminPaymentConfig = json.data;
         renderPaymentMethods(adminPaymentConfig);
         if (typeof window !== "undefined" && typeof window.reloadPaymentConfigIfChanged === "function") {
-            window.reloadPaymentConfigIfChanged(true).catch(() => {});
+            window.reloadPaymentConfigIfChanged(true).catch(() => { });
         }
         notifyUser("Đã lưu cấu hình phương thức thanh toán thành công!", "success");
     } catch (e) {
@@ -222,7 +222,7 @@ export async function saveAddonConfig() {
         adminAddonConfig = json.data;
         renderAddonConfig(adminAddonConfig);
         if (typeof window !== 'undefined' && typeof window.reloadAddonsIfChanged === 'function') {
-            window.reloadAddonsIfChanged(true).catch(() => {});
+            window.reloadAddonsIfChanged(true).catch(() => { });
         }
         notifyUser(
             adminAddonConfig.showAddons
@@ -270,7 +270,7 @@ export async function fetchBannerCategoriesIfNeeded() {
                 return adminBannerCategories;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     try {
         const pubRes = await fetch(`${API_BASE}/categories?_t=${Date.now()}`);
@@ -281,7 +281,7 @@ export async function fetchBannerCategoriesIfNeeded() {
                 return adminBannerCategories;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     try {
         const fbRes = await fetch(`config/anne/categories.json?_t=${Date.now()}`);
@@ -292,7 +292,7 @@ export async function fetchBannerCategoriesIfNeeded() {
                 return adminBannerCategories;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     return adminBannerCategories;
 }
@@ -321,7 +321,7 @@ export async function loadAdminBanners() {
                     loaded = true;
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
 
         if (!loaded) {
             try {
@@ -331,7 +331,7 @@ export async function loadAdminBanners() {
                     adminBannersConfig = json.data || json;
                     loaded = true;
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
 
         if (!loaded) {
@@ -464,11 +464,11 @@ export function renderAdminBanners() {
                                 ${activeCats && activeCats.length > 0 ? `
                                 <optgroup label="Danh mục hoa tươi">
                                     ${activeCats.map(cat => {
-                                        const catTarget = `#cat-${cat.id}`;
-                                        const catName = cat.name || cat.id;
-                                        const isSel = selectVal === catTarget;
-                                        return `<option value="${catTarget}" ${isSel ? 'selected' : ''}>🌸 ${catName} (${catTarget})</option>`;
-                                    }).join('')}
+            const catTarget = `#cat-${cat.id}`;
+            const catName = cat.name || cat.id;
+            const isSel = selectVal === catTarget;
+            return `<option value="${catTarget}" ${isSel ? 'selected' : ''}>🌸 ${catName} (${catTarget})</option>`;
+        }).join('')}
                                 </optgroup>` : ''}
                                 <optgroup label="Khu vực khác trên trang">
                                     <option value="#about" ${selectVal === '#about' ? 'selected' : ''}>Về chúng tôi (#about)</option>
@@ -603,7 +603,7 @@ export async function saveAdminBanners() {
                     saved = true;
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
 
         // Đồng bộ tức thời lên LocalStorage cache và giao diện storefront
         try {
@@ -612,7 +612,7 @@ export async function saveAdminBanners() {
                 data: adminBannersConfig,
                 updatedAt: adminBannersConfig.updatedAt || new Date().toISOString()
             }));
-        } catch (e) {}
+        } catch (e) { }
 
         if (typeof window !== 'undefined' && typeof window.applyHeroBannersConfig === 'function') {
             window.applyHeroBannersConfig(adminBannersConfig, true);
@@ -915,7 +915,7 @@ function updateLiveCompanyPreview(data) {
 
     setText("previewCompanyName", data.companyName || "NỞ HOA THẢ BÌNH");
     setText("previewCompanySlogan", data.brandSlogan || "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình");
-    setText("previewCompanyAddress", data.address || "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh");
+    setText("previewCompanyAddress", data.address || "62A, Nguyễn Hồng Đào, Phường Tân Bình, TP. Hồ Chí Minh");
     setText("previewCompanyHotline", data.hotline || data.phone || "0976.491.322");
     setText("previewCompanyEmail", data.email || "cskh@nohoathabinh.vn");
     setText("previewCompanyHours", data.workingHours || "Thứ 2 - Chủ Nhật: 7:00 - 21:00");
@@ -925,7 +925,7 @@ function bindLiveCompanyInfoInputs() {
     const inputs = [
         { id: "companyNameInput", target: "previewCompanyName", fallback: "NỞ HOA THẢ BÌNH" },
         { id: "companySloganInput", target: "previewCompanySlogan", fallback: "Hoa Tươi Thiết Kế & Cắm Hoa Thả Bình" },
-        { id: "companyAddressInput", target: "previewCompanyAddress", fallback: "183/37 Đường 3 Tháng 2, Phường 11, Quận 10, TP. Hồ Chí Minh" },
+        { id: "companyAddressInput", target: "previewCompanyAddress", fallback: "62A, Nguyễn Hồng Đào, Phường Tân Bình, TP. Hồ Chí Minh" },
         { id: "companyHotlineInput", target: "previewCompanyHotline", fallback: "0976.491.322" },
         { id: "companyEmailInput", target: "previewCompanyEmail", fallback: "cskh@nohoathabinh.vn" },
         { id: "companyHoursInput", target: "previewCompanyHours", fallback: "Thứ 2 - Chủ Nhật: 7:00 - 21:00" }
@@ -981,17 +981,17 @@ export async function handleCompanyInfoSubmit(event) {
         if (res.ok && json.success) {
             adminCompanyInfo = json.data || payload;
             updateLiveCompanyPreview(adminCompanyInfo);
-            
+
             // Cập nhật ngay lên giao diện bán hàng và làm mới cache ETag
             if (typeof window !== "undefined") {
                 if (typeof window.applyStorefrontCompanyInfo === "function") {
                     window.applyStorefrontCompanyInfo(adminCompanyInfo);
                 }
                 if (typeof window.loadStorefrontCompanyInfo === "function") {
-                    window.loadStorefrontCompanyInfo(true).catch(() => {});
+                    window.loadStorefrontCompanyInfo(true).catch(() => { });
                 }
             }
-            
+
             notifyUser("Đã cập nhật thông tin doanh nghiệp thành công!", 'success');
         } else {
             notifyUser("Lỗi lưu thông tin: " + (json.message || "Không xác định"), 'error');
