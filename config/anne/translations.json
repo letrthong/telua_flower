@@ -40,6 +40,22 @@
       "ko": "WhatsApp 문의",
       "zh": "WhatsApp 咨询"
     },
+    "share_product": {
+      "type": "system",
+      "vi": "Chia sẻ",
+      "en": "Share",
+      "ja": "共有",
+      "ko": "공유",
+      "zh": "分享"
+    },
+    "share_success_toast": {
+      "type": "system",
+      "vi": "Đã sao chép liên kết chia sẻ!",
+      "en": "Share link copied to clipboard!",
+      "ja": "共有リンクをクリップボードにコピーしました！",
+      "ko": "공유 링크가 클립보드에 복사되었습니다!",
+      "zh": "分享链接已复制到剪贴板！"
+    },
     "hero_heading": {
       "type": "system",
       "vi": "Gửi Trọn Vẹn Cảm Xúc",

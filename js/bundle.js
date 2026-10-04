@@ -1702,14 +1702,27 @@ function clearProductDetailCache(productId = null) {
  */
 async function getProductById(productId, lang = null) {
     if (!productId) return null;
+
+    // Phân giải UUID sang id thật từ cachedProducts hoặc window.allStorefrontProducts nếu có
+    let realId = productId;
+    const prodList = (Array.isArray(cachedProducts) && cachedProducts.length > 0)
+        ? cachedProducts
+        : ((typeof window !== 'undefined' && Array.isArray(window.allStorefrontProducts)) ? window.allStorefrontProducts : null);
+    if (prodList) {
+        const found = prodList.find(p => p && (p.uuid === productId || p.id === productId));
+        if (found && found.id) {
+            realId = found.id;
+        }
+    }
+
     const currentLang = lang || ((typeof window !== 'undefined' && window.currentLang) ? window.currentLang : 'vi');
-    const cacheKey = `${productId}_${currentLang}`;
+    const cacheKey = `${realId}_${currentLang}`;
     
     if (productDetailMemoryCache.has(cacheKey)) {
         return productDetailMemoryCache.get(cacheKey);
     }
     try {
-        const url = `${API_BASE}/products/${productId}?lang=${encodeURIComponent(currentLang)}&_t=${Date.now()}`;
+        const url = `${API_BASE}/products/${realId}?lang=${encodeURIComponent(currentLang)}&_t=${Date.now()}`;
         const res = await fetch(url, {
             cache: "no-store",
             headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
@@ -1730,9 +1743,9 @@ async function getProductById(productId, lang = null) {
         console.warn("Lỗi nạp chi tiết sản phẩm từ API:", e);
     }
 
-    // Fallback: Thử đọc trực tiếp file chi tiết riêng config/anne/products/${productId}.json
+    // Fallback: Thử đọc trực tiếp file chi tiết riêng config/anne/products/${realId}.json
     try {
-        const fbRes = await fetch(`config/anne/products/${productId}.json?_t=${Date.now()}`);
+        const fbRes = await fetch(`config/anne/products/${realId}.json?_t=${Date.now()}`);
         if (fbRes.ok) {
             const rawDetail = await fbRes.json();
             if (rawDetail && typeof rawDetail === 'object') {
@@ -15795,8 +15808,23 @@ function clearSelectedAddons() {
 /**
  * Mở Modal Xem Chi Tiết Sản Phẩm (Mở tức thì 0ms qua Optimistic Cache + Lazy Load on-demand)
  */
-async function openProductQuickDetail(productId) {
-    currentOpenDetailProductId = productId;
+async function openProductQuickDetail(productId, updateHash = true) {
+    if (!productId) return;
+
+    // 0. Phân giải xem productId truyền vào là ID gốc hay UUID
+    let actualProductId = productId;
+    let targetUuid = productId;
+    let cachedProd = null;
+
+    if (Array.isArray(allStorefrontProducts) && allStorefrontProducts.length > 0) {
+        cachedProd = allStorefrontProducts.find(p => p && (p.id === productId || p.uuid === productId || p.name === productId));
+        if (cachedProd) {
+            actualProductId = cachedProd.id || actualProductId;
+            targetUuid = cachedProd.uuid || targetUuid;
+        }
+    }
+
+    currentOpenDetailProductId = actualProductId;
     const modal = document.getElementById("productQuickDetailModal");
     const spinner = document.getElementById("detailLoadingSpinner");
     const body = document.getElementById("detailContentBody");
@@ -15805,19 +15833,26 @@ async function openProductQuickDetail(productId) {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
+    // Cập nhật URL Hash: luôn dùng UUID để che giấu mã sản phẩm bo_hoa_02 trên thanh địa chỉ và link chia sẻ
+    if (updateHash && typeof window !== "undefined") {
+        const targetHash = `#product=${encodeURIComponent(targetUuid)}`;
+        if (window.location.hash !== targetHash) {
+            try {
+                history.replaceState({ modal: 'product', productId: actualProductId, uuid: targetUuid }, '', targetHash);
+            } catch (e) {
+                window.location.hash = targetHash;
+            }
+        }
+    }
+
     const currentAppLang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
 
     // 1. Optimistic Render: Kiểm tra cache RAM có sẵn từ danh mục sản phẩm
-    let cachedProd = null;
-    if (Array.isArray(allStorefrontProducts) && allStorefrontProducts.length > 0) {
-        cachedProd = allStorefrontProducts.find(p => p && (p.id === productId || p.name === productId));
-    }
-
     const hasFullDetail = cachedProd && (cachedProd.isFullDetailLoaded || (cachedProd.flowerComposition && Array.isArray(cachedProd.gallery) && cachedProd.gallery.length > 1));
 
     if (cachedProd) {
         // Hiển thị ngay lập tức 0ms với thông tin cơ bản; các thông tin thiếu sẽ tự động tải sau
-        populateProductDetailModalContent(cachedProd, currentAppLang, productId, !hasFullDetail);
+        populateProductDetailModalContent(cachedProd, currentAppLang, actualProductId, !hasFullDetail);
         if (spinner) spinner.classList.add("hidden");
         if (body) body.classList.remove("hidden");
     } else {
@@ -15833,13 +15868,22 @@ async function openProductQuickDetail(productId) {
 
     // 2. Tự động tải ngầm các thông tin còn thiếu (album gallery, thành phần chi tiết, câu chuyện, mẹo chăm sóc...)
     try {
-        const fullProd = await getProductById(productId, currentAppLang);
-        if (fullProd && currentOpenDetailProductId === productId) {
+        const fullProd = await getProductById(actualProductId, currentAppLang);
+        if (fullProd && currentOpenDetailProductId === actualProductId) {
             fullProd.isFullDetailLoaded = true;
+            if (fullProd.uuid && updateHash && typeof window !== "undefined" && targetUuid === actualProductId) {
+                // Nếu ban đầu chưa có UUID trong memory cache, cập nhật lại URL hash với UUID từ backend
+                const newHash = `#product=${encodeURIComponent(fullProd.uuid)}`;
+                try {
+                    history.replaceState({ modal: 'product', productId: actualProductId, uuid: fullProd.uuid }, '', newHash);
+                } catch (e) {
+                    window.location.hash = newHash;
+                }
+            }
             if (cachedProd) {
                 Object.assign(cachedProd, fullProd);
             }
-            populateProductDetailModalContent(fullProd, currentAppLang, productId, false);
+            populateProductDetailModalContent(fullProd, currentAppLang, actualProductId, false);
             if (spinner) spinner.classList.add("hidden");
             if (body) body.classList.remove("hidden");
         }
@@ -15848,11 +15892,81 @@ async function openProductQuickDetail(productId) {
     }
 }
 
-function closeProductQuickDetail() {
+function closeProductQuickDetail(updateHash = true) {
     const modal = document.getElementById("productQuickDetailModal");
     if (modal) {
         modal.style.display = "none";
         modal.classList.add("hidden");
+    }
+    currentOpenDetailProductId = null;
+
+    // Xóa hash sản phẩm khỏi URL một cách mượt mà khi đóng modal
+    if (updateHash && typeof window !== "undefined") {
+        const hash = window.location.hash || '';
+        if (hash.includes('product=') || hash.includes('product/') || hash.includes('product-')) {
+            try {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            } catch (e) {
+                window.location.hash = '';
+            }
+        }
+    }
+}
+
+/**
+ * Chia sẻ liên kết chi tiết sản phẩm (Web Share API + fallback Clipboard Copy)
+ */
+async function shareCurrentProduct() {
+    if (!currentOpenDetailProductId) return;
+    const prod = (Array.isArray(allStorefrontProducts) ? allStorefrontProducts.find(p => p && (p.id === currentOpenDetailProductId || p.uuid === currentOpenDetailProductId)) : null);
+    const name = prod ? (getProductName(prod) || prod.name) : "Sản phẩm hoa tươi";
+    const shareIdentifier = (prod && prod.uuid) ? prod.uuid : currentOpenDetailProductId;
+    const shareUrl = `${window.location.origin}${window.location.pathname}#product=${encodeURIComponent(shareIdentifier)}`;
+    
+    const trans = (typeof window !== "undefined" && window.translations) ? window.translations : (typeof translations !== "undefined" ? translations : {});
+    const currentAppLang = (typeof window !== "undefined" && window.currentLang) ? window.currentLang : "vi";
+    const shareText = currentAppLang === 'vi' 
+        ? `Khám phá mẫu hoa tuyệt đẹp: ${name} tại Nở Hoa Thả Bình!` 
+        : `Discover this beautiful flower arrangement: ${name} at Nở Hoa Thả Bình!`;
+    const toastSuccessMsg = (trans[currentAppLang] && trans[currentAppLang].share_success_toast) 
+        ? trans[currentAppLang].share_success_toast 
+        : (currentAppLang === 'vi' ? "Đã sao chép liên kết chia sẻ!" : "Share link copied to clipboard!");
+
+    // 1. Thử dùng Native Web Share API (Safari iOS, Chrome Android, Edge...)
+    if (typeof navigator !== 'undefined' && navigator.share && window.isSecureContext) {
+        try {
+            await navigator.share({
+                title: name,
+                text: shareText,
+                url: shareUrl
+            });
+            return;
+        } catch (err) {
+            if (err.name === 'AbortError') return; // Người dùng hủy chia sẻ
+        }
+    }
+
+    // 2. Fallback: Copy URL vào Clipboard
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+        } else {
+            const tempInput = document.createElement('input');
+            tempInput.value = shareUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+        
+        if (typeof showToast === 'function') {
+            showToast(toastSuccessMsg, 'success');
+        } else if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+            window.showToast(toastSuccessMsg, 'success');
+        }
+    } catch (errClipboard) {
+        console.warn("Không thể sao chép liên kết tự động:", errClipboard);
+        window.prompt(currentAppLang === 'vi' ? "Sao chép liên kết chia sẻ:" : "Copy share link:", shareUrl);
     }
 }
 
@@ -16782,6 +16896,43 @@ function parseSearchQueryFromUrl() {
     return null;
 }
 
+/**
+ * Phân tích ID sản phẩm từ URL Hash hoặc Query Parameters (ví dụ: #product=9178febc-... hoặc #product=bo_hoa_01)
+ * Tự động phân giải UUID bí mật sang productId thực tế để mở đúng sản phẩm
+ */
+function parseProductFromUrl() {
+    if (typeof window === 'undefined') return null;
+    let target = null;
+    const hash = (window.location.hash || '').replace(/^#\/?/, '').trim();
+    if (hash) {
+        if (hash.startsWith('product=')) {
+            target = decodeURIComponent(hash.substring(8));
+        } else if (hash.startsWith('product/')) {
+            target = decodeURIComponent(hash.substring(8));
+        } else if (hash.startsWith('product-')) {
+            target = decodeURIComponent(hash.substring(8));
+        } else if (Array.isArray(allStorefrontProducts) && allStorefrontProducts.some(p => p && (p.id === hash || p.uuid === hash))) {
+            target = hash;
+        }
+    }
+    if (!target) {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('product')) {
+            target = urlParams.get('product');
+        }
+    }
+    if (!target) return null;
+
+    // Phân giải UUID sang productId thực tế từ danh mục sản phẩm nếu có
+    if (Array.isArray(allStorefrontProducts) && allStorefrontProducts.length > 0) {
+        const found = allStorefrontProducts.find(p => p && (p.uuid === target || p.id === target));
+        if (found && found.id) {
+            return found.id;
+        }
+    }
+    return target;
+}
+
 // 4. Quản lý trình chiếu Hero Banner (Đồng bộ cấu hình banners.json & tự động đổi ảnh)
 let _heroSlideIndex = 0;
 let _heroSlideTimer = null;
@@ -17165,8 +17316,13 @@ async function initApp() {
     loadStorefrontCompanyInfo();
     scheduleAddonsPreload();
     
-    // 1. Kiểm tra tham số tìm kiếm từ URL Hash (#/search?q=...) hoặc query khi vừa tải trang
+    // 1. Tự động mở chi tiết sản phẩm nếu link chia sẻ có chứa hash hoặc query (?product=... hoặc #product=...)
     if (typeof window !== 'undefined') {
+        const prodFromUrl = parseProductFromUrl();
+        if (prodFromUrl) {
+            openProductQuickDetail(prodFromUrl, false);
+        }
+
         const queryFromUrl = parseSearchQueryFromUrl();
         if (queryFromUrl) {
             const desktopInput = document.getElementById('storefrontSearchInput');
@@ -17178,6 +17334,21 @@ async function initApp() {
 
         // Lắng nghe sự kiện đổi Hash và Back/Forward của trình duyệt
         const handleUrlChange = () => {
+            // 0. Kiểm tra hash mở modal sản phẩm chi tiết
+            const prodId = parseProductFromUrl();
+            if (prodId) {
+                if (currentOpenDetailProductId !== prodId) {
+                    openProductQuickDetail(prodId, false);
+                }
+                return;
+            } else {
+                // Nếu URL không còn hash sản phẩm mà modal chi tiết đang mở, đóng modal tự nhiên (ví dụ khi bấm nút Back)
+                const modal = document.getElementById("productQuickDetailModal");
+                if (modal && !modal.classList.contains("hidden") && modal.style.display !== "none") {
+                    closeProductQuickDetail(false);
+                }
+            }
+
             const q = parseSearchQueryFromUrl();
             if (q) {
                 searchStorefrontProducts(q, false);
@@ -17299,6 +17470,7 @@ if (typeof window !== 'undefined') {
     window.initMobileMenu = initMobileMenu;
     window.openProductQuickDetail = openProductQuickDetail;
     window.closeProductQuickDetail = closeProductQuickDetail;
+    window.shareCurrentProduct = shareCurrentProduct;
     window.loadAddons = loadAddons;
     window.renderAddonsInModal = renderAddonsInModal;
     window.getAddonName = getAddonName;

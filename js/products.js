@@ -76,14 +76,27 @@ export function clearProductDetailCache(productId = null) {
  */
 export async function getProductById(productId, lang = null) {
     if (!productId) return null;
+
+    // Phân giải UUID sang id thật từ cachedProducts hoặc window.allStorefrontProducts nếu có
+    let realId = productId;
+    const prodList = (Array.isArray(cachedProducts) && cachedProducts.length > 0)
+        ? cachedProducts
+        : ((typeof window !== 'undefined' && Array.isArray(window.allStorefrontProducts)) ? window.allStorefrontProducts : null);
+    if (prodList) {
+        const found = prodList.find(p => p && (p.uuid === productId || p.id === productId));
+        if (found && found.id) {
+            realId = found.id;
+        }
+    }
+
     const currentLang = lang || ((typeof window !== 'undefined' && window.currentLang) ? window.currentLang : 'vi');
-    const cacheKey = `${productId}_${currentLang}`;
+    const cacheKey = `${realId}_${currentLang}`;
     
     if (productDetailMemoryCache.has(cacheKey)) {
         return productDetailMemoryCache.get(cacheKey);
     }
     try {
-        const url = `${API_BASE}/products/${productId}?lang=${encodeURIComponent(currentLang)}&_t=${Date.now()}`;
+        const url = `${API_BASE}/products/${realId}?lang=${encodeURIComponent(currentLang)}&_t=${Date.now()}`;
         const res = await fetch(url, {
             cache: "no-store",
             headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
@@ -104,9 +117,9 @@ export async function getProductById(productId, lang = null) {
         console.warn("Lỗi nạp chi tiết sản phẩm từ API:", e);
     }
 
-    // Fallback: Thử đọc trực tiếp file chi tiết riêng config/anne/products/${productId}.json
+    // Fallback: Thử đọc trực tiếp file chi tiết riêng config/anne/products/${realId}.json
     try {
-        const fbRes = await fetch(`config/anne/products/${productId}.json?_t=${Date.now()}`);
+        const fbRes = await fetch(`config/anne/products/${realId}.json?_t=${Date.now()}`);
         if (fbRes.ok) {
             const rawDetail = await fbRes.json();
             if (rawDetail && typeof rawDetail === 'object') {

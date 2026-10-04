@@ -167,6 +167,13 @@ class TestDataService(unittest.TestCase):
         p1 = get_product_by_id("bo_hoa_01")
         self.assertIsNotNone(p1)
         self.assertEqual(p1["priceNumber"], 420000)
+        self.assertIn("uuid", p1)
+        self.assertTrue(len(p1["uuid"]) == 36)
+
+        # Kiểm tra truy vấn chi tiết bằng UUID bí mật (che giấu mã bo_hoa_01 trên URL chia sẻ)
+        p1_by_uuid = get_product_by_id(p1["uuid"])
+        self.assertIsNotNone(p1_by_uuid)
+        self.assertEqual(p1_by_uuid["id"], "bo_hoa_01")
 
     def test_06_promotions_and_vouchers(self):
         """Kiểm tra voucher và mã khuyến mãi"""

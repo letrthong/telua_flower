@@ -994,25 +994,69 @@ def get_product_detail_path(product_id: str) -> str:
     return os.path.join(products_dir, f"{product_id}.json")
 
 
+TELUA_PRODUCT_NAMESPACE = uuid.uuid5(uuid.NAMESPACE_DNS, "telua.nohoathabinh.vn")
+
+
+def get_product_uuid(product_id: str) -> str:
+    """Tạo UUID v5 định danh duy nhất (RFC 4122) che giấu mã sản phẩm bo_hoa_02 trên URL chia sẻ."""
+    if not product_id:
+        return ""
+    return str(uuid.uuid5(TELUA_PRODUCT_NAMESPACE, str(product_id)))
+
+
+def resolve_product_id(product_id_or_uuid: str) -> str:
+    """Nếu là UUID (hoặc chuỗi chia sẻ bí mật), tra cứu tìm productId thực tế tương ứng. Nếu không thì giữ nguyên."""
+    if not product_id_or_uuid:
+        return ""
+    clean_id = str(product_id_or_uuid).strip()
+    if len(clean_id) == 36 and clean_id.count('-') == 4:
+        prods = _normalize_list_of_dicts(read_json_cached(get_config_path("products.json"), default=[]))
+        for p in prods:
+            if isinstance(p, dict) and p.get("id"):
+                if get_product_uuid(p["id"]) == clean_id or p.get("uuid") == clean_id:
+                    return p["id"]
+    return clean_id
+
+
 def get_products() -> List[Dict[str, Any]]:
     """Lấy danh mục tóm tắt siêu nhẹ cho toàn bộ sản phẩm (phục vụ Grid & List có RAM cache mtime)."""
     prods = _normalize_list_of_dicts(read_json_cached(get_config_path("products.json"), default=[]))
+    needs_save = False
     for p in prods:
-        if isinstance(p, dict) and not p.get("productType"):
-            # Mặc định tương thích ngược cho config cũ: nếu có recipe -> "arranged", còn lại mặc định "direct"
-            p["productType"] = "arranged" if (p.get("recipe") and len(p.get("recipe")) > 0) else "direct"
+        if isinstance(p, dict):
+            if not p.get("productType"):
+                # Mặc định tương thích ngược cho config cũ: nếu có recipe -> "arranged", còn lại mặc định "direct"
+                p["productType"] = "arranged" if (p.get("recipe") and len(p.get("recipe")) > 0) else "direct"
+                needs_save = True
+            if p.get("id"):
+                expected_uuid = get_product_uuid(p["id"])
+                if not p.get("uuid") or p.get("uuid") != expected_uuid:
+                    p["uuid"] = expected_uuid
+                    needs_save = True
+
+    # Tự động cập nhật (Auto-migration) vào file products.json nếu phát hiện config cũ thiếu trường uuid
+    if needs_save and prods:
+        try:
+            filepath = get_config_path("products.json")
+            write_json(filepath, prods)
+            invalidate_file_cache(filepath)
+        except Exception as e:
+            print(f"[DATA_SERVICE] Auto-migration products.json uuid warning: {e}", flush=True)
+
     return prods
 
 
 def get_product_by_id(product_id: str, lang: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """
     Lấy thông tin chi tiết đầy đủ của một sản phẩm (On-demand Lazy Load có RAM cache mtime):
+    - Hỗ trợ cả productId truyền thống (bo_hoa_02) và UUID bí mật (9178febc-811b-5b89-835c-0601d680c63e)
     - Ưu tiên đọc file chi tiết riêng config/anne/products/{product_id}.json
     - Nếu có tham số lang (en, ja, ko, zh) -> phân giải các trường ngôn ngữ từ khối i18n
     - Nếu chưa có file chi tiết riêng -> đọc từ products.json
     """
     if not product_id:
         return None
+    product_id = resolve_product_id(product_id)
     detail_file = get_product_detail_path(product_id)
     raw_prod = None
     if os.path.exists(detail_file):
@@ -1034,6 +1078,10 @@ def get_product_by_id(product_id: str, lang: Optional[str] = None) -> Optional[D
     # Đảm bảo trường productType luôn có giá trị hợp lệ cho config cũ
     if not raw_prod.get("productType"):
         raw_prod["productType"] = "arranged" if (raw_prod.get("recipe") and len(raw_prod.get("recipe")) > 0) else "direct"
+
+    # Gán uuid bí mật cho sản phẩm chi tiết
+    if raw_prod.get("id"):
+        raw_prod["uuid"] = get_product_uuid(raw_prod["id"])
 
     # Nếu không yêu cầu ngôn ngữ cụ thể hoặc là tiếng Việt gốc
     if not lang or lang == "vi":
@@ -1111,6 +1159,11 @@ def sync_materials_from_products(products: Optional[List[Dict[str, Any]]] = None
 
 def save_products(products: List[Dict[str, Any]]) -> bool:
     """Lưu danh mục sản phẩm tóm tắt vào products.json và tự động đồng bộ sang materials.json."""
+    if isinstance(products, list):
+        for p in products:
+            if isinstance(p, dict) and p.get("id"):
+                if not p.get("uuid"):
+                    p["uuid"] = get_product_uuid(p["id"])
     filepath = get_config_path("products.json")
     success = write_json(filepath, products)
     invalidate_file_cache(filepath)
@@ -1128,11 +1181,33 @@ def get_materials() -> List[Dict[str, Any]]:
     if not materials:
         sync_materials_from_products()
         materials = _normalize_list_of_dicts(read_json_cached(filepath, default=[]))
+
+    # Tự động cập nhật UUID cho materials nếu thiếu (Auto-migration)
+    needs_save = False
+    for m in materials:
+        if isinstance(m, dict) and m.get("id"):
+            expected_uuid = get_product_uuid(m["id"])
+            if not m.get("uuid") or m.get("uuid") != expected_uuid:
+                m["uuid"] = expected_uuid
+                needs_save = True
+    if needs_save and materials:
+        try:
+            write_json(filepath, materials)
+            invalidate_file_cache(filepath)
+        except Exception as e:
+            print(f"[DATA_SERVICE] Auto-migration materials.json uuid warning: {e}", flush=True)
+
     return materials
 
 
 def save_materials(materials: List[Dict[str, Any]]) -> bool:
     """Lưu danh mục hoa cành & phụ liệu nguyên vật liệu vào materials.json và đồng bộ sang products.json."""
+    if isinstance(materials, list):
+        for m in materials:
+            if isinstance(m, dict) and m.get("id"):
+                if not m.get("uuid"):
+                    m["uuid"] = get_product_uuid(m["id"])
+
     filepath = get_config_path("materials.json")
     success = write_json(filepath, materials)
     invalidate_file_cache(filepath)
@@ -1165,15 +1240,16 @@ def save_materials(materials: List[Dict[str, Any]]) -> bool:
 
 
 def get_material_by_id(material_id: str) -> Optional[Dict[str, Any]]:
-    """Tra cứu một loại nguyên vật liệu hoa cành theo ID (hỗ trợ prefix mat: hoặc prod:)."""
+    """Tra cứu một loại nguyên vật liệu hoa cành theo ID hoặc UUID (hỗ trợ prefix mat: hoặc prod:)."""
     if not material_id:
         return None
+    material_id = resolve_product_id(material_id)
     clean_id = material_id.replace("prod:", "").replace("mat:", "")
     for m in get_materials():
-        if m.get("id") == clean_id:
+        if m.get("id") == clean_id or m.get("uuid") == clean_id:
             return m
     for p in get_products():
-        if p.get("id") == clean_id:
+        if p.get("id") == clean_id or p.get("uuid") == clean_id:
             return p
     return None
 
