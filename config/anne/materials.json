@@ -192,12 +192,14 @@
     "productType": "direct",
     "recipe": null,
     "stemCount": 0,
+    "unit": "cành",
+    "costPrice": 1800000,
     "priceLevelId": "price_lvl_04",
-    "priceNumber": 3500000,
-    "salePrice": "3,500,000₫",
-    "originalPrice": "3,500,000₫",
+    "priceNumber": 3600000,
+    "salePrice": "3,600,000₫",
+    "originalPrice": "3,600,000₫",
     "badge": "Độc Bản VIP",
-    "image": "/api/flower/v1/images/lan_01.webp",
+    "image": "https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no_09.jpg",
     "i18n": {
       "en": {
         "name": "Prosperity Phalaenopsis Orchid Pot (5 Stems)"
@@ -219,9 +221,7 @@
     },
     "dailyQuota": 7,
     "isActive": true,
-    "updatedAt": "2026-09-17T21:36:22.525968+07:00",
-    "unit": "cành",
-    "costPrice": 1750000,
+    "updatedAt": "2026-10-04T00:56:36Z",
     "minStockAlert": 10,
     "minAlertLevel": 10
   }

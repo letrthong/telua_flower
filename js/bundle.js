@@ -1576,6 +1576,11 @@ function setLanguage(lang) {
             window.applyStorefrontCompanyInfo(window.currentCompanyInfo);
         }
 
+        // Cập nhật nút chat nổi Zalo/WhatsApp theo ngôn ngữ (vi: Zalo, khác vi: WhatsApp)
+        if (typeof window !== 'undefined' && typeof window.updateChatButtonByLanguage === 'function') {
+            window.updateChatButtonByLanguage(lang);
+        }
+
         // 10. Render lại danh mục & sản phẩm
         if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
             window.renderStorefrontCategories();
@@ -1653,7 +1658,10 @@ try {
 async function getProducts(activeOnly = true) {
     try {
         const url = activeOnly ? `${API_BASE}/products?active=true&_t=${Date.now()}` : `${API_BASE}/products?_t=${Date.now()}`;
-        const res = await fetch(url);
+        const res = await fetch(url, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+        });
         if (res.ok) {
             const json = await res.json();
             if (json.success && Array.isArray(json.data)) {
@@ -1677,6 +1685,11 @@ const MAX_PRODUCT_CACHE_SIZE = 120; // Giới hạn tối đa 120 sản phẩm t
 function clearProductDetailCache(productId = null) {
     if (productId) {
         productDetailMemoryCache.delete(productId);
+        for (const key of Array.from(productDetailMemoryCache.keys())) {
+            if (key === productId || key.startsWith(`${productId}_`)) {
+                productDetailMemoryCache.delete(key);
+            }
+        }
     } else {
         productDetailMemoryCache.clear();
     }
@@ -1696,8 +1709,11 @@ async function getProductById(productId, lang = null) {
         return productDetailMemoryCache.get(cacheKey);
     }
     try {
-        const url = `${API_BASE}/products/${productId}?lang=${encodeURIComponent(currentLang)}`;
-        const res = await fetch(url);
+        const url = `${API_BASE}/products/${productId}?lang=${encodeURIComponent(currentLang)}&_t=${Date.now()}`;
+        const res = await fetch(url, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+        });
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
@@ -1872,6 +1888,7 @@ if (typeof window !== 'undefined') {
     window.getProductById = getProductById;
     window.getCategories = getCategories;
     window.reloadCategoriesIfChanged = reloadCategoriesIfChanged;
+    window.clearProductDetailCache = clearProductDetailCache;
 }
 
 
@@ -7357,9 +7374,19 @@ async function loadAdminProducts() {
     }
 
     try {
-        let url = `${API_BASE}/products`;
-        if (category) url += `?category=${encodeURIComponent(category)}`;
-        const res = await fetch(url);
+        const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+        const cacheBuster = `_t=${Date.now()}`;
+        let url = `${API_BASE}/admin/products?${cacheBuster}`;
+        if (category) url += `&category=${encodeURIComponent(category)}`;
+        const headers = { "Cache-Control": "no-cache", "Pragma": "no-cache" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        let res = await fetch(url, { cache: "no-store", headers });
+        if (!res.ok) {
+            let fallbackUrl = `${API_BASE}/products?${cacheBuster}`;
+            if (category) fallbackUrl += `&category=${encodeURIComponent(category)}`;
+            res = await fetch(fallbackUrl, { cache: "no-store", headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" } });
+        }
         const json = await res.json();
 
         if (json.success && json.data) {
@@ -8370,9 +8397,12 @@ async function editProduct(productId) {
     const title = document.getElementById("productModalTitle");
     if (title) title.textContent = `Đang tải chi tiết: ${prod.name}...`;
 
-    // Tải chi tiết đầy đủ từ API /api/products/<productId> (Lazy load)
+    // Tải chi tiết đầy đủ từ API /api/products/<productId> (Lazy load có cache-busting)
     try {
-        const res = await fetch(`${API_BASE}/products/${productId}`);
+        const res = await fetch(`${API_BASE}/products/${productId}?_t=${Date.now()}`, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+        });
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
@@ -8586,9 +8616,18 @@ async function handleProductSubmit(event) {
         const json = await res.json();
         if (res.ok && json.success) {
             closeProductModal();
+            const savedId = editId || (json.data && json.data.id);
+            if (typeof clearProductDetailCache === 'function') {
+                clearProductDetailCache(savedId);
+            } else if (typeof window !== 'undefined' && typeof window.clearProductDetailCache === 'function') {
+                window.clearProductDetailCache(savedId);
+            }
             await loadAdminProducts();
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
-                window.renderAllProducts();
+                await window.renderAllProducts();
+            }
+            if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
+                window.renderStorefrontCategories();
             }
             notifyUser(editId ? `Đã cập nhật mẫu hoa "${name}" thành công!` : `Đã thêm mẫu hoa mới "${name}" thành công!`, 'success');
         } else {
@@ -8639,9 +8678,17 @@ async function toggleProduct(productId, productName, currentActive) {
         });
         const json = await res.json();
         if (res.ok && json.success) {
+            if (typeof clearProductDetailCache === 'function') {
+                clearProductDetailCache(productId);
+            } else if (typeof window !== 'undefined' && typeof window.clearProductDetailCache === 'function') {
+                window.clearProductDetailCache(productId);
+            }
             await loadAdminProducts();
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
-                window.renderAllProducts();
+                await window.renderAllProducts();
+            }
+            if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
+                window.renderStorefrontCategories();
             }
             notifyUser(`Đã ${actionText.toLowerCase()} mẫu hoa "${displayName}" thành công!`, 'success');
         } else {
@@ -9982,7 +10029,9 @@ const DEFAULT_STATIC_COMPANY_INFO = {
     website: "https://nohoathabinh.vn",
     facebook: "https://facebook.com/nohoathabinh",
     instagram: "https://instagram.com/nohoathabinh",
+    tiktok: "https://www.tiktok.com/@nohoathabinh",
     zalo: "https://zalo.me/0976491322",
+    whatsapp: "https://wa.me/84976491323",
     mapUrl: "https://maps.google.com/?q=183/37+Đường+3+Tháng+2,+Phường+11,+Quận+10,+TP.+Hồ+Chí+Minh",
     mapEmbedUrl: "https://maps.google.com/maps?q=183%2F37%20%C4%90%C6%B0%E1%BB%9Dng%203%20Th%C3%A1ng%202%2C%20Ph%C6%B0%E1%BB%9Dng%2011%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh&t=&z=16&ie=UTF8&iwloc=&output=embed"
 };
@@ -10849,7 +10898,9 @@ function populateCompanyInfoForm(data) {
     setValue("companyEmailInput", data.email);
     setValue("companyFacebookInput", data.facebook);
     setValue("companyInstagramInput", data.instagram);
+    setValue("companyTiktokInput", data.tiktok);
     setValue("companyZaloInput", data.zalo);
+    setValue("companyWhatsappInput", data.whatsapp);
     setValue("companyMapUrlInput", data.mapUrl);
     setValue("companyMapEmbedUrlInput", data.mapEmbedUrl);
 
@@ -10924,7 +10975,9 @@ async function handleCompanyInfoSubmit(event) {
         workingHours: getValue("companyHoursInput") || "Thứ 2 - Chủ Nhật: 7:00 - 21:00",
         facebook: getValue("companyFacebookInput"),
         instagram: getValue("companyInstagramInput"),
+        tiktok: getValue("companyTiktokInput"),
         zalo: getValue("companyZaloInput"),
+        whatsapp: getValue("companyWhatsappInput"),
         mapUrl: getValue("companyMapUrlInput"),
         mapEmbedUrl: getValue("companyMapEmbedUrlInput")
     };
@@ -16561,6 +16614,19 @@ function applyStorefrontCompanyInfo(info) {
         setHref('floatingZaloLink', info.zalo);
     }
 
+    if (info.whatsapp) {
+        let waLink = (info.whatsapp || '').toString().trim();
+        if (waLink && !waLink.startsWith('http://') && !waLink.startsWith('https://')) {
+            const digits = waLink.replace(/[^\d]/g, '');
+            waLink = `https://wa.me/${digits}`;
+        }
+        if (waLink) {
+            setHref('floatingWhatsappLink', waLink);
+        }
+    }
+
+    updateChatButtonByLanguage(null, info);
+
     // Bản đồ và chỉ đường khu vực Showroom do Showroom Locator (branches.json) quản lý
     // Ưu tiên hiển thị chi nhánh đang chọn (từ cache), không để infoCompany ghi đè
     if (activeBranch && typeof window.selectShowroomBranch === 'function') {
@@ -16575,6 +16641,44 @@ function applyStorefrontCompanyInfo(info) {
             const iframe = document.getElementById('storeMapIframe');
             if (iframe && info.mapEmbedUrl) {
                 iframe.src = info.mapEmbedUrl;
+            }
+        }
+    }
+}
+
+/**
+ * Cập nhật nút chat nổi (Floating Chat Button) theo ngôn ngữ:
+ * - Tiếng Việt ('vi'): Hiển thị Zalo OA, ẩn WhatsApp
+ * - Ngôn ngữ quốc tế (khác 'vi': 'en', 'ja', 'ko', 'zh', ...): Hiển thị WhatsApp, ẩn Zalo OA
+ */
+function updateChatButtonByLanguage(lang = null, info = null) {
+    if (typeof document === 'undefined') return;
+    const effectiveLang = lang || (typeof window !== 'undefined' && window.currentLang) || 'vi';
+    const companyInfo = info || (typeof window !== 'undefined' && window.currentCompanyInfo) || null;
+
+    const zaloBtn = document.getElementById('floatingZaloLink');
+    const whatsappBtn = document.getElementById('floatingWhatsappLink');
+
+    if (effectiveLang === 'vi') {
+        if (zaloBtn) zaloBtn.classList.remove('hidden');
+        if (whatsappBtn) whatsappBtn.classList.add('hidden');
+    } else {
+        if (zaloBtn) zaloBtn.classList.add('hidden');
+        if (whatsappBtn) whatsappBtn.classList.remove('hidden');
+    }
+
+    if (companyInfo) {
+        if (zaloBtn && companyInfo.zalo) {
+            zaloBtn.setAttribute('href', companyInfo.zalo);
+        }
+        if (whatsappBtn && companyInfo.whatsapp) {
+            let waLink = (companyInfo.whatsapp || '').toString().trim();
+            if (waLink && !waLink.startsWith('http://') && !waLink.startsWith('https://')) {
+                const digits = waLink.replace(/[^\d]/g, '');
+                waLink = `https://wa.me/${digits}`;
+            }
+            if (waLink) {
+                whatsappBtn.setAttribute('href', waLink);
             }
         }
     }
@@ -17166,6 +17270,7 @@ async function initApp() {
     if (typeof setLanguage === 'function') {
         setLanguage(cachedLang);
     }
+    updateChatButtonByLanguage(cachedLang);
 }
 
 if (typeof window !== 'undefined') {
@@ -17201,6 +17306,7 @@ if (typeof window !== 'undefined') {
     window.changeAddonQty = changeAddonQty;
     window.scrollAddons = scrollAddons;
     window.applyStorefrontCompanyInfo = applyStorefrontCompanyInfo;
+    window.updateChatButtonByLanguage = updateChatButtonByLanguage;
     window.loadStorefrontCompanyInfo = loadStorefrontCompanyInfo;
     window.reloadCompanyInfoIfChanged = loadStorefrontCompanyInfo;
     window.reloadAddonsIfChanged = reloadAddonsIfChanged;

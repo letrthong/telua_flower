@@ -1665,6 +1665,19 @@ export function applyStorefrontCompanyInfo(info) {
         setHref('floatingZaloLink', info.zalo);
     }
 
+    if (info.whatsapp) {
+        let waLink = (info.whatsapp || '').toString().trim();
+        if (waLink && !waLink.startsWith('http://') && !waLink.startsWith('https://')) {
+            const digits = waLink.replace(/[^\d]/g, '');
+            waLink = `https://wa.me/${digits}`;
+        }
+        if (waLink) {
+            setHref('floatingWhatsappLink', waLink);
+        }
+    }
+
+    updateChatButtonByLanguage(null, info);
+
     // Bản đồ và chỉ đường khu vực Showroom do Showroom Locator (branches.json) quản lý
     // Ưu tiên hiển thị chi nhánh đang chọn (từ cache), không để infoCompany ghi đè
     if (activeBranch && typeof window.selectShowroomBranch === 'function') {
@@ -1679,6 +1692,44 @@ export function applyStorefrontCompanyInfo(info) {
             const iframe = document.getElementById('storeMapIframe');
             if (iframe && info.mapEmbedUrl) {
                 iframe.src = info.mapEmbedUrl;
+            }
+        }
+    }
+}
+
+/**
+ * Cập nhật nút chat nổi (Floating Chat Button) theo ngôn ngữ:
+ * - Tiếng Việt ('vi'): Hiển thị Zalo OA, ẩn WhatsApp
+ * - Ngôn ngữ quốc tế (khác 'vi': 'en', 'ja', 'ko', 'zh', ...): Hiển thị WhatsApp, ẩn Zalo OA
+ */
+export function updateChatButtonByLanguage(lang = null, info = null) {
+    if (typeof document === 'undefined') return;
+    const effectiveLang = lang || (typeof window !== 'undefined' && window.currentLang) || 'vi';
+    const companyInfo = info || (typeof window !== 'undefined' && window.currentCompanyInfo) || null;
+
+    const zaloBtn = document.getElementById('floatingZaloLink');
+    const whatsappBtn = document.getElementById('floatingWhatsappLink');
+
+    if (effectiveLang === 'vi') {
+        if (zaloBtn) zaloBtn.classList.remove('hidden');
+        if (whatsappBtn) whatsappBtn.classList.add('hidden');
+    } else {
+        if (zaloBtn) zaloBtn.classList.add('hidden');
+        if (whatsappBtn) whatsappBtn.classList.remove('hidden');
+    }
+
+    if (companyInfo) {
+        if (zaloBtn && companyInfo.zalo) {
+            zaloBtn.setAttribute('href', companyInfo.zalo);
+        }
+        if (whatsappBtn && companyInfo.whatsapp) {
+            let waLink = (companyInfo.whatsapp || '').toString().trim();
+            if (waLink && !waLink.startsWith('http://') && !waLink.startsWith('https://')) {
+                const digits = waLink.replace(/[^\d]/g, '');
+                waLink = `https://wa.me/${digits}`;
+            }
+            if (waLink) {
+                whatsappBtn.setAttribute('href', waLink);
             }
         }
     }
@@ -2270,6 +2321,7 @@ async function initApp() {
     if (typeof setLanguage === 'function') {
         setLanguage(cachedLang);
     }
+    updateChatButtonByLanguage(cachedLang);
 }
 
 if (typeof window !== 'undefined') {
@@ -2305,6 +2357,7 @@ if (typeof window !== 'undefined') {
     window.changeAddonQty = changeAddonQty;
     window.scrollAddons = scrollAddons;
     window.applyStorefrontCompanyInfo = applyStorefrontCompanyInfo;
+    window.updateChatButtonByLanguage = updateChatButtonByLanguage;
     window.loadStorefrontCompanyInfo = loadStorefrontCompanyInfo;
     window.reloadCompanyInfoIfChanged = loadStorefrontCompanyInfo;
     window.reloadAddonsIfChanged = reloadAddonsIfChanged;

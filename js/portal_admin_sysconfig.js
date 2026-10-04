@@ -18,7 +18,9 @@ export const DEFAULT_STATIC_COMPANY_INFO = {
     website: "https://nohoathabinh.vn",
     facebook: "https://facebook.com/nohoathabinh",
     instagram: "https://instagram.com/nohoathabinh",
+    tiktok: "https://www.tiktok.com/@nohoathabinh",
     zalo: "https://zalo.me/0976491322",
+    whatsapp: "https://wa.me/84976491323",
     mapUrl: "https://maps.google.com/?q=183/37+Đường+3+Tháng+2,+Phường+11,+Quận+10,+TP.+Hồ+Chí+Minh",
     mapEmbedUrl: "https://maps.google.com/maps?q=183%2F37%20%C4%90%C6%B0%E1%BB%9Dng%203%20Th%C3%A1ng%202%2C%20Ph%C6%B0%E1%BB%9Dng%2011%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh&t=&z=16&ie=UTF8&iwloc=&output=embed"
 };
@@ -885,7 +887,9 @@ function populateCompanyInfoForm(data) {
     setValue("companyEmailInput", data.email);
     setValue("companyFacebookInput", data.facebook);
     setValue("companyInstagramInput", data.instagram);
+    setValue("companyTiktokInput", data.tiktok);
     setValue("companyZaloInput", data.zalo);
+    setValue("companyWhatsappInput", data.whatsapp);
     setValue("companyMapUrlInput", data.mapUrl);
     setValue("companyMapEmbedUrlInput", data.mapEmbedUrl);
 
@@ -960,7 +964,9 @@ export async function handleCompanyInfoSubmit(event) {
         workingHours: getValue("companyHoursInput") || "Thứ 2 - Chủ Nhật: 7:00 - 21:00",
         facebook: getValue("companyFacebookInput"),
         instagram: getValue("companyInstagramInput"),
+        tiktok: getValue("companyTiktokInput"),
         zalo: getValue("companyZaloInput"),
+        whatsapp: getValue("companyWhatsappInput"),
         mapUrl: getValue("companyMapUrlInput"),
         mapEmbedUrl: getValue("companyMapEmbedUrlInput")
     };

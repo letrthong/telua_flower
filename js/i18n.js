@@ -173,6 +173,11 @@ export function setLanguage(lang) {
             window.applyStorefrontCompanyInfo(window.currentCompanyInfo);
         }
 
+        // Cập nhật nút chat nổi Zalo/WhatsApp theo ngôn ngữ (vi: Zalo, khác vi: WhatsApp)
+        if (typeof window !== 'undefined' && typeof window.updateChatButtonByLanguage === 'function') {
+            window.updateChatButtonByLanguage(lang);
+        }
+
         // 10. Render lại danh mục & sản phẩm
         if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
             window.renderStorefrontCategories();

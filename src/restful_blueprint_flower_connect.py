@@ -1113,7 +1113,11 @@ def api_get_products():
 
     prods = list_products(category=category, search=search, is_active=is_active)
     resp = jsonify({"success": True, "data": prods})
-    resp.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
+    if request.args.get("_t") or request.headers.get("Cache-Control") == "no-cache":
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+    else:
+        resp.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
     return resp, 200
 
 
@@ -1125,7 +1129,27 @@ def api_get_product_detail(product_id):
     if not prod:
         return jsonify({"success": False, "message": "Không tìm thấy sản phẩm"}), 404
     resp = jsonify({"success": True, "data": prod})
-    resp.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+    if request.args.get("_t") or request.headers.get("Cache-Control") == "no-cache":
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+    else:
+        resp.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+    return resp, 200
+
+
+@flower_connect_api.route("/admin/products", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])
+def api_get_admin_products():
+    """Lấy toàn bộ danh sách sản phẩm hoa tươi cho Admin CMS (luôn tươi mới, không lưu cache HTTP)."""
+    category = request.args.get("category")
+    search = request.args.get("search")
+    is_active_param = request.args.get("active")
+    is_active = True if is_active_param == "true" else (False if is_active_param == "false" else None)
+
+    prods = list_products(category=category, search=search, is_active=is_active)
+    resp = jsonify({"success": True, "data": prods})
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
     return resp, 200
 
 

@@ -13,6 +13,7 @@ import {
     setAdminPriceLevels
 } from './portal_admin_state.js';
 import { populateCategoryDropdowns } from './portal_admin_categories.js';
+import { clearProductDetailCache } from './products.js';
 
 // ==========================================
 // QUẢN LÝ SẢN PHẨM & PRICE GOVERNANCE
@@ -35,9 +36,19 @@ export async function loadAdminProducts() {
     }
 
     try {
-        let url = `${API_BASE}/products`;
-        if (category) url += `?category=${encodeURIComponent(category)}`;
-        const res = await fetch(url);
+        const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+        const cacheBuster = `_t=${Date.now()}`;
+        let url = `${API_BASE}/admin/products?${cacheBuster}`;
+        if (category) url += `&category=${encodeURIComponent(category)}`;
+        const headers = { "Cache-Control": "no-cache", "Pragma": "no-cache" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        let res = await fetch(url, { cache: "no-store", headers });
+        if (!res.ok) {
+            let fallbackUrl = `${API_BASE}/products?${cacheBuster}`;
+            if (category) fallbackUrl += `&category=${encodeURIComponent(category)}`;
+            res = await fetch(fallbackUrl, { cache: "no-store", headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" } });
+        }
         const json = await res.json();
 
         if (json.success && json.data) {
@@ -1048,9 +1059,12 @@ export async function editProduct(productId) {
     const title = document.getElementById("productModalTitle");
     if (title) title.textContent = `Đang tải chi tiết: ${prod.name}...`;
 
-    // Tải chi tiết đầy đủ từ API /api/products/<productId> (Lazy load)
+    // Tải chi tiết đầy đủ từ API /api/products/<productId> (Lazy load có cache-busting)
     try {
-        const res = await fetch(`${API_BASE}/products/${productId}`);
+        const res = await fetch(`${API_BASE}/products/${productId}?_t=${Date.now()}`, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+        });
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
@@ -1264,9 +1278,18 @@ export async function handleProductSubmit(event) {
         const json = await res.json();
         if (res.ok && json.success) {
             closeProductModal();
+            const savedId = editId || (json.data && json.data.id);
+            if (typeof clearProductDetailCache === 'function') {
+                clearProductDetailCache(savedId);
+            } else if (typeof window !== 'undefined' && typeof window.clearProductDetailCache === 'function') {
+                window.clearProductDetailCache(savedId);
+            }
             await loadAdminProducts();
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
-                window.renderAllProducts();
+                await window.renderAllProducts();
+            }
+            if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
+                window.renderStorefrontCategories();
             }
             notifyUser(editId ? `Đã cập nhật mẫu hoa "${name}" thành công!` : `Đã thêm mẫu hoa mới "${name}" thành công!`, 'success');
         } else {
@@ -1317,9 +1340,17 @@ export async function toggleProduct(productId, productName, currentActive) {
         });
         const json = await res.json();
         if (res.ok && json.success) {
+            if (typeof clearProductDetailCache === 'function') {
+                clearProductDetailCache(productId);
+            } else if (typeof window !== 'undefined' && typeof window.clearProductDetailCache === 'function') {
+                window.clearProductDetailCache(productId);
+            }
             await loadAdminProducts();
             if (typeof window !== 'undefined' && typeof window.renderAllProducts === 'function') {
-                window.renderAllProducts();
+                await window.renderAllProducts();
+            }
+            if (typeof window !== 'undefined' && typeof window.renderStorefrontCategories === 'function') {
+                window.renderStorefrontCategories();
             }
             notifyUser(`Đã ${actionText.toLowerCase()} mẫu hoa "${displayName}" thành công!`, 'success');
         } else {

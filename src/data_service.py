@@ -2859,7 +2859,9 @@ DEFAULT_COMPANY_INFO: Dict[str, Any] = {
     "website": "https://nohoathabinh.vn",
     "facebook": "https://facebook.com/nohoathabinh",
     "instagram": "https://instagram.com/nohoathabinh",
+    "tiktok": "https://www.tiktok.com/@nohoathabinh",
     "zalo": "https://zalo.me/0976491322",
+    "whatsapp": "https://wa.me/84976491323",
     "mapUrl": "https://maps.google.com/?q=183/37+Đường+3+Tháng+2,+Phường+11,+Quận+10,+TP.+Hồ+Chí+Minh",
     "mapEmbedUrl": "https://maps.google.com/maps?q=183%2F37%20%C4%90%C6%B0%E1%BB%9Dng%203%20Th%C3%A1ng%202%2C%20Ph%C6%B0%E1%BB%9Dng%2011%2C%20Qu%E1%BA%ADn%2010%2C%20Th%C3%A0nh%20ph%E1%BB%91%20H%E1%BB%93%20Ch%C3%AD%20Minh&t=&z=16&ie=UTF8&iwloc=&output=embed",
     "updatedAt": "2026-08-26T12:00:00Z"
@@ -2916,7 +2918,9 @@ def save_company_info(info_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[st
         "website": (info_dict.get("website") or current.get("website", "")).strip(),
         "facebook": (info_dict.get("facebook") or current.get("facebook", "")).strip(),
         "instagram": (info_dict.get("instagram") or current.get("instagram", "")).strip(),
+        "tiktok": (info_dict.get("tiktok") or current.get("tiktok", "")).strip(),
         "zalo": (info_dict.get("zalo") or current.get("zalo", "")).strip(),
+        "whatsapp": (info_dict.get("whatsapp") or current.get("whatsapp", "")).strip(),
         "mapUrl": (info_dict.get("mapUrl") or current.get("mapUrl", "")).strip(),
         "mapEmbedUrl": (info_dict.get("mapEmbedUrl") or current.get("mapEmbedUrl", "")).strip(),
         "updatedAt": now_iso

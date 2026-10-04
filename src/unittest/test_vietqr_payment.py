@@ -19,6 +19,7 @@ from vietqr_service import (
     _crc16_ccitt
 )
 from order_service import create_order
+from data_service import get_product_by_id
 
 
 class TestVietQRPayment(unittest.TestCase):
@@ -125,16 +126,19 @@ class TestVietQRPayment(unittest.TestCase):
                 {
                     "productId": "lan_01",
                     "quantity": 1,
-                    "price": 3500000
+                    "price": 3600000
                 }
             ],
             "paymentMethod": "vietqr"
         }
 
+        prod = get_product_by_id("lan_01")
+        expected_total = int(prod.get("priceNumber", 3600000)) if prod else 3600000
+
         success, new_order, err = create_order(order_req)
         self.assertTrue(success, f"Lỗi tạo đơn: {err}")
         self.assertIsNotNone(new_order)
-        self.assertEqual(new_order["totalAmount"], 3500000)
+        self.assertEqual(new_order["totalAmount"], expected_total)
 
         # Kiểm tra thông tin thanh toán VietQR
         payment = new_order.get("payment", {})
@@ -152,7 +156,7 @@ class TestVietQRPayment(unittest.TestCase):
         json_resp = resp.get_json()
         self.assertTrue(json_resp["success"])
         self.assertEqual(json_resp["data"]["orderId"], new_order["id"])
-        self.assertEqual(json_resp["data"]["totalAmount"], 3500000)
+        self.assertEqual(json_resp["data"]["totalAmount"], expected_total)
         self.assertIn("vietqr", json_resp["data"])
         self.assertTrue(json_resp["data"]["vietqr"]["payload"].startswith("000201"))
 

@@ -182,6 +182,27 @@
             animation: zaloPulse 2s infinite;
         }
 
+        @keyframes whatsappPulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+            }
+        }
+
+        .pulse-whatsapp {
+            animation: whatsappPulse 2s infinite;
+        }
+
         .shake-icon {
             display: inline-block;
             animation: shakePhone 1.8s infinite ease-in-out;
@@ -871,7 +892,7 @@
                             rel="noopener noreferrer"
                             class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary hover:text-white transition"
                             title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                        <a id="footerTiktokLink" href="#" target="_blank" rel="noopener noreferrer"
+                        <a id="footerTiktokLink" href="https://www.tiktok.com/@nohoathabinh" target="_blank" rel="noopener noreferrer"
                             class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary hover:text-white transition"
                             title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
                     </div>
@@ -957,7 +978,7 @@
 
     <!-- Floating Contact Buttons (Zalo OA & Hotline) -->
     <div class="fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3.5 select-none" id="floatingContact">
-        <!-- Zalo OA Button -->
+        <!-- Zalo OA Button (Hiển thị khi Tiếng Việt) -->
         <a id="floatingZaloLink" href="https://zalo.me/0976491322" target="_blank" rel="noopener noreferrer"
             class="group flex items-center bg-white hover:bg-blue-50 text-blue-600 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 p-1.5 border border-blue-100"
             title="Chat Zalo với Nở Hoa Thả Bình">
@@ -969,8 +990,24 @@
                 </svg>
             </div>
             <div
-                class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out px-0 group-hover:px-3 text-sm font-bold text-gray-800">
+                class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out px-0 group-hover:px-3 text-sm font-bold text-gray-800"
+                data-i18n="chat_zalo">
                 Chat Zalo OA
+            </div>
+        </a>
+
+        <!-- WhatsApp Button (Hiển thị khi ngôn ngữ khác Tiếng Việt) -->
+        <a id="floatingWhatsappLink" href="https://wa.me/84976491323" target="_blank" rel="noopener noreferrer"
+            class="hidden group flex items-center bg-white hover:bg-emerald-50 text-emerald-600 rounded-full shadow-lg hover:shadow-2xl transition-all duration-300 p-1.5 border border-emerald-100"
+            title="Chat WhatsApp with us">
+            <div
+                class="w-12 h-12 rounded-full bg-[#25D366] text-white flex items-center justify-center flex-shrink-0 pulse-whatsapp shadow-md">
+                <i class="fa-brands fa-whatsapp text-2xl"></i>
+            </div>
+            <div
+                class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out px-0 group-hover:px-3 text-sm font-bold text-gray-800"
+                id="floatingWhatsappText" data-i18n="chat_whatsapp">
+                Chat WhatsApp
             </div>
         </a>
 
@@ -3688,7 +3725,7 @@
                                     <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wide">3. Kênh Mạng Xã
                                         Hội & Bản Đồ Trực Tuyến</h5>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                                     <div>
                                         <label class="block text-xs font-bold text-gray-700 mb-1"><i
                                                 class="fa-brands fa-facebook text-blue-600 mr-1"></i> Fanpage
@@ -3708,10 +3745,26 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-gray-700 mb-1"><i
+                                                class="fa-brands fa-tiktok text-gray-900 mr-1"></i> Kênh TikTok</label>
+                                        <input type="url" id="companyTiktokInput"
+                                            value="https://www.tiktok.com/@nohoathabinh"
+                                            placeholder="https://www.tiktok.com/@nohoathabinh"
+                                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1"><i
                                                 class="fa-solid fa-comment-dots text-blue-500 mr-1"></i> Zalo OA
                                             Link</label>
                                         <input type="text" id="companyZaloInput" value="https://zalo.me/0976491322"
                                             placeholder="https://zalo.me/0976491322"
+                                            class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1"><i
+                                                class="fa-brands fa-whatsapp text-emerald-500 mr-1"></i> WhatsApp
+                                            Link / SĐT</label>
+                                        <input type="text" id="companyWhatsappInput" value="https://wa.me/84976491323"
+                                            placeholder="https://wa.me/84976491323 hoặc 0976491323"
                                             class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-primary focus:bg-white transition">
                                     </div>
                                 </div>
@@ -5962,7 +6015,7 @@
     </div>
 
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="/js/bundle.js?v=20260916_03"></script>
+    <script src="/js/bundle.js?v=20261003_01"></script>
 </body>
 
 </html>

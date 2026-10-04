@@ -24,6 +24,22 @@
       "ko": "고객센터:",
       "zh": "服务热线:"
     },
+    "chat_zalo": {
+      "type": "system",
+      "vi": "Chat Zalo OA",
+      "en": "Chat on Zalo",
+      "ja": "Zaloでお問い合わせ",
+      "ko": "Zalo 문의",
+      "zh": "Zalo 咨询"
+    },
+    "chat_whatsapp": {
+      "type": "system",
+      "vi": "Chat WhatsApp",
+      "en": "Chat on WhatsApp",
+      "ja": "WhatsAppでお問い合わせ",
+      "ko": "WhatsApp 문의",
+      "zh": "WhatsApp 咨询"
+    },
     "hero_heading": {
       "type": "system",
       "vi": "Gửi Trọn Vẹn Cảm Xúc",

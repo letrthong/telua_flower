@@ -32,7 +32,10 @@ try {
 export async function getProducts(activeOnly = true) {
     try {
         const url = activeOnly ? `${API_BASE}/products?active=true&_t=${Date.now()}` : `${API_BASE}/products?_t=${Date.now()}`;
-        const res = await fetch(url);
+        const res = await fetch(url, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+        });
         if (res.ok) {
             const json = await res.json();
             if (json.success && Array.isArray(json.data)) {
@@ -56,6 +59,11 @@ const MAX_PRODUCT_CACHE_SIZE = 120; // Giới hạn tối đa 120 sản phẩm t
 export function clearProductDetailCache(productId = null) {
     if (productId) {
         productDetailMemoryCache.delete(productId);
+        for (const key of Array.from(productDetailMemoryCache.keys())) {
+            if (key === productId || key.startsWith(`${productId}_`)) {
+                productDetailMemoryCache.delete(key);
+            }
+        }
     } else {
         productDetailMemoryCache.clear();
     }
@@ -75,8 +83,11 @@ export async function getProductById(productId, lang = null) {
         return productDetailMemoryCache.get(cacheKey);
     }
     try {
-        const url = `${API_BASE}/products/${productId}?lang=${encodeURIComponent(currentLang)}`;
-        const res = await fetch(url);
+        const url = `${API_BASE}/products/${productId}?lang=${encodeURIComponent(currentLang)}&_t=${Date.now()}`;
+        const res = await fetch(url, {
+            cache: "no-store",
+            headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+        });
         if (res.ok) {
             const json = await res.json();
             if (json.success && json.data) {
@@ -251,4 +262,5 @@ if (typeof window !== 'undefined') {
     window.getProductById = getProductById;
     window.getCategories = getCategories;
     window.reloadCategoriesIfChanged = reloadCategoriesIfChanged;
+    window.clearProductDetailCache = clearProductDetailCache;
 }
