@@ -15325,10 +15325,8 @@ function populateProductDetailModalContent(prod, currentAppLang, productId, isPa
         }
     }
 
-    // Render Add-Ons (sản phẩm kèm theo) trong modal từ cache tức thì
+    // Render Add-Ons (sản phẩm kèm theo) trong modal từ cache tức thì hoặc nạp nhanh
     renderAddonsInModal(currentAppLang);
-    // Kiểm tra ngầm xem file addons.json hoặc addonConfig.json có thay đổi hay không
-    reloadAddonsIfChanged(false).catch(() => {});
 
     // Gắn sự kiện nút Thêm Giỏ Hàng (kèm các add-on đã chọn)
     const btnAdd = document.getElementById("btnQuickAddToCart");
@@ -15363,7 +15361,7 @@ let cachedAddons = null;
 let cachedAddonVisible = null; // null = chưa tải; true/false = cấu hình showAddons
 let selectedAddons = new Map(); // addonId -> { addon, quantity }
 let _lastAddonsSyncTime = 0;
-let _isSyncingAddons = false;
+let _syncAddonsPromise = null;
 let _hasScheduledAddonsPreload = false;
 
 // 1. Tải tức thì từ LocalStorage Cache (0ms - Instant Boot) nếu có
@@ -15402,9 +15400,7 @@ async function isAddonSectionEnabled(forceRefresh = false) {
  * Lấy danh sách add-ons đang hoạt động từ API (có cache)
  */
 async function loadAddons(forceRefresh = false) {
-    console.debug("[ADDONS] loadAddons() gọi, forceRefresh =", forceRefresh, "| cachedAddons =", cachedAddons ? cachedAddons.length : 0);
     if (cachedAddons && cachedAddons.length > 0 && !forceRefresh) {
-        console.debug("[ADDONS] Dùng cache:", cachedAddons.length, "add-ons");
         return cachedAddons;
     }
     await reloadAddonsIfChanged(forceRefresh);
@@ -15416,166 +15412,157 @@ async function loadAddons(forceRefresh = false) {
  * Cập nhật vào Memory và LocalStorage; tự động re-render modal nếu đang mở.
  */
 async function reloadAddonsIfChanged(forceRefresh = false) {
-    if (_isSyncingAddons) return { changed: false, cachedAddons, cachedAddonVisible };
-    _isSyncingAddons = true;
+    if (_syncAddonsPromise) {
+        return _syncAddonsPromise;
+    }
 
-    let configChanged = false;
-    let addonsChanged = false;
+    _syncAddonsPromise = (async () => {
+        let configChanged = false;
+        let addonsChanged = false;
 
-    // 1. Kiểm tra & nạp cấu hình addonConfig.json (GET /addon-config)
-    try {
-        const cfgHeaders = {};
-        const storedCfgEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDON_CONFIG_ETAG_KEY) : null;
-        if (storedCfgEtag && !forceRefresh) {
-            cfgHeaders['If-None-Match'] = storedCfgEtag;
-        }
-
-        const resCfg = await fetch(`${API_BASE}/addon-config?_t=${Date.now()}`, { headers: cfgHeaders });
-        if (resCfg.status === 200) {
-            const data = await resCfg.json();
-            const cfg = (data && data.data) ? data.data : data;
-            const newVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
-            if (cachedAddonVisible !== newVisible) {
-                cachedAddonVisible = newVisible;
-                configChanged = true;
-            }
-            const newEtag = resCfg.headers.get("ETag");
-            if (typeof localStorage !== 'undefined') {
-                try {
-                    localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(cfg));
-                    if (newEtag) localStorage.setItem(ADDON_CONFIG_ETAG_KEY, newEtag);
-                } catch (e) {}
-            }
-        } else if (resCfg.status !== 304 && !resCfg.ok) {
-            throw new Error("HTTP " + resCfg.status);
-        }
-    } catch (errCfg) {
-        // Fallback trực tiếp file config/anne/addonConfig.json tĩnh
+        // 1. Kiểm tra & nạp cấu hình addonConfig.json (GET /addon-config)
         try {
-            const fbRes = await fetch(`config/anne/addonConfig.json?_t=${Date.now()}`);
-            if (fbRes.ok) {
-                const fbCfg = await fbRes.json();
-                const newVisible = fbCfg && typeof fbCfg.showAddons === "boolean" ? fbCfg.showAddons : true;
+            const cfgHeaders = {};
+            const storedCfgEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDON_CONFIG_ETAG_KEY) : null;
+            if (storedCfgEtag && !forceRefresh) {
+                cfgHeaders['If-None-Match'] = storedCfgEtag;
+            }
+
+            const resCfg = await fetch(`${API_BASE}/addon-config?_t=${Date.now()}`, { headers: cfgHeaders });
+            if (resCfg.status === 200) {
+                const data = await resCfg.json();
+                const cfg = (data && data.data) ? data.data : data;
+                const newVisible = cfg && typeof cfg.showAddons === "boolean" ? cfg.showAddons : true;
                 if (cachedAddonVisible !== newVisible) {
                     cachedAddonVisible = newVisible;
                     configChanged = true;
                 }
+                const newEtag = resCfg.headers.get("ETag");
                 if (typeof localStorage !== 'undefined') {
                     try {
-                        localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(fbCfg));
+                        localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(cfg));
+                        if (newEtag) localStorage.setItem(ADDON_CONFIG_ETAG_KEY, newEtag);
                     } catch (e) {}
                 }
+            } else if (resCfg.status !== 304 && !resCfg.ok) {
+                throw new Error("HTTP " + resCfg.status);
             }
-        } catch (e) {}
-        if (cachedAddonVisible === null) cachedAddonVisible = true;
-    }
-
-    // 2. Kiểm tra & nạp danh sách addons.json (GET /addons)
-    try {
-        const addonHeaders = {};
-        const storedAddonsEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDONS_ETAG_KEY) : null;
-        if (storedAddonsEtag && !forceRefresh) {
-            addonHeaders['If-None-Match'] = storedAddonsEtag;
+        } catch (errCfg) {
+            // Fallback trực tiếp file config/anne/addonConfig.json tĩnh
+            try {
+                const fbRes = await fetch(`config/anne/addonConfig.json?_t=${Date.now()}`);
+                if (fbRes.ok) {
+                    const fbCfg = await fbRes.json();
+                    const newVisible = fbCfg && typeof fbCfg.showAddons === "boolean" ? fbCfg.showAddons : true;
+                    if (cachedAddonVisible !== newVisible) {
+                        cachedAddonVisible = newVisible;
+                        configChanged = true;
+                    }
+                    if (typeof localStorage !== 'undefined') {
+                        try {
+                            localStorage.setItem(ADDON_CONFIG_STORAGE_KEY, JSON.stringify(fbCfg));
+                        } catch (e) {}
+                    }
+                }
+            } catch (e) {}
+            if (cachedAddonVisible === null) cachedAddonVisible = true;
         }
 
-        const resAddons = await fetch(`${API_BASE}/addons?_t=${Date.now()}`, { headers: addonHeaders });
-        if (resAddons.status === 200) {
-            const data = await resAddons.json();
-            const items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
-            const oldStr = JSON.stringify(cachedAddons || []);
-            const newStr = JSON.stringify(items);
-            if (oldStr !== newStr) {
-                cachedAddons = items;
-                addonsChanged = true;
-            }
-            const newEtag = resAddons.headers.get("ETag");
-            if (typeof localStorage !== 'undefined') {
-                try {
-                    localStorage.setItem(ADDONS_STORAGE_KEY, JSON.stringify(cachedAddons));
-                    if (newEtag) localStorage.setItem(ADDONS_ETAG_KEY, newEtag);
-                } catch (e) {}
-            }
-        } else if (resAddons.status !== 304 && !resAddons.ok) {
-            throw new Error("HTTP " + resAddons.status);
-        }
-    } catch (errAddons) {
-        // Fallback trực tiếp file config/anne/addons.json tĩnh
+        // 2. Kiểm tra & nạp danh sách addons.json (GET /addons)
         try {
-            const fbRes = await fetch(`config/anne/addons.json?_t=${Date.now()}`);
-            if (fbRes.ok) {
-                const raw = await fbRes.json();
-                const activeItems = Array.isArray(raw) ? raw.filter(a => a && a.isActive !== false && a.status !== 'inactive' && !a.isDeleted) : [];
+            const addonHeaders = {};
+            const storedAddonsEtag = (typeof localStorage !== 'undefined') ? localStorage.getItem(ADDONS_ETAG_KEY) : null;
+            if (storedAddonsEtag && !forceRefresh) {
+                addonHeaders['If-None-Match'] = storedAddonsEtag;
+            }
+
+            const resAddons = await fetch(`${API_BASE}/addons?_t=${Date.now()}`, { headers: addonHeaders });
+            if (resAddons.status === 200) {
+                const data = await resAddons.json();
+                const items = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : (data.addons || []));
                 const oldStr = JSON.stringify(cachedAddons || []);
-                const newStr = JSON.stringify(activeItems);
+                const newStr = JSON.stringify(items);
                 if (oldStr !== newStr) {
-                    cachedAddons = activeItems;
+                    cachedAddons = items;
                     addonsChanged = true;
                 }
+                const newEtag = resAddons.headers.get("ETag");
                 if (typeof localStorage !== 'undefined') {
                     try {
                         localStorage.setItem(ADDONS_STORAGE_KEY, JSON.stringify(cachedAddons));
+                        if (newEtag) localStorage.setItem(ADDONS_ETAG_KEY, newEtag);
                     } catch (e) {}
                 }
+            } else if (resAddons.status !== 304 && !resAddons.ok) {
+                throw new Error("HTTP " + resAddons.status);
             }
-        } catch (e) {}
-        if (!cachedAddons) cachedAddons = [];
-    }
-
-    _lastAddonsSyncTime = Date.now();
-    _isSyncingAddons = false;
-
-    const hasChanged = configChanged || addonsChanged;
-    if (hasChanged || forceRefresh) {
-        console.debug("[ADDONS] Dữ liệu addons hoặc addonConfig đã được cập nhật thành công:", { configChanged, addonsChanged, count: (cachedAddons || []).length });
-        
-        // Tự động re-render nếu modal chi tiết sản phẩm đang mở
-        if (typeof document !== 'undefined') {
-            const modal = document.getElementById("productQuickDetailModal");
-            if (modal && !modal.classList.contains("hidden")) {
-                const activeLang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : "vi";
-                renderAddonsInModal(activeLang);
-            }
-        }
-
-        // Phát sự kiện CustomEvent cho các module khác
-        if (typeof window !== 'undefined') {
+        } catch (errAddons) {
+            // Fallback trực tiếp file config/anne/addons.json tĩnh
             try {
-                window.dispatchEvent(new CustomEvent("addonsUpdated", {
-                    detail: { addons: cachedAddons, config: cachedAddonVisible }
-                }));
+                const fbRes = await fetch(`config/anne/addons.json?_t=${Date.now()}`);
+                if (fbRes.ok) {
+                    const raw = await fbRes.json();
+                    const activeItems = Array.isArray(raw) ? raw.filter(a => a && a.isActive !== false && a.status !== 'inactive' && !a.isDeleted) : [];
+                    const oldStr = JSON.stringify(cachedAddons || []);
+                    const newStr = JSON.stringify(activeItems);
+                    if (oldStr !== newStr) {
+                        cachedAddons = activeItems;
+                        addonsChanged = true;
+                    }
+                    if (typeof localStorage !== 'undefined') {
+                        try {
+                            localStorage.setItem(ADDONS_STORAGE_KEY, JSON.stringify(cachedAddons));
+                        } catch (e) {}
+                    }
+                }
             } catch (e) {}
+            if (!cachedAddons) cachedAddons = [];
         }
-    }
 
-    return { changed: hasChanged, cachedAddons, cachedAddonVisible };
+        _lastAddonsSyncTime = Date.now();
+
+        const hasChanged = configChanged || addonsChanged;
+        if (hasChanged || forceRefresh) {
+            console.debug("[ADDONS] Dữ liệu addons hoặc addonConfig đã được cập nhật:", { configChanged, addonsChanged, count: (cachedAddons || []).length });
+            
+            // Tự động re-render nếu modal chi tiết sản phẩm đang mở
+            if (typeof document !== 'undefined') {
+                const modal = document.getElementById("productQuickDetailModal");
+                if (modal && !modal.classList.contains("hidden")) {
+                    const activeLang = (typeof window !== 'undefined' && window.currentLang) ? window.currentLang : "vi";
+                    renderAddonsInModal(activeLang);
+                }
+            }
+
+            // Phát sự kiện CustomEvent cho các module khác
+            if (typeof window !== 'undefined') {
+                try {
+                    window.dispatchEvent(new CustomEvent("addonsUpdated", {
+                        detail: { addons: cachedAddons, config: cachedAddonVisible }
+                    }));
+                } catch (e) {}
+            }
+        }
+
+        return { changed: hasChanged, cachedAddons, cachedAddonVisible };
+    })().finally(() => {
+        _syncAddonsPromise = null;
+    });
+
+    return _syncAddonsPromise;
 }
 
 /**
- * Lên lịch nạp ngầm addons.json & addonConfig.json sau đúng 1 giây sau khi tải xong web.
+ * Nạp trước ngầm addons.json & addonConfig.json ngay khi khởi động trang để sẵn sàng 0ms khi mở modal
  */
 function scheduleAddonsPreload() {
     if (_hasScheduledAddonsPreload) return;
     _hasScheduledAddonsPreload = true;
 
-    const runPreload = () => {
-        setTimeout(async () => {
-            console.debug("[ADDONS] Bắt đầu nạp ngầm addons.json & addonConfig.json (1 giây sau khi web nạp xong)...");
-            try {
-                await reloadAddonsIfChanged(false);
-                console.debug("[ADDONS] Đã nạp và lưu trữ addons:", (cachedAddons || []).length, "mục; showAddons:", cachedAddonVisible);
-            } catch (err) {
-                console.warn("[ADDONS] Lỗi nạp ngầm addons sau 1 giây:", err);
-            }
-        }, 1000);
-    };
-
-    if (typeof window !== 'undefined') {
-        if (document.readyState === 'complete') {
-            runPreload();
-        } else {
-            window.addEventListener('load', runPreload, { once: true });
-        }
-    }
+    // Nạp ngầm ngay lập tức, không chờ trễ 1 giây
+    reloadAddonsIfChanged(false).catch(err => {
+        console.warn("[ADDONS] Lỗi nạp trước addons:", err);
+    });
 }
 
 /**

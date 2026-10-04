@@ -11,13 +11,13 @@
     "price": 150000,
     "image": "/api/flower/v1/images/addon_1788339901_429fa1cc.webp",
     "description": "Bình thủy tinh trong suốt cao cấp, tôn lên vẻ đẹp của bó hoa.",
-    "isActive": true,
+    "isActive": false,
     "sortOrder": 1,
     "createdAt": "2026-09-02T00:00:00Z",
-    "status": "active",
+    "status": "inactive",
     "isDeleted": false,
     "deletedAt": null,
-    "updatedAt": "2026-09-02T09:05:04Z"
+    "updatedAt": "2026-10-04T02:16:11Z"
   },
   {
     "id": "addon_chocolate",
