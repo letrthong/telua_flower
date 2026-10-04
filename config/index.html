@@ -3906,6 +3906,16 @@
                             </div>
 
                             <div class="flex items-center gap-2 flex-wrap">
+                                <button type="button" onclick="downloadAllTranslationsJson()"
+                                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition flex items-center flex-shrink-0 cursor-pointer"
+                                    title="Tải về toàn bộ translations.json">
+                                    <i class="fa-solid fa-file-arrow-down mr-1.5 text-blue-600"></i> Tải Toàn Bộ JSON
+                                </button>
+                                <button type="button" onclick="triggerUploadTranslationKeyJson()"
+                                    class="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-xl border border-purple-200 transition flex items-center flex-shrink-0 cursor-pointer shadow-2xs"
+                                    title="Tải lên tệp JSON để cập nhật hoặc thêm Text ID mới">
+                                    <i class="fa-solid fa-file-arrow-up mr-1.5 text-purple-600"></i> Upload JSON Text ID
+                                </button>
                                 <button type="button" onclick="openAddNewTranslationKeyModal()"
                                     class="px-3.5 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center flex-shrink-0">
                                     <i class="fa-solid fa-plus mr-1.5"></i> Thêm Text ID Mới
@@ -3982,7 +3992,19 @@
                                         Frontend khi khách chuyển đổi ngôn ngữ</p>
                                 </div>
 
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                                    <button type="button" onclick="downloadCurrentTranslationKeyJson()"
+                                        class="px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl border border-blue-200 transition flex items-center shadow-2xs cursor-pointer"
+                                        title="Tải tệp JSON chứa bản dịch của Text ID này">
+                                        <i class="fa-solid fa-download mr-1.5 text-blue-600"></i> Tải JSON
+                                    </button>
+                                    <button type="button" onclick="triggerUploadTranslationKeyJson()"
+                                        class="px-3.5 py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-xl border border-purple-200 transition flex items-center shadow-2xs cursor-pointer"
+                                        title="Tải lên tệp JSON để cập nhật bản dịch Text ID này">
+                                        <i class="fa-solid fa-upload mr-1.5 text-purple-600"></i> Upload JSON
+                                    </button>
+                                    <input type="file" id="transKeyJsonFileInput" accept=".json,application/json" class="hidden" onchange="handleUploadTranslationKeyJson(event)">
+
                                     <button type="button" id="btnDeleteCurrentTransKey"
                                         onclick="deleteCurrentTranslationKey()"
                                         class="px-3.5 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold rounded-xl border border-red-200 transition hidden items-center"
@@ -3990,7 +4012,7 @@
                                         <i class="fa-solid fa-trash mr-1.5"></i> Xóa Khóa
                                     </button>
                                     <button type="button" onclick="saveCurrentSingleTranslationKey()"
-                                        class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center">
+                                        class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center cursor-pointer">
                                         <i class="fa-solid fa-check mr-1.5"></i> Cập Nhật Khóa Này
                                     </button>
                                 </div>
@@ -5600,6 +5622,17 @@
                         tạo bằng chính mã Text ID để bạn dễ dàng sửa đổi sau.</p>
                 </div>
 
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-2 text-gray-400 text-[11px] font-bold">HOẶC</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
+                <button type="button" onclick="closeAddNewTranslationKeyModal(); triggerUploadTranslationKeyJson();"
+                    class="w-full py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-xl border border-purple-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs">
+                    <i class="fa-solid fa-file-arrow-up text-purple-600"></i> Tải Lên Tệp JSON Cho Text ID Mới
+                </button>
+
                 <div class="pt-2 flex justify-end gap-2 border-t border-gray-100">
                     <button type="button" onclick="closeAddNewTranslationKeyModal()"
                         class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Hủy</button>
@@ -6032,7 +6065,7 @@
     </div>
 
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="/js/bundle.js?v=20261003_01"></script>
+    <script src="/js/bundle.js?v=20261004_02"></script>
 </body>
 
 </html>

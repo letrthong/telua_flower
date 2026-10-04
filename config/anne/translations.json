@@ -834,11 +834,11 @@
     },
     "brand_name": {
       "type": "system",
-      "vi": "NỞ HOA THẢ BÌNH",
-      "en": "NỞ HOA THẢ BÌNH",
-      "ja": "Nở Hoa Thả Bình",
-      "ko": "Nở Hoa Thả Bình",
-      "zh": "Nở Hoa Thả Bình"
+      "vi": "Nở - Hoa Thả Bình",
+      "en": "NỞ - HOA THẢ BÌNH",
+      "ja": "Nở - Hoa Thả Bình",
+      "ko": "Nở - Hoa Thả Bình",
+      "zh": "Nở - Hoa Thả Bình"
     },
     "brand_slogan": {
       "type": "system",
@@ -1194,11 +1194,11 @@
     },
     "footer_copyright": {
       "type": "system",
-      "vi": "&copy; 2026 Bản quyền thuộc về Công ty TNHH Nở Hoa Thả Bình.",
-      "en": "&copy; 2026 All rights reserved by Nở Hoa Thả Bình Co., Ltd.",
-      "ja": "&copy; 2026 Nở Hoa Thả Bình Co., Ltd. All rights reserved.",
-      "ko": "&copy; 2026 Nở Hoa Thả Bình Co., Ltd. All rights reserved.",
-      "zh": "&copy; 2026 版权所有 Nở Hoa Thả Bình 有限责任公司。"
+      "vi": "© 2026 Bản quyền thuộc về Công ty TNHH Nở Hoa Thả Bình.",
+      "en": "© 2026 All rights reserved by Nở Hoa Thả Bình Co., Ltd.",
+      "ja": "© 2026 Nở Hoa Thả Bình Co., Ltd. All rights reserved.",
+      "ko": "© 2026 Nở Hoa Thả Bình Co., Ltd. All rights reserved.",
+      "zh": "© 2026 版权所有 Nở Hoa Thả Bình 有限责任公司。"
     },
     "badge_new": {
       "type": "system",

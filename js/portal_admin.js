@@ -148,7 +148,13 @@ export {
     deleteCurrentTranslationKey,
     filterTranslations,
     switchTransViewMode,
-    saveAllTranslations
+    saveAllTranslations,
+    isValidTextId,
+    validateAndParseTranslationJson,
+    downloadCurrentTranslationKeyJson,
+    triggerUploadTranslationKeyJson,
+    handleUploadTranslationKeyJson,
+    downloadAllTranslationsJson
 } from './portal_admin_translations.js';
 
 // Re-export Sysconfig

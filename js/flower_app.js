@@ -676,14 +676,14 @@ export async function renderAddonsInModal(currentAppLang) {
         const img = addon.image || "https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=200";
         html += `
             <div data-addon-id="${addon.id}"
-                 class="addon-card relative border-2 rounded-xl overflow-hidden cursor-pointer transition select-none flex-shrink-0 w-28 ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/50'}">
+                 class="addon-card group relative border-2 rounded-xl overflow-hidden cursor-pointer transition select-none flex-shrink-0 w-28 ${isSelected ? 'border-primary bg-primary/5 shadow-sm' : 'border-gray-200 hover:border-primary/50'}">
                 <div class="relative" onclick="toggleAddonSelection('${addon.id}')">
                     <img src="${img}" alt="${name}" loading="lazy" decoding="async"
                          onload="this.classList.add('loaded')"
                          onerror="handleImageErrorFallback(this)"
                          class="w-full h-20 object-cover">
-                    <div class="addon-check absolute top-1.5 right-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white border-gray-300 text-transparent'}">
-                        <i class="fa-solid fa-check"></i>
+                    <div class="addon-check absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all duration-200 transform shadow-sm ${isSelected ? 'bg-primary text-white border-2 border-white ring-2 ring-primary ring-offset-2 ring-offset-white scale-110 shadow-md' : 'bg-white/95 text-transparent border-2 border-gray-300 ring-2 ring-white/90 group-hover:border-primary/70'}">
+                        <i class="fa-solid fa-check text-[10px]"></i>
                     </div>
                 </div>
                 <div class="p-2">
@@ -777,17 +777,17 @@ function updateAddonCardUI(addonId) {
 
     card.classList.toggle("border-primary", isSelected);
     card.classList.toggle("bg-primary/5", isSelected);
+    card.classList.toggle("shadow-sm", isSelected);
     card.classList.toggle("border-gray-200", !isSelected);
     card.classList.toggle("hover:border-primary/50", !isSelected);
 
     const check = card.querySelector(".addon-check");
     if (check) {
-        check.classList.toggle("bg-primary", isSelected);
-        check.classList.toggle("border-primary", isSelected);
-        check.classList.toggle("text-white", isSelected);
-        check.classList.toggle("bg-white", !isSelected);
-        check.classList.toggle("border-gray-300", !isSelected);
-        check.classList.toggle("text-transparent", !isSelected);
+        check.className = `addon-check absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all duration-200 transform shadow-sm ${
+            isSelected
+                ? 'bg-primary text-white border-2 border-white ring-2 ring-primary ring-offset-2 ring-offset-white scale-110 shadow-md'
+                : 'bg-white/95 text-transparent border-2 border-gray-300 ring-2 ring-white/90 group-hover:border-primary/70'
+        }`;
     }
 
     const qtyControl = card.querySelector(".addon-qty-control");
@@ -817,12 +817,11 @@ function clearSelectedAddons() {
     const list = document.getElementById("addonsList");
     if (list) {
         list.querySelectorAll(".addon-card").forEach(card => {
-            card.classList.remove("border-primary", "bg-primary/5");
+            card.classList.remove("border-primary", "bg-primary/5", "shadow-sm");
             card.classList.add("border-gray-200", "hover:border-primary/50");
             const check = card.querySelector(".addon-check");
             if (check) {
-                check.classList.remove("bg-primary", "border-primary", "text-white");
-                check.classList.add("bg-white", "border-gray-300", "text-transparent");
+                check.className = "addon-check absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all duration-200 transform shadow-sm bg-white/95 text-transparent border-2 border-gray-300 ring-2 ring-white/90 group-hover:border-primary/70";
             }
             const qtyControl = card.querySelector(".addon-qty-control");
             if (qtyControl) qtyControl.classList.add("hidden");
