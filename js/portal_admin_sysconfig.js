@@ -238,6 +238,442 @@ export async function saveAddonConfig() {
 }
 
 // ==========================================
+// CẤU HÌNH LIVE STREAM & ĐẶT HÀNG NHANH (livestreamConfig.json)
+// ==========================================
+export const DEFAULT_LIVESTREAM_CONFIG = {
+    enableQuickOrder: false,
+    enabled: false,
+    title: "Đặt Hoa Nhanh Live Stream",
+    description: "Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!",
+    bankInfo: {
+        bankName: "Vietcombank (VCB)",
+        accountNumber: "0976491322",
+        accountName: "NO HOA THA BINH",
+        qrCodeImage: ""
+    },
+    qrCodeImage: "",
+    featuredProductIds: []
+};
+
+export let adminLiveStreamConfig = { ...DEFAULT_LIVESTREAM_CONFIG };
+
+export async function loadAdminLiveStreamConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const statusEl = document.getElementById("livestreamConfigStatus");
+    if (statusEl) {
+        statusEl.textContent = "Đang tải…";
+        statusEl.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200";
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/livestream-config?_t=${Date.now()}`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Không thể tải cấu hình");
+        adminLiveStreamConfig = json.data || { ...DEFAULT_LIVESTREAM_CONFIG };
+        if (statusEl) {
+            statusEl.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Đã nạp • ${new Date().toLocaleTimeString()}`;
+        }
+    } catch (e) {
+        adminLiveStreamConfig = { ...DEFAULT_LIVESTREAM_CONFIG };
+        console.warn("[LIVESTREAM-CONFIG] load lỗi:", e.message);
+        if (statusEl) {
+            statusEl.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+            statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi nạp`;
+        }
+    }
+    await renderLiveStreamConfig(adminLiveStreamConfig);
+}
+
+export async function renderLiveStreamConfig(config) {
+    const toggle = document.getElementById("livestreamQuickOrderToggle");
+    const activeBadge = document.getElementById("livestreamQuickOrderStatusBadge");
+    const titleInput = document.getElementById("livestreamTitleInput");
+    const descInput = document.getElementById("livestreamDescInput");
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+    const bankOwnerInput = document.getElementById("livestreamBankOwnerInput");
+    const linkInput = document.getElementById("livestreamShareLinkInput");
+
+    const isEnabled = !!(config && (config.enableQuickOrder || config.enabled));
+    if (toggle) toggle.checked = isEnabled;
+
+    if (activeBadge) {
+        if (isEnabled) {
+            activeBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 animate-pulse";
+            activeBadge.innerHTML = `<i class="fa-solid fa-circle text-[8px] text-emerald-600"></i> Đang BẬT Nhận Đơn Nhanh`;
+        } else {
+            activeBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold border border-gray-300";
+            activeBadge.innerHTML = `<i class="fa-solid fa-circle text-[8px] text-gray-400"></i> Đang TẮT Nhận Đơn Nhanh`;
+        }
+    }
+
+    if (titleInput) titleInput.value = (config && config.title) || DEFAULT_LIVESTREAM_CONFIG.title;
+    if (descInput) descInput.value = (config && config.description) || DEFAULT_LIVESTREAM_CONFIG.description;
+
+    const bInfo = (config && config.bankInfo) || DEFAULT_LIVESTREAM_CONFIG.bankInfo;
+    if (bankNameInput) bankNameInput.value = bInfo.bankName || "";
+    if (bankAccInput) bankAccInput.value = bInfo.accountNumber || "";
+    if (bankOwnerInput) bankOwnerInput.value = bInfo.accountName || "";
+
+    // Cập nhật xem trước mã QR chuyển khoản ngân hàng
+    const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+    const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    const qrImg = (config && (config.qrCodeImage || (config.bankInfo && config.bankInfo.qrCodeImage))) || "";
+
+    if (qrUrlInput) qrUrlInput.value = qrImg || "";
+
+    if (qrPreview) {
+        if (qrImg) {
+            qrPreview.src = qrImg;
+            if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
+            if (qrStatus) {
+                qrStatus.textContent = qrImg.startsWith("data:") ? "Mã QR đã tải lên (Tệp ảnh)" : "Mã QR chuyển khoản riêng (URL / Đã tải)";
+                qrStatus.className = "text-[10px] text-emerald-600 font-bold block mt-1";
+            }
+        } else {
+            qrPreview.src = "https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE";
+            if (qrRemoveBtn) qrRemoveBtn.classList.add("hidden");
+            if (qrStatus) {
+                qrStatus.textContent = "Mã VietQR tự động theo số tài khoản";
+                qrStatus.className = "text-[10px] text-gray-500 font-medium block mt-1";
+            }
+        }
+    }
+
+    if (linkInput && typeof window !== "undefined") {
+        const origin = window.location.origin || "";
+        const pathname = window.location.pathname.replace(/\/+$/, "");
+        linkInput.value = `${origin}${pathname}#quick-order`;
+    }
+
+    // Hiển thị danh sách bó hoa nổi bật ghim trong phiên live
+    await renderAdminLiveStreamFeaturedProducts((config && config.featuredProductIds) || []);
+}
+
+/**
+ * Hiển thị danh sách checkbox các bó hoa để ghim vào phiên Live Stream
+ */
+export async function renderAdminLiveStreamFeaturedProducts(featuredIds = []) {
+    const container = document.getElementById("adminLiveStreamFeaturedContainer");
+    if (!container) return;
+
+    let prods = [];
+    try {
+        if (typeof window !== "undefined" && Array.isArray(window.allStorefrontProducts) && window.allStorefrontProducts.length > 0) {
+            prods = window.allStorefrontProducts;
+        } else {
+            const res = await fetch(`${API_BASE}/products?_t=${Date.now()}`);
+            if (res.ok) {
+                const json = await res.json();
+                if (json && Array.isArray(json.data)) prods = json.data;
+            }
+        }
+    } catch (_) { }
+
+    if (!prods || prods.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-400 py-3 italic col-span-full">Chưa có danh sách mẫu hoa trong hệ thống.</p>`;
+        return;
+    }
+
+    const featuredSet = new Set(Array.isArray(featuredIds) ? featuredIds : []);
+
+    container.innerHTML = prods.map(p => {
+        const isChecked = featuredSet.has(p.id) || featuredSet.has(p.uuid);
+        const price = p.priceNumber || (p.salePrice ? parseInt(String(p.salePrice).replace(/\D/g, ''), 10) : 0);
+        const priceStr = price > 0 ? `${price.toLocaleString('vi-VN')}₫` : '';
+        const img = p.image || 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=100';
+
+        return `
+            <label class="flex items-center gap-3 p-2.5 rounded-xl border ${isChecked ? 'bg-rose-50/70 border-rose-300' : 'bg-white border-gray-200'} hover:border-rose-400 transition cursor-pointer select-none">
+                <input type="checkbox" value="${p.id}" ${isChecked ? 'checked' : ''}
+                    onchange="toggleAdminLiveStreamFeaturedProduct('${p.id}', this.checked)"
+                    class="rounded text-rose-600 focus:ring-rose-500 w-4 h-4">
+                <img src="${img}" alt="${p.name}" class="w-10 h-10 object-cover rounded-lg border border-gray-100 flex-shrink-0">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-bold text-gray-800 line-clamp-1">${p.name}</p>
+                    <p class="text-[11px] text-rose-600 font-semibold">${priceStr}</p>
+                </div>
+                ${isChecked ? '<span class="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.5 rounded flex-shrink-0">Ghim Live</span>' : ''}
+            </label>
+        `;
+    }).join('');
+}
+
+/**
+ * Bật/tắt ghim mẫu hoa trong phiên Live Stream
+ */
+export function toggleAdminLiveStreamFeaturedProduct(productId, isChecked) {
+    if (!adminLiveStreamConfig.featuredProductIds) {
+        adminLiveStreamConfig.featuredProductIds = [];
+    }
+    const idx = adminLiveStreamConfig.featuredProductIds.indexOf(productId);
+    if (isChecked && idx === -1) {
+        adminLiveStreamConfig.featuredProductIds.push(productId);
+    } else if (!isChecked && idx !== -1) {
+        adminLiveStreamConfig.featuredProductIds.splice(idx, 1);
+    }
+}
+
+/**
+ * Cập nhật ảnh mã QR Live Stream trực tiếp từ ô nhập đường dẫn URL
+ */
+export function handleAdminLiveStreamQrUrlInput(url) {
+    const cleanUrl = (url || "").trim();
+    adminLiveStreamConfig.qrCodeImage = cleanUrl;
+
+    const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+    const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+
+    if (cleanUrl) {
+        if (qrPreview) qrPreview.src = cleanUrl;
+        if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
+        if (qrStatus) {
+            qrStatus.textContent = "Mã QR từ đường dẫn URL (Hợp lệ)";
+            qrStatus.className = "text-[10px] text-purple-600 font-bold block mt-1";
+        }
+    } else {
+        removeAdminLiveStreamQr();
+    }
+}
+
+/**
+ * Tiện ích: Tự động sinh link ảnh VietQR dựa trên Số tài khoản & Ngân hàng ở mục 2
+ */
+export function generateAutoVietQrForLiveStream() {
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+
+    const accNum = bankAccInput ? bankAccInput.value.trim() : "";
+    let rawBank = bankNameInput ? bankNameInput.value.trim() : "VCB";
+
+    if (!accNum) {
+        alert("Vui lòng nhập Số Tài Khoản tại mục '2. Tài Khoản Nhận Chuyển Khoản' trước!");
+        if (bankAccInput) bankAccInput.focus();
+        return;
+    }
+
+    // Trích xuất mã ngân hàng (VD: Vietcombank (VCB) -> VCB)
+    let bankCode = "VCB";
+    const match = rawBank.match(/\((.*?)\)/);
+    if (match && match[1]) {
+        bankCode = match[1].trim();
+    } else if (rawBank) {
+        bankCode = rawBank.replace(/\s+/g, "").toUpperCase();
+    }
+
+    const autoUrl = `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accNum)}-compact2.png?amount=0&addInfo=LIVE`;
+
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    if (qrUrlInput) qrUrlInput.value = autoUrl;
+
+    handleAdminLiveStreamQrUrlInput(autoUrl);
+    notifyUser(`Đã tạo mã VietQR tự động (${bankCode} - ${accNum}) thành công!`, "success");
+}
+
+/**
+ * Xử lý tải lên ảnh mã QR chuyển khoản ngân hàng
+ */
+export async function handleAdminLiveStreamQrUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        alert("Vui lòng chọn tệp hình ảnh mã QR (JPG, PNG, WEBP...)");
+        event.target.value = "";
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("prefix", "qr");
+
+    lockScreen("Đang tải ảnh mã QR chuyển khoản lên máy chủ...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/upload-image`, {
+            method: "POST",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {},
+            body: formData
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Tải ảnh thất bại");
+
+        const imgUrl = json.data && json.data.url ? json.data.url : "";
+        adminLiveStreamConfig.qrCodeImage = imgUrl;
+
+        // Cập nhật ô nhập URL và xem trước ngay lập tức
+        const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+        if (qrUrlInput) qrUrlInput.value = imgUrl;
+
+        const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+        const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+        const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+        if (qrPreview) qrPreview.src = imgUrl;
+        if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
+        if (qrStatus) {
+            qrStatus.textContent = "Mã QR đã tải lên máy chủ";
+            qrStatus.className = "text-[10px] text-emerald-600 font-bold block mt-1";
+        }
+
+        notifyUser("Tải ảnh mã QR thành công! Hãy nhấn 'Lưu Cấu Hình Live Stream' để áp dụng.", "success");
+    } catch (e) {
+        notifyUser("Lỗi tải ảnh mã QR: " + e.message, "error");
+    } finally {
+        unlockScreen();
+        event.target.value = "";
+    }
+}
+
+/**
+ * Xóa ảnh mã QR riêng để dùng VietQR tự động
+ */
+export function removeAdminLiveStreamQr() {
+    adminLiveStreamConfig.qrCodeImage = "";
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+    const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+
+    if (qrUrlInput) qrUrlInput.value = "";
+    if (qrPreview) qrPreview.src = "https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE";
+    if (qrRemoveBtn) qrRemoveBtn.classList.add("hidden");
+    if (qrStatus) {
+        qrStatus.textContent = "Mã VietQR tự động theo số tài khoản";
+        qrStatus.className = "text-[10px] text-gray-500 font-medium block mt-1";
+    }
+    notifyUser("Đã gỡ ảnh QR riêng, chuyển sang dùng mã VietQR tự động.", "info");
+}
+
+export async function saveLiveStreamConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const toggle = document.getElementById("livestreamQuickOrderToggle");
+    const titleInput = document.getElementById("livestreamTitleInput");
+    const descInput = document.getElementById("livestreamDescInput");
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+    const bankOwnerInput = document.getElementById("livestreamBankOwnerInput");
+
+    const payload = {
+        enableQuickOrder: toggle ? !!toggle.checked : false,
+        enabled: toggle ? !!toggle.checked : false,
+        title: titleInput ? titleInput.value.trim() : "",
+        description: descInput ? descInput.value.trim() : "",
+        qrCodeImage: adminLiveStreamConfig.qrCodeImage || "",
+        featuredProductIds: adminLiveStreamConfig.featuredProductIds || [],
+        bankInfo: {
+            bankName: bankNameInput ? bankNameInput.value.trim() : "",
+            accountNumber: bankAccInput ? bankAccInput.value.trim() : "",
+            accountName: bankOwnerInput ? bankOwnerInput.value.trim() : "",
+            qrCodeImage: adminLiveStreamConfig.qrCodeImage || ""
+        }
+    };
+
+    lockScreen("Đang lưu cấu hình Live Stream & Mã QR...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/livestream-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Không thể lưu cấu hình Live Stream");
+
+        adminLiveStreamConfig = json.data;
+        await renderLiveStreamConfig(adminLiveStreamConfig);
+        notifyUser(
+            adminLiveStreamConfig.enableQuickOrder
+                ? "Đã BẬT cờ Đặt Hàng Nhanh Live Stream thành công! Khách truy cập link sẽ điền form đặt nhanh."
+                : "Đã TẮT cờ Đặt Hàng Nhanh Live Stream thành công!",
+            "success"
+        );
+    } catch (e) {
+        notifyUser("Lỗi lưu cấu hình Live Stream: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+export function getLiveStreamQuickOrderUrl() {
+    const linkInput = document.getElementById("livestreamShareLinkInput");
+    if (linkInput && linkInput.value && linkInput.value.trim()) {
+        return linkInput.value.trim();
+    }
+    if (typeof window !== "undefined") {
+        const origin = window.location.origin || "";
+        let pathname = window.location.pathname || "/";
+        if (!pathname.endsWith("/") && !pathname.includes(".")) {
+            pathname += "/";
+        }
+        return `${origin}${pathname}#quick-order`;
+    }
+    return "#quick-order";
+}
+
+export function copyQuickOrderLink() {
+    const linkInput = document.getElementById("livestreamShareLinkInput");
+    const url = getLiveStreamQuickOrderUrl();
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            notifyUser("Đã sao chép đường link Đặt Hàng Nhanh Live Stream vào bộ nhớ tạm!", "success");
+        }).catch(() => {
+            if (linkInput) linkInput.select();
+            document.execCommand("copy");
+            notifyUser("Đã sao chép link đặt hàng nhanh!", "success");
+        });
+    } else {
+        if (linkInput) linkInput.select();
+        document.execCommand("copy");
+        notifyUser("Đã sao chép link đặt hàng nhanh!", "success");
+    }
+}
+
+export function previewQuickOrder() {
+    const targetUrl = getLiveStreamQuickOrderUrl();
+    if (typeof window !== "undefined") {
+        // Luôn mở cửa sổ / tab mới để quản trị viên kiểm tra trải nghiệm khách hàng độc lập
+        const newWin = window.open(targetUrl, "_blank");
+        if (newWin) {
+            try {
+                newWin.focus();
+            } catch (_) { }
+        } else {
+            // Trường hợp trình duyệt chặn popup mới hiển thị cảnh báo và mở modal dự phòng
+            notifyUser("Trình duyệt đang chặn cửa sổ bật lên (popup). Đang mở xem trước tại cửa sổ này...", "warning");
+            if (typeof openQuickOrderModal === "function") {
+                openQuickOrderModal();
+            }
+        }
+    } else if (typeof openQuickOrderModal === "function") {
+        openQuickOrderModal();
+    }
+}
+
+export function shareQuickOrderLink() {
+    const url = getLiveStreamQuickOrderUrl();
+    const title = (document.getElementById("livestreamTitleInput")?.value || "Đặt Hoa Nhanh Live Stream");
+
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: "Đặt hoa tươi nhanh trong phiên Live Stream Nở Hoa Thả Bình:",
+            url: url
+        }).catch(() => { });
+    } else {
+        copyQuickOrderLink();
+    }
+}
+
+// ==========================================
 // CẤU HÌNH BANNER TRÌNH CHIẾU (banners.json)
 // ==========================================
 export let adminBannersConfig = {
@@ -1320,6 +1756,18 @@ if (typeof window !== "undefined") {
     window.savePaymentConfig = savePaymentConfig;
     window.loadAdminAddonConfig = loadAdminAddonConfig;
     window.saveAddonConfig = saveAddonConfig;
+    window.loadAdminLiveStreamConfig = loadAdminLiveStreamConfig;
+    window.saveLiveStreamConfig = saveLiveStreamConfig;
+    window.renderLiveStreamConfig = renderLiveStreamConfig;
+    window.copyQuickOrderLink = copyQuickOrderLink;
+    window.shareQuickOrderLink = shareQuickOrderLink;
+    window.previewQuickOrder = previewQuickOrder;
+    window.handleAdminLiveStreamQrUpload = handleAdminLiveStreamQrUpload;
+    window.handleAdminLiveStreamQrUrlInput = handleAdminLiveStreamQrUrlInput;
+    window.generateAutoVietQrForLiveStream = generateAutoVietQrForLiveStream;
+    window.removeAdminLiveStreamQr = removeAdminLiveStreamQr;
+    window.toggleAdminLiveStreamFeaturedProduct = toggleAdminLiveStreamFeaturedProduct;
+    window.renderAdminLiveStreamFeaturedProducts = renderAdminLiveStreamFeaturedProducts;
     window.loadAdminBanners = loadAdminBanners;
     window.renderAdminBanners = renderAdminBanners;
     window.handleAdminBannerTargetSelect = handleAdminBannerTargetSelect;

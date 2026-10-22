@@ -12,6 +12,7 @@ MODULE_ORDER = [
     "i18n.js",
     "products.js",
     "checkout.js",
+    "quick_order.js",
     "auth.js",
     "customer_portal.js",
     "user_profile.js",

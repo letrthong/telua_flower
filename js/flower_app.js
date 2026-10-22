@@ -2356,6 +2356,23 @@ async function initApp() {
             searchStorefrontProducts(queryFromUrl, false);
         }
 
+        const initialHash = (window.location.hash || '').replace(/^#\/?/, '').trim();
+        const urlParams = new URLSearchParams(window.location.search);
+        if (initialHash === 'quick-order' || initialHash === 'livestream' || urlParams.get('view') === 'quick-order' || urlParams.get('quick_order') === '1') {
+            setTimeout(() => {
+                if (typeof openQuickOrderModal === 'function') {
+                    openQuickOrderModal();
+                }
+            }, 100);
+        } else if (initialHash === 'tra-cuu' || initialHash === 'tracking' || initialHash === 'lookup' || initialHash.startsWith('tra-cuu')) {
+            const phoneParam = urlParams.get('phone') || (initialHash.includes('/') ? initialHash.split('/')[1] : '');
+            setTimeout(() => {
+                if (typeof openOrderLookupModal === 'function') {
+                    openOrderLookupModal(phoneParam);
+                }
+            }, 100);
+        }
+
         // Lắng nghe sự kiện đổi Hash và Back/Forward của trình duyệt
         const handleUrlChange = () => {
             // 0. Kiểm tra hash mở modal sản phẩm chi tiết
@@ -2388,7 +2405,16 @@ async function initApp() {
                 const currentHash = window.location.hash || '';
                 if (currentHash.startsWith('#')) {
                     const hashTarget = currentHash.replace(/^#\/?/, '').trim();
-                    if (hashTarget === 'products') {
+                    if (hashTarget === 'quick-order' || hashTarget === 'livestream' || hashTarget === 'live-stream') {
+                        if (typeof openQuickOrderModal === 'function') {
+                            openQuickOrderModal();
+                        }
+                    } else if (hashTarget === 'tra-cuu' || hashTarget === 'tracking' || hashTarget === 'lookup' || hashTarget.startsWith('tra-cuu')) {
+                        const phoneFromHash = hashTarget.includes('/') ? hashTarget.split('/')[1] : '';
+                        if (typeof openOrderLookupModal === 'function') {
+                            openOrderLookupModal(phoneFromHash);
+                        }
+                    } else if (hashTarget === 'products') {
                         const sec = document.getElementById('products') || document.getElementById('dynamicCategorySections') || document.getElementById('storefrontQuickCategories');
                         if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     } else if (hashTarget.startsWith('cat-') || (activeStorefrontCategories && activeStorefrontCategories.some(c => c && c.id === hashTarget))) {
@@ -2411,6 +2437,8 @@ async function initApp() {
             if (e.key === 'Escape' || e.key === 'Esc') {
                 closeProductQuickDetail();
                 closeLiveSearchResults();
+                if (typeof closeQuickOrderModal === 'function') closeQuickOrderModal();
+                if (typeof closeOrderLookupModal === 'function') closeOrderLookupModal();
             }
         });
 

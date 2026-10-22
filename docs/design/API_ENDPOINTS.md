@@ -84,6 +84,10 @@
 | `PUT` | `/api/orders/<id>/status` hoặc `/api/admin/orders/<id>/status` | Staff / Manager / Admin | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`) |
 | `PUT` | `/api/admin/orders/<id>/payment` | Staff / Manager / Admin | **Xác nhận thanh toán tiền mặt (COD / Pickup)** cho đơn hàng chi nhánh mình |
 | `POST` | `/api/orders/<id>/photo` | `florist` / Manager | **Thợ cắm hoa upload ảnh hoa thực tế** sau khi cắm để gửi khách duyệt |
+| `POST` | `/api/orders/quick-order` | Public | **Đặt hàng nhanh Live Stream (Quick Order)**: Đặt hoa tốc hành qua link hash `/#quick-order`, tự động sinh khách CRM, kiểm tra cờ bật/tắt, lưu ảnh hóa đơn chuyển khoản |
+| `GET` | `/api/livestream-config` | Public | Lấy cấu hình Live Stream công khai (trạng thái `enableQuickOrder`, thông tin ngân hàng, mã QR, danh sách hoa ghim) |
+| `GET` | `/api/admin/livestream-config` | Admin, Manager | Lấy cấu hình Live Stream đầy đủ cho trang Quản Trị Hệ Thống |
+| `PUT` | `/api/admin/livestream-config` | Admin, Manager | Cập nhật cấu hình Live Stream (Bật/Tắt cờ, thông tin ngân hàng, ảnh QR code, chọn danh sách hoa live) |
 
 ---
 

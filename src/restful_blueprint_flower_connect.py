@@ -50,6 +50,8 @@ from   data_service import (
     save_addon_config,
     get_banners_config,
     save_banners_config,
+    get_livestream_config,
+    save_livestream_config,
     save_uploaded_image,
     find_image_file,
     update_order_status,
@@ -59,10 +61,12 @@ from   data_service import (
 from order_service import (
     get_available_delivery_slots,
     create_order,
+    create_livestream_quick_order,
     assign_nearest_branch,
     query_admin_orders,
     dispatch_order_to_branch,
-    filter_tasks_for_staff
+    filter_tasks_for_staff,
+    lookup_orders_by_phone_or_code
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -294,6 +298,93 @@ def api_create_order():
         "message": "Đặt hàng thành công! Vui lòng hoàn tất thanh toán.",
         "data": new_order
     }), 201
+
+
+@flower_connect_api.route("/orders/quick-order", methods=["POST"])
+@flower_connect_api.route("/livestream/quick-order", methods=["POST"])
+def api_livestream_quick_order():
+    """
+    Đặt hàng nhanh qua Live Stream:
+    - Khách chỉ cần điền: Họ tên, SĐT, Địa chỉ, Số tiền đã chuyển và Upload ảnh bill chuyển khoản.
+    - Hỗ trợ cả Multipart Form-Data (file/image) hoặc JSON Body (ảnh base64/URL).
+    """
+    # 1. Trích xuất dữ liệu từ form hoặc json
+    data = {}
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+    else:
+        data = request.form.to_dict()
+
+    proof_url = ""
+    # 2. Xử lý file ảnh upload nếu có trong multipart/form-data
+    if "paymentProof" in request.files:
+        file_obj = request.files["paymentProof"]
+        if file_obj and getattr(file_obj, "filename", ""):
+            ok, img_url, err = save_flower_uploaded_image(file_obj, filename_prefix="proof")
+            if not ok:
+                return jsonify({"success": False, "message": f"Không thể lưu ảnh chuyển khoản: {err}"}), 400
+            proof_url = img_url
+    elif "file" in request.files:
+        file_obj = request.files["file"]
+        if file_obj and getattr(file_obj, "filename", ""):
+            ok, img_url, err = save_flower_uploaded_image(file_obj, filename_prefix="proof")
+            if not ok:
+                return jsonify({"success": False, "message": f"Không thể lưu ảnh chuyển khoản: {err}"}), 400
+            proof_url = img_url
+    elif "image" in request.files:
+        file_obj = request.files["image"]
+        if file_obj and getattr(file_obj, "filename", ""):
+            ok, img_url, err = save_flower_uploaded_image(file_obj, filename_prefix="proof")
+            if not ok:
+                return jsonify({"success": False, "message": f"Không thể lưu ảnh chuyển khoản: {err}"}), 400
+            proof_url = img_url
+
+    # 3. Xử lý ảnh base64 hoặc URL nếu gửi qua JSON
+    if not proof_url:
+        b64_val = data.get("paymentProofImage") or data.get("proofImage") or data.get("image") or ""
+        if isinstance(b64_val, str) and b64_val.startswith("data:image/"):
+            ok, img_url, err = save_flower_uploaded_image(b64_val, filename_prefix="proof")
+            if not ok:
+                return jsonify({"success": False, "message": f"Không thể lưu ảnh chuyển khoản Base64: {err}"}), 400
+            proof_url = img_url
+        elif isinstance(b64_val, str) and b64_val.strip():
+            proof_url = b64_val.strip()
+
+    # 4. Tạo đơn hàng nhanh
+    success, order, err_msg = create_livestream_quick_order(data, proof_image_url=proof_url)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err_msg or "Không thể tạo đơn hàng nhanh"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đặt hàng nhanh qua Live Stream thành công! Cửa hàng sẽ liên hệ xác nhận ngay.",
+        "data": order
+    }), 201
+
+
+@flower_connect_api.route("/orders/lookup", methods=["GET"])
+def api_lookup_orders():
+    """
+    Tra cứu đơn hàng công khai theo Số Điện Thoại hoặc Mã Đơn (Public Order Tracking / Hash Interface):
+    Khách hàng nhập SĐT là xem được toàn bộ tiến độ thời gian thực, bill chuyển khoản và ảnh hoa thật.
+    """
+    query = (request.args.get("phone") or request.args.get("code") or request.args.get("query") or "").strip()
+    if not query:
+        return jsonify({
+            "success": False,
+            "message": "Vui lòng nhập Số Điện Thoại hoặc Mã Đơn Hàng để tra cứu"
+        }), 400
+
+    results = lookup_orders_by_phone_or_code(query)
+    return jsonify({
+        "success": True,
+        "query": query,
+        "count": len(results),
+        "data": results
+    }), 200
 
 
 @flower_connect_api.route("/orders/<order_id>", methods=["GET"])
@@ -648,6 +739,7 @@ def api_admin_orders():
     start_date = request.args.get("startDate")
     end_date = request.args.get("endDate")
     month_key = request.args.get("month")
+    source = request.args.get("source")
     sort_by = request.args.get("sortBy", "updatedAt")
     sort_order = request.args.get("sortOrder", "desc")
     date_filter_by = request.args.get("dateFilterBy", "createdAt")
@@ -662,6 +754,7 @@ def api_admin_orders():
         start_date=start_date,
         end_date=end_date,
         month_key=month_key,
+        source=source,
         sort_by=sort_by,
         sort_order=sort_order,
         date_filter_by=date_filter_by
@@ -1765,8 +1858,48 @@ def api_update_admin_banners():
 
 
 # ==========================================
+# CẤU HÌNH LIVE STREAM & ĐẶT HÀNG NHANH (/livestream-config & /admin/livestream-config)
+# ==========================================
+
+@flower_connect_api.route("/livestream-config", methods=["GET"])
+def api_get_public_livestream_config():
+    """Lấy cấu hình Live Stream & cờ bật/tắt Đặt hàng nhanh cho Storefront (ETag & Cache-Control)."""
+    return _build_cached_file_response("livestreamConfig.json", lambda: get_livestream_config(use_cache=True), max_age=30)
+
+
+@flower_connect_api.route("/admin/livestream-config", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_get_admin_livestream_config():
+    """Lấy đầy đủ cấu hình Live Stream cho Cổng Quản Trị."""
+    return jsonify({
+        "success": True,
+        "data": get_livestream_config(use_cache=False)
+    }), 200
+
+
+@flower_connect_api.route("/admin/livestream-config", methods=["PUT", "POST"])
+@require_role(["super_admin"])
+def api_update_admin_livestream_config():
+    """Bật/tắt cờ Đặt Hàng Nhanh (enableQuickOrder) và cài đặt thông tin Live Stream."""
+    data = request.get_json(silent=True) or {}
+    success, updated, err = save_livestream_config(data)
+    if not success:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể lưu cấu hình Live Stream"
+        }), 400
+
+    return jsonify({
+        "success": True,
+        "message": "Đã cập nhật cấu hình Live Stream thành công!",
+        "data": updated
+    }), 200
+
+
+# ==========================================
 # CÁC API ENDPOINTS QUẢN LÝ TỒN KHO & ĐIỀU PHỐI (INVENTORY & SMART ROUTING)
 # ==========================================
+
 
 @flower_connect_api.route("/admin/inventory/matrix", methods=["GET"])
 @require_role(["super_admin", "branch_manager", "florist", "sales_consultant"])

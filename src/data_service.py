@@ -2156,6 +2156,15 @@ def get_or_build_month_branch_shortcut(
     return shortcut_items
 
 
+def get_order_shortcuts_for_month(
+    branch_id: str,
+    year_month: str,
+    force_rebuild: bool = False
+) -> List[Dict[str, Any]]:
+    """Lấy danh sách shortcut đơn hàng theo showroom và tháng (alias cho get_or_build_month_branch_shortcut)."""
+    return get_or_build_month_branch_shortcut(branch_id, year_month, force_rebuild=force_rebuild)
+
+
 def upsert_order_shortcut(order: Dict[str, Any]) -> None:
     """Cập nhật hoặc thêm mới một bản ghi tóm tắt vào _shortcut.json."""
     if not order or not isinstance(order, dict):
@@ -3401,6 +3410,113 @@ def enrich_order_display_names(
 
     order["assigneeName"] = assignee_name
     return order
+
+
+# ==========================================
+# CẤU HÌNH LIVE STREAM & ĐẶT HÀNG NHANH (livestreamConfig.json)
+# ==========================================
+
+DEFAULT_LIVESTREAM_CONFIG: Dict[str, Any] = {
+    "enabled": False,
+    "enableQuickOrder": False,
+    "title": "Đặt Hoa Nhanh Live Stream",
+    "description": "Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!",
+    "bankInfo": {
+        "bankName": "Vietcombank (VCB)",
+        "accountNumber": "0976491322",
+        "accountName": "NO HOA THA BINH",
+        "qrCodeImage": ""
+    },
+    "qrCodeImage": "",
+    "featuredProductIds": [],
+    "updatedAt": "2026-10-21T00:00:00Z"
+}
+
+
+def get_livestream_config(use_cache: bool = True) -> Dict[str, Any]:
+    """
+    Đọc cấu hình Live Stream & cờ bật/tắt Đặt hàng nhanh (enableQuickOrder).
+    Khởi tạo mặc định nếu file chưa tồn tại.
+    """
+    filepath = get_config_path("livestreamConfig.json")
+    if not os.path.exists(filepath):
+        write_json(filepath, DEFAULT_LIVESTREAM_CONFIG)
+        return dict(DEFAULT_LIVESTREAM_CONFIG)
+
+    data = read_json_cached(filepath, default={}) if use_cache else read_json(filepath, default={})
+    if not isinstance(data, dict):
+        data = dict(DEFAULT_LIVESTREAM_CONFIG)
+        write_json(filepath, data)
+        return data
+
+    for k, v in DEFAULT_LIVESTREAM_CONFIG.items():
+        if k not in data or data[k] is None:
+            data[k] = v
+
+    # Đồng bộ 2 cờ enabled và enableQuickOrder
+    flag = bool(data.get("enableQuickOrder") or data.get("enabled", False))
+    data["enableQuickOrder"] = flag
+    data["enabled"] = flag
+    if "featuredProductIds" not in data or not isinstance(data["featuredProductIds"], list):
+        data["featuredProductIds"] = []
+    return data
+
+
+def save_livestream_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Lưu cấu hình Live Stream, ảnh mã QR & cập nhật cờ enableQuickOrder.
+    """
+    if not isinstance(config_dict, dict):
+        return False, None, "Dữ liệu cấu hình Live Stream không hợp lệ"
+
+    current = get_livestream_config(use_cache=False)
+
+    if "enableQuickOrder" in config_dict:
+        flag = bool(config_dict["enableQuickOrder"])
+        current["enableQuickOrder"] = flag
+        current["enabled"] = flag
+    elif "enabled" in config_dict:
+        flag = bool(config_dict["enabled"])
+        current["enableQuickOrder"] = flag
+        current["enabled"] = flag
+
+    if "title" in config_dict and isinstance(config_dict["title"], str):
+        current["title"] = config_dict["title"].strip()
+
+    if "description" in config_dict and isinstance(config_dict["description"], str):
+        current["description"] = config_dict["description"].strip()
+
+    # Xử lý ảnh mã QR chuyển khoản
+    qr_img = config_dict.get("qrCodeImage")
+    if qr_img is not None and isinstance(qr_img, str):
+        current["qrCodeImage"] = qr_img.strip()
+
+    # Xử lý danh sách ID các bó hoa nổi bật trong phiên live
+    if "featuredProductIds" in config_dict and isinstance(config_dict["featuredProductIds"], list):
+        current["featuredProductIds"] = [str(pid).strip() for pid in config_dict["featuredProductIds"] if str(pid).strip()]
+
+    if "bankInfo" in config_dict and isinstance(config_dict["bankInfo"], dict):
+        b_info = current.get("bankInfo") or {}
+        for bk, bv in config_dict["bankInfo"].items():
+            if isinstance(bv, str):
+                b_info[bk] = bv.strip()
+        if "qrCodeImage" in config_dict["bankInfo"] and isinstance(config_dict["bankInfo"]["qrCodeImage"], str):
+            b_info["qrCodeImage"] = config_dict["bankInfo"]["qrCodeImage"].strip()
+            current["qrCodeImage"] = b_info["qrCodeImage"]
+        current["bankInfo"] = b_info
+    elif current.get("qrCodeImage"):
+        b_info = current.get("bankInfo") or {}
+        b_info["qrCodeImage"] = current["qrCodeImage"]
+        current["bankInfo"] = b_info
+
+    current["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    filepath = get_config_path("livestreamConfig.json")
+    success = write_json(filepath, current)
+    if success:
+        return True, current, None
+    return False, None, "Không thể ghi file cấu hình livestreamConfig.json"
+
 
 
 

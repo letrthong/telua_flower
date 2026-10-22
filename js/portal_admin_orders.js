@@ -67,6 +67,7 @@ export async function loadAdminOrders() {
 
         if (json.success && json.data) {
             const orders = Array.isArray(json.data.orders) ? json.data.orders : [];
+            lastLoadedAdminOrders = orders;
             renderAdminOrdersTable(orders);
         } else {
             tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải đơn hàng"}</td></tr>`;
@@ -75,6 +76,8 @@ export async function loadAdminOrders() {
         tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
     }
 }
+
+export let lastLoadedAdminOrders = [];
 
 function renderAdminOrdersTable(orders) {
     const tbody = document.getElementById("adminOrdersTableBody");
@@ -99,6 +102,10 @@ function renderAdminOrdersTable(orders) {
         const assigneeName = order.assigneeName || order.assignedTo || "Super Admin (staff_admin)";
         const isAssignedToAdmin = (branchId === "admin");
 
+        const isLiveStream = (order.source === "livestream_quick_order" || order.source === "livestream");
+        const proofImg = order.payment?.proofImage || order.paymentProofImage || "";
+        const flowerName = (order.items && order.items[0] && order.items[0].productName) || "";
+
         // Chi nhánh tùy chọn cho dropdown điều phối
         const branchOptions = branches.filter(b => b.isActive !== false).map(b => `
             <option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${b.name || b.id}</option>
@@ -107,16 +114,22 @@ function renderAdminOrdersTable(orders) {
         return `
             <tr class="hover:bg-pink-50/30 transition">
                 <td class="p-3">
-                    <span class="font-mono text-[11px] font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-mono text-[11px] font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                        ${isLiveStream ? '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[9px] font-bold border border-rose-200"><i class="fa-solid fa-video text-[8px] animate-pulse"></i> Live</span>' : ''}
+                    </div>
                     <div class="text-[10px] text-gray-400">${adminFormatDate(order.createdAt || order.orderDate)}</div>
+                    ${flowerName ? `<div class="text-[10px] text-rose-600 font-semibold line-clamp-1 mt-0.5" title="${flowerName}">🌸 ${flowerName}</div>` : ''}
+                    ${proofImg ? `<a href="${proofImg}" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-800 font-bold mt-0.5"><i class="fa-solid fa-receipt"></i> Xem bill</a>` : ''}
                 </td>
                 <td class="p-3">
                     <div class="text-xs font-bold text-gray-800">${creatorName}</div>
-                    <div class="text-[10px] text-gray-400">${sender.phone || ""}</div>
+                    <div class="text-[10px] text-gray-400 font-mono">${sender.phone || ""}</div>
                 </td>
                 <td class="p-3">
-                    <div class="text-xs text-gray-700">${recipient.name || "—"}</div>
-                    <div class="text-[10px] text-gray-400 truncate max-w-[130px]">${recipient.address || ""}</div>
+                    <div class="text-xs text-gray-700 font-bold">${recipient.name || "—"}</div>
+                    <div class="text-[10px] text-gray-500 font-mono">${recipient.phone || ""}</div>
+                    <div class="text-[10px] text-gray-400 truncate max-w-[140px]" title="${recipient.address || ''}">${recipient.address || ""}</div>
                 </td>
                 <td class="p-3">
                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -214,11 +227,129 @@ export async function dispatchAdminOrder(orderId, targetBranchId) {
     }
 }
 
+/**
+ * Xuất danh sách đơn hàng ra file Excel / CSV (UTF-8 BOM hiển thị chuẩn tiếng Việt)
+ */
+export function exportOrdersToCsv(ordersToExport, filename = "danh_sach_don_hang.csv") {
+    if (!Array.isArray(ordersToExport) || ordersToExport.length === 0) {
+        notifyUser("Không có đơn hàng nào để xuất file!", "warning");
+        return;
+    }
+
+    const headers = [
+        "Mã Đơn Hàng",
+        "Ngày Đặt",
+        "Kênh Đặt",
+        "Khách Đặt",
+        "SĐT Khách",
+        "Người Nhận",
+        "SĐT Nhận",
+        "Địa Chỉ Nhận Hoa",
+        "Mẫu Bó Hoa",
+        "Số Lượng",
+        "Tổng Tiền (VNĐ)",
+        "Thanh Toán",
+        "Trạng Thái Đơn",
+        "Lời Chúc Thiệp",
+        "Ảnh Chuyển Khoản"
+    ];
+
+    const escapeCsv = (val) => {
+        if (val === null || val === undefined) return '""';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+    };
+
+    const rows = ordersToExport.map(o => {
+        const isLive = (o.source === "livestream_quick_order" || o.source === "livestream");
+        const sender = o.sender || {};
+        const recipient = o.recipient || {};
+        const total = Number(o.totalAmount) || Number(o.financials?.totalAmount) || 0;
+        const item = (o.items && o.items[0]) || {};
+        const flowerName = item.productName || "Hoa tươi";
+        const qty = item.quantity || 1;
+        const proof = o.payment?.proofImage || o.paymentProofImage || "";
+
+        return [
+            escapeCsv(o.orderCode || o.id || ""),
+            escapeCsv(o.createdAt || o.orderDate || ""),
+            escapeCsv(isLive ? "Live Stream (Nhanh)" : "Website"),
+            escapeCsv(o.creatorName || sender.name || ""),
+            escapeCsv(sender.phone || ""),
+            escapeCsv(recipient.name || ""),
+            escapeCsv(recipient.phone || ""),
+            escapeCsv(recipient.address || ""),
+            escapeCsv(flowerName),
+            escapeCsv(qty),
+            escapeCsv(total),
+            escapeCsv(o.payment?.status === "paid" ? "Đã thanh toán" : "Chờ đối soát"),
+            escapeCsv(o.status || "Chờ xử lý"),
+            escapeCsv(o.cardMessage || recipient.deliveryNotes || ""),
+            escapeCsv(proof)
+        ].join(",");
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    notifyUser(`Đã xuất ${ordersToExport.length} đơn hàng ra file Excel / CSV thành công!`, "success");
+}
+
+/**
+ * Xuất các đơn hàng đang hiển thị trên bảng
+ */
+export function exportCurrentAdminOrdersToCsv() {
+    exportOrdersToCsv(lastLoadedAdminOrders, `don_hang_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+/**
+ * Tải và xuất toàn bộ đơn hàng từ phiên Live Stream
+ */
+export async function exportLiveStreamOrdersCsv() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders?timeframe=all&source=livestream_quick_order`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        const orders = (json.success && json.data && Array.isArray(json.data.orders)) ? json.data.orders : [];
+        if (orders.length === 0) {
+            notifyUser("Chưa có đơn hàng nào từ Live Stream để xuất!", "info");
+            return;
+        }
+        exportOrdersToCsv(orders, `don_hang_livestream_${new Date().toISOString().slice(0, 10)}.csv`);
+    } catch (e) {
+        notifyUser("Lỗi khi tải đơn hàng live stream: " + e.message, "error");
+    }
+}
+
+/**
+ * Chuyển nhanh và lọc đơn hàng theo nguồn
+ */
+export function filterAdminOrdersBySource(sourceName = "livestream_quick_order") {
+    const searchEl = document.getElementById("searchOrderInput");
+    if (searchEl) {
+        searchEl.value = sourceName === "livestream_quick_order" ? "livestream" : "";
+    }
+    loadAdminOrders();
+}
+
 if (typeof window !== "undefined") {
     window.ADMIN_ORDER_STATUS_META = ADMIN_ORDER_STATUS_META;
     window.ADMIN_PAYMENT_STATUS_META = ADMIN_PAYMENT_STATUS_META;
     window.loadAdminOrders = loadAdminOrders;
     window.updateAdminOrderStatus = updateAdminOrderStatus;
     window.dispatchAdminOrder = dispatchAdminOrder;
+    window.exportOrdersToCsv = exportOrdersToCsv;
+    window.exportCurrentAdminOrdersToCsv = exportCurrentAdminOrdersToCsv;
+    window.exportLiveStreamOrdersCsv = exportLiveStreamOrdersCsv;
+    window.filterAdminOrdersBySource = filterAdminOrdersBySource;
 }
 

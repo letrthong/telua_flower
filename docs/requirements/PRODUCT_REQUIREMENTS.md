@@ -144,6 +144,20 @@
 
 ---
 
+### 🔴 FR-19: Bán Hàng Trực Tiếp Live Stream & Đặt Hàng Tốc Hành (Live Stream Quick Order)
+- **Kênh bán hàng chốt đơn livestream trực tiếp:** Hỗ trợ bán hoa qua phiên live (TikTok Live, Facebook Live, Shopee Live) với đường dẫn rút gọn dạng hash URL: `/#quick-order` hoặc `/#livestream`.
+- **Cơ chế Bật/Tắt (Toggle Flag) trong Quản Trị:** Tab "Live Stream" trong Cấu Hình Hệ Thống cho phép Admin chủ động bật cờ `enableQuickOrder` khi bắt đầu live và tắt khi kết thúc ca.
+- **Trải nghiệm đặt hoa 15 giây:** Khách bấm vào link hash sẽ mở ngay Modal Đặt Hàng Nhanh không cần qua giỏ hàng hay đăng nhập:
+  - Chọn bó hoa đang được giới thiệu trong phiên live từ menu danh sách ghim (kèm ảnh và giá tiền tự cập nhật).
+  - Quét mã QR chuyển khoản nhanh (hỗ trợ ảnh QR tùy chỉnh của shop hoặc tự động sinh VietQR chuẩn Napas 24/7 theo đúng số tiền).
+  - Điền Họ tên, Số điện thoại, Địa chỉ giao hoa, Số tiền đã chuyển và tải ảnh chụp màn hình bill chuyển khoản.
+- **Quản lý & Xuất dữ liệu chuyên biệt:**
+  - Đơn hàng được phân loại nguồn gốc `livestream_quick_order` với huy hiệu `[Live]` màu đỏ cam nổi bật.
+  - Tự động tích hợp thông tin khách hàng vào danh bạ CRM (`customers.json`).
+  - Hỗ trợ xuất dữ liệu ra file Excel/CSV chuẩn mã hóa Tiếng Việt (UTF-8 with BOM) ngay tại tab Live Stream hoặc tab Quản Lý Đơn Hàng.
+
+---
+
 ## 5. Yêu Cầu Phi Chức Năng (Non-Functional Requirements)
 
 ### ⚡ NFR-1: Hiệu Năng & Tải Trang (Performance)

@@ -1232,6 +1232,15 @@ const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminPriceLevels",
         action: "switchSystemConfigTab('price_levels')",
         roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "livestream",
+        label: "Live Stream Đặt Nhanh",
+        icon: "fa-solid fa-video",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminLiveStreamConfig",
+        action: "switchSystemConfigTab('livestream')",
+        roles: [ROLES.SUPER_ADMIN]
       }
     ]
   },
@@ -2880,6 +2889,775 @@ if (typeof window !== "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
         updateCartBadge();
     });
+}
+
+
+// ==========================================================================
+// MODULE: quick_order.js
+// ==========================================================================
+let selectedProofFile = null;
+let cachedStorefrontProducts = [];
+let currentLiveConfig = null;
+
+/**
+ * Mở modal Đặt Hàng Nhanh Live Stream:
+ * Tự động kiểm tra cờ enableQuickOrder từ máy chủ.
+ */
+async function openQuickOrderModal() {
+    const modal = document.getElementById("quickOrderModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    const loadingState = document.getElementById("quickOrderLoadingState");
+    const formContainer = document.getElementById("quickOrderFormContainer");
+    const closedContainer = document.getElementById("quickOrderClosedContainer");
+    const successContainer = document.getElementById("quickOrderSuccessContainer");
+
+    if (loadingState) loadingState.classList.remove("hidden");
+    if (formContainer) formContainer.classList.add("hidden");
+    if (closedContainer) closedContainer.classList.add("hidden");
+    if (successContainer) successContainer.classList.add("hidden");
+
+    try {
+        const res = await fetch(`${API_BASE}/livestream-config?_t=${Date.now()}`);
+        const json = await res.json();
+        const config = (json && json.data) ? json.data : {};
+        currentLiveConfig = config;
+        const isEnabled = !!(config.enableQuickOrder || config.enabled);
+
+        if (loadingState) loadingState.classList.add("hidden");
+
+        if (!isEnabled) {
+            // Cờ chưa bật: hiển thị thông báo tạm đóng
+            if (closedContainer) closedContainer.classList.remove("hidden");
+        } else {
+            // Cờ đang bật: hiển thị form đặt hàng nhanh
+            if (formContainer) formContainer.classList.remove("hidden");
+
+            // Nạp thông tin tiêu đề & lời dặn
+            const titleEl = document.getElementById("quickOrderDisplayTitle");
+            const descEl = document.getElementById("quickOrderDisplayDesc");
+            if (titleEl && config.title) titleEl.textContent = config.title;
+            if (descEl && config.description) descEl.textContent = config.description;
+
+            // Nạp thông tin tài khoản ngân hàng
+            const bInfo = config.bankInfo || {};
+            const bNameEl = document.getElementById("quickOrderBankName");
+            const bAccEl = document.getElementById("quickOrderBankAccount");
+            const bOwnerEl = document.getElementById("quickOrderBankOwner");
+            if (bNameEl) bNameEl.textContent = bInfo.bankName || "Vietcombank";
+            if (bAccEl) bAccEl.textContent = bInfo.accountNumber || "0976491322";
+            if (bOwnerEl) bOwnerEl.textContent = bInfo.accountName || "NO HOA THA BINH";
+
+            // Reset form
+            resetQuickOrderForm();
+
+            // Nạp danh sách các bó hoa / mẫu hoa vào dropdown và tự động chọn mẫu đầu tiên
+            await loadProductsForQuickOrder(config.featuredProductIds || []);
+
+            // Cập nhật mã QR hiển thị
+            updateQuickOrderQrCode();
+        }
+    } catch (e) {
+        if (loadingState) loadingState.classList.add("hidden");
+        if (closedContainer) closedContainer.classList.remove("hidden");
+        console.warn("[QUICK_ORDER] Lỗi kiểm tra cấu hình livestream:", e.message);
+    }
+}
+
+/**
+ * Tải danh mục các mẫu hoa / bó hoa cho Quick Order
+ */
+async function loadProductsForQuickOrder(featuredIds = []) {
+    try {
+        if (!cachedStorefrontProducts || cachedStorefrontProducts.length === 0) {
+            if (typeof window !== "undefined" && Array.isArray(window.allStorefrontProducts) && window.allStorefrontProducts.length > 0) {
+                cachedStorefrontProducts = window.allStorefrontProducts;
+            } else {
+                const res = await fetch(`${API_BASE}/products?_t=${Date.now()}`);
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && Array.isArray(json.data)) {
+                        cachedStorefrontProducts = json.data;
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("[QUICK_ORDER] Lỗi tải sản phẩm:", e.message);
+    }
+
+    populateQuickOrderProductSelect(cachedStorefrontProducts, featuredIds);
+}
+
+/**
+ * Đổ danh sách bó hoa vào dropdown select
+ */
+function populateQuickOrderProductSelect(products = [], featuredIds = []) {
+    const select = document.getElementById("quickOrderProductSelect");
+    if (!select) return;
+
+    let html = "";
+    const activeProds = Array.isArray(products) ? products.filter(p => p && p.isActive !== false) : [];
+
+    // Phân loại: Các mẫu được ghim trong phiên live (featured)
+    const featuredSet = new Set(Array.isArray(featuredIds) ? featuredIds : []);
+    const featuredList = activeProds.filter(p => featuredSet.has(p.id) || featuredSet.has(p.uuid));
+
+    if (featuredList.length > 0) {
+        // Phiên live có ghim mẫu hoa cụ thể (1, 2 hoặc nhiều mẫu) -> CHỈ hiển thị đúng các mẫu được ghim này
+        featuredList.forEach(p => {
+            const price = p.priceNumber || (p.salePrice ? parseInt(String(p.salePrice).replace(/\D/g, ''), 10) : 0);
+            const priceFormatted = price > 0 ? (typeof formatVND === 'function' ? formatVND(price) : `${price.toLocaleString('vi-VN')}₫`) : 'Liên hệ';
+            html += `<option value="${p.id}" data-price="${price}" data-name="${encodeURIComponent(p.name || '')}" data-img="${p.image || ''}">🌸 ${p.name} - ${priceFormatted}</option>`;
+        });
+    } else {
+        // Nếu admin chưa ghim mẫu nào trong cấu hình, hiển thị tùy chọn tự chọn và toàn bộ sản phẩm của shop
+        html += `<option value="livestream_custom" data-price="0" data-name="Hoa tươi chốt trực tiếp trên Live Stream" data-img="">💐 [Tự Chọn] Bó hoa chốt giá trực tiếp trên Live Stream</option>`;
+        if (activeProds.length > 0) {
+            html += `<optgroup label="🌺 Tất Cả Các Mẫu Hoa Của Cửa Hàng">`;
+            activeProds.forEach(p => {
+                const price = p.priceNumber || (p.salePrice ? parseInt(String(p.salePrice).replace(/\D/g, ''), 10) : 0);
+                const priceFormatted = price > 0 ? (typeof formatVND === 'function' ? formatVND(price) : `${price.toLocaleString('vi-VN')}₫`) : 'Liên hệ';
+                html += `<option value="${p.id}" data-price="${price}" data-name="${encodeURIComponent(p.name || '')}" data-img="${p.image || ''}">${p.name} - ${priceFormatted}</option>`;
+            });
+            html += `</optgroup>`;
+        }
+    }
+
+    select.innerHTML = html;
+    if (select.options.length > 0) {
+        select.selectedIndex = 0;
+    }
+    handleQuickOrderProductSelect(select);
+}
+
+/**
+ * Xử lý khi khách chọn bó hoa trong dropdown
+ */
+function handleQuickOrderProductSelect(selectEl) {
+    if (!selectEl) selectEl = document.getElementById("quickOrderProductSelect");
+    if (!selectEl) return;
+
+    const selectedOption = selectEl.options[selectEl.selectedIndex];
+    const previewCard = document.getElementById("quickOrderSelectedProductCard");
+    const previewImg = document.getElementById("quickOrderSelectedProductImg");
+    const previewName = document.getElementById("quickOrderSelectedProductName");
+    const previewPrice = document.getElementById("quickOrderSelectedProductPrice");
+    const amountInput = document.getElementById("quickOrderAmount");
+
+    const val = selectEl.value;
+
+    if (!selectedOption || val === "livestream_custom") {
+        if (previewCard) previewCard.classList.add("hidden");
+        // Giữ nguyên số tiền khách đang nhập hoặc để trống
+        return;
+    }
+
+    const price = parseInt(selectedOption.getAttribute("data-price") || "0", 10);
+    const rawName = selectedOption.getAttribute("data-name") || "";
+    const name = decodeURIComponent(rawName);
+    const imgUrl = selectedOption.getAttribute("data-img") || "";
+
+    // Hiển thị Card xem trước bó hoa được chọn
+    if (previewCard) {
+        previewCard.classList.remove("hidden");
+        if (previewName) previewName.textContent = name;
+        if (previewPrice) {
+            previewPrice.textContent = price > 0 ? (typeof formatVND === 'function' ? formatVND(price) : `${price.toLocaleString('vi-VN')}₫`) : 'Chốt giá trên Live';
+        }
+        if (previewImg) {
+            previewImg.src = imgUrl || 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=300';
+        }
+    }
+
+    // Tự động điền giá của bó hoa vào ô Số tiền đã chuyển (nếu giá > 0)
+    if (amountInput && price > 0) {
+        amountInput.value = price.toLocaleString("vi-VN");
+    }
+
+    // Cập nhật lại mã QR tương ứng
+    updateQuickOrderQrCode();
+}
+
+/**
+ * Cập nhật mã QR chuyển khoản hiển thị cho khách
+ */
+function updateQuickOrderQrCode() {
+    const qrImg = document.getElementById("quickOrderQrImage");
+    if (!qrImg) return;
+
+    const bInfo = (currentLiveConfig && currentLiveConfig.bankInfo) || {};
+    const customQr = (currentLiveConfig && currentLiveConfig.qrCodeImage) || bInfo.qrCodeImage || "";
+
+    // Nếu admin đã tải lên ảnh mã QR tùy chỉnh
+    if (customQr) {
+        qrImg.src = customQr;
+        return;
+    }
+
+    // Ngược lại, tạo VietQR tự động dựa trên ngân hàng, số tài khoản, số tiền và SĐT
+    const bankName = (bInfo.bankName || "Vietcombank").trim();
+    const bankAccount = (bInfo.accountNumber || "0976491322").trim();
+    const amountInput = document.getElementById("quickOrderAmount");
+    const rawAmount = amountInput ? amountInput.value.replace(/\D/g, "") : "";
+    const amount = rawAmount ? parseInt(rawAmount, 10) : 0;
+
+    const phoneInput = document.getElementById("quickOrderRecipientPhone");
+    const phone = phoneInput ? phoneInput.value.trim() : "";
+    const content = phone ? `LIVE ${phone}` : "DAT HOA LIVE";
+
+    // Chuẩn hóa mã ngân hàng (Vietcombank -> VCB, Techcombank -> TCB, MBBank -> MB, v.v.)
+    let bankCode = bankName.toUpperCase();
+    if (bankCode.includes("VIETCOMBANK") || bankCode === "VCB") bankCode = "VCB";
+    else if (bankCode.includes("TECHCOMBANK") || bankCode === "TCB") bankCode = "TCB";
+    else if (bankCode.includes("MBBANK") || bankCode.includes("QUÂN ĐỘI") || bankCode === "MB") bankCode = "MB";
+    else if (bankCode.includes("ACB")) bankCode = "ACB";
+    else if (bankCode.includes("BIDV")) bankCode = "BIDV";
+    else if (bankCode.includes("VIETINBANK") || bankCode === "CTG") bankCode = "ICB";
+    else if (bankCode.includes("VPBANK")) bankCode = "VPB";
+    else if (bankCode.includes("TPBANK")) bankCode = "TPB";
+
+    const vietQrUrl = `https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}`;
+    qrImg.src = vietQrUrl;
+}
+
+/**
+ * Đóng modal Đặt Hàng Nhanh
+ */
+function closeQuickOrderModal() {
+    const modal = document.getElementById("quickOrderModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+
+    // Gỡ bỏ hash #quick-order khỏi thanh địa chỉ nếu có
+    if (typeof window !== "undefined" && window.location.hash) {
+        const h = window.location.hash.toLowerCase();
+        if (h === "#quick-order" || h === "#livestream" || h === "#live-stream") {
+            try {
+                history.replaceState(null, document.title, window.location.pathname + window.location.search);
+            } catch (_) { }
+        }
+    }
+}
+
+/**
+ * Reset dữ liệu form đặt hàng nhanh
+ */
+function resetQuickOrderForm() {
+    const form = document.getElementById("quickOrderForm");
+    if (form) form.reset();
+    selectedProofFile = null;
+
+    const previewContainer = document.getElementById("quickOrderProofPreviewContainer");
+    const uploadPlaceholder = document.getElementById("quickOrderUploadPlaceholder");
+    if (previewContainer) previewContainer.classList.add("hidden");
+    if (uploadPlaceholder) uploadPlaceholder.classList.remove("hidden");
+
+    const errBox = document.getElementById("quickOrderErrorBox");
+    if (errBox) errBox.classList.add("hidden");
+
+    const selectEl = document.getElementById("quickOrderProductSelect");
+    if (selectEl && selectEl.options.length > 0) {
+        selectEl.selectedIndex = 0;
+        handleQuickOrderProductSelect(selectEl);
+    }
+}
+
+/**
+ * Định dạng tiền tệ khi người dùng gõ số tiền
+ */
+function formatQuickOrderAmountInput(input) {
+    if (!input) return;
+    const rawVal = input.value.replace(/\D/g, "");
+    if (!rawVal) {
+        input.value = "";
+        updateQuickOrderQrCode();
+        return;
+    }
+    const num = parseInt(rawVal, 10);
+    input.value = num.toLocaleString("vi-VN");
+    updateQuickOrderQrCode();
+}
+
+/**
+ * Xử lý khi chọn file ảnh chuyển khoản
+ */
+function handleQuickOrderProofSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        alert("Vui lòng chọn tệp hình ảnh (JPG, PNG, WEBP, HEIC...)");
+        event.target.value = "";
+        return;
+    }
+
+    selectedProofFile = file;
+
+    const previewImg = document.getElementById("quickOrderProofImg");
+    const previewContainer = document.getElementById("quickOrderProofPreviewContainer");
+    const uploadPlaceholder = document.getElementById("quickOrderUploadPlaceholder");
+    const fileNameEl = document.getElementById("quickOrderProofFileName");
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        if (previewImg) previewImg.src = e.target.result;
+        if (fileNameEl) fileNameEl.textContent = file.name;
+        if (previewContainer) previewContainer.classList.remove("hidden");
+        if (uploadPlaceholder) uploadPlaceholder.classList.add("hidden");
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Xóa ảnh chuyển khoản đã chọn
+ */
+function removeQuickOrderProof() {
+    selectedProofFile = null;
+    const fileInput = document.getElementById("quickOrderProofInput");
+    if (fileInput) fileInput.value = "";
+
+    const previewContainer = document.getElementById("quickOrderProofPreviewContainer");
+    const uploadPlaceholder = document.getElementById("quickOrderUploadPlaceholder");
+    if (previewContainer) previewContainer.classList.add("hidden");
+    if (uploadPlaceholder) uploadPlaceholder.classList.remove("hidden");
+}
+
+/**
+ * Copy số tài khoản ngân hàng nhanh
+ */
+function copyQuickOrderBankAccount() {
+    const accEl = document.getElementById("quickOrderBankAccount");
+    const accNumber = accEl ? accEl.textContent.trim() : "";
+    if (!accNumber) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(accNumber).then(() => {
+            if (typeof notifyUser === "function") {
+                notifyUser("Đã sao chép số tài khoản: " + accNumber, "success");
+            } else {
+                alert("Đã sao chép số tài khoản: " + accNumber);
+            }
+        });
+    } else {
+        alert("Số tài khoản: " + accNumber);
+    }
+}
+
+/**
+ * Gửi đơn hàng nhanh lên máy chủ
+ */
+async function handleQuickOrderSubmit(event) {
+    if (event) event.preventDefault();
+
+    const nameInput = document.getElementById("quickOrderRecipientName");
+    const phoneInput = document.getElementById("quickOrderRecipientPhone");
+    const addressInput = document.getElementById("quickOrderRecipientAddress");
+    const amountInput = document.getElementById("quickOrderAmount");
+    const notesInput = document.getElementById("quickOrderNotes");
+    const productSelect = document.getElementById("quickOrderProductSelect");
+    const errBox = document.getElementById("quickOrderErrorBox");
+    const submitBtn = document.getElementById("btnSubmitQuickOrder");
+
+    if (errBox) errBox.classList.add("hidden");
+
+    const name = nameInput ? nameInput.value.trim() : "";
+    const phone = phoneInput ? phoneInput.value.trim() : "";
+    const address = addressInput ? addressInput.value.trim() : "";
+    const rawAmount = amountInput ? amountInput.value.replace(/\D/g, "") : "";
+    const amount = rawAmount ? parseInt(rawAmount, 10) : 0;
+    const notes = notesInput ? notesInput.value.trim() : "";
+
+    // Lấy thông tin bó hoa đã chọn
+    const selectedProductId = productSelect ? productSelect.value : "livestream_custom";
+    let selectedProductName = "Hoa tươi đặt nhanh qua Live Stream";
+    let selectedProductImage = "";
+
+    if (productSelect && productSelect.selectedIndex >= 0) {
+        const opt = productSelect.options[productSelect.selectedIndex];
+        const rawOptName = opt.getAttribute("data-name") || "";
+        if (rawOptName) selectedProductName = decodeURIComponent(rawOptName);
+        selectedProductImage = opt.getAttribute("data-img") || "";
+    }
+
+    // Validation
+    if (!name) {
+        showQuickOrderError("Vui lòng điền họ và tên người nhận hoa.");
+        if (nameInput) nameInput.focus();
+        return;
+    }
+    if (!phone || phone.length < 9) {
+        showQuickOrderError("Vui lòng điền số điện thoại hợp lệ (tối thiểu 9 chữ số).");
+        if (phoneInput) phoneInput.focus();
+        return;
+    }
+    if (!address) {
+        showQuickOrderError("Vui lòng điền địa chỉ nhận hoa chi tiết.");
+        if (addressInput) addressInput.focus();
+        return;
+    }
+    if (!amount || amount <= 0) {
+        showQuickOrderError("Vui lòng nhập số tiền đã chuyển khoản (VNĐ).");
+        if (amountInput) amountInput.focus();
+        return;
+    }
+    if (!selectedProofFile) {
+        showQuickOrderError("Vui lòng tải lên hình ảnh biên lai / ảnh chụp màn hình chuyển khoản.");
+        return;
+    }
+
+    // Chuẩn bị FormData
+    const formData = new FormData();
+    formData.append("recipientName", name);
+    formData.append("phone", phone);
+    formData.append("address", address);
+    formData.append("transferredAmount", amount.toString());
+    formData.append("notes", notes);
+    formData.append("paymentProof", selectedProofFile);
+    formData.append("productId", selectedProductId);
+    formData.append("productName", selectedProductName);
+    if (selectedProductImage) {
+        formData.append("productImage", selectedProductImage);
+    }
+
+    // Disable button & hiện loading
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Đang gửi đơn hàng...`;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/quick-order`, {
+            method: "POST",
+            body: formData
+        });
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể gửi đơn hàng nhanh");
+        }
+
+        const newOrder = json.data || {};
+
+        // Hiển thị màn hình thành công
+        const formContainer = document.getElementById("quickOrderFormContainer");
+        const successContainer = document.getElementById("quickOrderSuccessContainer");
+        if (formContainer) formContainer.classList.add("hidden");
+        if (successContainer) successContainer.classList.remove("hidden");
+
+        const codeEl = document.getElementById("quickOrderSuccessCode");
+        const nameEl = document.getElementById("quickOrderSuccessName");
+        const phoneEl = document.getElementById("quickOrderSuccessPhone");
+        const addrEl = document.getElementById("quickOrderSuccessAddress");
+        const amtEl = document.getElementById("quickOrderSuccessAmount");
+        const flowerEl = document.getElementById("quickOrderSuccessFlower");
+
+        if (codeEl) codeEl.textContent = newOrder.orderCode || newOrder.id || "";
+        if (nameEl) nameEl.textContent = name;
+        if (phoneEl) phoneEl.textContent = phone;
+        if (addrEl) addrEl.textContent = address;
+        if (amtEl) amtEl.textContent = typeof formatVND === "function" ? formatVND(amount) : `${amount.toLocaleString("vi-VN")}₫`;
+        if (flowerEl) flowerEl.textContent = selectedProductName;
+
+        if (typeof notifyUser === "function") {
+            notifyUser(`🎉 Đặt đơn nhanh thành công! Mã đơn: ${newOrder.orderCode || ""}`, "success");
+        }
+    } catch (e) {
+        showQuickOrderError(e.message || "Đã xảy ra lỗi trong quá trình gửi đơn.");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane mr-2"></i> Xác Nhận Đặt Đơn Nhanh`;
+        }
+    }
+}
+
+function showQuickOrderError(msg) {
+    const errBox = document.getElementById("quickOrderErrorBox");
+    if (errBox) {
+        errBox.textContent = msg;
+        errBox.classList.remove("hidden");
+        errBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } else {
+        alert(msg);
+    }
+}
+
+/**
+ * -----------------------------------------------------------------------------
+ * PHÂN HỆ TRA CỨU ĐƠN HÀNG CÔNG KHAI QUA SỐ ĐIỆN THOẠI (ORDER LOOKUP / TRACKING)
+ * -----------------------------------------------------------------------------
+ */
+
+/**
+ * Mở modal Tra Cứu Đơn Hàng:
+ * Hỗ trợ điền sẵn SĐT nếu có (prefillPhone).
+ */
+function openOrderLookupModal(prefillPhone = "") {
+    const modal = document.getElementById("orderLookupModal");
+    if (!modal) return;
+
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    const phoneInput = document.getElementById("lookupPhoneInput");
+    const errorBox = document.getElementById("lookupErrorBox");
+    const resultsContainer = document.getElementById("lookupResultsContainer");
+    const emptyState = document.getElementById("lookupEmptyState");
+    const initialGuide = document.getElementById("lookupInitialGuide");
+
+    if (errorBox) errorBox.classList.add("hidden");
+    if (resultsContainer) resultsContainer.innerHTML = "";
+    if (emptyState) emptyState.classList.add("hidden");
+    if (initialGuide) initialGuide.classList.remove("hidden");
+
+    if (phoneInput) {
+        const val = prefillPhone || localStorage.getItem("telua_last_lookup_phone") || "";
+        phoneInput.value = val;
+        phoneInput.focus();
+        if (val && val.length >= 9) {
+            handleOrderLookup();
+        }
+    }
+}
+
+/**
+ * Đóng modal Tra Cứu Đơn Hàng
+ */
+function closeOrderLookupModal() {
+    const modal = document.getElementById("orderLookupModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+    const currentHash = (window.location.hash || "").replace(/^#\/?/, "").trim();
+    if (currentHash === "tra-cuu" || currentHash === "tracking" || currentHash === "lookup" || currentHash.startsWith("tra-cuu")) {
+        try {
+            history.replaceState(null, "", window.location.pathname + window.location.search);
+        } catch (_) {}
+    }
+}
+
+/**
+ * Xử lý sự kiện tìm kiếm đơn hàng theo Số Điện Thoại hoặc Mã Đơn
+ */
+async function handleOrderLookup(e) {
+    if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+    }
+
+    const phoneInput = document.getElementById("lookupPhoneInput");
+    const errorBox = document.getElementById("lookupErrorBox");
+    const resultsContainer = document.getElementById("lookupResultsContainer");
+    const emptyState = document.getElementById("lookupEmptyState");
+    const initialGuide = document.getElementById("lookupInitialGuide");
+    const submitBtn = document.getElementById("btnSubmitLookup");
+
+    const query = phoneInput ? phoneInput.value.trim() : "";
+    if (!query) {
+        if (errorBox) {
+            errorBox.textContent = "Vui lòng nhập Số Điện Thoại bạn đã dùng khi đặt hoa.";
+            errorBox.classList.remove("hidden");
+        }
+        return;
+    }
+
+    if (errorBox) errorBox.classList.add("hidden");
+    if (initialGuide) initialGuide.classList.add("hidden");
+    if (emptyState) emptyState.classList.add("hidden");
+    if (resultsContainer) {
+        resultsContainer.innerHTML = `
+            <div class="py-10 text-center">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-primary mb-2"></i>
+                <p class="text-xs font-bold text-gray-600">Đang tra cứu đơn hàng của bạn...</p>
+            </div>
+        `;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang tìm...`;
+    }
+
+    try {
+        localStorage.setItem("telua_last_lookup_phone", query);
+        const res = await fetch(`${API_BASE}/orders/lookup?query=${encodeURIComponent(query)}&_t=${Date.now()}`);
+        const json = await res.json();
+
+        const orders = (json && json.data && Array.isArray(json.data)) ? json.data : [];
+        if (orders.length === 0) {
+            if (resultsContainer) resultsContainer.innerHTML = "";
+            if (emptyState) {
+                emptyState.classList.remove("hidden");
+                const emptyPhoneEl = document.getElementById("lookupEmptyPhone");
+                if (emptyPhoneEl) emptyPhoneEl.textContent = query;
+            }
+        } else {
+            renderOrderLookupResults(orders, query);
+        }
+    } catch (err) {
+        if (errorBox) {
+            errorBox.textContent = `Lỗi kết nối máy chủ: ${err.message || "Không thể nạp dữ liệu"}`;
+            errorBox.classList.remove("hidden");
+        }
+        if (resultsContainer) resultsContainer.innerHTML = "";
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-magnifying-glass mr-1.5"></i> Tra Cứu`;
+        }
+    }
+}
+
+/**
+ * Render danh sách đơn hàng tìm được
+ */
+function renderOrderLookupResults(orders, query) {
+    const resultsContainer = document.getElementById("lookupResultsContainer");
+    if (!resultsContainer) return;
+
+    const statusBadgeMap = {
+        pending: { label: "Chờ xác nhận thanh toán", class: "bg-amber-50 text-amber-700 border-amber-200", icon: "fa-clock", step: 1 },
+        confirmed: { label: "Đã xác nhận thanh toán", class: "bg-blue-50 text-blue-700 border-blue-200", icon: "fa-circle-check", step: 2 },
+        arranging: { label: "Thợ đang cắm hoa", class: "bg-pink-50 text-pink-700 border-pink-200", icon: "fa-seedling", step: 2 },
+        shipping: { label: "Đang giao hoa đến bạn", class: "bg-indigo-50 text-indigo-700 border-indigo-200", icon: "fa-motorcycle", step: 3 },
+        delivered: { label: "Đã giao thành công", class: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "fa-champagne-glasses", step: 4 },
+        cancelled: { label: "Đã hủy đơn", class: "bg-red-50 text-red-600 border-red-200", icon: "fa-ban", step: 0 }
+    };
+
+    let html = `
+        <div class="space-y-4">
+            <div class="flex items-center justify-between pb-1 border-b border-gray-100">
+                <p class="text-xs font-bold text-gray-700">Tìm thấy <span class="text-rose-600 font-extrabold">${orders.length}</span> đơn hàng cho: <span class="font-mono text-gray-900">${query}</span></p>
+                <span class="text-[10px] text-gray-400">Thời gian thực</span>
+            </div>
+    `;
+
+    orders.forEach((ord) => {
+        const badge = statusBadgeMap[ord.status] || { label: ord.statusText || ord.status, class: "bg-gray-50 text-gray-600 border-gray-200", icon: "fa-info-circle", step: 1 };
+        const stepNum = badge.step;
+        const items = ord.items || [];
+        const isLive = ord.source === "livestream_quick_order";
+
+        html += `
+            <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs hover:shadow-md transition overflow-hidden">
+                <!-- Card Header -->
+                <div class="p-4 bg-gradient-to-r from-gray-50 to-rose-50/20 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-mono font-bold text-gray-900 bg-white px-2.5 py-1 rounded-lg border border-gray-200 shadow-2xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-receipt text-rose-500"></i> ${ord.orderCode || ord.id}
+                        </span>
+                        ${isLive ? `<span class="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-video text-[8px]"></i> Live Stream</span>` : ""}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${badge.class}">
+                            <i class="fa-solid ${badge.icon}"></i> ${badge.label}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tracker Steps (Progress Bar) -->
+                ${ord.status !== 'cancelled' ? `
+                <div class="p-4 bg-gray-50/50 border-b border-gray-100">
+                    <div class="grid grid-cols-4 gap-1 text-center">
+                        <div class="${stepNum >= 1 ? 'text-rose-600 font-bold' : 'text-gray-400'}">
+                            <div class="w-7 h-7 mx-auto rounded-full flex items-center justify-center text-xs mb-1 ${stepNum >= 1 ? 'bg-rose-600 text-white shadow-2xs' : 'bg-gray-200 text-gray-500'}">1</div>
+                            <span class="text-[10px] block leading-tight">Tiếp Nhận</span>
+                        </div>
+                        <div class="${stepNum >= 2 ? 'text-rose-600 font-bold' : 'text-gray-400'}">
+                            <div class="w-7 h-7 mx-auto rounded-full flex items-center justify-center text-xs mb-1 ${stepNum >= 2 ? 'bg-rose-600 text-white shadow-2xs' : 'bg-gray-200 text-gray-500'}">2</div>
+                            <span class="text-[10px] block leading-tight">Cắm Hoa</span>
+                        </div>
+                        <div class="${stepNum >= 3 ? 'text-rose-600 font-bold' : 'text-gray-400'}">
+                            <div class="w-7 h-7 mx-auto rounded-full flex items-center justify-center text-xs mb-1 ${stepNum >= 3 ? 'bg-rose-600 text-white shadow-2xs' : 'bg-gray-200 text-gray-500'}">3</div>
+                            <span class="text-[10px] block leading-tight">Đang Giao</span>
+                        </div>
+                        <div class="${stepNum >= 4 ? 'text-emerald-600 font-bold' : 'text-gray-400'}">
+                            <div class="w-7 h-7 mx-auto rounded-full flex items-center justify-center text-xs mb-1 ${stepNum >= 4 ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-gray-200 text-gray-500'}">4</div>
+                            <span class="text-[10px] block leading-tight">Hoàn Tất</span>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- Body Details -->
+                <div class="p-4 space-y-3 text-xs">
+                    <!-- Sản phẩm đã chọn -->
+                    <div class="space-y-2">
+                        ${items.map(it => `
+                            <div class="flex items-center gap-3 p-2 bg-gray-50 rounded-xl border border-gray-100">
+                                <img src="${it.image || '/images/default_flower.webp'}" alt="${it.productName || 'Hoa'}" class="w-12 h-12 object-cover rounded-lg border border-gray-200 flex-shrink-0" onerror="this.src='/images/default_flower.webp'">
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-bold text-gray-800 line-clamp-1">${it.productName || 'Hoa tươi'}</p>
+                                    <div class="flex items-center justify-between text-[11px] text-gray-500 mt-0.5">
+                                        <span>SL: x${it.quantity || 1}</span>
+                                        <span class="font-bold text-rose-600">${formatVND(it.price || it.itemTotal || 0)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Người nhận & Địa chỉ -->
+                    <div class="bg-gray-50/70 p-3 rounded-xl border border-gray-100 space-y-1.5 text-[11px]">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Người nhận:</span>
+                            <span class="font-bold text-gray-800">${ord.recipientName || 'Quý khách'} (${ord.maskedPhone || ord.recipientPhone || ''})</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 flex-shrink-0 mr-2">Địa chỉ giao:</span>
+                            <span class="font-medium text-gray-700 text-right line-clamp-2">${ord.deliveryAddress || 'Nhận tại tiệm'}</span>
+                        </div>
+                        <div class="flex justify-between pt-1 border-t border-gray-200/60 font-bold">
+                            <span class="text-gray-600">Tổng thanh toán:</span>
+                            <span class="text-rose-600 text-xs">${formatVND(ord.totalAmount || ord.transferredAmount || 0)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Bill Chuyển Khoản & Ảnh Thật Florist Chụp -->
+                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                        ${ord.paymentProofImage ? `
+                            <a href="${ord.paymentProofImage}" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 text-[11px] transition">
+                                <i class="fa-solid fa-receipt"></i> Xem Ảnh Bill Đã Chuyển
+                            </a>
+                        ` : ''}
+
+                        ${(ord.flowerPhotos && ord.flowerPhotos.length > 0) ? `
+                            <a href="${ord.flowerPhotos[0]}" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg border border-emerald-200 text-[11px] transition">
+                                <i class="fa-solid fa-camera"></i> Xem Ảnh Hoa Thực Tế Đã Cắm
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    resultsContainer.innerHTML = html;
+}
+
+if (typeof window !== "undefined") {
+    window.openQuickOrderModal = openQuickOrderModal;
+    window.closeQuickOrderModal = closeQuickOrderModal;
+    window.formatQuickOrderAmountInput = formatQuickOrderAmountInput;
+    window.handleQuickOrderProofSelect = handleQuickOrderProofSelect;
+    window.removeQuickOrderProof = removeQuickOrderProof;
+    window.copyQuickOrderBankAccount = copyQuickOrderBankAccount;
+    window.handleQuickOrderSubmit = handleQuickOrderSubmit;
+    window.handleQuickOrderProductSelect = handleQuickOrderProductSelect;
+    window.populateQuickOrderProductSelect = populateQuickOrderProductSelect;
+    window.updateQuickOrderQrCode = updateQuickOrderQrCode;
+    window.openOrderLookupModal = openOrderLookupModal;
+    window.closeOrderLookupModal = closeOrderLookupModal;
+    window.handleOrderLookup = handleOrderLookup;
 }
 
 
@@ -5549,6 +6327,22 @@ function populateOrderDetail(order) {
             }
         } else {
             photoSection.classList.add("hidden");
+        }
+    }
+
+    // 9b. Live Stream Payment Proof Photo
+    const proofSection = document.getElementById("ordDetailProofPhotoSection");
+    const proofImg = document.getElementById("ordDetailProofPhotoImg");
+    const proofLink = document.getElementById("ordDetailProofPhotoLink");
+    const proofUrl = order.paymentProofImage || (order.payment && order.payment.proofImage) || "";
+
+    if (proofSection && proofImg) {
+        if (proofUrl) {
+            proofSection.classList.remove("hidden");
+            proofImg.src = proofUrl;
+            if (proofLink) proofLink.href = proofUrl;
+        } else {
+            proofSection.classList.add("hidden");
         }
     }
 
@@ -10623,6 +11417,442 @@ async function saveAddonConfig() {
 }
 
 // ==========================================
+// CẤU HÌNH LIVE STREAM & ĐẶT HÀNG NHANH (livestreamConfig.json)
+// ==========================================
+const DEFAULT_LIVESTREAM_CONFIG = {
+    enableQuickOrder: false,
+    enabled: false,
+    title: "Đặt Hoa Nhanh Live Stream",
+    description: "Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!",
+    bankInfo: {
+        bankName: "Vietcombank (VCB)",
+        accountNumber: "0976491322",
+        accountName: "NO HOA THA BINH",
+        qrCodeImage: ""
+    },
+    qrCodeImage: "",
+    featuredProductIds: []
+};
+
+let adminLiveStreamConfig = { ...DEFAULT_LIVESTREAM_CONFIG };
+
+async function loadAdminLiveStreamConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const statusEl = document.getElementById("livestreamConfigStatus");
+    if (statusEl) {
+        statusEl.textContent = "Đang tải…";
+        statusEl.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200";
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/livestream-config?_t=${Date.now()}`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Không thể tải cấu hình");
+        adminLiveStreamConfig = json.data || { ...DEFAULT_LIVESTREAM_CONFIG };
+        if (statusEl) {
+            statusEl.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Đã nạp • ${new Date().toLocaleTimeString()}`;
+        }
+    } catch (e) {
+        adminLiveStreamConfig = { ...DEFAULT_LIVESTREAM_CONFIG };
+        console.warn("[LIVESTREAM-CONFIG] load lỗi:", e.message);
+        if (statusEl) {
+            statusEl.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+            statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi nạp`;
+        }
+    }
+    await renderLiveStreamConfig(adminLiveStreamConfig);
+}
+
+async function renderLiveStreamConfig(config) {
+    const toggle = document.getElementById("livestreamQuickOrderToggle");
+    const activeBadge = document.getElementById("livestreamQuickOrderStatusBadge");
+    const titleInput = document.getElementById("livestreamTitleInput");
+    const descInput = document.getElementById("livestreamDescInput");
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+    const bankOwnerInput = document.getElementById("livestreamBankOwnerInput");
+    const linkInput = document.getElementById("livestreamShareLinkInput");
+
+    const isEnabled = !!(config && (config.enableQuickOrder || config.enabled));
+    if (toggle) toggle.checked = isEnabled;
+
+    if (activeBadge) {
+        if (isEnabled) {
+            activeBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 animate-pulse";
+            activeBadge.innerHTML = `<i class="fa-solid fa-circle text-[8px] text-emerald-600"></i> Đang BẬT Nhận Đơn Nhanh`;
+        } else {
+            activeBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold border border-gray-300";
+            activeBadge.innerHTML = `<i class="fa-solid fa-circle text-[8px] text-gray-400"></i> Đang TẮT Nhận Đơn Nhanh`;
+        }
+    }
+
+    if (titleInput) titleInput.value = (config && config.title) || DEFAULT_LIVESTREAM_CONFIG.title;
+    if (descInput) descInput.value = (config && config.description) || DEFAULT_LIVESTREAM_CONFIG.description;
+
+    const bInfo = (config && config.bankInfo) || DEFAULT_LIVESTREAM_CONFIG.bankInfo;
+    if (bankNameInput) bankNameInput.value = bInfo.bankName || "";
+    if (bankAccInput) bankAccInput.value = bInfo.accountNumber || "";
+    if (bankOwnerInput) bankOwnerInput.value = bInfo.accountName || "";
+
+    // Cập nhật xem trước mã QR chuyển khoản ngân hàng
+    const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+    const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    const qrImg = (config && (config.qrCodeImage || (config.bankInfo && config.bankInfo.qrCodeImage))) || "";
+
+    if (qrUrlInput) qrUrlInput.value = qrImg || "";
+
+    if (qrPreview) {
+        if (qrImg) {
+            qrPreview.src = qrImg;
+            if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
+            if (qrStatus) {
+                qrStatus.textContent = qrImg.startsWith("data:") ? "Mã QR đã tải lên (Tệp ảnh)" : "Mã QR chuyển khoản riêng (URL / Đã tải)";
+                qrStatus.className = "text-[10px] text-emerald-600 font-bold block mt-1";
+            }
+        } else {
+            qrPreview.src = "https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE";
+            if (qrRemoveBtn) qrRemoveBtn.classList.add("hidden");
+            if (qrStatus) {
+                qrStatus.textContent = "Mã VietQR tự động theo số tài khoản";
+                qrStatus.className = "text-[10px] text-gray-500 font-medium block mt-1";
+            }
+        }
+    }
+
+    if (linkInput && typeof window !== "undefined") {
+        const origin = window.location.origin || "";
+        const pathname = window.location.pathname.replace(/\/+$/, "");
+        linkInput.value = `${origin}${pathname}#quick-order`;
+    }
+
+    // Hiển thị danh sách bó hoa nổi bật ghim trong phiên live
+    await renderAdminLiveStreamFeaturedProducts((config && config.featuredProductIds) || []);
+}
+
+/**
+ * Hiển thị danh sách checkbox các bó hoa để ghim vào phiên Live Stream
+ */
+async function renderAdminLiveStreamFeaturedProducts(featuredIds = []) {
+    const container = document.getElementById("adminLiveStreamFeaturedContainer");
+    if (!container) return;
+
+    let prods = [];
+    try {
+        if (typeof window !== "undefined" && Array.isArray(window.allStorefrontProducts) && window.allStorefrontProducts.length > 0) {
+            prods = window.allStorefrontProducts;
+        } else {
+            const res = await fetch(`${API_BASE}/products?_t=${Date.now()}`);
+            if (res.ok) {
+                const json = await res.json();
+                if (json && Array.isArray(json.data)) prods = json.data;
+            }
+        }
+    } catch (_) { }
+
+    if (!prods || prods.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-400 py-3 italic col-span-full">Chưa có danh sách mẫu hoa trong hệ thống.</p>`;
+        return;
+    }
+
+    const featuredSet = new Set(Array.isArray(featuredIds) ? featuredIds : []);
+
+    container.innerHTML = prods.map(p => {
+        const isChecked = featuredSet.has(p.id) || featuredSet.has(p.uuid);
+        const price = p.priceNumber || (p.salePrice ? parseInt(String(p.salePrice).replace(/\D/g, ''), 10) : 0);
+        const priceStr = price > 0 ? `${price.toLocaleString('vi-VN')}₫` : '';
+        const img = p.image || 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=100';
+
+        return `
+            <label class="flex items-center gap-3 p-2.5 rounded-xl border ${isChecked ? 'bg-rose-50/70 border-rose-300' : 'bg-white border-gray-200'} hover:border-rose-400 transition cursor-pointer select-none">
+                <input type="checkbox" value="${p.id}" ${isChecked ? 'checked' : ''}
+                    onchange="toggleAdminLiveStreamFeaturedProduct('${p.id}', this.checked)"
+                    class="rounded text-rose-600 focus:ring-rose-500 w-4 h-4">
+                <img src="${img}" alt="${p.name}" class="w-10 h-10 object-cover rounded-lg border border-gray-100 flex-shrink-0">
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-bold text-gray-800 line-clamp-1">${p.name}</p>
+                    <p class="text-[11px] text-rose-600 font-semibold">${priceStr}</p>
+                </div>
+                ${isChecked ? '<span class="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.5 rounded flex-shrink-0">Ghim Live</span>' : ''}
+            </label>
+        `;
+    }).join('');
+}
+
+/**
+ * Bật/tắt ghim mẫu hoa trong phiên Live Stream
+ */
+function toggleAdminLiveStreamFeaturedProduct(productId, isChecked) {
+    if (!adminLiveStreamConfig.featuredProductIds) {
+        adminLiveStreamConfig.featuredProductIds = [];
+    }
+    const idx = adminLiveStreamConfig.featuredProductIds.indexOf(productId);
+    if (isChecked && idx === -1) {
+        adminLiveStreamConfig.featuredProductIds.push(productId);
+    } else if (!isChecked && idx !== -1) {
+        adminLiveStreamConfig.featuredProductIds.splice(idx, 1);
+    }
+}
+
+/**
+ * Cập nhật ảnh mã QR Live Stream trực tiếp từ ô nhập đường dẫn URL
+ */
+function handleAdminLiveStreamQrUrlInput(url) {
+    const cleanUrl = (url || "").trim();
+    adminLiveStreamConfig.qrCodeImage = cleanUrl;
+
+    const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+    const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+
+    if (cleanUrl) {
+        if (qrPreview) qrPreview.src = cleanUrl;
+        if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
+        if (qrStatus) {
+            qrStatus.textContent = "Mã QR từ đường dẫn URL (Hợp lệ)";
+            qrStatus.className = "text-[10px] text-purple-600 font-bold block mt-1";
+        }
+    } else {
+        removeAdminLiveStreamQr();
+    }
+}
+
+/**
+ * Tiện ích: Tự động sinh link ảnh VietQR dựa trên Số tài khoản & Ngân hàng ở mục 2
+ */
+function generateAutoVietQrForLiveStream() {
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+
+    const accNum = bankAccInput ? bankAccInput.value.trim() : "";
+    let rawBank = bankNameInput ? bankNameInput.value.trim() : "VCB";
+
+    if (!accNum) {
+        alert("Vui lòng nhập Số Tài Khoản tại mục '2. Tài Khoản Nhận Chuyển Khoản' trước!");
+        if (bankAccInput) bankAccInput.focus();
+        return;
+    }
+
+    // Trích xuất mã ngân hàng (VD: Vietcombank (VCB) -> VCB)
+    let bankCode = "VCB";
+    const match = rawBank.match(/\((.*?)\)/);
+    if (match && match[1]) {
+        bankCode = match[1].trim();
+    } else if (rawBank) {
+        bankCode = rawBank.replace(/\s+/g, "").toUpperCase();
+    }
+
+    const autoUrl = `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accNum)}-compact2.png?amount=0&addInfo=LIVE`;
+
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    if (qrUrlInput) qrUrlInput.value = autoUrl;
+
+    handleAdminLiveStreamQrUrlInput(autoUrl);
+    notifyUser(`Đã tạo mã VietQR tự động (${bankCode} - ${accNum}) thành công!`, "success");
+}
+
+/**
+ * Xử lý tải lên ảnh mã QR chuyển khoản ngân hàng
+ */
+async function handleAdminLiveStreamQrUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        alert("Vui lòng chọn tệp hình ảnh mã QR (JPG, PNG, WEBP...)");
+        event.target.value = "";
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("prefix", "qr");
+
+    lockScreen("Đang tải ảnh mã QR chuyển khoản lên máy chủ...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/upload-image`, {
+            method: "POST",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {},
+            body: formData
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Tải ảnh thất bại");
+
+        const imgUrl = json.data && json.data.url ? json.data.url : "";
+        adminLiveStreamConfig.qrCodeImage = imgUrl;
+
+        // Cập nhật ô nhập URL và xem trước ngay lập tức
+        const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+        if (qrUrlInput) qrUrlInput.value = imgUrl;
+
+        const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+        const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+        const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+        if (qrPreview) qrPreview.src = imgUrl;
+        if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
+        if (qrStatus) {
+            qrStatus.textContent = "Mã QR đã tải lên máy chủ";
+            qrStatus.className = "text-[10px] text-emerald-600 font-bold block mt-1";
+        }
+
+        notifyUser("Tải ảnh mã QR thành công! Hãy nhấn 'Lưu Cấu Hình Live Stream' để áp dụng.", "success");
+    } catch (e) {
+        notifyUser("Lỗi tải ảnh mã QR: " + e.message, "error");
+    } finally {
+        unlockScreen();
+        event.target.value = "";
+    }
+}
+
+/**
+ * Xóa ảnh mã QR riêng để dùng VietQR tự động
+ */
+function removeAdminLiveStreamQr() {
+    adminLiveStreamConfig.qrCodeImage = "";
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+    const qrStatus = document.getElementById("adminLiveStreamQrStatus");
+
+    if (qrUrlInput) qrUrlInput.value = "";
+    if (qrPreview) qrPreview.src = "https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE";
+    if (qrRemoveBtn) qrRemoveBtn.classList.add("hidden");
+    if (qrStatus) {
+        qrStatus.textContent = "Mã VietQR tự động theo số tài khoản";
+        qrStatus.className = "text-[10px] text-gray-500 font-medium block mt-1";
+    }
+    notifyUser("Đã gỡ ảnh QR riêng, chuyển sang dùng mã VietQR tự động.", "info");
+}
+
+async function saveLiveStreamConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const toggle = document.getElementById("livestreamQuickOrderToggle");
+    const titleInput = document.getElementById("livestreamTitleInput");
+    const descInput = document.getElementById("livestreamDescInput");
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+    const bankOwnerInput = document.getElementById("livestreamBankOwnerInput");
+
+    const payload = {
+        enableQuickOrder: toggle ? !!toggle.checked : false,
+        enabled: toggle ? !!toggle.checked : false,
+        title: titleInput ? titleInput.value.trim() : "",
+        description: descInput ? descInput.value.trim() : "",
+        qrCodeImage: adminLiveStreamConfig.qrCodeImage || "",
+        featuredProductIds: adminLiveStreamConfig.featuredProductIds || [],
+        bankInfo: {
+            bankName: bankNameInput ? bankNameInput.value.trim() : "",
+            accountNumber: bankAccInput ? bankAccInput.value.trim() : "",
+            accountName: bankOwnerInput ? bankOwnerInput.value.trim() : "",
+            qrCodeImage: adminLiveStreamConfig.qrCodeImage || ""
+        }
+    };
+
+    lockScreen("Đang lưu cấu hình Live Stream & Mã QR...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/livestream-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Không thể lưu cấu hình Live Stream");
+
+        adminLiveStreamConfig = json.data;
+        await renderLiveStreamConfig(adminLiveStreamConfig);
+        notifyUser(
+            adminLiveStreamConfig.enableQuickOrder
+                ? "Đã BẬT cờ Đặt Hàng Nhanh Live Stream thành công! Khách truy cập link sẽ điền form đặt nhanh."
+                : "Đã TẮT cờ Đặt Hàng Nhanh Live Stream thành công!",
+            "success"
+        );
+    } catch (e) {
+        notifyUser("Lỗi lưu cấu hình Live Stream: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+function getLiveStreamQuickOrderUrl() {
+    const linkInput = document.getElementById("livestreamShareLinkInput");
+    if (linkInput && linkInput.value && linkInput.value.trim()) {
+        return linkInput.value.trim();
+    }
+    if (typeof window !== "undefined") {
+        const origin = window.location.origin || "";
+        let pathname = window.location.pathname || "/";
+        if (!pathname.endsWith("/") && !pathname.includes(".")) {
+            pathname += "/";
+        }
+        return `${origin}${pathname}#quick-order`;
+    }
+    return "#quick-order";
+}
+
+function copyQuickOrderLink() {
+    const linkInput = document.getElementById("livestreamShareLinkInput");
+    const url = getLiveStreamQuickOrderUrl();
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            notifyUser("Đã sao chép đường link Đặt Hàng Nhanh Live Stream vào bộ nhớ tạm!", "success");
+        }).catch(() => {
+            if (linkInput) linkInput.select();
+            document.execCommand("copy");
+            notifyUser("Đã sao chép link đặt hàng nhanh!", "success");
+        });
+    } else {
+        if (linkInput) linkInput.select();
+        document.execCommand("copy");
+        notifyUser("Đã sao chép link đặt hàng nhanh!", "success");
+    }
+}
+
+function previewQuickOrder() {
+    const targetUrl = getLiveStreamQuickOrderUrl();
+    if (typeof window !== "undefined") {
+        // Luôn mở cửa sổ / tab mới để quản trị viên kiểm tra trải nghiệm khách hàng độc lập
+        const newWin = window.open(targetUrl, "_blank");
+        if (newWin) {
+            try {
+                newWin.focus();
+            } catch (_) { }
+        } else {
+            // Trường hợp trình duyệt chặn popup mới hiển thị cảnh báo và mở modal dự phòng
+            notifyUser("Trình duyệt đang chặn cửa sổ bật lên (popup). Đang mở xem trước tại cửa sổ này...", "warning");
+            if (typeof openQuickOrderModal === "function") {
+                openQuickOrderModal();
+            }
+        }
+    } else if (typeof openQuickOrderModal === "function") {
+        openQuickOrderModal();
+    }
+}
+
+function shareQuickOrderLink() {
+    const url = getLiveStreamQuickOrderUrl();
+    const title = (document.getElementById("livestreamTitleInput")?.value || "Đặt Hoa Nhanh Live Stream");
+
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: "Đặt hoa tươi nhanh trong phiên Live Stream Nở Hoa Thả Bình:",
+            url: url
+        }).catch(() => { });
+    } else {
+        copyQuickOrderLink();
+    }
+}
+
+// ==========================================
 // CẤU HÌNH BANNER TRÌNH CHIẾU (banners.json)
 // ==========================================
 let adminBannersConfig = {
@@ -11705,6 +12935,18 @@ if (typeof window !== "undefined") {
     window.savePaymentConfig = savePaymentConfig;
     window.loadAdminAddonConfig = loadAdminAddonConfig;
     window.saveAddonConfig = saveAddonConfig;
+    window.loadAdminLiveStreamConfig = loadAdminLiveStreamConfig;
+    window.saveLiveStreamConfig = saveLiveStreamConfig;
+    window.renderLiveStreamConfig = renderLiveStreamConfig;
+    window.copyQuickOrderLink = copyQuickOrderLink;
+    window.shareQuickOrderLink = shareQuickOrderLink;
+    window.previewQuickOrder = previewQuickOrder;
+    window.handleAdminLiveStreamQrUpload = handleAdminLiveStreamQrUpload;
+    window.handleAdminLiveStreamQrUrlInput = handleAdminLiveStreamQrUrlInput;
+    window.generateAutoVietQrForLiveStream = generateAutoVietQrForLiveStream;
+    window.removeAdminLiveStreamQr = removeAdminLiveStreamQr;
+    window.toggleAdminLiveStreamFeaturedProduct = toggleAdminLiveStreamFeaturedProduct;
+    window.renderAdminLiveStreamFeaturedProducts = renderAdminLiveStreamFeaturedProducts;
     window.loadAdminBanners = loadAdminBanners;
     window.renderAdminBanners = renderAdminBanners;
     window.handleAdminBannerTargetSelect = handleAdminBannerTargetSelect;
@@ -11791,6 +13033,7 @@ async function loadAdminOrders() {
 
         if (json.success && json.data) {
             const orders = Array.isArray(json.data.orders) ? json.data.orders : [];
+            lastLoadedAdminOrders = orders;
             renderAdminOrdersTable(orders);
         } else {
             tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải đơn hàng"}</td></tr>`;
@@ -11799,6 +13042,8 @@ async function loadAdminOrders() {
         tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
     }
 }
+
+let lastLoadedAdminOrders = [];
 
 function renderAdminOrdersTable(orders) {
     const tbody = document.getElementById("adminOrdersTableBody");
@@ -11823,6 +13068,10 @@ function renderAdminOrdersTable(orders) {
         const assigneeName = order.assigneeName || order.assignedTo || "Super Admin (staff_admin)";
         const isAssignedToAdmin = (branchId === "admin");
 
+        const isLiveStream = (order.source === "livestream_quick_order" || order.source === "livestream");
+        const proofImg = order.payment?.proofImage || order.paymentProofImage || "";
+        const flowerName = (order.items && order.items[0] && order.items[0].productName) || "";
+
         // Chi nhánh tùy chọn cho dropdown điều phối
         const branchOptions = branches.filter(b => b.isActive !== false).map(b => `
             <option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${b.name || b.id}</option>
@@ -11831,16 +13080,22 @@ function renderAdminOrdersTable(orders) {
         return `
             <tr class="hover:bg-pink-50/30 transition">
                 <td class="p-3">
-                    <span class="font-mono text-[11px] font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-mono text-[11px] font-bold text-gray-700">${order.orderCode || order.id || ""}</span>
+                        ${isLiveStream ? '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[9px] font-bold border border-rose-200"><i class="fa-solid fa-video text-[8px] animate-pulse"></i> Live</span>' : ''}
+                    </div>
                     <div class="text-[10px] text-gray-400">${adminFormatDate(order.createdAt || order.orderDate)}</div>
+                    ${flowerName ? `<div class="text-[10px] text-rose-600 font-semibold line-clamp-1 mt-0.5" title="${flowerName}">🌸 ${flowerName}</div>` : ''}
+                    ${proofImg ? `<a href="${proofImg}" target="_blank" class="inline-flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-800 font-bold mt-0.5"><i class="fa-solid fa-receipt"></i> Xem bill</a>` : ''}
                 </td>
                 <td class="p-3">
                     <div class="text-xs font-bold text-gray-800">${creatorName}</div>
-                    <div class="text-[10px] text-gray-400">${sender.phone || ""}</div>
+                    <div class="text-[10px] text-gray-400 font-mono">${sender.phone || ""}</div>
                 </td>
                 <td class="p-3">
-                    <div class="text-xs text-gray-700">${recipient.name || "—"}</div>
-                    <div class="text-[10px] text-gray-400 truncate max-w-[130px]">${recipient.address || ""}</div>
+                    <div class="text-xs text-gray-700 font-bold">${recipient.name || "—"}</div>
+                    <div class="text-[10px] text-gray-500 font-mono">${recipient.phone || ""}</div>
+                    <div class="text-[10px] text-gray-400 truncate max-w-[140px]" title="${recipient.address || ''}">${recipient.address || ""}</div>
                 </td>
                 <td class="p-3">
                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -11938,12 +13193,130 @@ async function dispatchAdminOrder(orderId, targetBranchId) {
     }
 }
 
+/**
+ * Xuất danh sách đơn hàng ra file Excel / CSV (UTF-8 BOM hiển thị chuẩn tiếng Việt)
+ */
+function exportOrdersToCsv(ordersToExport, filename = "danh_sach_don_hang.csv") {
+    if (!Array.isArray(ordersToExport) || ordersToExport.length === 0) {
+        notifyUser("Không có đơn hàng nào để xuất file!", "warning");
+        return;
+    }
+
+    const headers = [
+        "Mã Đơn Hàng",
+        "Ngày Đặt",
+        "Kênh Đặt",
+        "Khách Đặt",
+        "SĐT Khách",
+        "Người Nhận",
+        "SĐT Nhận",
+        "Địa Chỉ Nhận Hoa",
+        "Mẫu Bó Hoa",
+        "Số Lượng",
+        "Tổng Tiền (VNĐ)",
+        "Thanh Toán",
+        "Trạng Thái Đơn",
+        "Lời Chúc Thiệp",
+        "Ảnh Chuyển Khoản"
+    ];
+
+    const escapeCsv = (val) => {
+        if (val === null || val === undefined) return '""';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+    };
+
+    const rows = ordersToExport.map(o => {
+        const isLive = (o.source === "livestream_quick_order" || o.source === "livestream");
+        const sender = o.sender || {};
+        const recipient = o.recipient || {};
+        const total = Number(o.totalAmount) || Number(o.financials?.totalAmount) || 0;
+        const item = (o.items && o.items[0]) || {};
+        const flowerName = item.productName || "Hoa tươi";
+        const qty = item.quantity || 1;
+        const proof = o.payment?.proofImage || o.paymentProofImage || "";
+
+        return [
+            escapeCsv(o.orderCode || o.id || ""),
+            escapeCsv(o.createdAt || o.orderDate || ""),
+            escapeCsv(isLive ? "Live Stream (Nhanh)" : "Website"),
+            escapeCsv(o.creatorName || sender.name || ""),
+            escapeCsv(sender.phone || ""),
+            escapeCsv(recipient.name || ""),
+            escapeCsv(recipient.phone || ""),
+            escapeCsv(recipient.address || ""),
+            escapeCsv(flowerName),
+            escapeCsv(qty),
+            escapeCsv(total),
+            escapeCsv(o.payment?.status === "paid" ? "Đã thanh toán" : "Chờ đối soát"),
+            escapeCsv(o.status || "Chờ xử lý"),
+            escapeCsv(o.cardMessage || recipient.deliveryNotes || ""),
+            escapeCsv(proof)
+        ].join(",");
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    notifyUser(`Đã xuất ${ordersToExport.length} đơn hàng ra file Excel / CSV thành công!`, "success");
+}
+
+/**
+ * Xuất các đơn hàng đang hiển thị trên bảng
+ */
+function exportCurrentAdminOrdersToCsv() {
+    exportOrdersToCsv(lastLoadedAdminOrders, `don_hang_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+/**
+ * Tải và xuất toàn bộ đơn hàng từ phiên Live Stream
+ */
+async function exportLiveStreamOrdersCsv() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders?timeframe=all&source=livestream_quick_order`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        const orders = (json.success && json.data && Array.isArray(json.data.orders)) ? json.data.orders : [];
+        if (orders.length === 0) {
+            notifyUser("Chưa có đơn hàng nào từ Live Stream để xuất!", "info");
+            return;
+        }
+        exportOrdersToCsv(orders, `don_hang_livestream_${new Date().toISOString().slice(0, 10)}.csv`);
+    } catch (e) {
+        notifyUser("Lỗi khi tải đơn hàng live stream: " + e.message, "error");
+    }
+}
+
+/**
+ * Chuyển nhanh và lọc đơn hàng theo nguồn
+ */
+function filterAdminOrdersBySource(sourceName = "livestream_quick_order") {
+    const searchEl = document.getElementById("searchOrderInput");
+    if (searchEl) {
+        searchEl.value = sourceName === "livestream_quick_order" ? "livestream" : "";
+    }
+    loadAdminOrders();
+}
+
 if (typeof window !== "undefined") {
     window.ADMIN_ORDER_STATUS_META = ADMIN_ORDER_STATUS_META;
     window.ADMIN_PAYMENT_STATUS_META = ADMIN_PAYMENT_STATUS_META;
     window.loadAdminOrders = loadAdminOrders;
     window.updateAdminOrderStatus = updateAdminOrderStatus;
     window.dispatchAdminOrder = dispatchAdminOrder;
+    window.exportOrdersToCsv = exportOrdersToCsv;
+    window.exportCurrentAdminOrdersToCsv = exportCurrentAdminOrdersToCsv;
+    window.exportLiveStreamOrdersCsv = exportLiveStreamOrdersCsv;
+    window.filterAdminOrdersBySource = filterAdminOrdersBySource;
 }
 
 
@@ -15152,12 +16525,13 @@ function closeSystemConfigModal() {
 }
 
 function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
     const btnPayment = document.getElementById("tabSysBtnPayment");
     const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
+    const btnLiveStream = document.getElementById("tabSysBtnLiveStream");
     const btnBanners = document.getElementById("tabSysBtnBanners");
     const btnPriceLevels = document.getElementById("tabSysBtnPriceLevels");
 
@@ -15165,17 +16539,21 @@ function switchSystemConfigTab(tabName) {
     const contentTranslations = document.getElementById("tabSysContentTranslations");
     const contentPayment = document.getElementById("tabSysContentPayment");
     const contentAddonVis = document.getElementById("tabSysContentAddonVis");
+    const contentLiveStream = document.getElementById("tabSysContentLiveStream");
     const contentBanners = document.getElementById("tabSysContentBanners");
     const contentPriceLevels = document.getElementById("tabSysContentPriceLevels");
 
-    const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
-    const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+    const activeCls = "py-3 px-1 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
+    const idleCls = "py-3 px-1 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+    const liveStreamActiveCls = "py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-rose-600 text-rose-600 bg-rose-50 transition flex items-center flex-shrink-0 rounded-t-lg cursor-pointer";
+    const liveStreamIdleCls = "py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 transition flex items-center flex-shrink-0 rounded-t-lg cursor-pointer";
 
     // Ẩn toàn bộ, reset trạng thái nút
     if (btnCompany) btnCompany.className = idleCls;
     if (btnTranslations) btnTranslations.className = idleCls;
     if (btnPayment) btnPayment.className = idleCls;
     if (btnAddonVis) btnAddonVis.className = idleCls;
+    if (btnLiveStream) btnLiveStream.className = liveStreamIdleCls;
     if (btnBanners) btnBanners.className = idleCls;
     if (btnPriceLevels) btnPriceLevels.className = idleCls;
 
@@ -15183,33 +16561,52 @@ function switchSystemConfigTab(tabName) {
     if (contentTranslations) contentTranslations.classList.add("hidden");
     if (contentPayment) contentPayment.classList.add("hidden");
     if (contentAddonVis) contentAddonVis.classList.add("hidden");
+    if (contentLiveStream) contentLiveStream.classList.add("hidden");
     if (contentBanners) contentBanners.classList.add("hidden");
     if (contentPriceLevels) contentPriceLevels.classList.add("hidden");
 
+    let activeBtn = btnCompany;
     if (tabName === "company") {
         if (btnCompany) btnCompany.className = activeCls;
         if (contentCompany) contentCompany.classList.remove("hidden");
+        activeBtn = btnCompany;
         loadAdminCompanyInfo();
     } else if (tabName === "payment") {
         if (btnPayment) btnPayment.className = activeCls;
         if (contentPayment) contentPayment.classList.remove("hidden");
+        activeBtn = btnPayment;
         loadAdminPaymentConfig();
     } else if (tabName === "addonvis") {
         if (btnAddonVis) btnAddonVis.className = activeCls;
         if (contentAddonVis) contentAddonVis.classList.remove("hidden");
+        activeBtn = btnAddonVis;
         loadAdminAddonConfig();
+    } else if (tabName === "livestream") {
+        if (btnLiveStream) btnLiveStream.className = liveStreamActiveCls;
+        if (contentLiveStream) contentLiveStream.classList.remove("hidden");
+        activeBtn = btnLiveStream;
+        loadAdminLiveStreamConfig();
     } else if (tabName === "banners") {
         if (btnBanners) btnBanners.className = activeCls;
         if (contentBanners) contentBanners.classList.remove("hidden");
+        activeBtn = btnBanners;
         loadAdminBanners();
     } else if (tabName === "price_levels") {
         if (btnPriceLevels) btnPriceLevels.className = activeCls;
         if (contentPriceLevels) contentPriceLevels.classList.remove("hidden");
+        activeBtn = btnPriceLevels;
         loadAdminPriceLevels();
     } else {
         if (btnTranslations) btnTranslations.className = activeCls;
         if (contentTranslations) contentTranslations.classList.remove("hidden");
+        activeBtn = btnTranslations;
         loadAdminTranslations();
+    }
+
+    if (activeBtn && typeof activeBtn.scrollIntoView === "function") {
+        try {
+            activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        } catch (_) {}
     }
 }
 
@@ -15224,7 +16621,7 @@ function checkAdminAccess() {
 
 function switchAdminTab(tabName) {
     // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
-    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
+    if (tabName === "company" || tabName === "translations" || tabName === "banners" || tabName === "livestream") {
         closeAdminPortalModal();
         openSystemConfigModal(tabName);
         return;
@@ -17679,6 +19076,23 @@ async function initApp() {
             searchStorefrontProducts(queryFromUrl, false);
         }
 
+        const initialHash = (window.location.hash || '').replace(/^#\/?/, '').trim();
+        const urlParams = new URLSearchParams(window.location.search);
+        if (initialHash === 'quick-order' || initialHash === 'livestream' || urlParams.get('view') === 'quick-order' || urlParams.get('quick_order') === '1') {
+            setTimeout(() => {
+                if (typeof openQuickOrderModal === 'function') {
+                    openQuickOrderModal();
+                }
+            }, 100);
+        } else if (initialHash === 'tra-cuu' || initialHash === 'tracking' || initialHash === 'lookup' || initialHash.startsWith('tra-cuu')) {
+            const phoneParam = urlParams.get('phone') || (initialHash.includes('/') ? initialHash.split('/')[1] : '');
+            setTimeout(() => {
+                if (typeof openOrderLookupModal === 'function') {
+                    openOrderLookupModal(phoneParam);
+                }
+            }, 100);
+        }
+
         // Lắng nghe sự kiện đổi Hash và Back/Forward của trình duyệt
         const handleUrlChange = () => {
             // 0. Kiểm tra hash mở modal sản phẩm chi tiết
@@ -17711,7 +19125,16 @@ async function initApp() {
                 const currentHash = window.location.hash || '';
                 if (currentHash.startsWith('#')) {
                     const hashTarget = currentHash.replace(/^#\/?/, '').trim();
-                    if (hashTarget === 'products') {
+                    if (hashTarget === 'quick-order' || hashTarget === 'livestream' || hashTarget === 'live-stream') {
+                        if (typeof openQuickOrderModal === 'function') {
+                            openQuickOrderModal();
+                        }
+                    } else if (hashTarget === 'tra-cuu' || hashTarget === 'tracking' || hashTarget === 'lookup' || hashTarget.startsWith('tra-cuu')) {
+                        const phoneFromHash = hashTarget.includes('/') ? hashTarget.split('/')[1] : '';
+                        if (typeof openOrderLookupModal === 'function') {
+                            openOrderLookupModal(phoneFromHash);
+                        }
+                    } else if (hashTarget === 'products') {
                         const sec = document.getElementById('products') || document.getElementById('dynamicCategorySections') || document.getElementById('storefrontQuickCategories');
                         if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     } else if (hashTarget.startsWith('cat-') || (activeStorefrontCategories && activeStorefrontCategories.some(c => c && c.id === hashTarget))) {
@@ -17734,6 +19157,8 @@ async function initApp() {
             if (e.key === 'Escape' || e.key === 'Esc') {
                 closeProductQuickDetail();
                 closeLiveSearchResults();
+                if (typeof closeQuickOrderModal === 'function') closeQuickOrderModal();
+                if (typeof closeOrderLookupModal === 'function') closeOrderLookupModal();
             }
         });
 

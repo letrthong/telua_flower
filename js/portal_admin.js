@@ -229,7 +229,7 @@ export {
     closeInventoryManagementModal
 } from './portal_admin_inventory.js';
 
-import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loadAdminBanners, loadAdminPriceLevels, openSystemConfigModal, closeSystemConfigModal, switchSystemConfigTab } from './portal_admin_sysconfig.js';
+import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loadAdminLiveStreamConfig, loadAdminBanners, loadAdminPriceLevels, openSystemConfigModal, closeSystemConfigModal, switchSystemConfigTab } from './portal_admin_sysconfig.js';
 import { loadAdminCategories, saveCurrentCatI18nDraft } from './portal_admin_categories.js';
 import { loadAdminProducts, onPriceLevelChange, saveCurrentProdI18nDraft, openProductModal, closeProductModal } from './portal_admin_products.js';
 import { loadAdminBranches } from './portal_admin_branches.js';
@@ -414,12 +414,13 @@ export function closeSystemConfigModal() {
 }
 
 export function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
     const btnPayment = document.getElementById("tabSysBtnPayment");
     const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
+    const btnLiveStream = document.getElementById("tabSysBtnLiveStream");
     const btnBanners = document.getElementById("tabSysBtnBanners");
     const btnPriceLevels = document.getElementById("tabSysBtnPriceLevels");
 
@@ -427,17 +428,21 @@ export function switchSystemConfigTab(tabName) {
     const contentTranslations = document.getElementById("tabSysContentTranslations");
     const contentPayment = document.getElementById("tabSysContentPayment");
     const contentAddonVis = document.getElementById("tabSysContentAddonVis");
+    const contentLiveStream = document.getElementById("tabSysContentLiveStream");
     const contentBanners = document.getElementById("tabSysContentBanners");
     const contentPriceLevels = document.getElementById("tabSysContentPriceLevels");
 
-    const activeCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
-    const idleCls = "py-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+    const activeCls = "py-3 px-1 font-bold text-xs sm:text-sm border-b-2 border-primary text-primary transition flex items-center flex-shrink-0";
+    const idleCls = "py-3 px-1 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0";
+    const liveStreamActiveCls = "py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-rose-600 text-rose-600 bg-rose-50 transition flex items-center flex-shrink-0 rounded-t-lg cursor-pointer";
+    const liveStreamIdleCls = "py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-rose-600 hover:text-rose-700 hover:bg-rose-50/50 transition flex items-center flex-shrink-0 rounded-t-lg cursor-pointer";
 
     // Ẩn toàn bộ, reset trạng thái nút
     if (btnCompany) btnCompany.className = idleCls;
     if (btnTranslations) btnTranslations.className = idleCls;
     if (btnPayment) btnPayment.className = idleCls;
     if (btnAddonVis) btnAddonVis.className = idleCls;
+    if (btnLiveStream) btnLiveStream.className = liveStreamIdleCls;
     if (btnBanners) btnBanners.className = idleCls;
     if (btnPriceLevels) btnPriceLevels.className = idleCls;
 
@@ -445,33 +450,52 @@ export function switchSystemConfigTab(tabName) {
     if (contentTranslations) contentTranslations.classList.add("hidden");
     if (contentPayment) contentPayment.classList.add("hidden");
     if (contentAddonVis) contentAddonVis.classList.add("hidden");
+    if (contentLiveStream) contentLiveStream.classList.add("hidden");
     if (contentBanners) contentBanners.classList.add("hidden");
     if (contentPriceLevels) contentPriceLevels.classList.add("hidden");
 
+    let activeBtn = btnCompany;
     if (tabName === "company") {
         if (btnCompany) btnCompany.className = activeCls;
         if (contentCompany) contentCompany.classList.remove("hidden");
+        activeBtn = btnCompany;
         loadAdminCompanyInfo();
     } else if (tabName === "payment") {
         if (btnPayment) btnPayment.className = activeCls;
         if (contentPayment) contentPayment.classList.remove("hidden");
+        activeBtn = btnPayment;
         loadAdminPaymentConfig();
     } else if (tabName === "addonvis") {
         if (btnAddonVis) btnAddonVis.className = activeCls;
         if (contentAddonVis) contentAddonVis.classList.remove("hidden");
+        activeBtn = btnAddonVis;
         loadAdminAddonConfig();
+    } else if (tabName === "livestream") {
+        if (btnLiveStream) btnLiveStream.className = liveStreamActiveCls;
+        if (contentLiveStream) contentLiveStream.classList.remove("hidden");
+        activeBtn = btnLiveStream;
+        loadAdminLiveStreamConfig();
     } else if (tabName === "banners") {
         if (btnBanners) btnBanners.className = activeCls;
         if (contentBanners) contentBanners.classList.remove("hidden");
+        activeBtn = btnBanners;
         loadAdminBanners();
     } else if (tabName === "price_levels") {
         if (btnPriceLevels) btnPriceLevels.className = activeCls;
         if (contentPriceLevels) contentPriceLevels.classList.remove("hidden");
+        activeBtn = btnPriceLevels;
         loadAdminPriceLevels();
     } else {
         if (btnTranslations) btnTranslations.className = activeCls;
         if (contentTranslations) contentTranslations.classList.remove("hidden");
+        activeBtn = btnTranslations;
         loadAdminTranslations();
+    }
+
+    if (activeBtn && typeof activeBtn.scrollIntoView === "function") {
+        try {
+            activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        } catch (_) {}
     }
 }
 
@@ -486,7 +510,7 @@ export function checkAdminAccess() {
 
 export function switchAdminTab(tabName) {
     // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
-    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
+    if (tabName === "company" || tabName === "translations" || tabName === "banners" || tabName === "livestream") {
         closeAdminPortalModal();
         openSystemConfigModal(tabName);
         return;

@@ -28,6 +28,7 @@ config/anne/
 ├── addons.json               # Danh mục sản phẩm bán kèm (thiệp, gấu bông, nến thơm, topper)
 ├── addonConfig.json          # Cấu hình bật/tắt toàn cục khu vực bán kèm Add-ons
 ├── translations.json         # Từ điển đa ngôn ngữ 5 thứ tiếng (Dynamic i18n)
+├── livestreamConfig.json     # Cấu hình Bán hàng Trực tiếp Live Stream (enableQuickOrder, QR, ngân hàng, hoa ghim)
 ├── wastage_reports.json      # Báo cáo hủy hoa dập/héo hỏng
 ├── infoCompany.json          # Thông tin thương hiệu, hotline, địa chỉ showroom
 ├── cache_version.json        # Timestamp đồng bộ cache giữa các workers
@@ -935,12 +936,46 @@ Quản lý danh sách các món quà tặng bán kèm (thiệp, thú bông, nế
 
 ---
 
-## 14. Bảng Tổng Hợp Chiến Lược Caching Của Từng Tệp JSON
+## 14. `config/anne/livestreamConfig.json` - Cấu Hình Bán Hàng Trực Tiếp Live Stream & Đặt Hàng Nhanh
+
+Cấu hình cho phiên bán hàng Livestream (TikTok, Facebook, Shopee), hỗ trợ khách đặt hoa tốc hành qua đường link băm `/#quick-order` hoặc `/#livestream`:
+
+```json
+{
+  "enableQuickOrder": true,
+  "title": "Chốt Đơn Nhanh - Phiên Live Đặc Biệt",
+  "description": "Quý khách vui lòng chọn bó hoa đang live, chuyển khoản thanh toán và để lại thông tin nhận hoa để shop đóng gói giao ngay trong 2H!",
+  "bankInfo": {
+    "bankName": "Vietcombank",
+    "accountNumber": "9976491322",
+    "accountHolder": "NO HOA THA BINH"
+  },
+  "qrCodeImage": "/api/flower/v1/images/livestream_qr_2026.webp",
+  "featuredProductIds": [
+    "bo_hoa_01",
+    "bo_hoa_03",
+    "bo_hoa_05"
+  ],
+  "updatedAt": "2026-10-22T07:10:00Z"
+}
+```
+
+### Ý nghĩa các trường:
+- `enableQuickOrder` (*boolean*): Cờ Bật/Tắt tính năng Đặt hàng nhanh trên toàn hệ thống. Nếu tắt, link băm `/#quick-order` sẽ hiển thị thông báo phiên live đã kết thúc và hướng dẫn khách mua qua giỏ hàng thông thường.
+- `title` & `description` (*string*): Tiêu đề và lời dặn dò khách hàng hiển thị trên đầu Modal Đặt Hàng Nhanh.
+- `bankInfo` (*object*): Thông tin tài khoản nhận tiền chuyển khoản chốt live (Ngân hàng, Số tài khoản, Chủ tài khoản).
+- `qrCodeImage` (*string*): Đường dẫn URL ảnh mã QR chuyển khoản riêng của shop (hỗ trợ cả dán link URL trực tiếp `https://...` hoặc đường dẫn tệp ảnh đã upload `/api/flower/v1/images/...`). Nếu để trống, hệ thống tự động sinh mã VietQR động theo số tài khoản và thông tin đơn hàng.
+- `featuredProductIds` (*array[string]*): Danh sách mã ID các bó hoa / sản phẩm đang được giới thiệu trong phiên live để khách chọn nhanh từ menu xổ xuống.
+
+---
+
+## 15. Bảng Tổng Hợp Chiến Lược Caching Của Từng Tệp JSON
 
 Nhằm đảm bảo trải nghiệm khách hàng đạt tốc độ hiển thị tức thì (**0ms Instant Boot**), tránh nhấp nháy giao diện và chỉ tải lại khi file có thay đổi thực sự, toàn bộ hệ thống file JSON được phân nhóm caching như sau:
 
 | Tên Tệp JSON | Phương Thức Cache | Khóa Client Storage / ETag | Hành Vi Khi File Đổi |
 | :--- | :--- | :--- | :--- |
+| **`livestreamConfig.json`** | Real-time / ETag Cache | `telua_livestream_config` | Tự động đồng bộ ngay khi Admin bật/tắt hoặc đổi bó hoa live. |
 | **`infoCompany.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_info_company_cache_v1` / `telua_info_company_etag_v1` | Tự động làm mới khi Admin lưu hoặc phát hiện ETag mới từ server. |
 | **`categories.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_categories_cache_v1` / `telua_categories_etag_v1` | Menu header & vòng tròn danh mục hoa nạp 0ms, cập nhật ngầm. |
 | **`paymentConfig.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_payment_config_cache_v1` / `telua_payment_config_etag_v1` | Popup đặt hàng hiển thị phương thức VietQR/COD ngay lập tức. |

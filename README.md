@@ -16,6 +16,7 @@
 - **Định vị Showroom (Store Locator):** Bản đồ Google Maps nhúng trực tiếp, nút chỉ đường và tính năng **"Sao chép địa chỉ"** 1-chạm vào clipboard.
 - **Tương tác đa kênh:** Nút Hotline nổi với hiệu ứng rung chuông (`pulse-hotline`) và nút Chat Zalo Official Account (`pulse-zalo`) hỗ trợ 24/7.
 - **Tối ưu hiệu năng vượt trội:** Lazy Loading cho toàn bộ hình ảnh kết hợp hiệu ứng Skeleton Shimmer Loader chống giật layout (CLS).
+- **Bán hàng trực tiếp Live Stream & Chốt đơn tốc hành (Quick Order):** Hỗ trợ chia sẻ link hash `/#quick-order` chốt đơn trong 15s cho livestream (TikTok/Facebook Live), tự động tạo mã VietQR theo số tiền, chọn bó hoa ghim, đính kèm ảnh bill chuyển khoản và xuất dữ liệu ra file Excel/CSV chuẩn tiếng Việt UTF-8 BOM.
 - **Thiết kế Responsive hoàn hảo:** Tương thích mượt mà trên mọi thiết bị: Mobile (iOS/Android), Tablet và Desktop.
 
 ---
@@ -57,6 +58,7 @@ telua_flower/
 │   ├── portal_admin.js          # Shell Orchestrator điều phối toàn bộ Cổng Quản Trị
 │   ├── portal_admin_*.js        # 10 sub-modules quản trị: products, categories, branches, users...
 │   ├── products.js              # Quản lý catalogue sản phẩm Storefront & Cache RAM
+│   ├── quick_order.js           # Modal đặt hàng tốc hành qua Live Stream hash link (/#quick-order)
 │   ├── i18n.js                  # Logic chuyển đổi đa ngôn ngữ (VI, EN, JA, KO, ZH)
 │   ├── checkout.js              # Giỏ hàng & luồng thanh toán VietQR
 │   ├── auth.js                  # Xác thực người dùng, JWT & phân quyền RBAC
@@ -68,13 +70,14 @@ telua_flower/
 │
 ├── config/                      # Thư mục cấu hình dữ liệu & backup artifacts
 │   ├── index.html               # [Generated Artifact] Bản sao index.html trích xuất từ container (cli_docker.sh)
-│   └── anne/                    # Dữ liệu JSON tĩnh: products, branches, categories, users...
+│   └── anne/                    # Dữ liệu JSON tĩnh: products, branches, categories, users, livestreamConfig.json...
 │
 └── docs/                        # Tài liệu kỹ thuật chi tiết
     ├── README.md                # Mục lục tài liệu kỹ thuật
     ├── DOCKER_UBUNTU_GUIDE.md   # Hướng dẫn build & chạy Docker trên Ubuntu
     ├── design/                  # Tài liệu phân tích kiến trúc & thiết kế hệ thống
-    │   └── FRONTEND_LAYOUT_DESIGN.md # Kiến trúc layout, sub-modules & quy chuẩn bundle
+    │   ├── FRONTEND_LAYOUT_DESIGN.md         # Kiến trúc layout, sub-modules & quy chuẩn bundle
+    │   └── LIVESTREAM_QUICK_ORDER_DESIGN.md  # Thiết kế phân hệ Live Stream & Đặt hàng nhanh
     └── requirements/            # Đặc tả yêu cầu nghiệp vụ
         └── PRODUCT_REQUIREMENTS.md
 ```

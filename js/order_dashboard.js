@@ -980,6 +980,22 @@ function populateOrderDetail(order) {
         }
     }
 
+    // 9b. Live Stream Payment Proof Photo
+    const proofSection = document.getElementById("ordDetailProofPhotoSection");
+    const proofImg = document.getElementById("ordDetailProofPhotoImg");
+    const proofLink = document.getElementById("ordDetailProofPhotoLink");
+    const proofUrl = order.paymentProofImage || (order.payment && order.payment.proofImage) || "";
+
+    if (proofSection && proofImg) {
+        if (proofUrl) {
+            proofSection.classList.remove("hidden");
+            proofImg.src = proofUrl;
+            if (proofLink) proofLink.href = proofUrl;
+        } else {
+            proofSection.classList.add("hidden");
+        }
+    }
+
     // 10. History Timeline
     const timelineEl = document.getElementById("ordDetailTimeline");
     if (timelineEl) {

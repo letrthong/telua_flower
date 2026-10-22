@@ -29,7 +29,9 @@ from data_service import (
     enrich_order_display_names,
     get_user_by_id,
     build_user_lookup_cache,
-    build_branch_lookup_cache
+    build_branch_lookup_cache,
+    get_livestream_config,
+    get_order_shortcuts_for_month
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -474,6 +476,273 @@ def _update_customer_crm_after_order(
     save_customers(customers)
 
 
+def create_livestream_quick_order(
+    quick_data: Dict[str, Any],
+    proof_image_url: str = ""
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Tạo đơn hàng nhanh từ phiên Live Stream:
+    - Yêu cầu cờ enableQuickOrder phải đang bật trong livestreamConfig.json
+    - Chỉ cần: Tên người nhận/đặt, SĐT, Địa chỉ nhận hoa, Số tiền đã chuyển, và Ảnh chụp bill chuyển khoản
+    """
+    if not isinstance(quick_data, dict):
+        return False, None, "Dữ liệu đặt hàng nhanh không hợp lệ"
+
+    # 1. Kiểm tra cấu hình Live Stream
+    live_cfg = get_livestream_config(use_cache=False)
+    is_live_enabled = bool(live_cfg.get("enableQuickOrder") or live_cfg.get("enabled", False))
+    if not is_live_enabled:
+        return False, None, "Tính năng đặt hàng nhanh Live Stream hiện đang tạm tắt. Quý khách vui lòng đặt qua cửa hàng trực tuyến hoặc liên hệ hotline."
+
+    # 2. Trích xuất & chuẩn hóa dữ liệu
+    customer_name = (quick_data.get("name") or quick_data.get("recipientName") or quick_data.get("customerName") or "").strip()
+    phone = (quick_data.get("phone") or quick_data.get("recipientPhone") or "").strip()
+    address = (quick_data.get("address") or quick_data.get("recipientAddress") or "").strip()
+    notes = (quick_data.get("notes") or quick_data.get("deliveryNotes") or "").strip()
+    proof_url = (proof_image_url or quick_data.get("paymentProofImage") or quick_data.get("proofImage") or "").strip()
+
+    raw_amount = quick_data.get("transferredAmount") or quick_data.get("amount") or quick_data.get("price") or 0
+    try:
+        if isinstance(raw_amount, (int, float)):
+            transferred_amount = int(raw_amount)
+        else:
+            clean_str = "".join(c for c in str(raw_amount) if c.isdigit())
+            transferred_amount = int(clean_str) if clean_str else 0
+    except Exception:
+        transferred_amount = 0
+
+    # 3. Ràng buộc các trường bắt buộc
+    if not customer_name:
+        return False, None, "Vui lòng nhập họ và tên người nhận hoa"
+    if not phone or len(phone) < 9:
+        return False, None, "Vui lòng nhập số điện thoại người nhận hợp lệ"
+    if not address:
+        return False, None, "Vui lòng nhập địa chỉ nhận hoa cụ thể"
+    if transferred_amount <= 0:
+        return False, None, "Vui lòng nhập số tiền đã chuyển khoản (lớn hơn 0₫)"
+    if not proof_url:
+        return False, None, "Vui lòng đính kèm ảnh chụp biên lai / bill chuyển khoản"
+
+    # 4. Xác định thông tin bó hoa / sản phẩm được chọn
+    product_id = (quick_data.get("productId") or quick_data.get("selectedProductId") or "livestream_custom").strip()
+    product_name = (quick_data.get("productName") or quick_data.get("selectedProductName") or "").strip()
+    product_image = proof_url
+
+    if product_id and product_id != "livestream_custom":
+        prod_obj = get_product_by_id(product_id)
+        if prod_obj:
+            product_name = prod_obj.get("name") or product_name
+            product_image = prod_obj.get("image") or proof_url
+
+    if not product_name:
+        product_name = "Hoa tươi đặt nhanh qua Live Stream"
+
+    # 5. Khởi tạo đối tượng đơn hàng Live Stream chuẩn:
+    # Mã đơn hàng là chính Số Điện Thoại của khách để dễ nhớ, tra cứu và hiển thị
+    order_id = f"ord_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}"
+    order_code = (quick_data.get("orderCode") or phone).strip()
+    created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    new_order = {
+        "id": order_id,
+        "orderCode": order_code,
+        "trackingCode": phone,
+        "createdAt": created_at,
+        "orderDate": created_at,
+        "updatedAt": created_at,
+        "source": "livestream_quick_order",
+        "branchId": "admin",
+        "assignedBranchId": "admin",
+        "customerId": None,
+        "createdBy": phone,
+        "assignedTo": "staff_admin",
+        "assignedBy": "system",
+        "status": "pending",
+        "cardMessage": notes,
+        "ribbonBanner": "",
+        "sender": {
+            "name": customer_name,
+            "realName": customer_name,
+            "phone": phone,
+            "email": "",
+            "isAnonymous": False
+        },
+        "recipient": {
+            "name": customer_name,
+            "phone": phone,
+            "address": address,
+            "deliveryNotes": notes
+        },
+        "delivery": {
+            "deliveryDate": datetime.now().strftime("%Y-%m-%d"),
+            "timeSlot": "Giao hàng phiên Live Stream",
+            "isExpress2H": False,
+            "fulfillmentType": "delivery"
+        },
+        "requiresArranging": False,
+        "items": [
+            {
+                "productId": product_id,
+                "productName": product_name,
+                "price": transferred_amount,
+                "quantity": 1,
+                "itemTotal": transferred_amount,
+                "image": product_image
+            }
+        ],
+        "financials": {
+            "subtotal": transferred_amount,
+            "arrangingFee": 0,
+            "shippingFee": 0,
+            "discountAmount": 0,
+            "totalAmount": transferred_amount
+        },
+        "totalAmount": transferred_amount,
+        "paymentMethod": "vietqr",
+        "payment": {
+            "method": "vietqr",
+            "status": "pending_confirmation",
+            "transferredAmount": transferred_amount,
+            "proofImage": proof_url,
+            "transferContent": order_code
+        },
+        "paymentProofImage": proof_url,
+        "history": [
+            {
+                "status": "pending",
+                "updatedAt": created_at,
+                "note": f"Khách đặt đơn nhanh Live Stream. Mã đơn: {order_code}. Số tiền đã chuyển: {transferred_amount:,.0f}₫.",
+                "updatedBy": phone
+            }
+        ]
+    }
+
+    # 5. Lưu vào phân mảnh đơn hàng & danh mục hệ thống
+    save_success = save_order(new_order)
+    if not save_success:
+        return False, None, "Không thể lưu đơn hàng vào hệ thống"
+
+    # 6. Đồng bộ đơn vào thư mục riêng của khách hàng: config/anne/users/{phone}/orders.json
+    sync_order_to_user_folder(new_order)
+
+    # 7. Tự động đồng bộ vào hồ sơ khách hàng & tích điểm CRM
+    earned_points = transferred_amount // 10000
+    _update_customer_crm_after_order(phone, customer_name, "", earned_points, transferred_amount)
+
+    return True, new_order, None
+
+
+def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
+    """
+    Tra cứu đơn hàng công khai (Public Order Tracking / Hash Interface):
+    Khách hàng chỉ cần nhập Số Điện Thoại (hoặc Mã Đơn) để xem tiến độ đơn hàng thời gian thực.
+    Không yêu cầu đăng nhập tài khoản.
+    """
+    if not query_str or not isinstance(query_str, str):
+        return []
+
+    raw_query = query_str.strip()
+    clean_digits = "".join(c for c in raw_query if c.isdigit())
+
+    found_orders = []
+    seen_ids = set()
+
+    # 1. Tra cứu theo số điện thoại từ thư mục riêng users/{phone}/orders.json (O(1) nạp siêu tốc)
+    if len(clean_digits) >= 9:
+        user_orders = get_user_orders(clean_digits)
+        for ord_item in user_orders:
+            if isinstance(ord_item, dict):
+                oid = ord_item.get("id") or ord_item.get("orderCode")
+                if oid and oid not in seen_ids:
+                    seen_ids.add(oid)
+                    found_orders.append(ord_item)
+
+    # 2. Tra cứu trực tiếp theo orderCode hoặc orderId
+    direct_order = get_order_by_id(raw_query)
+    if direct_order and isinstance(direct_order, dict):
+        oid = direct_order.get("id") or direct_order.get("orderCode")
+        if oid and oid not in seen_ids:
+            seen_ids.add(oid)
+            found_orders.append(direct_order)
+
+    # 3. Fallback tìm kiếm trong các shortcut của tháng hiện tại và tháng trước
+    if not found_orders and len(clean_digits) >= 9:
+        now = datetime.now()
+        months_to_check = [
+            now.strftime("%Y_%m"),
+            (now.replace(day=1) - timedelta(days=1)).strftime("%Y_%m")
+        ]
+        for ym in months_to_check:
+            for b_id in ["admin", "branch_q10", "branch_q1", "branch_thao_dien"]:
+                shortcuts = get_order_shortcuts_for_month(b_id, ym)
+                for sc in shortcuts:
+                    sc_phone = "".join(c for c in str(sc.get("recipientPhone") or sc.get("senderPhone") or sc.get("createdBy") or "") if c.isdigit())
+                    sc_code = str(sc.get("orderCode") or "").strip()
+                    if (clean_digits and clean_digits in sc_phone) or clean_digits == sc_code or raw_query == sc_code:
+                        full_o = get_order_by_id(sc.get("orderId") or sc.get("id"))
+                        if full_o and full_o.get("id") not in seen_ids:
+                            seen_ids.add(full_o.get("id"))
+                            found_orders.append(full_o)
+
+    # Sắp xếp đơn mới nhất lên đầu
+    found_orders.sort(key=lambda x: str(x.get("createdAt") or x.get("orderDate") or ""), reverse=True)
+
+    status_map = {
+        "pending": "Chờ xác nhận thanh toán",
+        "confirmed": "Đã xác nhận thanh toán",
+        "arranging": "Thợ đang cắm hoa",
+        "shipping": "Đang giao hoa đến bạn",
+        "delivered": "Đã giao thành công",
+        "cancelled": "Đã hủy đơn"
+    }
+
+    public_results = []
+    for o in found_orders:
+        st = o.get("status", "pending")
+        items = o.get("items") or []
+        recipient = o.get("recipient") or {}
+        payment = o.get("payment") or {}
+        financials = o.get("financials") or {}
+
+        # Ảnh hoa thực tế sau khi cắm xong từ florist
+        flower_photos = o.get("flowerPhotos") or o.get("realPhotos") or []
+        if isinstance(flower_photos, str):
+            flower_photos = [flower_photos] if flower_photos else []
+
+        # Rút gọn SĐT hiển thị bảo mật nếu cần (chỉ che số ở giữa, VD: 0976***222)
+        full_phone = recipient.get("phone") or o.get("createdBy") or ""
+        masked_phone = full_phone
+        if len(full_phone) >= 10:
+            masked_phone = f"{full_phone[:4]}***{full_phone[-3:]}"
+
+        public_item = {
+            "id": o.get("id"),
+            "orderCode": o.get("orderCode") or o.get("id"),
+            "trackingCode": o.get("trackingCode") or full_phone,
+            "createdAt": o.get("createdAt") or o.get("orderDate"),
+            "source": o.get("source"),
+            "status": st,
+            "statusText": status_map.get(st, st),
+            "recipientName": recipient.get("name") or o.get("customerName") or "Quý khách",
+            "recipientPhone": full_phone,
+            "maskedPhone": masked_phone,
+            "deliveryAddress": recipient.get("address") or recipient.get("deliveryAddress") or "",
+            "deliveryTimeSlot": (o.get("delivery") or {}).get("timeSlot") or "",
+            "items": items,
+            "totalAmount": o.get("totalAmount") or financials.get("totalAmount") or 0,
+            "cardMessage": o.get("cardMessage") or (o.get("customization") or {}).get("cardMessage") or "",
+            "paymentMethod": o.get("paymentMethod") or payment.get("method") or "vietqr",
+            "paymentStatus": payment.get("status") or "pending_confirmation",
+            "transferredAmount": o.get("transferredAmount") or payment.get("transferredAmount") or payment.get("amountPaid") or 0,
+            "paymentProofImage": o.get("paymentProofImage") or payment.get("proofImage") or "",
+            "flowerPhotos": flower_photos,
+            "history": o.get("history") or []
+        }
+        public_results.append(public_item)
+
+    return public_results
+
+
 def get_order_updated_at(order: Dict[str, Any]) -> str:
     """
     Trả về timestamp ISO cập nhật mới nhất của đơn hàng:
@@ -499,6 +768,7 @@ def query_admin_orders(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     month_key: Optional[str] = None,
+    source: Optional[str] = None,
     sort_by: str = "updatedAt",
     sort_order: str = "desc",
     date_filter_by: str = "createdAt"
@@ -597,6 +867,10 @@ def query_admin_orders(
         if status and status != "all" and o.get("status") != status:
             continue
 
+        # Lọc theo nguồn đơn hàng (vd: livestream_quick_order)
+        if source and source != "all" and o.get("source") != source:
+            continue
+
         # Lọc theo thanh toán
         o_payment = o.get("payment", {})
         o_pay_status = o_payment.get("status", "unpaid")
@@ -610,7 +884,7 @@ def query_admin_orders(
         if filter_end and date_target > filter_end:
             continue
 
-        # Tìm kiếm theo mã đơn, SĐT hoặc Tên khách
+        # Tìm kiếm theo mã đơn, SĐT, Tên khách, Nguồn đơn hoặc Mẫu hoa
         if clean_search:
             sender = o.get("sender") or {}
             sender_name = (sender.get("name") or "").lower()
@@ -619,12 +893,16 @@ def query_admin_orders(
             recipient_name = (recipient.get("name") or "").lower()
             recipient_phone = (recipient.get("phone") or "").lower()
             order_code = (o.get("orderCode") or o.get("id") or "").lower()
+            order_source = (o.get("source") or "").lower()
+            items_str = " ".join((it.get("productName") or "").lower() for it in (o.get("items") or []))
 
             if (clean_search not in order_code and 
                 clean_search not in sender_name and 
                 clean_search not in sender_phone and 
                 clean_search not in recipient_name and 
-                clean_search not in recipient_phone):
+                clean_search not in recipient_phone and
+                clean_search not in order_source and
+                clean_search not in items_str):
                 continue
 
         # Bổ sung thông tin hiển thị (tên người tạo, người thực hiện, cửa hàng xử lý) với cache O(1)

@@ -52,6 +52,15 @@ export const ADMIN_NAVIGATION_CONFIG = [
         roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT]
       },
       {
+        tabKey: "livestream_orders",
+        label: "Live Stream Đơn Hàng",
+        icon: "fa-solid fa-video",
+        module: "portal_admin_livestream_orders.js",
+        loadFn: "loadLiveStreamOrders",
+        action: "switchAdminTab('livestream_orders')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER],
+      },
+      {
         tabKey: "products",
         label: "Mẫu Hoa & Bảng Giá",
         icon: "fa-solid fa-spa",
@@ -257,6 +266,15 @@ export const ADMIN_NAVIGATION_CONFIG = [
         module: "portal_admin_sysconfig.js",
         loadFn: "loadAdminPriceLevels",
         action: "switchSystemConfigTab('price_levels')",
+        roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "livestream",
+        label: "Live Stream Đặt Nhanh",
+        icon: "fa-solid fa-video",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminLiveStreamConfig",
+        action: "switchSystemConfigTab('livestream')",
         roles: [ROLES.SUPER_ADMIN]
       }
     ]
