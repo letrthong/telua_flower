@@ -8,27 +8,24 @@ import { loadAdminOrders } from './portal_admin_orders.js';
  * Fetch all orders and filter for Live Stream sources, then render them.
  */
 export async function loadLiveStreamOrders() {
-  // Reuse the existing loadAdminOrders to fetch data.
-  // It populates a global variable `lastLoadedAdminOrders`.
+  // Load all orders first.
   await loadAdminOrders();
-  // After fetching, filter the orders.
-  if (typeof lastLoadedAdminOrders === 'undefined') {
-    console.warn('lastLoadedAdminOrders is not defined');
-    return;
-  }
-  const liveOrders = lastLoadedAdminOrders.filter(order =>
-    order.source === 'livestream_quick_order' || order.source === 'livestream'
-  );
-  // Use the same rendering function from portal_admin_orders.js.
-  // It is defined as a private function `renderAdminOrdersTable` inside that module.
-  // We'll call it via the global scope if it exists.
-  if (typeof renderAdminOrdersTable === 'function') {
-    renderAdminOrdersTable(liveOrders);
-  } else {
-    // Fallback: replace the table body with a simple message.
-    const tbody = document.getElementById('adminOrdersTableBody');
-    if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-400">Không có đơn Live Stream nào.</td></tr>`;
+  // After loading, hide non-live stream rows.
+  const tbody = document.getElementById('adminOrdersTableBody');
+  if (!tbody) return;
+  const rows = tbody.querySelectorAll('tr');
+  let hasLive = false;
+  rows.forEach(row => {
+    // Determine if this row is a live stream order by checking for the Live badge.
+    const isLive = row.querySelector('span.inline-flex')?.innerText.includes('Live');
+    if (isLive) {
+      hasLive = true;
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
     }
+  });
+  if (!hasLive) {
+    tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-400">Không có đơn Live Stream nào.</td></tr>`;
   }
 }
