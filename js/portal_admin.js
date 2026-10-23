@@ -570,7 +570,7 @@ export function switchAdminTab(tabName) {
     console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
     console.log("📂 Tab Identifier:", tabName);
 
-    const tabs = ["orders", "livestreamOrders", "products", "inventory", "categories", "branches", "promotions", "addons"];
+    const tabs = ["orders", "livestreamOrders", "products", "inventory", "categories", "branches", "promotions", "addons", "banners"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
