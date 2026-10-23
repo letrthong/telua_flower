@@ -12,7 +12,7 @@ if SRC_DIR not in sys.path:
 
 from app import app
 from anne_auth_service import generate_jwt_token
-from data_service import get_livestream_config, save_livestream_config, get_order_by_id
+from data_service import get_livestream_config, save_livestream_config, get_order_by_id, build_order_shortcut_item
 
 class TestLiveStreamQuickOrder(unittest.TestCase):
     """Kiểm thử tính năng Live Stream & Đặt Hàng Nhanh (livestreamConfig.json & Quick Order API)"""
@@ -276,5 +276,292 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         data = res_get.get_json()["data"]
         self.assertEqual(data["featuredProductIds"], ["gio_hoa_01", "lan_test_1787964482799"])
 
+    def test_admin_orders_filter_by_source_livestream(self):
+        """Kiểm tra API GET /admin/orders?source=livestream_quick_order trả về đúng các đơn Live Stream"""
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        # Tạo 1 đơn Live Stream
+        phone_live = "0981112233"
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Test Live Source",
+            "phone": phone_live,
+            "address": "456 Lê Duẩn, Q.1, TP.HCM",
+            "transferredAmount": 790000,
+            "paymentProofImage": "https://example.com/receipt_live_source.jpg"
+        })
+        self.assertEqual(res_create.status_code, 201)
+
+        # Truy vấn với filter source=livestream_quick_order
+        res = self.client.get("/api/flower/v1/admin/orders?timeframe=all&source=livestream_quick_order", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res.status_code, 200)
+        res_data = res.get_json()["data"]
+        orders = res_data.get("orders", [])
+        self.assertGreater(len(orders), 0)
+
+        # Tìm đơn vừa tạo trong danh sách
+        found = [o for o in orders if o.get("orderCode") == phone_live or (o.get("recipient") or {}).get("phone") == phone_live]
+        self.assertTrue(len(found) > 0, "Không tìm thấy đơn Live Stream khi lọc qua source=livestream_quick_order")
+        live_ord = found[0]
+        self.assertEqual(live_ord.get("source"), "livestream_quick_order")
+        self.assertTrue(live_ord.get("proofImage") or (live_ord.get("payment") or {}).get("proofImage"))
+
+    def test_admin_orders_search_livestream_by_phone_and_recipient(self):
+        """Kiểm tra tìm kiếm đơn Live Stream theo SĐT và tên khách hàng"""
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        test_phone = "0977889900"
+        test_name = "Chị Ngọc Live Stream VIP"
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": test_name,
+            "phone": test_phone,
+            "address": "99 Nguyễn Huệ, Q.1, TP.HCM",
+            "transferredAmount": 920000,
+            "paymentProofImage": "https://example.com/receipt_ngoc.jpg"
+        })
+        self.assertEqual(res_create.status_code, 201)
+
+        # 1. Tìm theo SĐT trong phân hệ Live Stream
+        res_phone = self.client.get(f"/api/flower/v1/admin/orders?timeframe=all&source=livestream_quick_order&search={test_phone}", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_phone.status_code, 200)
+        orders_phone = res_phone.get_json()["data"].get("orders", [])
+        self.assertTrue(any(o.get("orderCode") == test_phone or (o.get("recipient") or {}).get("phone") == test_phone for o in orders_phone))
+
+        # 2. Tìm theo tên khách hàng
+        res_name = self.client.get(f"/api/flower/v1/admin/orders?timeframe=all&source=livestream_quick_order&search=Ngọc", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_name.status_code, 200)
+        orders_name = res_name.get_json()["data"].get("orders", [])
+        self.assertTrue(any(test_name.lower() in ((o.get("recipient") or {}).get("name") or "").lower() for o in orders_name))
+
+    def test_admin_orders_livestream_status_filtering(self):
+        """Kiểm tra lọc đơn Live Stream theo trạng thái (status=pending, confirmed, etc.)"""
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        test_phone = "0933445566"
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Live Status Test",
+            "phone": test_phone,
+            "address": "123 Hai Bà Trưng, Q.3, TP.HCM",
+            "transferredAmount": 650000,
+            "paymentProofImage": "https://example.com/receipt_st.jpg"
+        })
+        self.assertEqual(res_create.status_code, 201)
+
+        # Lọc status=pending
+        res_pending = self.client.get("/api/flower/v1/admin/orders?timeframe=all&source=livestream_quick_order&status=pending", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_pending.status_code, 200)
+        orders_pending = res_pending.get_json()["data"].get("orders", [])
+        self.assertTrue(all(o.get("status") == "pending" for o in orders_pending))
+
+        # Lọc status=completed (không được chứa đơn pending vừa tạo)
+        res_completed = self.client.get("/api/flower/v1/admin/orders?timeframe=all&source=livestream_quick_order&status=completed", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_completed.status_code, 200)
+        orders_completed = res_completed.get_json()["data"].get("orders", [])
+        self.assertFalse(any(o.get("orderCode") == test_phone for o in orders_completed))
+
+    def test_order_shortcut_item_contains_source_and_proof(self):
+        """Kiểm tra build_order_shortcut_item bảo lưu đầy đủ trường source, orderType và ảnh bill"""
+        mock_order = {
+            "id": "ord_mock_123456",
+            "orderCode": "0999888777",
+            "createdAt": "2026-10-22T10:00:00Z",
+            "updatedAt": "2026-10-22T10:00:00Z",
+            "status": "pending",
+            "source": "livestream_quick_order",
+            "orderType": "livestream_quick",
+            "branchId": "admin",
+            "recipient": {"name": "Test Shortcut", "phone": "0999888777", "address": "123 HCM"},
+            "sender": {"name": "Test Shortcut", "phone": "0999888777"},
+            "totalAmount": 1200000,
+            "transferredAmount": 1200000,
+            "payment": {
+                "status": "pending_confirmation",
+                "method": "vietqr",
+                "proofImage": "/images/proof_mock.webp",
+                "transferredAmount": 1200000
+            },
+            "proofImage": "/images/proof_mock.webp",
+            "paymentProofImage": "/images/proof_mock.webp",
+            "items": [{"productId": "bo_hoa_01", "productName": "Hoa Hồng", "quantity": 1, "price": 1200000}]
+        }
+
+        shortcut = build_order_shortcut_item(mock_order)
+        self.assertEqual(shortcut.get("source"), "livestream_quick_order")
+        self.assertEqual(shortcut.get("orderType"), "livestream_quick")
+        self.assertEqual(shortcut.get("proofImage"), "/images/proof_mock.webp")
+        self.assertEqual(shortcut.get("paymentProofImage"), "/images/proof_mock.webp")
+        self.assertEqual(shortcut.get("transferredAmount"), 1200000)
+        self.assertEqual((shortcut.get("payment") or {}).get("proofImage"), "/images/proof_mock.webp")
+
+    def test_livestream_toggle_quick_order_workflow(self):
+        """Kiểm tra luồng bật/tắt nhận đơn Live Stream ảnh hưởng tức thì đến API chốt đơn"""
+        # 1. Tắt nhận đơn
+        res_off = self.client.put("/api/flower/v1/admin/livestream-config", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"enableQuickOrder": False, "enabled": False})
+        self.assertEqual(res_off.status_code, 200)
+
+        # 2. Khách thử gửi đơn -> Phải bị chặn 400
+        res_fail = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Gửi Đơn Lúc Tắt Live",
+            "phone": "0911222333",
+            "address": "123 Tắt Live, Q.1",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/receipt.jpg"
+        })
+        self.assertEqual(res_fail.status_code, 400)
+        self.assertIn("tạm", res_fail.get_json()["message"].lower())
+
+        # 3. Bật nhận đơn lại
+        res_on = self.client.put("/api/flower/v1/admin/livestream-config", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"enableQuickOrder": True, "enabled": True})
+        self.assertEqual(res_on.status_code, 200)
+
+        # 4. Khách gửi đơn lại -> Thành công 201
+        res_ok = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Gửi Đơn Lúc Bật Live",
+            "phone": "0911222333",
+            "address": "123 Bật Live, Q.1",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/receipt.jpg"
+        })
+        self.assertEqual(res_ok.status_code, 201)
+
+    def test_livestream_order_fulfillment_workflow(self):
+        """
+        Kiểm tra trọn vẹn luồng fulfillment của shop cho đơn Live Stream:
+        1. Xác nhận đơn (confirmed)
+        2. Tải ảnh hoa thành phẩm thực tế (photo_sent)
+        3. Gán Shipper và chuyển sang giao hàng (shipping kèm shipperName, shipperPhone)
+        4. Hoàn thành đơn hàng (delivered / completed)
+        """
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        # Bước 0: Tạo đơn chốt từ phiên Live
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Chị Lan Chốt Đơn Trực Tiếp",
+            "phone": "0918765432",
+            "address": "88 Nguyễn Huệ, Quận 1, TP.HCM",
+            "transferredAmount": 1500000,
+            "paymentProofImage": "https://example.com/bill_lan.jpg",
+            "notes": "Giao trước 17h chiều"
+        })
+        self.assertEqual(res_create.status_code, 201)
+        order_id = res_create.get_json()["data"]["id"]
+
+        # Bước 1: Shop bấm Xác nhận đơn -> status: confirmed
+        res_step1 = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "confirmed"})
+        self.assertEqual(res_step1.status_code, 200)
+        data_step1 = res_step1.get_json()["data"]
+        self.assertEqual(data_step1["status"], "confirmed")
+
+        # Bước 2: Shop chụp & tải ảnh hoa thành phẩm thực tế -> status: photo_sent
+        res_step2 = self.client.post(f"/api/flower/v1/admin/orders/{order_id}/photo", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={
+            "photoUrl": "https://example.com/actual_flower_lan.jpg"
+        })
+        self.assertEqual(res_step2.status_code, 200)
+        data_step2 = res_step2.get_json()["data"]
+        self.assertEqual(data_step2["status"], "photo_sent")
+        self.assertEqual(data_step2["flowerPhoto"]["photoUrl"], "https://example.com/actual_flower_lan.jpg")
+
+        # Bước 3: Shop gán Shipper (Tên, SĐT) & Bắt đầu giao hàng -> status: shipping
+        res_step3 = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={
+            "status": "shipping",
+            "shipperName": "Bác Ba Shipper",
+            "shipperPhone": "0908889999",
+            "note": "Gán shipper Bác Ba Shipper (0908889999) & bắt đầu giao"
+        })
+        self.assertEqual(res_step3.status_code, 200)
+        data_step3 = res_step3.get_json()["data"]
+        self.assertEqual(data_step3["status"], "shipping")
+        self.assertEqual(data_step3["delivery"]["shipperName"], "Bác Ba Shipper")
+        self.assertEqual(data_step3["delivery"]["shipperPhone"], "0908889999")
+
+        # Bước 4: Shop bấm Hoàn thành đơn hàng -> status: delivered
+        res_step4 = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "delivered"})
+        self.assertEqual(res_step4.status_code, 200)
+        data_step4 = res_step4.get_json()["data"]
+        self.assertEqual(data_step4["status"], "delivered")
+
+        # Kiểm tra đọc lại đơn hàng từ API chi tiết
+        res_detail = self.client.get(f"/api/flower/v1/orders/{order_id}", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_detail.status_code, 200)
+        final_order = res_detail.get_json()["data"]
+        self.assertEqual(final_order["status"], "delivered")
+        self.assertEqual(final_order["delivery"]["shipperName"], "Bác Ba Shipper")
+        self.assertEqual(final_order["delivery"]["shipperPhone"], "0908889999")
+        self.assertEqual(final_order["flowerPhoto"]["photoUrl"], "https://example.com/actual_flower_lan.jpg")
+
+    def test_livestream_daily_storage_and_date_filter(self):
+        """
+        Kiểm tra lưu trữ đơn Live Stream theo ngày (config/anne/livestream_orders/{YYYY-MM-DD}.json)
+        và bộ lọc API chọn ngày (GET /admin/orders?source=livestream_quick_order&date=YYYY-MM-DD).
+        """
+        from datetime import datetime
+        today_str = datetime.now().strftime("%Y-%m-%d")
+
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        # 1. Tạo đơn Live Stream
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Test Ngày Live",
+            "phone": "0934567890",
+            "address": "123 Cách Mạng Tháng 8, Q.10",
+            "transferredAmount": 650000,
+            "paymentProofImage": "https://example.com/receipt_date_test.jpg"
+        })
+        self.assertEqual(res_create.status_code, 201)
+        created_order = res_create.get_json()["data"]
+        order_id = created_order["id"]
+        self.assertEqual(created_order.get("orderDate"), today_str)
+
+        # 2. Kiểm tra API lấy danh sách ngày có đơn Live Stream
+        res_dates = self.client.get("/api/flower/v1/admin/livestream/dates", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_dates.status_code, 200)
+        dates_list = res_dates.get_json()["data"]
+        self.assertIn(today_str, dates_list)
+
+        # 3. Kiểm tra API lọc đơn Live Stream theo ngày hôm nay -> Phải tìm thấy đơn
+        res_filter_today = self.client.get(f"/api/flower/v1/admin/orders?source=livestream_quick_order&date={today_str}", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_filter_today.status_code, 200)
+        today_orders = res_filter_today.get_json()["data"].get("orders", [])
+        matched = [o for o in today_orders if o.get("id") == order_id or o.get("orderCode") == "0934567890"]
+        self.assertTrue(len(matched) > 0, "Đơn hàng phải xuất hiện trong kết quả lọc của ngày hôm nay")
+
+        # 4. Kiểm tra API lọc theo một ngày khác không có đơn (ví dụ: 2025-01-01) -> Không có đơn này
+        res_filter_diff = self.client.get("/api/flower/v1/admin/orders?source=livestream_quick_order&date=2025-01-01", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        })
+        self.assertEqual(res_filter_diff.status_code, 200)
+        diff_orders = res_filter_diff.get_json()["data"].get("orders", [])
+        matched_diff = [o for o in diff_orders if o.get("id") == order_id]
+        self.assertEqual(len(matched_diff), 0, "Không được xuất hiện đơn trong ngày khác")
+
 if __name__ == "__main__":
     unittest.main()
+
+

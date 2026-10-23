@@ -542,13 +542,16 @@ def create_livestream_quick_order(
     order_id = f"ord_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}"
     order_code = (quick_data.get("orderCode") or phone).strip()
     created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    today_date = datetime.now().strftime("%Y-%m-%d")
 
     new_order = {
         "id": order_id,
         "orderCode": order_code,
         "trackingCode": phone,
         "createdAt": created_at,
-        "orderDate": created_at,
+        "orderDate": today_date,
+        "orderDay": today_date,
+        "livestreamDate": today_date,
         "updatedAt": created_at,
         "source": "livestream_quick_order",
         "branchId": "admin",
@@ -771,11 +774,13 @@ def query_admin_orders(
     source: Optional[str] = None,
     sort_by: str = "updatedAt",
     sort_order: str = "desc",
-    date_filter_by: str = "createdAt"
+    date_filter_by: str = "createdAt",
+    date: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Quản lý & Thống kê đơn hàng chuyên sâu cho Admin / Quản lý chi nhánh theo Tuần, Tháng, Quý:
     - timeframe: 'today' (hôm nay), 'this_week' (tuần này), 'this_month' (tháng này), 'last_month' (tháng trước), 'all' (toàn thời gian), 'custom' (tùy chọn)
+    - date: YYYY-MM-DD (lọc chính xác theo một ngày cụ thể, ví dụ ngày phát Live Stream)
     - sort_by: 'updatedAt' (mặc định), 'createdAt', 'totalAmount', 'deliveryDate'
     - sort_order: 'desc' (giảm dần / mới nhất), 'asc' (tăng dần / cũ nhất)
     - date_filter_by: 'createdAt' (mặc định) hoặc 'updatedAt'
@@ -787,6 +792,13 @@ def query_admin_orders(
     user_branch = current_user.get("branchId")
     current_ym, prev_ym = get_system_current_and_prev_ym()
 
+    # Nếu truyền date cụ thể -> chuyển sang chế độ lọc custom theo ngày đó
+    if date and date.strip():
+        clean_d = date.strip()[:10]
+        start_date = clean_d
+        end_date = clean_d
+        timeframe = "custom"
+
     # 1. Xác định tập đơn hàng cơ sở cần nạp
     orders_pool: List[Dict[str, Any]] = []
     if month_key:
@@ -795,6 +807,9 @@ def query_admin_orders(
         orders_pool = read_orders_by_month(current_ym)
     elif timeframe == "last_month":
         orders_pool = read_orders_by_month(prev_ym)
+    elif timeframe == "custom" and start_date and end_date and start_date[:7] == end_date[:7]:
+        custom_ym = start_date[:7].replace("-", "_")
+        orders_pool = read_orders_by_month(custom_ym)
     else:
         # 'all' hoặc 'custom' qua nhiều tháng -> đọc từ toàn bộ các file tháng
         from data_service import get_all_orders_across_all_months
@@ -868,8 +883,30 @@ def query_admin_orders(
             continue
 
         # Lọc theo nguồn đơn hàng (vd: livestream_quick_order)
-        if source and source != "all" and o.get("source") != source:
-            continue
+        if source and source != "all":
+            o_source = (o.get("source") or "").lower()
+            o_type = (o.get("orderType") or "").lower()
+            target_source = source.lower()
+            # Nếu bản ghi shortcut cũ chưa có trường source, fallback đọc từ file chi tiết nếu có
+            if not o_source and o.get("detailPath"):
+                try:
+                    detail_obj = read_order_by_id(o.get("id") or o.get("orderCode"))
+                    if isinstance(detail_obj, dict):
+                        o["source"] = detail_obj.get("source") or ""
+                        o["orderType"] = detail_obj.get("orderType") or ""
+                        o["proofImage"] = detail_obj.get("proofImage") or detail_obj.get("paymentProofImage") or ""
+                        o["paymentProofImage"] = o["proofImage"]
+                        o["transferredAmount"] = detail_obj.get("transferredAmount") or 0
+                        o_source = (o.get("source") or "").lower()
+                        o_type = (o.get("orderType") or "").lower()
+                except Exception:
+                    pass
+
+            if target_source in ["livestream_quick_order", "livestream", "live"]:
+                if "live" not in o_source and "live" not in o_type:
+                    continue
+            elif o_source != target_source and target_source not in o_source:
+                continue
 
         # Lọc theo thanh toán
         o_payment = o.get("payment", {})
@@ -884,6 +921,14 @@ def query_admin_orders(
         if filter_end and date_target > filter_end:
             continue
 
+        # Lọc theo ngày cụ thể (khi lọc 1 ngày duy nhất)
+        if start_date and end_date and start_date[:10] == end_date[:10]:
+            target_day = start_date[:10]
+            o_day = (o.get("livestreamDate") or o.get("orderDay") or o.get("orderDate") or o.get("createdAt") or "")[:10]
+            o_delivery_day = (o.get("delivery") or {}).get("deliveryDate", "")[:10]
+            if o_day != target_day and o_delivery_day != target_day:
+                continue
+
         # Tìm kiếm theo mã đơn, SĐT, Tên khách, Nguồn đơn hoặc Mẫu hoa
         if clean_search:
             sender = o.get("sender") or {}
@@ -894,6 +939,9 @@ def query_admin_orders(
             recipient_phone = (recipient.get("phone") or "").lower()
             order_code = (o.get("orderCode") or o.get("id") or "").lower()
             order_source = (o.get("source") or "").lower()
+            creator_name = (o.get("creatorName") or o.get("customerName") or "").lower()
+            created_by = (o.get("createdBy") or o.get("trackingCode") or "").lower()
+            phone_val = (o.get("phone") or "").lower()
             items_str = " ".join((it.get("productName") or "").lower() for it in (o.get("items") or []))
 
             if (clean_search not in order_code and 
@@ -901,6 +949,9 @@ def query_admin_orders(
                 clean_search not in sender_phone and 
                 clean_search not in recipient_name and 
                 clean_search not in recipient_phone and
+                clean_search not in creator_name and
+                clean_search not in created_by and
+                clean_search not in phone_val and
                 clean_search not in order_source and
                 clean_search not in items_str):
                 continue

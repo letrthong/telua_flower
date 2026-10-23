@@ -142,6 +142,33 @@ Nằm trong modal **Cấu Hình Hệ Thống** (`#systemConfigModal`), gồm cá
 5. **Chọn Bó Hoa Giới Thiệu Trong Live:** Danh sách checkbox nạp từ danh mục sản phẩm của shop; Admin chỉ cần tích chọn các mẫu hoa sẽ mang lên sóng livestream.
 6. **Báo Cáo & Xuất Dữ Liệu:** Nút **"📥 Xuất File Excel / CSV (Chuyên Live Stream)"** và nút chuyển nhanh đến trang Quản lý đơn hàng.
 
+### C. Tab Quản Trị Đơn Hàng Live Stream Độc Lập (`tabContentLivestreamOrders`)
+Nằm trực tiếp trên thanh điều hướng chính của **Cổng Quản Trị Hệ Thống** (`#adminPortalModal`), được thiết kế để xử lý tức thì các đơn hàng đổ về trong lúc phát sóng:
+1. **Thẻ Thống Kê Nhanh (KPI Stats Counter):**
+   - Tổng đơn Live Stream.
+   - Đơn chờ xác nhận thanh toán (`pending`).
+   - Đơn đang cắm hoa (`arranging`).
+   - Đơn đang giao (`shipping`).
+   - Đơn hoàn thành giao hoa (`delivered`).
+   - Tổng doanh thu chốt từ phiên Live Stream.
+2. **Bảng Danh Sách Đơn Hàng Trực Tiếp:**
+   - Hiển thị đầy đủ: Mã đơn, Thời gian, Tên khách hàng & SĐT, Địa chỉ nhận, Mẫu hoa đã chọn, Số tiền chuyển khoản, Ảnh bill, Trạng thái đơn, Ảnh hoa thực tế sau khi cắm, Thao tác xử lý.
+3. **Modal Chi Tiết Đơn & Quy Trình Thao Tác 4 Bước Của Shop (`#adminLiveOrderDetailModal`):**
+   - **Bước 1 - Xác Nhận Chuyển Khoản & Tiếp Nhận:** Shop đối chiếu ảnh bill chuyển khoản của khách, bấm nút **"Xác Nhận & Bắt Đầu Cắm Hoa"** (`status -> arranging`).
+   - **Bước 2 - Thợ Cắm Hoa & Tải Ảnh Hoa Thực Tế:** Thợ hoa hoàn thiện bó hoa, chụp ảnh thực tế tải lên hệ thống (`/api/flower/v1/admin/livestream/upload-flower-proof` hoặc `/api/orders/<id>/photo`). Ảnh hoa được lưu trữ an toàn và hiển thị công khai trên phiếu đơn để khách/quản lý nghiệm thu.
+   - **Bước 3 - Điều Phối Chi Nhánh & Gán Thông Tin Shipper:** Quản lý chỉ định chi nhánh chịu trách nhiệm thực hiện (`branchId`), đồng thời điền Họ tên Shipper và Số điện thoại Shipper phụ trách giao (`order.delivery.shipperName`, `order.delivery.shipperPhone`). Bấm **"Giao Hàng"** (`status -> shipping`).
+   - **Bước 4 - Hoàn Tất Giao Hoa:** Sau khi shipper hoàn thành giao hoa tận tay người nhận, bấm **"Đã Giao Thành Công"** (`status -> delivered`).
+
+### D. Bộ Lọc Theo Ngày & Thanh Trạng Thái Đối Soát (`#filterLiveOrderDate`)
+Để phục vụ công tác đối soát doanh thu và kiểm soát đơn theo từng ca phát sóng:
+1. **Ô Chọn Ngày Trực Quan:** Thẻ `<input type="date" id="filterLiveOrderDate">` tích hợp ngay trên thanh công cụ của Tab Live Stream.
+2. **Phím Tắt Nhanh:**
+   - Nút **`[ Hôm nay ]`**: Tự động điền ngày hiện tại và kích hoạt nạp danh sách đơn của phiên live hôm nay.
+   - Nút **`[ ✖ Xóa lọc ngày ]`**: Xóa trắng bộ lọc ngày để xem toàn bộ lịch sử đơn livestream.
+3. **Thanh Trạng Thái Bộ Lọc (`#liveOrderFilterInfoBar`):**
+   - Hiển thị badge ngày đang lọc (Ví dụ: `Đang lọc theo ngày: 2026-10-22`) và tổng số đơn tương ứng.
+4. **Tự Động Tính Toán Lại Chỉ Số:** Khi thay đổi ngày lọc, toàn bộ thẻ KPI và tổng doanh thu được tính toán lại theo đúng ngày được chọn.
+
 ---
 
 ## 5. Cơ Chế Xuất Dữ Liệu Đơn Hàng (Excel / CSV Export Engine)
@@ -165,8 +192,10 @@ const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 8. **Số Tiền Đã Chuyển:** Số tiền thanh toán (VND)
 9. **Tổng Tiền Đơn Hàng:** Giá trị bó hoa (VND)
 10. **Ảnh Bằng Chứng:** URL xem ảnh chụp bill chuyển khoản
-11. **Trạng Thái Đơn:** `Chờ xác nhận thanh toán` / `Đang xử lý`
-12. **Ghi Chú:** Lời nhắn gửi / yêu cầu giao hoa của khách
+11. **Ảnh Hoa Sau Cắm:** URL ảnh chụp hoa thực tế của shop trước khi giao
+12. **Thông Tin Shipper:** Họ tên & SĐT tài xế giao hoa
+13. **Trạng Thái Đơn:** `Chờ xác nhận thanh toán` / `Đang xử lý` / `Đang giao` / `Đã giao`
+14. **Ghi Chú:** Lời nhắn gửi / yêu cầu giao hoa của khách
 
 ---
 
@@ -200,6 +229,9 @@ const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   "orderCode": "LIV-1740212345",
   "source": "livestream_quick_order",
   "orderType": "livestream_quick",
+  "orderDate": "2026-10-22",
+  "orderDay": "2026-10-22",
+  "livestreamDate": "2026-10-22",
   "customerName": "Nguyễn Thị Mai",
   "phone": "0912345678",
   "shippingAddress": "123 Cách Mạng Tháng 8, P.5, Q.3, TP.HCM",
@@ -233,8 +265,40 @@ const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   "cardMessage": "Giao trước 11h trưa giúp mình",
   "totalAmount": 650000,
   "status": "pending",
+  "photoAfterArranged": "/api/flower/v1/images/orders/proof_1792673091_9ef1b1d6.png",
+  "delivery": {
+    "shipperName": "Trần Văn Giao",
+    "shipperPhone": "0909112233"
+  },
   "createdAt": "2026-10-22T07:12:00Z"
 }
+```
+
+### C. Cấu Trúc Sổ Cái Đơn Theo Ngày `config/anne/livestream_orders/{YYYY-MM-DD}.json`
+Để tối ưu tốc độ đọc và đối soát phiên live mà không cần quét toàn bộ cây thư mục Kanban đa chi nhánh:
+```json
+[
+  {
+    "orderId": "LIV-1740212345",
+    "orderCode": "LIV-1740212345",
+    "customerName": "Nguyễn Thị Mai",
+    "phone": "0912345678",
+    "recipientName": "Nguyễn Thị Mai",
+    "recipientPhone": "0912345678",
+    "deliveryAddress": "123 Cách Mạng Tháng 8, P.5, Q.3, TP.HCM",
+    "status": "delivered",
+    "totalAmount": 650000,
+    "transferredAmount": 650000,
+    "proofImage": "/api/flower/v1/images/orders/proof_LIV_1740212345.webp",
+    "photoAfterArranged": "/api/flower/v1/images/orders/proof_1792673091_9ef1b1d6.png",
+    "shipperName": "Trần Văn Giao",
+    "shipperPhone": "0909112233",
+    "source": "livestream_quick_order",
+    "orderDate": "2026-10-22",
+    "createdAt": "2026-10-22T07:12:00Z",
+    "updatedAt": "2026-10-22T08:30:00Z"
+  }
+]
 ```
 
 ---
@@ -246,22 +310,32 @@ const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 | `GET` | `/api/livestream-config` | Public | Lấy cấu hình Live Stream công khai (trạng thái `enableQuickOrder`, thông tin ngân hàng, mã QR, danh sách hoa ghim) |
 | `GET` | `/api/admin/livestream-config` | Admin / Manager | Lấy cấu hình Live Stream đầy đủ cho trang Quản Trị Hệ Thống |
 | `PUT` | `/api/admin/livestream-config` | Admin / Manager | Cập nhật cấu hình Live Stream (Bật/tắt cờ, thông tin ngân hàng, ảnh QR code, chọn hoa ghim) |
-| `POST` | `/api/orders/quick-order` | Public | Tiếp nhận đơn đặt hàng nhanh: Validate số điện thoại, kiểm tra cờ bật/tắt, lưu ảnh hóa đơn chuyển khoản, tạo đơn hàng và đồng bộ danh bạ CRM |
-| `GET` | `/api/admin/orders?source=livestream_quick_order` | Staff / Manager / Admin | Lấy danh sách đơn hàng đã lọc riêng theo nguồn Live Stream |
+| `POST` | `/api/orders/quick-order` | Public | Tiếp nhận đơn đặt hàng nhanh: Validate số điện thoại, kiểm tra cờ bật/tắt, lưu ảnh hóa đơn chuyển khoản, tạo đơn hàng, đồng bộ danh bạ CRM và ghi vào sổ theo ngày |
+| `GET` | `/api/admin/orders?source=livestream_quick_order&date=YYYY-MM-DD` | Staff / Manager / Admin | Lấy danh sách đơn hàng đã lọc riêng theo nguồn Live Stream và ngày cụ thể |
+| `GET` | `/api/flower/v1/admin/livestream/dates` | Staff / Manager / Admin | Lấy danh sách toàn bộ các ngày có đơn Live Stream phát sinh |
+| `GET` | `/api/flower/v1/admin/livestream/orders?date=YYYY-MM-DD` | Staff / Manager / Admin | Đọc siêu tốc danh sách đơn Live Stream trực tiếp từ tệp sổ cái theo ngày |
+| `POST` | `/api/flower/v1/admin/livestream/upload-flower-proof` | Staff / Manager / Admin | Tải ảnh chụp hoa thực tế của shop sau khi cắm hoàn thiện cho đơn Live Stream |
 
 ---
 
 ## 8. Kế Hoạch Kiểm Thử Tự Động (Unit Test Coverage)
 
-Toàn bộ nghiệp vụ phân hệ Live Stream Quick Order được kiểm thử tự động tại [src/unittest/test_livestream_quick_order.py](file:///d:/wmshare/telua_flower/src/unittest/test_livestream_quick_order.py):
+Toàn bộ nghiệp vụ phân hệ Live Stream Quick Order được kiểm thử tự động tại [src/unittest/test_livestream_quick_order.py](file:///d:/wmshare/telua_flower/src/unittest/test_livestream_quick_order.py) với 15/15 bài test đạt chuẩn:
 
 | Test Case | Mục Tiêu Kiểm Thử | Kết Quả |
 | :--- | :--- | :---: |
-| `test_01_get_and_save_livestream_config` | Lưu và đọc cấu hình `livestreamConfig.json` | ✅ Pass |
-| `test_02_public_api_livestream_config` | Gọi API công khai `/api/livestream-config` | ✅ Pass |
-| `test_03_admin_update_livestream_config` | Gọi API PUT `/api/admin/livestream-config` | ✅ Pass |
-| `test_04_create_quick_order_when_enabled` | Tạo đơn đặt hàng nhanh khi cờ đang bật | ✅ Pass |
-| `test_05_create_quick_order_when_disabled_fails` | Chặn tạo đơn khi cờ `enableQuickOrder = false` | ✅ Pass |
-| `test_06_create_quick_order_missing_fields` | Bắt lỗi thiếu Họ tên, SĐT hoặc Địa chỉ nhận hoa | ✅ Pass |
-| `test_07_order_service_filtering_by_source` | Truy vấn và lọc đơn hàng theo nguồn `livestream_quick_order` | ✅ Pass |
-| `test_08_quick_order_with_featured_product_selection` | Lưu thông tin bó hoa đã chọn vào danh sách items đơn hàng | ✅ Pass |
+| `test_get_and_save_livestream_config_data_service` | Lưu và đọc cấu hình `livestreamConfig.json` | ✅ Pass |
+| `test_public_and_admin_livestream_config_endpoints` | Gọi API công khai & quản trị cấu hình `/livestream-config` | ✅ Pass |
+| `test_quick_order_creation_when_enabled` | Tạo đơn đặt hàng nhanh khi cờ đang bật | ✅ Pass |
+| `test_quick_order_disabled_should_reject` | Chặn tạo đơn khi cờ `enableQuickOrder = false` (HTTP 400) | ✅ Pass |
+| `test_quick_order_validation_missing_fields` | Bắt lỗi thiếu Họ tên, SĐT hoặc Địa chỉ nhận hoa | ✅ Pass |
+| `test_quick_order_success_with_multipart_file_upload` | Tạo đơn nhanh kèm upload file ảnh hóa đơn thực tế | ✅ Pass |
+| `test_quick_order_with_selected_bouquet` | Lưu thông tin bó hoa đã chọn vào danh sách items đơn hàng | ✅ Pass |
+| `test_livestream_featured_products_config` | Cấu hình và nạp danh sách hoa ghim `featuredProductIds` | ✅ Pass |
+| `test_admin_orders_filter_by_source_livestream` | Lọc danh sách đơn qua API `/admin/orders?source=livestream_quick_order` | ✅ Pass |
+| `test_admin_orders_search_livestream_by_phone_and_recipient` | Tìm kiếm đơn Live Stream theo SĐT hoặc Tên người nhận | ✅ Pass |
+| `test_admin_orders_livestream_status_filtering` | Lọc đơn Live Stream theo trạng thái (pending, confirmed, etc.) | ✅ Pass |
+| `test_order_shortcut_item_contains_source_and_proof` | Kiểm tra tính toàn vẹn `source` & ảnh bill trong `build_order_shortcut_item` | ✅ Pass |
+| `test_livestream_toggle_quick_order_workflow` | Luồng bật/tắt nhận đơn Live Stream ảnh hưởng tức thì đến API chốt đơn | ✅ Pass |
+| `test_livestream_shop_action_proof_and_shipper_flow` | Quy trình thao tác shop: xác nhận, upload ảnh hoa thực tế, gán shipper, hoàn thành | ✅ Pass |
+| `test_livestream_daily_storage_and_date_filter` | Lưu trữ sổ cái theo ngày `livestream_orders/{date}.json` và bộ lọc query theo ngày | ✅ Pass |

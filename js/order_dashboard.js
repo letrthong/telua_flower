@@ -829,6 +829,68 @@ function populateOrderDetail(order) {
                     cashBtn.innerHTML = '<i class="fa-solid fa-money-bill-wave"></i> Thu tiền mặt';
                 }
             }
+
+            // 3b. Cập nhật 4 nút Quy trình xử lý đơn (Fulfillment Buttons)
+            const curStatus = String(order.status || "pending").toLowerCase();
+            const btnConfirm = document.getElementById("ordDetailActionConfirmBtn");
+            const btnPhoto = document.getElementById("ordDetailActionPhotoBtn");
+            const btnShipping = document.getElementById("ordDetailActionShippingBtn");
+            const btnComplete = document.getElementById("ordDetailActionCompleteBtn");
+
+            if (btnConfirm) {
+                if (curStatus === "pending") {
+                    btnConfirm.disabled = false;
+                    btnConfirm.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm ring-2 ring-emerald-300 animate-pulse";
+                    btnConfirm.innerHTML = '<i class="fa-solid fa-circle-check"></i> 1. Xác nhận đơn';
+                } else {
+                    btnConfirm.disabled = false;
+                    btnConfirm.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100";
+                    btnConfirm.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> Đã xác nhận';
+                }
+            }
+
+            if (btnPhoto) {
+                const hasPhoto = !!(order.flowerPhoto && order.flowerPhoto.photoUrl);
+                if (curStatus === "confirmed" || curStatus === "arranging") {
+                    btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm ring-2 ring-purple-300 animate-pulse";
+                    btnPhoto.innerHTML = '<i class="fa-solid fa-camera"></i> 2. Chụp hình hoa';
+                } else if (hasPhoto) {
+                    btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100";
+                    btnPhoto.innerHTML = '<i class="fa-solid fa-camera text-purple-600"></i> Đã chụp (Chụp lại)';
+                } else {
+                    btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100";
+                    btnPhoto.innerHTML = '<i class="fa-solid fa-camera text-purple-600"></i> 2. Chụp hình hoa';
+                }
+            }
+
+            if (btnShipping) {
+                if (curStatus === "photo_sent" || curStatus === "arranging" || (curStatus === "confirmed" && !order.requiresArranging)) {
+                    btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm ring-2 ring-blue-300 animate-pulse";
+                    btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast"></i> 3. Gán Shipper & Giao';
+                } else if (curStatus === "shipping") {
+                    btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100";
+                    btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast text-blue-600"></i> Đang giao (Đổi)';
+                } else {
+                    btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100";
+                    btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast text-blue-600"></i> 3. Gán Shipper';
+                }
+            }
+
+            if (btnComplete) {
+                if (curStatus === "shipping" || curStatus === "ready_for_pickup") {
+                    btnComplete.disabled = false;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm ring-2 ring-emerald-300 animate-pulse";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-award"></i> 4. Hoàn thành đơn';
+                } else if (curStatus === "delivered" || curStatus === "completed") {
+                    btnComplete.disabled = true;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-700"></i> Đã hoàn thành';
+                } else {
+                    btnComplete.disabled = false;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 hover:bg-emerald-600 hover:text-white border border-gray-200";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-award text-amber-500"></i> 4. Hoàn thành';
+                }
+            }
         }
     }
 
@@ -859,6 +921,27 @@ function populateOrderDetail(order) {
             setSafe("ordDetailDeliveryNotes", recipient.deliveryNotes);
         } else {
             notesRow.classList.add("hidden");
+        }
+    }
+
+    // 4b. Shipper Information Row
+    const shipperNameEl = document.getElementById("ordDetailShipperName");
+    const shipperPhoneEl = document.getElementById("ordDetailShipperPhone");
+    const shipperPhoneLink = document.getElementById("ordDetailShipperPhoneLink");
+    const sName = delivery.shipperName || order.assigneeName || "";
+    const sPhone = delivery.shipperPhone || "";
+
+    if (shipperNameEl) {
+        shipperNameEl.textContent = sName || "Chưa phân công shipper";
+        shipperNameEl.className = sName ? "font-bold text-gray-800 text-xs" : "font-normal text-gray-400 text-xs italic";
+    }
+    if (shipperPhoneEl && shipperPhoneLink) {
+        if (sPhone) {
+            shipperPhoneEl.textContent = sPhone;
+            shipperPhoneLink.href = `tel:${sPhone}`;
+            shipperPhoneLink.classList.remove("hidden");
+        } else {
+            shipperPhoneLink.classList.add("hidden");
         }
     }
 
@@ -1063,6 +1146,8 @@ export async function handleOrderPhotoUpload(event) {
             // Tải lại chi tiết đơn và danh sách dashboard
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Tải ảnh thất bại");
         }
@@ -1102,19 +1187,21 @@ export async function handleConfirmCashPayment() {
             },
             body: JSON.stringify({
                 paymentStatus: "paid",
-                note: "Nhân viên xác nhận đã thu đủ tiền mặt"
+                note: "Nhân viên xác nhận đã thu đủ tiền mặt / đối soát bill"
             })
         });
         const json = await res.json();
 
         if (res.ok && json.success) {
             if (typeof showToast === "function") {
-                showToast("Đã xác nhận thanh toán tiền mặt thành công!", "success");
+                showToast("Đã xác nhận thanh toán thành công!", "success");
             } else {
-                alert("Đã xác nhận thanh toán tiền mặt thành công!");
+                alert("Đã xác nhận thanh toán thành công!");
             }
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Không thể xác nhận thanh toán");
         }
@@ -1155,6 +1242,8 @@ export async function handleOrderQuickStatusChange(newStatus) {
             }
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Chuyển trạng thái thất bại");
         }
@@ -1162,6 +1251,118 @@ export async function handleOrderQuickStatusChange(newStatus) {
         alert("Lỗi: " + e.message);
     } finally {
         if (selectEl) selectEl.disabled = false;
+    }
+}
+
+/**
+ * Xử lý bước thực hiện trong quy trình 4 bước (Fulfillment Stepper)
+ */
+export async function handleOrderFulfillmentStep(targetStep) {
+    if (!currentOpenOrderId) return;
+
+    if (targetStep === "confirmed") {
+        await handleOrderQuickStatusChange("confirmed");
+    } else if (targetStep === "photo") {
+        const photoInput = document.getElementById("ordDetailPhotoInput");
+        if (photoInput) photoInput.click();
+    } else if (targetStep === "shipping") {
+        openAssignShipperModal();
+    } else if (targetStep === "completed") {
+        if (!confirm("Xác nhận đã giao hoa thành công & hoàn tất đơn hàng?")) return;
+        await handleOrderQuickStatusChange("delivered");
+    }
+}
+
+/**
+ * Mở modal gán Shipper
+ */
+export function openAssignShipperModal() {
+    const modal = document.getElementById("orderShipperModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    // Lấy tên và SĐT hiện có nếu có
+    const sName = document.getElementById("ordDetailShipperName")?.textContent || "";
+    const sPhone = document.getElementById("ordDetailShipperPhone")?.textContent || "";
+
+    const nameInput = document.getElementById("assignShipperNameInput");
+    const phoneInput = document.getElementById("assignShipperPhoneInput");
+    if (nameInput) nameInput.value = (sName && !sName.includes("Chưa phân công")) ? sName.trim() : "";
+    if (phoneInput) phoneInput.value = (sPhone && sPhone !== "-") ? sPhone.trim() : "";
+    if (nameInput) nameInput.focus();
+}
+
+/**
+ * Đóng modal gán Shipper
+ */
+export function closeAssignShipperModal() {
+    const modal = document.getElementById("orderShipperModal");
+    if (!modal) return;
+    modal.style.display = "none";
+    modal.classList.add("hidden");
+}
+
+/**
+ * Submit thông tin gán Shipper
+ */
+export async function submitAssignShipper() {
+    if (!currentOpenOrderId) return;
+    const nameInput = document.getElementById("assignShipperNameInput");
+    const phoneInput = document.getElementById("assignShipperPhoneInput");
+    const shipperName = (nameInput?.value || "").trim();
+    const shipperPhone = (phoneInput?.value || "").trim();
+
+    if (!shipperName) {
+        alert("Vui lòng nhập tên người giao hàng / Shipper!");
+        nameInput?.focus();
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const submitBtn = document.getElementById("submitAssignShipperBtn");
+    const origHtml = submitBtn ? submitBtn.innerHTML : "";
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders/${encodeURIComponent(currentOpenOrderId)}/status`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                status: "shipping",
+                shipperName: shipperName,
+                shipperPhone: shipperPhone,
+                note: `Gán shipper ${shipperName}${shipperPhone ? ' (' + shipperPhone + ')' : ''} & bắt đầu giao`
+            })
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+            if (typeof showToast === "function") {
+                showToast("Đã gán shipper & chuyển trạng thái sang [Đang vận chuyển]!", "success");
+            } else {
+                alert("Đã gán shipper & bắt đầu giao hàng!");
+            }
+            closeAssignShipperModal();
+            openOrderDetailModal(currentOpenOrderId);
+            if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
+        } else {
+            throw new Error(json.message || "Không thể gán shipper");
+        }
+    } catch (e) {
+        alert("Lỗi: " + e.message);
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origHtml;
+        }
     }
 }
 
@@ -1193,6 +1394,7 @@ export async function handleOrderDetailDispatchBranch(targetBranchId) {
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
             if (typeof loadStaffOrders === "function") loadStaffOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
             if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Điều phối đơn hàng thất bại");
@@ -1222,6 +1424,10 @@ if (typeof window !== "undefined") {
     window.handleConfirmCashPayment = handleConfirmCashPayment;
     window.handleOrderQuickStatusChange = handleOrderQuickStatusChange;
     window.handleOrderDetailDispatchBranch = handleOrderDetailDispatchBranch;
+    window.handleOrderFulfillmentStep = handleOrderFulfillmentStep;
+    window.openAssignShipperModal = openAssignShipperModal;
+    window.closeAssignShipperModal = closeAssignShipperModal;
+    window.submitAssignShipper = submitAssignShipper;
     window.onDashboardMonthChange = onDashboardMonthChange;
     window.onDashboardSortChange = onDashboardSortChange;
     window.onDashboardFilterChange = onDashboardFilterChange;

@@ -52,6 +52,8 @@ from   data_service import (
     save_banners_config,
     get_livestream_config,
     save_livestream_config,
+    get_livestream_dates,
+    get_livestream_orders_by_date,
     save_uploaded_image,
     find_image_file,
     update_order_status,
@@ -743,6 +745,7 @@ def api_admin_orders():
     sort_by = request.args.get("sortBy", "updatedAt")
     sort_order = request.args.get("sortOrder", "desc")
     date_filter_by = request.args.get("dateFilterBy", "createdAt")
+    specific_date = request.args.get("date")
 
     result = query_admin_orders(
         current_user=request.current_user,
@@ -757,7 +760,8 @@ def api_admin_orders():
         source=source,
         sort_by=sort_by,
         sort_order=sort_order,
-        date_filter_by=date_filter_by
+        date_filter_by=date_filter_by,
+        date=specific_date
     )
 
     return jsonify({
@@ -796,29 +800,50 @@ def api_update_order_status(order_id):
         "pending", "confirmed", "arranging", "in_progress", "photo_sent",
         "shipping", "delivered", "ready_for_pickup", "completed", "cancelled", "returned"
     ]
-    if new_status not in valid_statuses:
-        return jsonify({"success": False, "message": "Trạng thái đơn hàng không hợp lệ"}), 400
-
     order = get_order_by_id(order_id)
     if not order:
         return jsonify({"success": False, "message": "Không tìm thấy đơn hàng"}), 404
+
+    # Nếu không truyền status mới thì giữ nguyên status hiện tại
+    if not new_status:
+        new_status = order.get("status") or "pending"
+
+    valid_statuses = [
+        "pending", "confirmed", "arranging", "in_progress", "photo_sent",
+        "shipping", "delivered", "ready_for_pickup", "completed", "cancelled", "returned"
+    ]
+    if new_status not in valid_statuses:
+        return jsonify({"success": False, "message": "Trạng thái đơn hàng không hợp lệ"}), 400
 
     # Phân quyền chi nhánh: nhân viên chỉ được cập nhật đơn của chi nhánh mình
     current_user = request.current_user
     if not can_access_branch(current_user, order.get("branchId") or order.get("assignedBranchId") or ""):
         return jsonify({"success": False, "message": "Bạn không có quyền cập nhật đơn hàng của chi nhánh này"}), 403
 
+    extra_fields = {
+        "history": (order.get("history") or []) + [{
+            "status": new_status,
+            "updatedAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "note": (payload.get("note") or "").strip() or f"Cập nhật trạng thái bởi {current_user.get('role', 'staff')}",
+            "updatedBy": current_user.get("userId") or current_user.get("phone") or "staff"
+        }]
+    }
+
+    shipper_name = (payload.get("shipperName") or "").strip()
+    shipper_phone = (payload.get("shipperPhone") or "").strip()
+    if shipper_name or shipper_phone:
+        delivery_info = dict(order.get("delivery") or {})
+        if shipper_name:
+            delivery_info["shipperName"] = shipper_name
+            extra_fields["assigneeName"] = shipper_name
+        if shipper_phone:
+            delivery_info["shipperPhone"] = shipper_phone
+        extra_fields["delivery"] = delivery_info
+
     updated = update_order_status(
         order_id,
         new_status,
-        **{
-            "history": (order.get("history") or []) + [{
-                "status": new_status,
-                "updatedAt": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "note": f"Cập nhật trạng thái bởi {current_user.get('role', 'staff')}",
-                "updatedBy": current_user.get("userId") or current_user.get("phone") or "staff"
-            }]
-        }
+        **extra_fields
     )
 
     if not updated:
@@ -1894,6 +1919,31 @@ def api_update_admin_livestream_config():
         "message": "Đã cập nhật cấu hình Live Stream thành công!",
         "data": updated
     }), 200
+
+
+@flower_connect_api.route("/admin/livestream/dates", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "sales_consultant", "florist"])
+def api_get_livestream_dates():
+    """Lấy danh sách các ngày có đơn hàng Live Stream để hỗ trợ bộ lọc theo ngày."""
+    dates = get_livestream_dates()
+    return jsonify({
+        "success": True,
+        "data": dates
+    }), 200
+
+
+@flower_connect_api.route("/admin/livestream/orders", methods=["GET"])
+@require_role(["super_admin", "branch_manager", "sales_consultant", "florist"])
+def api_get_livestream_daily_orders():
+    """Lấy danh sách đơn Live Stream trực tiếp từ file theo ngày YYYY-MM-DD."""
+    date_str = (request.args.get("date") or datetime.now().strftime("%Y-%m-%d")).strip()
+    orders = get_livestream_orders_by_date(date_str)
+    return jsonify({
+        "success": True,
+        "date": date_str,
+        "data": orders
+    }), 200
+
 
 
 # ==========================================

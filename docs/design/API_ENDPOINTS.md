@@ -84,10 +84,14 @@
 | `PUT` | `/api/orders/<id>/status` hoặc `/api/admin/orders/<id>/status` | Staff / Manager / Admin | Cập nhật tiến độ đơn (`pending` $\rightarrow$ `confirmed` $\rightarrow$ `arranging` $\rightarrow$ `shipping` $\rightarrow$ `delivered`) |
 | `PUT` | `/api/admin/orders/<id>/payment` | Staff / Manager / Admin | **Xác nhận thanh toán tiền mặt (COD / Pickup)** cho đơn hàng chi nhánh mình |
 | `POST` | `/api/orders/<id>/photo` | `florist` / Manager | **Thợ cắm hoa upload ảnh hoa thực tế** sau khi cắm để gửi khách duyệt |
-| `POST` | `/api/orders/quick-order` | Public | **Đặt hàng nhanh Live Stream (Quick Order)**: Đặt hoa tốc hành qua link hash `/#quick-order`, tự động sinh khách CRM, kiểm tra cờ bật/tắt, lưu ảnh hóa đơn chuyển khoản |
+| `POST` | `/api/orders/quick-order` | Public | **Đặt hàng nhanh Live Stream (Quick Order)**: Đặt hoa tốc hành qua link hash `/#quick-order`, tự động sinh khách CRM, kiểm tra cờ bật/tắt, lưu ảnh hóa đơn chuyển khoản, tự động đồng bộ vào sổ đơn theo ngày `livestream_orders/{YYYY-MM-DD}.json` |
 | `GET` | `/api/livestream-config` | Public | Lấy cấu hình Live Stream công khai (trạng thái `enableQuickOrder`, thông tin ngân hàng, mã QR, danh sách hoa ghim) |
 | `GET` | `/api/admin/livestream-config` | Admin, Manager | Lấy cấu hình Live Stream đầy đủ cho trang Quản Trị Hệ Thống |
 | `PUT` | `/api/admin/livestream-config` | Admin, Manager | Cập nhật cấu hình Live Stream (Bật/Tắt cờ, thông tin ngân hàng, ảnh QR code, chọn danh sách hoa live) |
+| `GET` | `/api/flower/v1/admin/livestream/dates` | Staff / Manager / Admin | Lấy danh sách toàn bộ các ngày có phát sinh đơn hàng Live Stream |
+| `GET` | `/api/flower/v1/admin/livestream/orders?date=YYYY-MM-DD` | Staff / Manager / Admin | Đọc siêu tốc danh sách đơn Live Stream trực tiếp từ tệp sổ cái theo ngày |
+| `POST` | `/api/flower/v1/admin/livestream/upload-flower-proof` | Staff / Manager / Admin | Tải ảnh chụp hoa thực tế của shop sau khi cắm hoàn thiện cho đơn Live Stream |
+| `GET` | `/api/admin/orders?source=livestream_quick_order&date=YYYY-MM-DD` | Staff / Manager / Admin | Lấy danh sách đơn hàng đã lọc đa chiều (hỗ trợ lọc theo nguồn `source`, trạng thái `status`, chi nhánh `branch`, ngày `date`, từ khóa `search`) |
 
 ---
 

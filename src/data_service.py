@@ -2040,7 +2040,8 @@ def build_order_shortcut_item(order: Dict[str, Any]) -> Dict[str, Any]:
                     "productId": itm.get("productId") or itm.get("id") or "",
                     "productName": p_name,
                     "quantity": qty,
-                    "unitPrice": itm.get("unitPrice") or itm.get("price") or 0
+                    "unitPrice": itm.get("unitPrice") or itm.get("price") or 0,
+                    "image": itm.get("image") or ""
                 })
         item_summary = ", ".join(first_names)
         if len(items) > 3:
@@ -2049,20 +2050,31 @@ def build_order_shortcut_item(order: Dict[str, Any]) -> Dict[str, Any]:
     year_month = extract_year_month_from_order(order)
     detail_rel_path = f"orders/{branch_id}/{year_month}/{status}/{order_id}.json"
 
+    proof_img = order.get("proofImage") or order.get("paymentProofImage") or (payment.get("proofImage") if isinstance(payment, dict) else "") or ""
+    transferred_amt = order.get("transferredAmount") or (payment.get("transferredAmount") if isinstance(payment, dict) else 0) or 0
+
     return {
         "id": order_id,
         "orderCode": order_code,
         "createdAt": created_at,
         "updatedAt": updated_at,
+        "orderDate": order.get("orderDate") or order.get("orderDay") or (created_at[:10] if created_at else ""),
+        "livestreamDate": order.get("livestreamDate") or order.get("orderDate") or (created_at[:10] if created_at else ""),
         "status": status,
+        "source": order.get("source") or "",
+        "orderType": order.get("orderType") or "",
         "branchId": branch_id,
         "branchName": branch_name,
         "assignedBranchId": branch_id,
         "assignedTo": order.get("assignedTo") or ("staff_admin" if branch_id == "admin" else ""),
         "assigneeName": order.get("assigneeName") or "",
         "createdBy": order.get("createdBy") or "",
-        "creatorName": order.get("creatorName") or "",
+        "creatorName": order.get("creatorName") or (sender.get("name") if isinstance(sender, dict) else "") or "",
         "totalAmount": total_amount,
+        "transferredAmount": transferred_amt,
+        "proofImage": proof_img,
+        "paymentProofImage": proof_img,
+        "selectedProduct": order.get("selectedProduct") or {},
         "financials": {
             "totalAmount": total_amount,
             "itemsTotal": float((order.get("financials") or {}).get("itemsTotal") or total_amount),
@@ -2071,7 +2083,10 @@ def build_order_shortcut_item(order: Dict[str, Any]) -> Dict[str, Any]:
         },
         "payment": {
             "status": payment.get("status", "unpaid"),
-            "method": payment.get("method", "vietqr")
+            "method": payment.get("method", "vietqr"),
+            "proofImage": proof_img,
+            "transferredAmount": transferred_amt,
+            "transferContent": payment.get("transferContent") or ""
         },
         "recipient": {
             "name": recipient.get("name") or recipient.get("fullName") or "",
@@ -2085,14 +2100,17 @@ def build_order_shortcut_item(order: Dict[str, Any]) -> Dict[str, Any]:
         "delivery": {
             "fulfillmentType": delivery.get("fulfillmentType", "delivery"),
             "deliveryDate": delivery.get("deliveryDate") or "",
-            "timeSlot": delivery.get("timeSlot") or ""
+            "timeSlot": delivery.get("timeSlot") or "",
+            "shipperName": delivery.get("shipperName") or "",
+            "shipperPhone": delivery.get("shipperPhone") or ""
         },
         "items": clean_items,
         "itemSummary": item_summary,
         "itemCount": item_count,
         "requiresArranging": order.get("requiresArranging") if "requiresArranging" in order else True,
         "customerId": order.get("customerId") or order.get("userId") or "",
-        "note": order.get("note") or "",
+        "note": order.get("note") or order.get("notes") or "",
+        "notes": order.get("notes") or order.get("note") or "",
         "detailPath": detail_rel_path
     }
 
@@ -2495,6 +2513,13 @@ def save_order(order: Dict[str, Any]) -> bool:
         upsert_order_shortcut(order)
     except Exception as ex:
         print(f"[SHORTCUT_SYNC_WARNING] Lỗi đồng bộ shortcut cho đơn {order_id}: {ex}", flush=True)
+
+    # 5. Nếu là đơn Live Stream, tự động đồng bộ vào tệp theo ngày config/anne/livestream_orders/{YYYY-MM-DD}.json
+    try:
+        if "live" in (order.get("source") or "").lower() or "live" in (order.get("orderType") or "").lower():
+            sync_order_to_daily_livestream(order)
+    except Exception as ex:
+        print(f"[LIVESTREAM_DAILY_SYNC_WARNING] Lỗi đồng bộ đơn livestream theo ngày cho đơn {order_id}: {ex}", flush=True)
 
     return success
 
@@ -3516,6 +3541,107 @@ def save_livestream_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[
     if success:
         return True, current, None
     return False, None, "Không thể ghi file cấu hình livestreamConfig.json"
+
+
+# ==========================================
+# QUẢN LÝ ĐƠN HÀNG LIVE STREAM THEO NGÀY
+# Cấu trúc: config/anne/livestream_orders/{YYYY-MM-DD}.json
+# ==========================================
+
+def get_livestream_orders_dir() -> str:
+    """Trả về thư mục lưu đơn live stream theo ngày."""
+    livestream_dir = os.path.join(FLOWER_CONFIG_DIR, "livestream_orders")
+    if not os.path.exists(livestream_dir):
+        os.makedirs(livestream_dir, exist_ok=True)
+    return livestream_dir
+
+
+def get_livestream_daily_orders_path(date_str: str) -> str:
+    """Trả về đường dẫn tệp JSON lưu đơn livestream theo ngày YYYY-MM-DD."""
+    clean_date = (date_str or "").replace("/", "-").strip()[:10]
+    if not clean_date or len(clean_date) < 10:
+        clean_date = datetime.now().strftime("%Y-%m-%d")
+    return os.path.join(get_livestream_orders_dir(), f"{clean_date}.json")
+
+
+def sync_order_to_daily_livestream(order: Dict[str, Any]) -> bool:
+    """
+    Lưu hoặc cập nhật đơn hàng vào danh sách đơn Live Stream theo ngày (YYYY-MM-DD).
+    Giúp shop dễ dàng quản lý, kiểm soát và đối soát doanh thu theo từng phiên live.
+    """
+    if not order or not isinstance(order, dict):
+        return False
+    source = (order.get("source") or "").lower()
+    order_type = (order.get("orderType") or "").lower()
+    if "live" not in source and "live" not in order_type:
+        return False
+
+    date_str = order.get("livestreamDate") or order.get("orderDate") or order.get("orderDay") or (order.get("createdAt") or "")[:10]
+    if not date_str or len(date_str) < 10:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+
+    path = get_livestream_daily_orders_path(date_str)
+    daily_orders = read_json(path, default=[])
+    if not isinstance(daily_orders, list):
+        daily_orders = []
+
+    order_id = order.get("id") or order.get("orderCode")
+    if not order_id:
+        return False
+
+    # Trích xuất bản tóm tắt nhanh hoặc lưu đơn để tra cứu
+    summary_item = {
+        "id": order.get("id") or order_id,
+        "orderCode": order.get("orderCode") or order_id,
+        "createdAt": order.get("createdAt") or "",
+        "updatedAt": order.get("updatedAt") or "",
+        "orderDate": date_str,
+        "livestreamDate": date_str,
+        "status": order.get("status", "pending"),
+        "customerName": (order.get("recipient") or {}).get("name") or (order.get("sender") or {}).get("name") or "",
+        "phone": (order.get("recipient") or {}).get("phone") or (order.get("sender") or {}).get("phone") or "",
+        "address": (order.get("recipient") or {}).get("address") or "",
+        "totalAmount": float(order.get("totalAmount") or (order.get("financials") or {}).get("totalAmount") or 0),
+        "transferredAmount": float(order.get("transferredAmount") or (order.get("payment") or {}).get("transferredAmount") or 0),
+        "proofImage": order.get("proofImage") or order.get("paymentProofImage") or (order.get("payment") or {}).get("proofImage") or "",
+        "paymentStatus": (order.get("payment") or {}).get("status", "unpaid"),
+        "branchId": order.get("branchId") or "admin",
+        "branchName": order.get("branchName") or "Trung Tâm (Admin)",
+        "shipperName": (order.get("delivery") or {}).get("shipperName") or "",
+        "shipperPhone": (order.get("delivery") or {}).get("shipperPhone") or "",
+        "notes": order.get("notes") or order.get("cardMessage") or ""
+    }
+
+    found = False
+    for idx, item in enumerate(daily_orders):
+        if isinstance(item, dict) and (item.get("id") == order_id or item.get("orderCode") == order_id):
+            daily_orders[idx] = summary_item
+            found = True
+            break
+    if not found:
+        daily_orders.append(summary_item)
+
+    return write_json(path, daily_orders)
+
+
+def get_livestream_orders_by_date(date_str: str) -> List[Dict[str, Any]]:
+    """Lấy danh sách đơn Live Stream theo ngày YYYY-MM-DD."""
+    path = get_livestream_daily_orders_path(date_str)
+    return read_json(path, default=[])
+
+
+def get_livestream_dates() -> List[str]:
+    """Lấy danh sách các ngày có đơn Live Stream (sắp xếp mới nhất trước)."""
+    livestream_dir = get_livestream_orders_dir()
+    if not os.path.exists(livestream_dir):
+        return []
+    dates = []
+    for fname in os.listdir(livestream_dir):
+        if fname.endswith(".json") and len(fname) == 15: # YYYY-MM-DD.json
+            dates.append(fname[:-5])
+    dates.sort(reverse=True)
+    return dates
+
 
 
 

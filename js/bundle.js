@@ -1026,6 +1026,15 @@ const ADMIN_NAVIGATION_CONFIG = [
         roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER, ROLES.FLORIST, ROLES.SALES_CONSULTANT]
       },
       {
+        tabKey: "livestream_orders",
+        label: "Live Stream Đơn Hàng",
+        icon: "fa-solid fa-video",
+        module: "portal_admin_livestream_orders.js",
+        loadFn: "loadLiveStreamOrders",
+        action: "switchAdminTab('livestream_orders')",
+        roles: [ROLES.SUPER_ADMIN, ROLES.BRANCH_MANAGER],
+      },
+      {
         tabKey: "products",
         label: "Mẫu Hoa & Bảng Giá",
         icon: "fa-solid fa-spa",
@@ -6179,6 +6188,68 @@ function populateOrderDetail(order) {
                     cashBtn.innerHTML = '<i class="fa-solid fa-money-bill-wave"></i> Thu tiền mặt';
                 }
             }
+
+            // 3b. Cập nhật 4 nút Quy trình xử lý đơn (Fulfillment Buttons)
+            const curStatus = String(order.status || "pending").toLowerCase();
+            const btnConfirm = document.getElementById("ordDetailActionConfirmBtn");
+            const btnPhoto = document.getElementById("ordDetailActionPhotoBtn");
+            const btnShipping = document.getElementById("ordDetailActionShippingBtn");
+            const btnComplete = document.getElementById("ordDetailActionCompleteBtn");
+
+            if (btnConfirm) {
+                if (curStatus === "pending") {
+                    btnConfirm.disabled = false;
+                    btnConfirm.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm ring-2 ring-emerald-300 animate-pulse";
+                    btnConfirm.innerHTML = '<i class="fa-solid fa-circle-check"></i> 1. Xác nhận đơn';
+                } else {
+                    btnConfirm.disabled = false;
+                    btnConfirm.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100";
+                    btnConfirm.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> Đã xác nhận';
+                }
+            }
+
+            if (btnPhoto) {
+                const hasPhoto = !!(order.flowerPhoto && order.flowerPhoto.photoUrl);
+                if (curStatus === "confirmed" || curStatus === "arranging") {
+                    btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm ring-2 ring-purple-300 animate-pulse";
+                    btnPhoto.innerHTML = '<i class="fa-solid fa-camera"></i> 2. Chụp hình hoa';
+                } else if (hasPhoto) {
+                    btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100";
+                    btnPhoto.innerHTML = '<i class="fa-solid fa-camera text-purple-600"></i> Đã chụp (Chụp lại)';
+                } else {
+                    btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100";
+                    btnPhoto.innerHTML = '<i class="fa-solid fa-camera text-purple-600"></i> 2. Chụp hình hoa';
+                }
+            }
+
+            if (btnShipping) {
+                if (curStatus === "photo_sent" || curStatus === "arranging" || (curStatus === "confirmed" && !order.requiresArranging)) {
+                    btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm ring-2 ring-blue-300 animate-pulse";
+                    btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast"></i> 3. Gán Shipper & Giao';
+                } else if (curStatus === "shipping") {
+                    btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100";
+                    btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast text-blue-600"></i> Đang giao (Đổi)';
+                } else {
+                    btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100";
+                    btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast text-blue-600"></i> 3. Gán Shipper';
+                }
+            }
+
+            if (btnComplete) {
+                if (curStatus === "shipping" || curStatus === "ready_for_pickup") {
+                    btnComplete.disabled = false;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm ring-2 ring-emerald-300 animate-pulse";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-award"></i> 4. Hoàn thành đơn';
+                } else if (curStatus === "delivered" || curStatus === "completed") {
+                    btnComplete.disabled = true;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-700"></i> Đã hoàn thành';
+                } else {
+                    btnComplete.disabled = false;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 hover:bg-emerald-600 hover:text-white border border-gray-200";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-award text-amber-500"></i> 4. Hoàn thành';
+                }
+            }
         }
     }
 
@@ -6209,6 +6280,27 @@ function populateOrderDetail(order) {
             setSafe("ordDetailDeliveryNotes", recipient.deliveryNotes);
         } else {
             notesRow.classList.add("hidden");
+        }
+    }
+
+    // 4b. Shipper Information Row
+    const shipperNameEl = document.getElementById("ordDetailShipperName");
+    const shipperPhoneEl = document.getElementById("ordDetailShipperPhone");
+    const shipperPhoneLink = document.getElementById("ordDetailShipperPhoneLink");
+    const sName = delivery.shipperName || order.assigneeName || "";
+    const sPhone = delivery.shipperPhone || "";
+
+    if (shipperNameEl) {
+        shipperNameEl.textContent = sName || "Chưa phân công shipper";
+        shipperNameEl.className = sName ? "font-bold text-gray-800 text-xs" : "font-normal text-gray-400 text-xs italic";
+    }
+    if (shipperPhoneEl && shipperPhoneLink) {
+        if (sPhone) {
+            shipperPhoneEl.textContent = sPhone;
+            shipperPhoneLink.href = `tel:${sPhone}`;
+            shipperPhoneLink.classList.remove("hidden");
+        } else {
+            shipperPhoneLink.classList.add("hidden");
         }
     }
 
@@ -6413,6 +6505,8 @@ async function handleOrderPhotoUpload(event) {
             // Tải lại chi tiết đơn và danh sách dashboard
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Tải ảnh thất bại");
         }
@@ -6452,19 +6546,21 @@ async function handleConfirmCashPayment() {
             },
             body: JSON.stringify({
                 paymentStatus: "paid",
-                note: "Nhân viên xác nhận đã thu đủ tiền mặt"
+                note: "Nhân viên xác nhận đã thu đủ tiền mặt / đối soát bill"
             })
         });
         const json = await res.json();
 
         if (res.ok && json.success) {
             if (typeof showToast === "function") {
-                showToast("Đã xác nhận thanh toán tiền mặt thành công!", "success");
+                showToast("Đã xác nhận thanh toán thành công!", "success");
             } else {
-                alert("Đã xác nhận thanh toán tiền mặt thành công!");
+                alert("Đã xác nhận thanh toán thành công!");
             }
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Không thể xác nhận thanh toán");
         }
@@ -6505,6 +6601,8 @@ async function handleOrderQuickStatusChange(newStatus) {
             }
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Chuyển trạng thái thất bại");
         }
@@ -6512,6 +6610,118 @@ async function handleOrderQuickStatusChange(newStatus) {
         alert("Lỗi: " + e.message);
     } finally {
         if (selectEl) selectEl.disabled = false;
+    }
+}
+
+/**
+ * Xử lý bước thực hiện trong quy trình 4 bước (Fulfillment Stepper)
+ */
+async function handleOrderFulfillmentStep(targetStep) {
+    if (!currentOpenOrderId) return;
+
+    if (targetStep === "confirmed") {
+        await handleOrderQuickStatusChange("confirmed");
+    } else if (targetStep === "photo") {
+        const photoInput = document.getElementById("ordDetailPhotoInput");
+        if (photoInput) photoInput.click();
+    } else if (targetStep === "shipping") {
+        openAssignShipperModal();
+    } else if (targetStep === "completed") {
+        if (!confirm("Xác nhận đã giao hoa thành công & hoàn tất đơn hàng?")) return;
+        await handleOrderQuickStatusChange("delivered");
+    }
+}
+
+/**
+ * Mở modal gán Shipper
+ */
+function openAssignShipperModal() {
+    const modal = document.getElementById("orderShipperModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    modal.classList.remove("hidden");
+
+    // Lấy tên và SĐT hiện có nếu có
+    const sName = document.getElementById("ordDetailShipperName")?.textContent || "";
+    const sPhone = document.getElementById("ordDetailShipperPhone")?.textContent || "";
+
+    const nameInput = document.getElementById("assignShipperNameInput");
+    const phoneInput = document.getElementById("assignShipperPhoneInput");
+    if (nameInput) nameInput.value = (sName && !sName.includes("Chưa phân công")) ? sName.trim() : "";
+    if (phoneInput) phoneInput.value = (sPhone && sPhone !== "-") ? sPhone.trim() : "";
+    if (nameInput) nameInput.focus();
+}
+
+/**
+ * Đóng modal gán Shipper
+ */
+function closeAssignShipperModal() {
+    const modal = document.getElementById("orderShipperModal");
+    if (!modal) return;
+    modal.style.display = "none";
+    modal.classList.add("hidden");
+}
+
+/**
+ * Submit thông tin gán Shipper
+ */
+async function submitAssignShipper() {
+    if (!currentOpenOrderId) return;
+    const nameInput = document.getElementById("assignShipperNameInput");
+    const phoneInput = document.getElementById("assignShipperPhoneInput");
+    const shipperName = (nameInput?.value || "").trim();
+    const shipperPhone = (phoneInput?.value || "").trim();
+
+    if (!shipperName) {
+        alert("Vui lòng nhập tên người giao hàng / Shipper!");
+        nameInput?.focus();
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const submitBtn = document.getElementById("submitAssignShipperBtn");
+    const origHtml = submitBtn ? submitBtn.innerHTML : "";
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders/${encodeURIComponent(currentOpenOrderId)}/status`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                status: "shipping",
+                shipperName: shipperName,
+                shipperPhone: shipperPhone,
+                note: `Gán shipper ${shipperName}${shipperPhone ? ' (' + shipperPhone + ')' : ''} & bắt đầu giao`
+            })
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+            if (typeof showToast === "function") {
+                showToast("Đã gán shipper & chuyển trạng thái sang [Đang vận chuyển]!", "success");
+            } else {
+                alert("Đã gán shipper & bắt đầu giao hàng!");
+            }
+            closeAssignShipperModal();
+            openOrderDetailModal(currentOpenOrderId);
+            if (typeof loadDashboardOrders === "function") loadDashboardOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+            if (typeof loadAdminOrders === "function") loadAdminOrders();
+        } else {
+            throw new Error(json.message || "Không thể gán shipper");
+        }
+    } catch (e) {
+        alert("Lỗi: " + e.message);
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origHtml;
+        }
     }
 }
 
@@ -6543,6 +6753,7 @@ async function handleOrderDetailDispatchBranch(targetBranchId) {
             openOrderDetailModal(currentOpenOrderId);
             if (typeof loadDashboardOrders === "function") loadDashboardOrders();
             if (typeof loadStaffOrders === "function") loadStaffOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
             if (typeof loadAdminOrders === "function") loadAdminOrders();
         } else {
             throw new Error(json.message || "Điều phối đơn hàng thất bại");
@@ -6572,6 +6783,10 @@ if (typeof window !== "undefined") {
     window.handleConfirmCashPayment = handleConfirmCashPayment;
     window.handleOrderQuickStatusChange = handleOrderQuickStatusChange;
     window.handleOrderDetailDispatchBranch = handleOrderDetailDispatchBranch;
+    window.handleOrderFulfillmentStep = handleOrderFulfillmentStep;
+    window.openAssignShipperModal = openAssignShipperModal;
+    window.closeAssignShipperModal = closeAssignShipperModal;
+    window.submitAssignShipper = submitAssignShipper;
     window.onDashboardMonthChange = onDashboardMonthChange;
     window.onDashboardSortChange = onDashboardSortChange;
     window.onDashboardFilterChange = onDashboardFilterChange;
@@ -13158,6 +13373,7 @@ async function updateAdminOrderStatus(orderId, newStatus) {
         if (json.success) {
             notifyUser("Đã cập nhật trạng thái đơn hàng!", 'success');
             loadAdminOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
         } else {
             notifyUser(json.message || "Lỗi cập nhật trạng thái", 'error');
         }
@@ -13184,6 +13400,7 @@ async function dispatchAdminOrder(orderId, targetBranchId) {
         if (json.success) {
             notifyUser(json.message || "Đã điều phối đơn hàng thành công!", 'success');
             loadAdminOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
         } else {
             notifyUser(json.message || "Lỗi điều phối đơn hàng", 'error');
             loadAdminOrders();
@@ -13317,6 +13534,452 @@ if (typeof window !== "undefined") {
     window.exportCurrentAdminOrdersToCsv = exportCurrentAdminOrdersToCsv;
     window.exportLiveStreamOrdersCsv = exportLiveStreamOrdersCsv;
     window.filterAdminOrdersBySource = filterAdminOrdersBySource;
+}
+
+
+// ==========================================================================
+// MODULE: portal_admin_livestream_orders.js
+// ==========================================================================
+// portal_admin_livestream_orders.js
+// Phân hệ Quản Trị & Xử Lý Đơn Hàng Live Stream Tốc Hành trong Admin Portal (Cổng Quản Trị Hệ Thống)
+
+
+let lastLoadedLiveOrders = [];
+let currentLiveStreamConfig = null;
+
+function formatLiveDate(isoStr) {
+    if (!isoStr) return "";
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    return d.toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
+function getLiveStatusMeta(status, map) {
+    return (map && map[status]) || {
+        label: status || "Chờ xử lý",
+        color: "bg-gray-100 text-gray-600 border-gray-200",
+        icon: "fa-circle-question"
+    };
+}
+
+/**
+ * Tải danh sách đơn hàng Live Stream và cấu hình phiên live
+ */
+async function loadLiveStreamOrders() {
+    const tbody = document.getElementById("adminLiveOrdersTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-xl text-rose-500 mb-2 block"></i>
+        <span>Đang nạp danh sách đơn Live Stream...</span>
+    </td></tr>`;
+
+    const searchEl = document.getElementById("searchLiveOrderInput");
+    const statusEl = document.getElementById("filterLiveOrderStatus");
+    const paymentEl = document.getElementById("filterLiveOrderPayment");
+    const dateEl = document.getElementById("filterLiveOrderDate");
+
+    const search = searchEl ? searchEl.value.trim() : "";
+    const status = statusEl ? statusEl.value : "all";
+    const paymentStatus = paymentEl ? paymentEl.value : "all";
+    const filterDate = dateEl ? dateEl.value.trim() : "";
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+
+    try {
+        // 1. Tải cấu hình phiên Live để cập nhật trạng thái banner điều khiển
+        fetchLiveConfigQuietly(headers);
+
+        // 2. Tải danh sách đơn hàng lọc theo nguồn livestream_quick_order và ngày
+        let url = `${API_BASE}/admin/orders?timeframe=all&source=livestream_quick_order`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (status && status !== "all") url += `&status=${encodeURIComponent(status)}`;
+        if (paymentStatus && paymentStatus !== "all") url += `&paymentStatus=${encodeURIComponent(paymentStatus)}`;
+        if (filterDate) url += `&date=${encodeURIComponent(filterDate)}`;
+
+        const res = await fetch(url, { headers });
+        const json = await res.json();
+
+        if (json.success && json.data) {
+            const orders = Array.isArray(json.data.orders) ? json.data.orders : [];
+            lastLoadedLiveOrders = orders;
+            renderLiveOrdersTable(lastLoadedLiveOrders);
+            updateLiveKPIs(lastLoadedLiveOrders);
+            updateLiveOrderFilterInfoBar(filterDate, orders.length);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">${json.message || "Lỗi tải đơn Live Stream"}</td></tr>`;
+        }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-red-500 font-bold">Lỗi kết nối: ${e.message}</td></tr>`;
+    }
+}
+
+/**
+ * Tải cấu hình phiên live ngầm và cập nhật UI điều khiển
+ */
+async function fetchLiveConfigQuietly(headers = {}) {
+    try {
+        const res = await fetch(`${API_BASE}/admin/livestream-config?_t=${Date.now()}`, { headers });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.success && json.data) {
+            currentLiveStreamConfig = json.data;
+            updateLiveStreamControlUI(json.data);
+        }
+    } catch (e) {
+        console.warn("[LIVESTREAM] Không thể nạp cấu hình live:", e.message);
+    }
+}
+
+/**
+ * Cập nhật giao diện widget điều khiển Live Stream
+ */
+function updateLiveStreamControlUI(config) {
+    const isLive = !!(config.enableQuickOrder || config.enabled);
+    const toggleEl = document.getElementById("liveStreamQuickToggle");
+    const statusBadge = document.getElementById("liveStreamStatusBadge");
+    const statusText = document.getElementById("liveStreamStatusText");
+    const linkInput = document.getElementById("liveStreamShareLinkDisplay");
+
+    if (toggleEl) toggleEl.checked = isLive;
+
+    if (statusBadge) {
+        if (isLive) {
+            statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-2xs";
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> <i class="fa-solid fa-signal"></i> ĐANG PHÁT SÓNG (BẬT CHỐT ĐƠN)`;
+        } else {
+            statusBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200";
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-gray-400"></span> <i class="fa-solid fa-pause"></i> ĐÃ TẠM DỪNG (TẮT CHỐT ĐƠN)`;
+        }
+    }
+
+    if (statusText) {
+        statusText.textContent = isLive
+            ? "Khách truy cập link #quick-order có thể chọn hoa và gửi đơn chốt ngay."
+            : "Form đặt nhanh đang tạm đóng. Khách truy cập sẽ thấy thông báo phiên live kết thúc.";
+    }
+
+    if (linkInput && typeof window !== "undefined") {
+        const origin = window.location.origin || "";
+        let pathname = window.location.pathname || "/";
+        if (!pathname.endsWith("/") && !pathname.includes(".")) pathname += "/";
+        linkInput.value = `${origin}${pathname}#quick-order`;
+    }
+}
+
+/**
+ * Bật/tắt nhanh phiên Live Stream trực tiếp trên tab Admin
+ */
+async function toggleLiveStreamQuickStatus(checkbox) {
+    const isEnabled = !!(checkbox && checkbox.checked);
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+
+    lockScreen();
+    try {
+        const payload = Object.assign({}, currentLiveStreamConfig || {}, {
+            enableQuickOrder: isEnabled
+        });
+
+        const res = await fetch(`${API_BASE}/admin/livestream-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể cập nhật trạng thái phiên live");
+        }
+
+        currentLiveStreamConfig = json.data;
+        updateLiveStreamControlUI(json.data);
+        notifyUser(
+            isEnabled
+                ? "🟢 Đã BẬT nhận đơn Live Stream! Link #quick-order đã sẵn sàng cho khách chốt."
+                : "🔴 Đã TẮT nhận đơn Live Stream!",
+            "success"
+        );
+    } catch (e) {
+        if (checkbox) checkbox.checked = !isEnabled;
+        notifyUser("Lỗi khi đổi trạng thái Live Stream: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+/**
+ * Sao chép nhanh đường link chốt đơn ghim live stream
+ */
+function copyLiveStreamQuickLink() {
+    const linkInput = document.getElementById("liveStreamShareLinkDisplay");
+    const url = (linkInput && linkInput.value) ? linkInput.value.trim() : (window.location.origin + "/#quick-order");
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+            notifyUser("Đã sao chép link chốt đơn Live Stream (#quick-order)!", "success");
+        }).catch(() => {
+            if (linkInput) {
+                linkInput.select();
+                document.execCommand("copy");
+            }
+            notifyUser("Đã sao chép link chốt đơn!", "success");
+        });
+    } else {
+        if (linkInput) {
+            linkInput.select();
+            document.execCommand("copy");
+        }
+        notifyUser("Đã sao chép link chốt đơn!", "success");
+    }
+}
+
+/**
+ * Cập nhật các chỉ số thống kê đơn hàng Live Stream
+ */
+function updateLiveKPIs(orders) {
+    const totalEl = document.getElementById("kpiLiveTotalOrders");
+    const pendingEl = document.getElementById("kpiLivePendingOrders");
+    const processingEl = document.getElementById("kpiLiveProcessingOrders");
+    const revenueEl = document.getElementById("kpiLiveRevenue");
+
+    if (!Array.isArray(orders)) orders = [];
+
+    const totalCount = orders.length;
+    let pendingCount = 0;
+    let processingCount = 0;
+    let totalRevenue = 0;
+
+    orders.forEach(o => {
+        const st = (o.status || "").toLowerCase();
+        if (st === "pending") pendingCount++;
+        else if (st === "confirmed" || st === "arranging" || st === "shipping") processingCount++;
+
+        const amt = Number(o.totalAmount) || Number(o.financials?.totalAmount) || Number(o.transferredAmount) || 0;
+        if (st !== "cancelled") totalRevenue += amt;
+    });
+
+    if (totalEl) totalEl.textContent = totalCount.toString();
+    if (pendingEl) pendingEl.textContent = pendingCount.toString();
+    if (processingEl) processingEl.textContent = processingCount.toString();
+    if (revenueEl) revenueEl.textContent = formatVND(totalRevenue);
+}
+
+/**
+ * Render bảng danh sách đơn hàng Live Stream
+ */
+function renderLiveOrdersTable(orders) {
+    const tbody = document.getElementById("adminLiveOrdersTableBody");
+    if (!tbody) return;
+
+    if (!Array.isArray(orders) || orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">
+            <i class="fa-solid fa-video-slash text-2xl text-gray-300 mb-2 block"></i>
+            Chưa có đơn hàng nào từ Live Stream phù hợp với bộ lọc hiện tại.
+        </td></tr>`;
+        return;
+    }
+
+    const branches = (typeof window !== "undefined" && Array.isArray(window.allAdminBranches)) ? window.allAdminBranches : [];
+
+    tbody.innerHTML = orders.map(order => {
+        const statusMeta = getLiveStatusMeta(order.status, ADMIN_ORDER_STATUS_META);
+        const payMeta = getLiveStatusMeta(order.payment?.status, ADMIN_PAYMENT_STATUS_META);
+        const total = Number(order.totalAmount) || Number(order.financials?.totalAmount) || 0;
+        const transferred = Number(order.transferredAmount) || Number(order.payment?.amountPaid) || 0;
+
+        const sender = order.sender || {};
+        const recipient = order.recipient || {};
+        const customerName = order.customerName || order.recipientName || recipient.name || sender.name || "Khách xem Live";
+        const customerPhone = order.phone || order.recipientPhone || recipient.phone || sender.phone || "";
+        const deliveryAddress = order.shippingAddress || order.deliveryAddress || recipient.address || "Giao hỏa tốc 2H";
+
+        const branchId = order.branchId || order.assignedBranchId || "admin";
+        const branchName = order.branchName || (branchId === "admin" ? "Trung Tâm (Admin)" : branchId);
+        const assigneeName = order.assigneeName || order.assignedTo || "Super Admin";
+        const isAssignedToAdmin = (branchId === "admin");
+
+        const proofImg = order.payment?.proofImage || order.paymentProofImage || order.proofImage || "";
+        const flowerName = (order.selectedProduct && order.selectedProduct.productName) ||
+            (order.items && order.items[0] && order.items[0].productName) || "Mẫu hoa chốt live";
+        const flowerImg = (order.selectedProduct && order.selectedProduct.image) ||
+            (order.items && order.items[0] && order.items[0].image) || "";
+
+        // Danh sách chi nhánh cho dropdown điều phối
+        const branchOptions = branches.filter(b => b.isActive !== false).map(b => `
+            <option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${b.name || b.id}</option>
+        `).join("");
+
+        return `
+            <tr class="cursor-pointer hover:bg-rose-50/70 transition border-b border-gray-100 group"
+                onclick="if (!event.target.closest('select, a, button, input')) openOrderDetailModal('${order.id}')"
+                title="Nhấp để xem chi tiết & xử lý đơn">
+                <td class="p-3 align-top">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-mono text-[11px] font-bold text-gray-800">${order.orderCode || order.id || ""}</span>
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[9px] font-extrabold border border-rose-200">
+                            <i class="fa-solid fa-video text-[8px] animate-pulse"></i> LIVE
+                        </span>
+                    </div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">${formatLiveDate(order.createdAt || order.orderDate)}</div>
+                    
+                    <div class="flex items-center gap-1.5 mt-1.5">
+                        ${flowerImg ? `<img src="${flowerImg}" class="w-7 h-7 rounded-lg object-cover border border-pink-100 flex-shrink-0" alt="flower" onerror="this.style.display='none'">` : ''}
+                        <div class="text-[11px] text-rose-600 font-semibold line-clamp-1" title="${flowerName}">🌸 ${flowerName}</div>
+                    </div>
+
+                    ${proofImg ? `
+                        <div class="mt-1.5">
+                            <a href="${proofImg}" target="_blank" rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-[10px] font-bold transition shadow-2xs">
+                                <i class="fa-solid fa-receipt text-blue-600"></i> Xem Bill Chuyển Khoản
+                            </a>
+                        </div>
+                    ` : `
+                        <div class="text-[10px] text-amber-600 font-medium mt-1">
+                            <i class="fa-solid fa-circle-exclamation"></i> Chưa đính kèm bill
+                        </div>
+                    `}
+                </td>
+
+                <td class="p-3 align-top">
+                    <div class="text-xs font-bold text-gray-800">${customerName}</div>
+                    <div class="text-[11px] text-gray-500 font-mono flex items-center gap-1 mt-0.5">
+                        <i class="fa-solid fa-phone text-[9px] text-gray-400"></i>
+                        <a href="tel:${customerPhone}" class="hover:text-primary">${customerPhone || "—"}</a>
+                    </div>
+                </td>
+
+                <td class="p-3 align-top">
+                    <div class="text-xs text-gray-700 font-bold">${recipient.name || customerName}</div>
+                    <div class="text-[10px] text-gray-500 font-mono">${recipient.phone || customerPhone}</div>
+                    <div class="text-[10px] text-gray-600 mt-0.5 max-w-[160px] line-clamp-2" title="${deliveryAddress}">
+                        📍 ${deliveryAddress}
+                    </div>
+                    ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}
+                </td>
+
+                <td class="p-3 align-top" onclick="event.stopPropagation()">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="text-[11px] font-semibold ${isAssignedToAdmin ? 'text-amber-700 font-bold' : 'text-gray-700'}">${branchName}</span>
+                        ${isAssignedToAdmin ? '<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[9px] font-bold border border-amber-200 animate-pulse"><i class="fa-solid fa-bolt"></i> Chờ điều phối</span>' : ''}
+                    </div>
+                    <select onchange="dispatchAdminOrder('${order.id}', this.value)"
+                            class="mt-1.5 w-full px-2 py-1 bg-white border border-gray-200 rounded text-[10px] font-medium focus:outline-none focus:border-primary">
+                        <option value="admin" ${branchId === 'admin' ? 'selected' : ''}>🏢 Trung Tâm (Admin)</option>
+                        ${branchOptions}
+                    </select>
+                </td>
+
+                <td class="p-3 align-top">
+                    <div class="text-[11px] font-semibold text-gray-800">${assigneeName}</div>
+                    <div class="text-[10px] text-gray-400">Thợ cắm hoa / Shipper</div>
+                </td>
+
+                <td class="p-3 align-top">
+                    <div class="font-bold text-gray-900 text-xs">${formatVND(total)}</div>
+                    ${transferred > 0 ? `
+                        <div class="text-[10px] text-emerald-600 font-medium mt-0.5">
+                            Đã CK: <span class="font-bold">${formatVND(transferred)}</span>
+                        </div>
+                    ` : ''}
+                </td>
+
+                <td class="p-3 align-top">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${payMeta.color}">
+                        <i class="fa-solid ${payMeta.icon}"></i> ${payMeta.label}
+                    </span>
+                </td>
+
+                <td class="p-3 align-top">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${statusMeta.color}">
+                        <i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}
+                    </span>
+                </td>
+
+                <td class="p-3 align-top text-center" onclick="event.stopPropagation()">
+                    <div class="flex flex-col gap-1.5 items-center">
+                        <button type="button" onclick="openOrderDetailModal('${order.id}')"
+                                class="w-full px-2.5 py-1.5 bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 hover:from-rose-600 hover:to-pink-700 text-white rounded-lg text-[10px] font-bold shadow-xs hover:shadow transition flex items-center justify-center gap-1 group/btn">
+                            <i class="fa-solid fa-bolt text-[9px] group-hover/btn:animate-bounce"></i> Xử lý đơn
+                        </button>
+                        <select onchange="updateAdminOrderStatus('${order.id}', this.value)"
+                                class="w-full px-1.5 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-semibold text-gray-700 focus:outline-none focus:border-primary shadow-2xs">
+                            <option value="">Cập nhật nhanh...</option>
+                            <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>✅ Xác nhận đơn</option>
+                            <option value="arranging" ${order.status === 'arranging' ? 'selected' : ''}>🌸 Đang cắm hoa</option>
+                            <option value="shipping" ${order.status === 'shipping' ? 'selected' : ''}>🚚 Đang vận chuyển</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>🎉 Giao thành công</option>
+                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>🏁 Hoàn tất đơn</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>❌ Hủy đơn hàng</option>
+                        </select>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+/**
+ * Đặt hoặc xóa nhanh bộ lọc ngày cho đơn Live Stream
+ */
+function setLiveOrderDateFilter(mode) {
+    const dateEl = document.getElementById("filterLiveOrderDate");
+    if (!dateEl) return;
+
+    if (mode === "today") {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        dateEl.value = `${yyyy}-${mm}-${dd}`;
+    } else if (mode === "all") {
+        dateEl.value = "";
+    }
+    loadLiveStreamOrders();
+}
+
+/**
+ * Cập nhật thanh hiển thị trạng thái lọc ngày
+ */
+function updateLiveOrderFilterInfoBar(dateStr, count) {
+    const barEl = document.getElementById("liveOrderFilterInfoBar");
+    const dateDisp = document.getElementById("liveOrderFilterDateDisplay");
+    const countDisp = document.getElementById("liveOrderFilterCountDisplay");
+
+    if (!barEl) return;
+
+    if (dateStr) {
+        barEl.classList.remove("hidden");
+        // Format YYYY-MM-DD -> DD/MM/YYYY
+        let formattedDate = dateStr;
+        const parts = dateStr.split("-");
+        if (parts.length === 3) {
+            formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        if (dateDisp) dateDisp.textContent = formattedDate;
+        if (countDisp) countDisp.textContent = count.toString();
+    } else {
+        barEl.classList.add("hidden");
+    }
+}
+
+// Global window bindings cho trình duyệt và các inline event handlers
+if (typeof window !== "undefined") {
+    window.loadLiveStreamOrders = loadLiveStreamOrders;
+    window.renderLiveOrdersTable = renderLiveOrdersTable;
+    window.toggleLiveStreamQuickStatus = toggleLiveStreamQuickStatus;
+    window.copyLiveStreamQuickLink = copyLiveStreamQuickLink;
+    window.setLiveOrderDateFilter = setLiveOrderDateFilter;
 }
 
 
@@ -16347,6 +17010,8 @@ if (typeof document !== "undefined") {
 
 // Re-export Orders
 
+// Re-export Live Stream Orders
+
 // Re-export Inventory & Wastage
 
 
@@ -16621,7 +17286,7 @@ function checkAdminAccess() {
 
 function switchAdminTab(tabName) {
     // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
-    if (tabName === "company" || tabName === "translations" || tabName === "banners" || tabName === "livestream") {
+    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
         closeAdminPortalModal();
         openSystemConfigModal(tabName);
         return;
@@ -16641,13 +17306,15 @@ function switchAdminTab(tabName) {
         return;
     }
 
-    // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
+    // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff', 'livestream' / 'livestream_orders' -> 'livestreamOrders')
     if (tabName === "users") tabName = "staff";
+    if (tabName === "livestream" || tabName === "livestream_orders") tabName = "livestreamOrders";
 
     // Kiểm tra quyền truy cập tab theo config_layout.js
     const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
     const checkFn = (typeof isTabAllowed === "function") ? isTabAllowed : (typeof window !== "undefined" ? window.isTabAllowed : null);
-    if (currentUser && typeof checkFn === "function" && !checkFn(tabName, currentUser.role)) {
+    const rbacKey = (tabName === "livestreamOrders") ? "livestream_orders" : tabName;
+    if (currentUser && typeof checkFn === "function" && !checkFn(rbacKey, currentUser.role)) {
         console.warn(`[RBAC] Vai trò '${currentUser.role}' không có quyền truy cập tab '${tabName}'`);
         if (typeof showToast === "function") showToast("Bạn không có quyền truy cập phân hệ này!", "warning");
         return;
@@ -16655,6 +17322,7 @@ function switchAdminTab(tabName) {
 
     const tabTitles = {
         orders: "Đơn Hàng",
+        livestreamOrders: "Đơn Live Stream",
         products: "Mẫu Hoa & Bảng Giá",
         inventory: "Kho & Hao Hụt",
         categories: "Danh Mục Hoa",
@@ -16669,7 +17337,7 @@ function switchAdminTab(tabName) {
     console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
     console.log("📂 Tab Identifier:", tabName);
 
-    const tabs = ["orders", "products", "inventory", "categories", "branches", "promotions", "addons"];
+    const tabs = ["orders", "livestreamOrders", "products", "inventory", "categories", "branches", "promotions", "addons"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -16690,6 +17358,10 @@ function switchAdminTab(tabName) {
 
     console.log(`  🚀 Bắt đầu nạp/đồng bộ dữ liệu phân hệ: ${tabTitles[tabName] || tabName}`);
     if (tabName === "orders") loadAdminOrders();
+    if (tabName === "livestreamOrders") {
+        if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+        else if (typeof window !== "undefined" && typeof window.loadLiveStreamOrders === "function") window.loadLiveStreamOrders();
+    }
     if (tabName === "products") loadAdminProducts();
     if (tabName === "inventory") loadAdminInventory();
     if (tabName === "categories") loadAdminCategories();

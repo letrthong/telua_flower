@@ -65,7 +65,10 @@ class TestBundleIntegrity(unittest.TestCase):
             "loadAdminCategories",
             "loadAdminBranches",
             "loadAdminInventory",
-            "loadAdminOrders"
+            "loadAdminOrders",
+            "loadLiveStreamOrders",
+            "exportLiveStreamOrdersCsv",
+            "toggleLiveStreamQuickStatus"
         ]
 
         missing = []

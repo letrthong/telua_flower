@@ -189,6 +189,15 @@ export {
     updateAdminOrderStatus
 } from './portal_admin_orders.js';
 
+// Re-export Live Stream Orders
+export {
+    lastLoadedLiveOrders,
+    loadLiveStreamOrders,
+    renderLiveOrdersTable,
+    toggleLiveStreamQuickStatus,
+    copyLiveStreamQuickLink
+} from './portal_admin_livestream_orders.js';
+
 // Re-export Inventory & Wastage
 export {
     currentInventoryData,
@@ -510,7 +519,7 @@ export function checkAdminAccess() {
 
 export function switchAdminTab(tabName) {
     // Nếu gọi tab cấu hình hệ thống, tự động mở System Config Dialog
-    if (tabName === "company" || tabName === "translations" || tabName === "banners" || tabName === "livestream") {
+    if (tabName === "company" || tabName === "translations" || tabName === "banners") {
         closeAdminPortalModal();
         openSystemConfigModal(tabName);
         return;
@@ -530,13 +539,15 @@ export function switchAdminTab(tabName) {
         return;
     }
 
-    // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff')
+    // Chuẩn hóa tên tab (hỗ trợ alias 'users' -> 'staff', 'livestream' / 'livestream_orders' -> 'livestreamOrders')
     if (tabName === "users") tabName = "staff";
+    if (tabName === "livestream" || tabName === "livestream_orders") tabName = "livestreamOrders";
 
     // Kiểm tra quyền truy cập tab theo config_layout.js
     const currentUser = (typeof getCurrentUser === "function") ? getCurrentUser() : ((typeof window !== "undefined" && typeof window.getCurrentUser === "function") ? window.getCurrentUser() : null);
     const checkFn = (typeof isTabAllowed === "function") ? isTabAllowed : (typeof window !== "undefined" ? window.isTabAllowed : null);
-    if (currentUser && typeof checkFn === "function" && !checkFn(tabName, currentUser.role)) {
+    const rbacKey = (tabName === "livestreamOrders") ? "livestream_orders" : tabName;
+    if (currentUser && typeof checkFn === "function" && !checkFn(rbacKey, currentUser.role)) {
         console.warn(`[RBAC] Vai trò '${currentUser.role}' không có quyền truy cập tab '${tabName}'`);
         if (typeof showToast === "function") showToast("Bạn không có quyền truy cập phân hệ này!", "warning");
         return;
@@ -544,6 +555,7 @@ export function switchAdminTab(tabName) {
 
     const tabTitles = {
         orders: "Đơn Hàng",
+        livestreamOrders: "Đơn Live Stream",
         products: "Mẫu Hoa & Bảng Giá",
         inventory: "Kho & Hao Hụt",
         categories: "Danh Mục Hoa",
@@ -558,7 +570,7 @@ export function switchAdminTab(tabName) {
     console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
     console.log("📂 Tab Identifier:", tabName);
 
-    const tabs = ["orders", "products", "inventory", "categories", "branches", "promotions", "addons"];
+    const tabs = ["orders", "livestreamOrders", "products", "inventory", "categories", "branches", "promotions", "addons"];
     tabs.forEach((t) => {
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const content = document.getElementById(`tabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
@@ -579,6 +591,10 @@ export function switchAdminTab(tabName) {
 
     console.log(`  🚀 Bắt đầu nạp/đồng bộ dữ liệu phân hệ: ${tabTitles[tabName] || tabName}`);
     if (tabName === "orders") loadAdminOrders();
+    if (tabName === "livestreamOrders") {
+        if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+        else if (typeof window !== "undefined" && typeof window.loadLiveStreamOrders === "function") window.loadLiveStreamOrders();
+    }
     if (tabName === "products") loadAdminProducts();
     if (tabName === "inventory") loadAdminInventory();
     if (tabName === "categories") loadAdminCategories();

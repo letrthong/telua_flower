@@ -151,6 +151,18 @@
   - Chọn bó hoa đang được giới thiệu trong phiên live từ menu danh sách ghim (kèm ảnh và giá tiền tự cập nhật).
   - Quét mã QR chuyển khoản nhanh (hỗ trợ ảnh QR tùy chỉnh của shop hoặc tự động sinh VietQR chuẩn Napas 24/7 theo đúng số tiền).
   - Điền Họ tên, Số điện thoại, Địa chỉ giao hoa, Số tiền đã chuyển và tải ảnh chụp màn hình bill chuyển khoản.
+- **Tab Quản Trị Live Stream Độc Lập Tại Cổng Quản Trị Hệ Thống:**
+  - Tab chuyên biệt `tabContentLivestreamOrders` giúp xử lý thần tốc các đơn đổ về trong ca live.
+  - Bảng thống kê KPI thời gian thực: Tổng đơn, Chờ xác nhận, Đang cắm, Đang giao, Đã hoàn thành và Tổng doanh thu phiên live.
+- **Quy Trình Tác Nghiệp 4 Bước Dành Cho Shop:**
+  1. *Xác nhận thanh toán:* Đối chiếu ảnh bill và chuyển trạng thái bắt đầu cắm hoa (`arranging`).
+  2. *Thợ cắm hoa & Chụp ảnh hoa thật:* Tải ảnh hoa thực tế sau khi cắm lên hệ thống để nghiệm thu và gửi khách xem.
+  3. *Điều phối chi nhánh & Gán shipper:* Chọn chi nhánh thực hiện, nhập Họ tên & SĐT Shipper giao hoa (`shipping`).
+  4. *Hoàn thành giao hoa:* Xác nhận giao hoa thành công tận tay người nhận (`delivered`).
+- **Lưu Trữ Sổ Cái Theo Ngày & Bộ Lọc Ngày Trực Quan:**
+  - Tự động lưu và tổ chức các đơn livestream theo từng ngày cụ thể vào `config/anne/livestream_orders/{YYYY-MM-DD}.json` song song với chuẩn lưu trữ Kanban đa chi nhánh.
+  - Bộ lọc chọn ngày HTML5 (`<input type="date">`) kèm nút nhanh `[Hôm nay]` và `[✖ Xóa lọc ngày]`.
+  - Thanh trạng thái `liveOrderFilterInfoBar` thông báo ngày lọc và số đơn, tự động tính lại KPI doanh thu theo ngày.
 - **Quản lý & Xuất dữ liệu chuyên biệt:**
   - Đơn hàng được phân loại nguồn gốc `livestream_quick_order` với huy hiệu `[Live]` màu đỏ cam nổi bật.
   - Tự động tích hợp thông tin khách hàng vào danh bạ CRM (`customers.json`).

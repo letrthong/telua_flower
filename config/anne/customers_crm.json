@@ -49,5 +49,18 @@
     ],
     "isActive": true,
     "createdAt": "2026-08-22T09:15:00Z"
+  },
+  {
+    "id": "cust_1792673091",
+    "phone": "0356148008",
+    "fullName": "THong le",
+    "email": "",
+    "tier": "silver",
+    "loyaltyPoints": 150,
+    "totalSpent": 1500000,
+    "orderCount": 1,
+    "flowerPreferences": "",
+    "savedAddresses": [],
+    "createdAt": "2026-10-22T12:44:51Z"
   }
 ]

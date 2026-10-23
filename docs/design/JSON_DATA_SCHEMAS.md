@@ -51,6 +51,7 @@ config/anne/
 │   │       └── pending/      # ord_1788368978_739ed2.json
 │   ├── branch_thao_dien/     # Showroom Thảo Điền
 │   └── admin/                # Đơn chờ điều phối / Ngoại tỉnh / Chưa xác định chi nhánh
+├── livestream_orders/        # Sổ cái đơn Live Stream phân mảnh theo ngày ({YYYY-MM-DD}.json)
 └── users/                    # Dữ liệu khách hàng/nhân sự mở rộng ({user_id}/orders.json)
 
 ```
@@ -969,6 +970,47 @@ Cấu hình cho phiên bán hàng Livestream (TikTok, Facebook, Shopee), hỗ tr
 
 ---
 
+## 14.1 `config/anne/livestream_orders/{YYYY-MM-DD}.json` - Sổ Cái Đơn Hàng Live Stream Theo Ngày
+
+Lưu trữ danh sách các đơn hàng phát sinh từ phiên Live Stream theo từng ngày cụ thể (`YYYY-MM-DD`), giúp tra cứu siêu tốc và đối soát doanh thu theo ca mà không cần quét toàn bộ cây thư mục Kanban đa chi nhánh:
+
+```json
+[
+  {
+    "orderId": "LIV-1740212345",
+    "orderCode": "LIV-1740212345",
+    "customerName": "Nguyễn Thị Mai",
+    "phone": "0912345678",
+    "recipientName": "Nguyễn Thị Mai",
+    "recipientPhone": "0912345678",
+    "deliveryAddress": "123 Cách Mạng Tháng 8, P.5, Q.3, TP.HCM",
+    "status": "delivered",
+    "totalAmount": 650000,
+    "transferredAmount": 650000,
+    "proofImage": "/api/flower/v1/images/orders/proof_LIV_1740212345.webp",
+    "photoAfterArranged": "/api/flower/v1/images/orders/proof_1792673091_9ef1b1d6.png",
+    "shipperName": "Trần Văn Giao",
+    "shipperPhone": "0909112233",
+    "source": "livestream_quick_order",
+    "orderDate": "2026-10-22",
+    "createdAt": "2026-10-22T07:12:00Z",
+    "updatedAt": "2026-10-22T08:30:00Z"
+  }
+]
+```
+
+### Ý nghĩa các trường:
+- `orderId` / `orderCode` (*string*): Mã đơn duy nhất dạng `LIV-XXXXXX`.
+- `customerName`, `phone`: Thông tin khách đặt đơn trong buổi live.
+- `recipientName`, `recipientPhone`, `deliveryAddress`: Thông tin người nhận và địa chỉ giao hoa hỏa tốc.
+- `status` (*string*): Trạng thái đơn hàng (`pending`, `arranging`, `shipping`, `delivered`, `cancelled`).
+- `proofImage` (*string*): Ảnh chụp biên lai / bill chuyển khoản của khách.
+- `photoAfterArranged` (*string*): Ảnh chụp bó hoa thực tế của shop sau khi thợ cắm hoa hoàn thiện trước khi bàn giao.
+- `shipperName`, `shipperPhone` (*string*): Thông tin shipper phụ trách giao hàng.
+- `orderDate` (*string*): Ngày đặt đơn định dạng chuẩn `YYYY-MM-DD`.
+
+---
+
 ## 15. Bảng Tổng Hợp Chiến Lược Caching Của Từng Tệp JSON
 
 Nhằm đảm bảo trải nghiệm khách hàng đạt tốc độ hiển thị tức thì (**0ms Instant Boot**), tránh nhấp nháy giao diện và chỉ tải lại khi file có thay đổi thực sự, toàn bộ hệ thống file JSON được phân nhóm caching như sau:
@@ -976,6 +1018,7 @@ Nhằm đảm bảo trải nghiệm khách hàng đạt tốc độ hiển thị
 | Tên Tệp JSON | Phương Thức Cache | Khóa Client Storage / ETag | Hành Vi Khi File Đổi |
 | :--- | :--- | :--- | :--- |
 | **`livestreamConfig.json`** | Real-time / ETag Cache | `telua_livestream_config` | Tự động đồng bộ ngay khi Admin bật/tắt hoặc đổi bó hoa live. |
+| **`livestream_orders/{date}.json`** | Không Cache Client (Real-time) | Giao dịch theo ngày | Nạp trực tiếp thời gian thực để đối soát phiên live. |
 | **`infoCompany.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_info_company_cache_v1` / `telua_info_company_etag_v1` | Tự động làm mới khi Admin lưu hoặc phát hiện ETag mới từ server. |
 | **`categories.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_categories_cache_v1` / `telua_categories_etag_v1` | Menu header & vòng tròn danh mục hoa nạp 0ms, cập nhật ngầm. |
 | **`paymentConfig.json`** | LocalStorage (0ms) + HTTP ETag 304 | `telua_payment_config_cache_v1` / `telua_payment_config_etag_v1` | Popup đặt hàng hiển thị phương thức VietQR/COD ngay lập tức. |

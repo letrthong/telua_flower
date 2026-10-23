@@ -192,6 +192,7 @@ export async function updateAdminOrderStatus(orderId, newStatus) {
         if (json.success) {
             notifyUser("Đã cập nhật trạng thái đơn hàng!", 'success');
             loadAdminOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
         } else {
             notifyUser(json.message || "Lỗi cập nhật trạng thái", 'error');
         }
@@ -218,6 +219,7 @@ export async function dispatchAdminOrder(orderId, targetBranchId) {
         if (json.success) {
             notifyUser(json.message || "Đã điều phối đơn hàng thành công!", 'success');
             loadAdminOrders();
+            if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
         } else {
             notifyUser(json.message || "Lỗi điều phối đơn hàng", 'error');
             loadAdminOrders();

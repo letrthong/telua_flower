@@ -1,0 +1,66 @@
+[
+  {
+    "id": "ord_1792673091_79cdd5",
+    "orderCode": "0356148008",
+    "createdAt": "2026-10-22T12:44:51Z",
+    "updatedAt": "2026-10-22T16:17:12Z",
+    "status": "arranging",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0356148008",
+    "creatorName": "THong le",
+    "totalAmount": 1500000.0,
+    "transferredAmount": 1500000,
+    "proofImage": "/api/flower/v1/images/proof_1792673091_9ef1b1d6.png",
+    "paymentProofImage": "/api/flower/v1/images/proof_1792673091_9ef1b1d6.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 1500000.0,
+      "itemsTotal": 1500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "/api/flower/v1/images/proof_1792673091_9ef1b1d6.png",
+      "transferredAmount": 1500000,
+      "transferContent": "0356148008"
+    },
+    "recipient": {
+      "name": "THong le",
+      "phone": "0356148008",
+      "address": "xxxxxxxxxx"
+    },
+    "sender": {
+      "name": "THong le",
+      "phone": "0356148008"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-22",
+      "timeSlot": "Giao hàng phiên Live Stream"
+    },
+    "items": [
+      {
+        "productId": "test_b64_1788062614",
+        "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
+        "quantity": 1,
+        "unitPrice": 1500000,
+        "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
+      }
+    ],
+    "itemSummary": "Bình Hoa Gốm Nghệ Thuật Base64 x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/arranging/ord_1792673091_79cdd5.json"
+  }
+]

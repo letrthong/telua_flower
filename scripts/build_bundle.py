@@ -27,6 +27,7 @@ MODULE_ORDER = [
     "portal_admin_translations.js",
     "portal_admin_sysconfig.js",
     "portal_admin_orders.js",
+    "portal_admin_livestream_orders.js",
     "portal_admin_inventory.js",
     "portal_admin.js",
     "flower_app.js"
