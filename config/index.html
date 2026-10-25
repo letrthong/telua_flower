@@ -1916,10 +1916,10 @@
 
     <!-- ================= ORDER DETAIL MODAL (CHI TIẾT ĐƠN HÀNG) ================= -->
     <div id="orderDetailModal" onclick="if (event.target === this) closeOrderDetailModal();"
-        class="fixed inset-0 bg-black/75 backdrop-blur-md z-[220] items-center justify-center p-2 sm:p-4"
+        class="fixed inset-0 bg-black/75 backdrop-blur-md z-[220] items-center justify-center p-1 sm:p-2.5 md:p-3"
         style="display: none;">
-        <div
-            class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden border border-emerald-100 h-[94vh] max-h-[94vh] sm:h-[96vh] sm:max-h-[96vh] flex flex-col animate-fadeIn relative">
+        <div id="orderDetailModalCard"
+            class="bg-white w-full max-w-[99vw] xl:max-w-[98vw] 2xl:max-w-[99vw] rounded-2xl shadow-2xl overflow-hidden border border-emerald-100 h-[96vh] max-h-[96vh] flex flex-col animate-fadeIn relative">
             <!-- Top Header -->
             <div
                 class="px-6 py-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
@@ -2050,14 +2050,14 @@
                             <!-- Nút Chuyển trạng thái tùy chọn khác -->
                             <select id="ordDetailNextStatusSelect" onchange="handleOrderQuickStatusChange(this.value)"
                                 class="px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-[11px] font-semibold text-gray-700 focus:outline-none focus:border-emerald-500 shadow-2xs">
-                                <option value="">-- Trạng thái khác --</option>
-                                <option value="confirmed">✅ Xác nhận đơn</option>
-                                <option value="arranging">🌸 Đang cắm hoa</option>
-                                <option value="photo_sent">📸 Đã gửi ảnh khách</option>
-                                <option value="ready_for_pickup">🏪 Sẵn sàng nhận (Quầy)</option>
-                                <option value="shipping">🚚 Đang vận chuyển</option>
-                                <option value="delivered">🎉 Giao thành công</option>
-                                <option value="completed">🏆 Hoàn tất đơn</option>
+                                <option value="" disabled selected>⚡ Trạng thái đơn hàng ▾</option>
+                                <option value="confirmed">✅ 1. Xác nhận đơn</option>
+                                <option value="arranging">🌸 2. Đang cắm hoa</option>
+                                <option value="photo_sent">📸 3. Đã gửi ảnh khách</option>
+                                <option value="ready_for_pickup">🏪 4. Sẵn sàng nhận (Quầy)</option>
+                                <option value="shipping">🚚 4. Đang vận chuyển</option>
+                                <option value="delivered">🎉 5. Giao thành công</option>
+                                <option value="completed">🏆 6. Hoàn tất đơn</option>
                                 <option value="cancelled">❌ Hủy đơn hàng</option>
                             </select>
                         </div>
@@ -2286,10 +2286,10 @@
                             <span class="text-xs font-bold text-rose-700 flex items-center gap-1 mb-2">
                                 <i class="fa-solid fa-receipt"></i> Biên lai / Bill chuyển khoản (Live Stream):
                             </span>
-                            <div class="relative rounded-lg overflow-hidden border border-rose-200 bg-gray-100 max-h-56 flex items-center justify-center p-1">
-                                <a id="ordDetailProofPhotoLink" href="#" target="_blank" title="Bấm để xem ảnh gốc kích thước lớn" class="block max-h-52">
+                            <div class="relative rounded-lg overflow-hidden border border-rose-200 bg-gray-100 max-h-80 sm:max-h-96 flex items-center justify-center p-1.5">
+                                <a id="ordDetailProofPhotoLink" href="#" target="_blank" title="Bấm để xem ảnh gốc kích thước lớn" class="block max-h-76 sm:max-h-92">
                                     <img id="ordDetailProofPhotoImg" src="" alt="Ảnh bill chuyển khoản"
-                                        class="max-h-52 object-contain rounded hover:opacity-90 transition">
+                                        class="max-h-76 sm:max-h-92 object-contain rounded hover:opacity-90 transition">
                                 </a>
                             </div>
                         </div>
@@ -2477,10 +2477,10 @@
 
     <!-- ================= ADMIN PORTAL SPA MODAL (CMS & PRICE GOVERNANCE) ================= -->
     <div id="adminPortalModal" onclick="if (event.target === this) closeAdminPortalModal();"
-        class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-2 sm:p-4"
+        class="fixed inset-0 bg-black/70 backdrop-blur-md z-[210] items-center justify-center p-1 sm:p-2.5 md:p-3"
         style="display: none;">
-        <div
-            class="bg-white w-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden border border-pink-100 h-[92vh] max-h-[92vh] flex flex-col animate-fadeIn relative">
+        <div id="adminPortalModalCard"
+            class="bg-white w-full max-w-[99vw] xl:max-w-[98vw] 2xl:max-w-[99vw] rounded-2xl shadow-2xl overflow-hidden border border-pink-100 h-[96vh] max-h-[96vh] flex flex-col animate-fadeIn relative">
             <!-- Top Header -->
             <div class="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center space-x-3">

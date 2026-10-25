@@ -373,7 +373,7 @@ export function renderLiveOrdersTable(orders) {
                 <td class="p-3 align-top">
                     <div class="text-xs text-gray-700 font-bold">${recipient.name || customerName}</div>
                     <div class="text-[10px] text-gray-500 font-mono">${recipient.phone || customerPhone}</div>
-                    <div class="text-[10px] text-gray-600 mt-0.5 max-w-[160px] line-clamp-2" title="${deliveryAddress}">
+                    <div class="text-[10px] text-gray-600 mt-0.5 max-w-[160px] xl:max-w-[280px] 2xl:max-w-[380px] line-clamp-2" title="${deliveryAddress}">
                         📍 ${deliveryAddress}
                     </div>
                     ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}

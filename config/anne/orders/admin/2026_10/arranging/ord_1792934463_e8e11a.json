@@ -6,7 +6,7 @@
   "orderDate": "2026-10-25",
   "orderDay": "2026-10-25",
   "livestreamDate": "2026-10-25",
-  "updatedAt": "2026-10-25T20:21:03Z",
+  "updatedAt": "2026-10-25T15:48:58Z",
   "source": "livestream_quick_order",
   "branchId": "admin",
   "assignedBranchId": "admin",
@@ -14,7 +14,7 @@
   "createdBy": "0988777666",
   "assignedTo": "staff_admin",
   "assignedBy": "system",
-  "status": "pending",
+  "status": "arranging",
   "cardMessage": "",
   "ribbonBanner": "",
   "sender": {
@@ -70,6 +70,18 @@
       "updatedAt": "2026-10-25T20:21:03Z",
       "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: LIVE-261025-98F6. Số tiền đã chuyển: 1,200,000₫.",
       "updatedBy": "0988777666"
+    },
+    {
+      "status": "confirmed",
+      "updatedAt": "2026-10-25T15:48:47Z",
+      "note": "Cập nhật trạng thái bởi super_admin",
+      "updatedBy": "staff_admin"
+    },
+    {
+      "status": "arranging",
+      "updatedAt": "2026-10-25T15:48:58Z",
+      "note": "Cập nhật trạng thái bởi super_admin",
+      "updatedBy": "staff_admin"
     }
   ],
   "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",

@@ -568,7 +568,12 @@ export function switchAdminTab(tabName) {
 
     console.group(`%c🖥️ [GUI_VIEW] Đang hiển thị Tab: "${tabTitles[tabName] || tabName}" (#tabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)})`, "color: #0288d1; font-weight: bold; font-size: 12px;");
     console.log("⏱️ Thời điểm:", new Date().toLocaleTimeString());
-    console.log("📂 Tab Identifier:", tabName);
+    // Đảm bảo Admin CMS Modal Card luôn chiếm chiều rộng tối đa (đặc biệt khi mở tab Đơn Hàng & Đơn Live Stream)
+    const adminCard = document.getElementById("adminPortalModalCard");
+    if (adminCard) {
+        adminCard.classList.remove("max-w-6xl", "max-w-7xl");
+        adminCard.classList.add("w-full", "max-w-[99vw]", "xl:max-w-[98vw]", "2xl:max-w-[99vw]");
+    }
 
     const tabs = ["orders", "livestreamOrders", "products", "inventory", "categories", "branches", "promotions", "addons", "banners"];
     tabs.forEach((t) => {

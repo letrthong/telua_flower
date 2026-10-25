@@ -129,7 +129,7 @@ function renderAdminOrdersTable(orders) {
                 <td class="p-3">
                     <div class="text-xs text-gray-700 font-bold">${recipient.name || "—"}</div>
                     <div class="text-[10px] text-gray-500 font-mono">${recipient.phone || ""}</div>
-                    <div class="text-[10px] text-gray-400 truncate max-w-[140px]" title="${recipient.address || ''}">${recipient.address || ""}</div>
+                    <div class="text-[10px] text-gray-400 truncate max-w-[140px] xl:max-w-[260px] 2xl:max-w-[360px]" title="${recipient.address || ''}">${recipient.address || ""}</div>
                 </td>
                 <td class="p-3">
                     <div class="flex items-center gap-1.5 flex-wrap">

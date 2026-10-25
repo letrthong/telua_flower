@@ -461,6 +461,13 @@ export async function openOrderDetailModal(orderId) {
     modal.style.display = "flex";
     modal.classList.remove("hidden");
 
+    // Đảm bảo Modal Chi Tiết Đơn Hàng luôn mở rộng tối đa (full width)
+    const cardEl = document.getElementById("orderDetailModalCard");
+    if (cardEl) {
+        cardEl.classList.remove("max-w-3xl", "max-w-4xl", "max-w-5xl");
+        cardEl.classList.add("w-full", "max-w-[99vw]", "xl:max-w-[98vw]", "2xl:max-w-[99vw]");
+    }
+
     if (loadingEl) loadingEl.classList.remove("hidden");
     if (contentEl) contentEl.classList.add("hidden");
 
@@ -803,34 +810,50 @@ function populateOrderDetail(order) {
             if (nextStatusSelect) {
                 if (isTerminal) {
                     nextStatusSelect.disabled = true;
-                    nextStatusSelect.title = "Đơn hàng đã hoàn thành hoặc đã hủy, không thể thay đổi trạng thái nữa.";
+                    nextStatusSelect.title = "Đơn hàng đã kết thúc (hoàn tất hoặc đã hủy), không thể thay đổi trạng thái nữa.";
                     nextStatusSelect.className = "px-2.5 py-1.5 bg-gray-100 text-gray-400 border border-gray-200 rounded-lg text-[11px] font-semibold cursor-not-allowed shadow-2xs";
-                    nextStatusSelect.innerHTML = '<option value="" disabled selected>🔒 Đã hoàn thành (Khóa trạng thái)</option>';
+                    const terminalText = curStatus === "cancelled" ? "❌ Đơn đã hủy" : (curStatus === "returned" ? "↩️ Đơn trả lại" : (curStatus === "delivered" ? "🎉 Đã giao thành công" : "🏆 Đã hoàn tất đơn"));
+                    nextStatusSelect.innerHTML = `<option value="" disabled selected>🔒 ${terminalText} (Đã khóa)</option>`;
                 } else {
                     nextStatusSelect.disabled = false;
-                    nextStatusSelect.title = "";
-                    nextStatusSelect.className = "px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-[11px] font-semibold text-gray-700 focus:outline-none focus:border-emerald-500 shadow-2xs";
+                    nextStatusSelect.title = "Chọn trạng thái tiếp theo để chuyển tiến trình đơn hàng";
+                    nextStatusSelect.className = "px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-[11px] font-semibold text-gray-700 focus:outline-none focus:border-emerald-500 shadow-2xs cursor-pointer";
 
-                    // Lọc các tùy chọn chỉ cho phép tiến lên theo tiến trình (không cho đổi ngược lại)
                     const fulfillment = String(order.fulfillmentType || order.delivery?.fulfillmentType || "delivery").toLowerCase();
                     const isPickup = fulfillment === "pickup";
-                    let optsHtml = '<option value="">-- Trạng thái khác --</option>';
-                    if (curLevel < 2) optsHtml += '<option value="confirmed">✅ Xác nhận đơn</option>';
-                    if (curLevel < 3) {
-                        optsHtml += '<option value="arranging">🌸 Đang cắm hoa</option>';
-                        optsHtml += '<option value="photo_sent">📸 Đã gửi ảnh khách</option>';
-                    }
-                    if (curLevel < 4) {
-                        if (isPickup) optsHtml += '<option value="ready_for_pickup">🏪 Sẵn sàng nhận (Quầy)</option>';
-                        else optsHtml += '<option value="shipping">🚚 Đang vận chuyển</option>';
-                    }
-                    if (isPickup) {
-                        optsHtml += '<option value="completed">🏆 Hoàn tất đơn</option>';
-                    } else {
-                        optsHtml += '<option value="delivered">🎉 Giao thành công</option>';
-                        optsHtml += '<option value="completed">🏆 Hoàn tất đơn</option>';
-                    }
-                    optsHtml += '<option value="cancelled">❌ Hủy đơn hàng</option>';
+
+                    // Danh sách đầy đủ các bước nghiệp vụ theo thứ tự chuẩn
+                    const allStatuses = [
+                        { key: "pending", label: "Chờ xác nhận", level: 1, icon: "⏳" },
+                        { key: "confirmed", label: "Xác nhận đơn", level: 2, icon: "✅" },
+                        { key: "arranging", label: "Đang cắm hoa", level: 3, icon: "🌸" },
+                        { key: "photo_sent", label: "Đã gửi ảnh khách", level: 3, icon: "📸" },
+                        isPickup 
+                            ? { key: "ready_for_pickup", label: "Sẵn sàng nhận (Quầy)", level: 4, icon: "🏪" }
+                            : { key: "shipping", label: "Đang vận chuyển", level: 4, icon: "🚚" },
+                        isPickup 
+                            ? null 
+                            : { key: "delivered", label: "Giao thành công", level: 5, icon: "🎉" },
+                        { key: "completed", label: "Hoàn tất đơn hàng", level: 5, icon: "🏆" }
+                    ].filter(Boolean);
+
+                    const curMetaLabel = statusMeta.label || "Chờ xác nhận";
+                    let optsHtml = `<option value="" disabled selected>⚡ Trạng thái: ${curMetaLabel} (Đổi bước tiếp ▾)</option>`;
+
+                    allStatuses.forEach(st => {
+                        const isCurrent = (st.key === curStatus);
+                        const isPast = (st.level < curLevel) || (st.level === curLevel && !isCurrent);
+
+                        if (isCurrent) {
+                            optsHtml += `<option value="${st.key}" disabled class="bg-emerald-50 text-emerald-800 font-bold">${st.icon} ${st.label} (Hiện tại)</option>`;
+                        } else if (isPast) {
+                            optsHtml += `<option value="${st.key}" disabled class="bg-gray-100 text-gray-400 italic">${st.icon} ${st.label} (Đã qua - Khóa)</option>`;
+                        } else {
+                            optsHtml += `<option value="${st.key}" class="text-gray-800 font-semibold">${st.icon} Chuyển sang: ${st.label}</option>`;
+                        }
+                    });
+
+                    optsHtml += `<option value="cancelled" class="text-rose-600 font-semibold">❌ Hủy đơn hàng</option>`;
 
                     nextStatusSelect.innerHTML = optsHtml;
                     nextStatusSelect.value = "";
