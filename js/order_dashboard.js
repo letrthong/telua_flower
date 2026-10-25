@@ -794,21 +794,47 @@ function populateOrderDetail(order) {
                 }
             }
 
+            const curStatus = String(order.status || "pending").toLowerCase();
+            const isTerminal = ["delivered", "completed", "cancelled", "returned"].includes(curStatus);
+            const STATUS_LEVELS = { pending: 1, confirmed: 2, arranging: 3, in_progress: 3, photo_sent: 3, ready_for_pickup: 4, shipping: 4, delivered: 5, completed: 5 };
+            const curLevel = STATUS_LEVELS[curStatus] || 1;
+
             const nextStatusSelect = document.getElementById("ordDetailNextStatusSelect");
             if (nextStatusSelect) {
-                nextStatusSelect.value = order.status || "";
+                if (isTerminal) {
+                    nextStatusSelect.disabled = true;
+                    nextStatusSelect.title = "Đơn hàng đã hoàn thành hoặc đã hủy, không thể thay đổi trạng thái nữa.";
+                    nextStatusSelect.className = "px-2.5 py-1.5 bg-gray-100 text-gray-400 border border-gray-200 rounded-lg text-[11px] font-semibold cursor-not-allowed shadow-2xs";
+                    nextStatusSelect.innerHTML = '<option value="" disabled selected>🔒 Đã hoàn thành (Khóa trạng thái)</option>';
+                } else {
+                    nextStatusSelect.disabled = false;
+                    nextStatusSelect.title = "";
+                    nextStatusSelect.className = "px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg text-[11px] font-semibold text-gray-700 focus:outline-none focus:border-emerald-500 shadow-2xs";
 
-                // Lọc ẩn/hiện trạng thái theo phương thức nhận hàng pickup / delivery
-                const fulfillment = String(order.fulfillmentType || order.delivery?.fulfillmentType || "delivery").toLowerCase();
-                const isPickup = fulfillment === "pickup";
-                const optReady = nextStatusSelect.querySelector('option[value="ready_for_pickup"]');
-                const optCompleted = nextStatusSelect.querySelector('option[value="completed"]');
-                const optShipping = nextStatusSelect.querySelector('option[value="shipping"]');
-                const optDelivered = nextStatusSelect.querySelector('option[value="delivered"]');
-                if (optReady) optReady.style.display = isPickup ? "" : "none";
-                if (optCompleted) optCompleted.style.display = isPickup ? "" : "none";
-                if (optShipping) optShipping.style.display = isPickup ? "none" : "";
-                if (optDelivered) optDelivered.style.display = isPickup ? "none" : "";
+                    // Lọc các tùy chọn chỉ cho phép tiến lên theo tiến trình (không cho đổi ngược lại)
+                    const fulfillment = String(order.fulfillmentType || order.delivery?.fulfillmentType || "delivery").toLowerCase();
+                    const isPickup = fulfillment === "pickup";
+                    let optsHtml = '<option value="">-- Trạng thái khác --</option>';
+                    if (curLevel < 2) optsHtml += '<option value="confirmed">✅ Xác nhận đơn</option>';
+                    if (curLevel < 3) {
+                        optsHtml += '<option value="arranging">🌸 Đang cắm hoa</option>';
+                        optsHtml += '<option value="photo_sent">📸 Đã gửi ảnh khách</option>';
+                    }
+                    if (curLevel < 4) {
+                        if (isPickup) optsHtml += '<option value="ready_for_pickup">🏪 Sẵn sàng nhận (Quầy)</option>';
+                        else optsHtml += '<option value="shipping">🚚 Đang vận chuyển</option>';
+                    }
+                    if (isPickup) {
+                        optsHtml += '<option value="completed">🏆 Hoàn tất đơn</option>';
+                    } else {
+                        optsHtml += '<option value="delivered">🎉 Giao thành công</option>';
+                        optsHtml += '<option value="completed">🏆 Hoàn tất đơn</option>';
+                    }
+                    optsHtml += '<option value="cancelled">❌ Hủy đơn hàng</option>';
+
+                    nextStatusSelect.innerHTML = optsHtml;
+                    nextStatusSelect.value = "";
+                }
             }
 
             const cashBtn = document.getElementById("ordDetailConfirmCashBtn");
@@ -831,60 +857,81 @@ function populateOrderDetail(order) {
             }
 
             // 3b. Cập nhật 4 nút Quy trình xử lý đơn (Fulfillment Buttons)
-            const curStatus = String(order.status || "pending").toLowerCase();
             const btnConfirm = document.getElementById("ordDetailActionConfirmBtn");
             const btnPhoto = document.getElementById("ordDetailActionPhotoBtn");
             const btnShipping = document.getElementById("ordDetailActionShippingBtn");
             const btnComplete = document.getElementById("ordDetailActionCompleteBtn");
 
+            // Nút 1: Xác nhận đơn (Nếu đã xác nhận hoặc hoàn thành thì khóa, không cho lùi về)
             if (btnConfirm) {
                 if (curStatus === "pending") {
                     btnConfirm.disabled = false;
                     btnConfirm.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm ring-2 ring-emerald-300 animate-pulse";
                     btnConfirm.innerHTML = '<i class="fa-solid fa-circle-check"></i> 1. Xác nhận đơn';
                 } else {
-                    btnConfirm.disabled = false;
-                    btnConfirm.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100";
+                    btnConfirm.disabled = true;
+                    btnConfirm.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default";
                     btnConfirm.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> Đã xác nhận';
                 }
             }
 
+            // Nút 2: Chụp hình hoa (Nếu đã hoàn thành/hủy thì khóa)
             if (btnPhoto) {
                 const hasPhoto = !!(order.flowerPhoto && order.flowerPhoto.photoUrl);
-                if (curStatus === "confirmed" || curStatus === "arranging") {
+                if (isTerminal) {
+                    btnPhoto.disabled = true;
+                    btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed";
+                    btnPhoto.innerHTML = hasPhoto ? '<i class="fa-solid fa-camera text-gray-400"></i> Đã có ảnh hoa' : '<i class="fa-solid fa-lock text-[10px]"></i> Đã hoàn tất';
+                } else if (curStatus === "confirmed" || curStatus === "arranging") {
+                    btnPhoto.disabled = false;
                     btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white shadow-sm ring-2 ring-purple-300 animate-pulse";
                     btnPhoto.innerHTML = '<i class="fa-solid fa-camera"></i> 2. Chụp hình hoa';
                 } else if (hasPhoto) {
+                    btnPhoto.disabled = false;
                     btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100";
                     btnPhoto.innerHTML = '<i class="fa-solid fa-camera text-purple-600"></i> Đã chụp (Chụp lại)';
                 } else {
+                    btnPhoto.disabled = false;
                     btnPhoto.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100";
                     btnPhoto.innerHTML = '<i class="fa-solid fa-camera text-purple-600"></i> 2. Chụp hình hoa';
                 }
             }
 
+            // Nút 3: Gán Shipper (Nếu đã hoàn thành/hủy thì khóa)
             if (btnShipping) {
-                if (curStatus === "photo_sent" || curStatus === "arranging" || (curStatus === "confirmed" && !order.requiresArranging)) {
+                if (isTerminal) {
+                    btnShipping.disabled = true;
+                    btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed";
+                    btnShipping.innerHTML = '<i class="fa-solid fa-lock text-[10px]"></i> Đã hoàn tất';
+                } else if (curStatus === "photo_sent" || curStatus === "arranging" || (curStatus === "confirmed" && !order.requiresArranging)) {
+                    btnShipping.disabled = false;
                     btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-sm ring-2 ring-blue-300 animate-pulse";
                     btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast"></i> 3. Gán Shipper & Giao';
                 } else if (curStatus === "shipping") {
+                    btnShipping.disabled = false;
                     btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100";
                     btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast text-blue-600"></i> Đang giao (Đổi)';
                 } else {
+                    btnShipping.disabled = false;
                     btnShipping.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100";
                     btnShipping.innerHTML = '<i class="fa-solid fa-truck-fast text-blue-600"></i> 3. Gán Shipper';
                 }
             }
 
+            // Nút 4: Hoàn thành đơn (Nếu đã hoàn thành/hủy thì khóa)
             if (btnComplete) {
-                if (curStatus === "shipping" || curStatus === "ready_for_pickup") {
-                    btnComplete.disabled = false;
-                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm ring-2 ring-emerald-300 animate-pulse";
-                    btnComplete.innerHTML = '<i class="fa-solid fa-award"></i> 4. Hoàn thành đơn';
-                } else if (curStatus === "delivered" || curStatus === "completed") {
+                if (curStatus === "delivered" || curStatus === "completed") {
                     btnComplete.disabled = true;
                     btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default";
                     btnComplete.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-700"></i> Đã hoàn thành';
+                } else if (isTerminal) {
+                    btnComplete.disabled = true;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-ban text-red-500"></i> Đã hủy';
+                } else if (curStatus === "shipping" || curStatus === "ready_for_pickup") {
+                    btnComplete.disabled = false;
+                    btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-sm ring-2 ring-emerald-300 animate-pulse";
+                    btnComplete.innerHTML = '<i class="fa-solid fa-award"></i> 4. Hoàn thành đơn';
                 } else {
                     btnComplete.disabled = false;
                     btnComplete.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 hover:bg-emerald-600 hover:text-white border border-gray-200";

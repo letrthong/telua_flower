@@ -154,14 +154,23 @@ function renderAdminOrdersTable(orders) {
                 </td>
                 <td class="p-3 text-center">
                     <div class="flex flex-col gap-1.5 items-center">
-                        <select onchange="updateAdminOrderStatus('${order.id}', this.value)" class="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-semibold focus:outline-none focus:border-primary">
-                            <option value="">Cập nhật trạng thái...</option>
-                            <option value="confirmed">✅ Xác nhận</option>
-                            <option value="arranging">🌸 Đang cắm</option>
-                            <option value="shipping">🚚 Vận chuyển</option>
-                            <option value="delivered">🎉 Giao xong</option>
-                            <option value="cancelled">❌ Hủy</option>
-                        </select>
+                        ${(() => {
+                            const curStatus = (order.status || 'pending').toLowerCase();
+                            const isTerminal = ['delivered', 'completed', 'cancelled', 'returned'].includes(curStatus);
+                            if (isTerminal) {
+                                return `<div class="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-bold text-gray-400 flex items-center justify-center gap-1 cursor-not-allowed" title="Đơn hàng đã hoàn tất hoặc kết thúc, không thể thay đổi trạng thái"><i class="fa-solid fa-lock text-[9px]"></i> Đã hoàn tất</div>`;
+                            }
+                            const STATUS_LEVELS = { pending: 1, confirmed: 2, arranging: 3, in_progress: 3, photo_sent: 3, shipping: 4, ready_for_pickup: 4, delivered: 5, completed: 5 };
+                            const curLevel = STATUS_LEVELS[curStatus] || 1;
+                            let options = '<option value="">Cập nhật trạng thái...</option>';
+                            if (curLevel < 2) options += '<option value="confirmed">✅ Xác nhận</option>';
+                            if (curLevel < 3) options += '<option value="arranging">🌸 Đang cắm</option>';
+                            if (curLevel < 4) options += '<option value="shipping">🚚 Vận chuyển</option>';
+                            if (curLevel < 5) options += '<option value="delivered">🎉 Giao xong</option>';
+                            options += '<option value="completed">🏁 Hoàn tất</option>';
+                            options += '<option value="cancelled">❌ Hủy</option>';
+                            return `<select onchange="updateAdminOrderStatus('${order.id}', this.value)" class="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-semibold focus:outline-none focus:border-primary">${options}</select>`;
+                        })()}
                         <select onchange="dispatchAdminOrder('${order.id}', this.value)" class="w-full px-2 py-1 bg-pink-50/50 border border-pink-200 text-primary rounded-lg text-[10px] font-bold focus:outline-none focus:border-primary">
                             <option value="">⚡ Gán cửa hàng...</option>
                             <option value="admin" ${branchId === 'admin' ? 'selected' : ''}>🏢 Trung Tâm Admin</option>

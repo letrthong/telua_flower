@@ -57,6 +57,7 @@ from   data_service import (
     save_uploaded_image,
     find_image_file,
     update_order_status,
+    normalize_order_status,
     enrich_order_display_names,
     save_order
 )
@@ -812,8 +813,52 @@ def api_update_order_status(order_id):
         "pending", "confirmed", "arranging", "in_progress", "photo_sent",
         "shipping", "delivered", "ready_for_pickup", "completed", "cancelled", "returned"
     ]
-    if new_status not in valid_statuses:
-        return jsonify({"success": False, "message": "Trạng thái đơn hàng không hợp lệ"}), 400
+    # Ràng buộc trạng thái: không đổi ngược và không sửa khi đã hoàn tất
+    current_status = normalize_order_status(order.get("status") or "pending")
+    terminal_statuses = {"delivered", "completed", "cancelled", "returned"}
+
+    # 1. Nếu đơn hàng đã hoàn tất hoặc đã hủy, không cho phép thay đổi trạng thái nữa
+    if current_status in terminal_statuses:
+        if new_status != current_status:
+            return jsonify({
+                "success": False,
+                "message": f"Đơn hàng đã ở trạng thái [{current_status}], không thể thay đổi trạng thái nữa."
+            }), 400
+
+    # 2. Không cho phép chuyển ngược trạng thái (chỉ được tiến lên theo chu trình đơn hàng)
+    status_levels = {
+        "pending": 1,
+        "confirmed": 2,
+        "arranging": 3,
+        "in_progress": 3,
+        "photo_sent": 3,
+        "ready_for_pickup": 4,
+        "shipping": 4,
+        "delivered": 5,
+        "completed": 5,
+    }
+
+    if new_status != current_status:
+        if new_status == "cancelled":
+            if current_status in terminal_statuses:
+                return jsonify({
+                    "success": False,
+                    "message": "Đơn hàng đã hoàn thành hoặc kết thúc, không thể hủy."
+                }), 400
+        elif new_status == "returned":
+            if current_status not in {"delivered", "completed"}:
+                return jsonify({
+                    "success": False,
+                    "message": "Chỉ có thể ghi nhận trả hàng sau khi đơn hàng đã được giao."
+                }), 400
+        else:
+            curr_lvl = status_levels.get(current_status, 1)
+            new_lvl = status_levels.get(new_status, 1)
+            if new_lvl < curr_lvl:
+                return jsonify({
+                    "success": False,
+                    "message": f"Không thể đổi ngược trạng thái đơn hàng từ [{current_status}] về [{new_status}]."
+                }), 400
 
     # Phân quyền chi nhánh: nhân viên chỉ được cập nhật đơn của chi nhánh mình
     current_user = request.current_user
@@ -1006,8 +1051,16 @@ def api_upload_order_flower_photo(order_id):
     if not photo_url:
         return jsonify({"success": False, "message": "Vui lòng cung cấp URL hoặc file ảnh hoa thực tế"}), 400
 
+    curr_status = normalize_order_status(order.get("status") or "arranging")
+    terminal_statuses = {"delivered", "completed", "cancelled", "returned"}
+    if curr_status in terminal_statuses:
+        return jsonify({"success": False, "message": f"Đơn hàng đã ở trạng thái [{curr_status}], không thể thay đổi ảnh hoặc trạng thái nữa."}), 400
+
     auto_update_status = payload.get("autoUpdateStatus", True)
-    new_status = "photo_sent" if auto_update_status else order.get("status", "arranging")
+    if auto_update_status and curr_status in ["pending", "confirmed", "arranging", "in_progress"]:
+        new_status = "photo_sent"
+    else:
+        new_status = curr_status
     now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     flower_photo_obj = {

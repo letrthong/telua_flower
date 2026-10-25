@@ -561,6 +561,95 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         matched_diff = [o for o in diff_orders if o.get("id") == order_id]
         self.assertEqual(len(matched_diff), 0, "Không được xuất hiện đơn trong ngày khác")
 
+    def test_order_status_cannot_revert_backwards(self):
+        """
+        Kiểm tra trạng thái đơn hàng không thể chuyển ngược lại (Forward-only Workflow):
+        - Đơn đã confirmed không được lùi về pending
+        - Đơn đã shipping không được lùi về arranging hoặc confirmed
+        """
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        # 1. Tạo đơn mới (pending)
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Test Backward",
+            "phone": "0988776655",
+            "address": "123 Hai Bà Trưng, Q.1",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/receipt_backward.jpg"
+        })
+        self.assertEqual(res_create.status_code, 201)
+        order_id = res_create.get_json()["data"]["id"]
+
+        # 2. Xác nhận đơn -> status: confirmed (hợp lệ)
+        res_conf = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "confirmed"})
+        self.assertEqual(res_conf.status_code, 200)
+
+        # 3. Thử chuyển ngược từ confirmed về pending -> Phải bị từ chối 400
+        res_revert_pending = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "pending"})
+        self.assertEqual(res_revert_pending.status_code, 400)
+        self.assertIn("không thể đổi ngược", res_revert_pending.get_json()["message"].lower())
+
+        # 4. Chuyển tiếp sang shipping -> status: shipping (hợp lệ)
+        res_shipping = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "shipping", "shipperName": "Bác Tư"})
+        self.assertEqual(res_shipping.status_code, 200)
+
+        # 5. Thử chuyển ngược từ shipping về arranging -> Phải bị từ chối 400
+        res_revert_arranging = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "arranging"})
+        self.assertEqual(res_revert_arranging.status_code, 400)
+        self.assertIn("không thể đổi ngược", res_revert_arranging.get_json()["message"].lower())
+
+    def test_order_status_cannot_change_when_completed_or_cancelled(self):
+        """
+        Kiểm tra đơn hàng khi đã hoàn thành (delivered, completed) hoặc đã hủy (cancelled)
+        thì bị khóa, không thể chỉnh sửa hoặc chuyển sang bất kỳ trạng thái nào khác.
+        """
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        # 1. Tạo đơn & giao thành công
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Test Completed Lock",
+            "phone": "0911556677",
+            "address": "456 CMT8, Q.3",
+            "transferredAmount": 800000,
+            "paymentProofImage": "https://example.com/receipt_lock.jpg"
+        })
+        self.assertEqual(res_create.status_code, 201)
+        order_id = res_create.get_json()["data"]["id"]
+
+        # Chuyển tuần tự đến delivered
+        self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={"Authorization": f"Bearer {self.admin_token}"}, json={"status": "confirmed"})
+        self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={"Authorization": f"Bearer {self.admin_token}"}, json={"status": "shipping"})
+        res_deliv = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={"Authorization": f"Bearer {self.admin_token}"}, json={"status": "delivered"})
+        self.assertEqual(res_deliv.status_code, 200)
+
+        # 2. Đơn đã delivered, cố gắng sửa sang bất kỳ trạng thái nào -> Phải bị chặn 400
+        # Thử lùi về shipping
+        res_mod1 = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "shipping"})
+        self.assertEqual(res_mod1.status_code, 400)
+        self.assertIn("không thể thay đổi trạng thái", res_mod1.get_json()["message"].lower())
+
+        # Thử hủy đơn đã delivered
+        res_mod2 = self.client.put(f"/api/flower/v1/admin/orders/{order_id}/status", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"status": "cancelled"})
+        self.assertEqual(res_mod2.status_code, 400)
+
+        # 3. Thử tải ảnh hoa khi đơn đã delivered -> Phải bị chặn 400
+        res_photo = self.client.post(f"/api/flower/v1/admin/orders/{order_id}/photo", headers={
+            "Authorization": f"Bearer {self.admin_token}"
+        }, json={"photoUrl": "https://example.com/late_photo.jpg"})
+        self.assertEqual(res_photo.status_code, 400)
+
 if __name__ == "__main__":
     unittest.main()
 

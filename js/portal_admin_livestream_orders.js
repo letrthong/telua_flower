@@ -281,6 +281,35 @@ export function renderLiveOrdersTable(orders) {
             <option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${b.name || b.id}</option>
         `).join("");
 
+        const curStatus = (order.status || 'pending').toLowerCase();
+        const isTerminal = ['delivered', 'completed', 'cancelled', 'returned'].includes(curStatus);
+        const STATUS_LEVELS = { pending: 1, confirmed: 2, arranging: 3, in_progress: 3, photo_sent: 3, shipping: 4, ready_for_pickup: 4, delivered: 5, completed: 5 };
+        const curLevel = STATUS_LEVELS[curStatus] || 1;
+
+        let statusActionHtml = '';
+        if (isTerminal) {
+            statusActionHtml = `
+                <div class="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-bold text-gray-400 flex items-center justify-center gap-1 cursor-not-allowed" title="Đơn hàng đã hoàn tất hoặc kết thúc, không thể thay đổi trạng thái">
+                    <i class="fa-solid fa-lock text-[9px]"></i> Đã chốt xong
+                </div>
+            `;
+        } else {
+            let options = '<option value="">Cập nhật nhanh...</option>';
+            if (curLevel < 2) options += '<option value="confirmed">✅ Xác nhận đơn</option>';
+            if (curLevel < 3) options += '<option value="arranging">🌸 Đang cắm hoa</option>';
+            if (curLevel < 4) options += '<option value="shipping">🚚 Đang vận chuyển</option>';
+            if (curLevel < 5) options += '<option value="delivered">🎉 Giao thành công</option>';
+            options += '<option value="completed">🏁 Hoàn tất đơn</option>';
+            options += '<option value="cancelled">❌ Hủy đơn hàng</option>';
+
+            statusActionHtml = `
+                <select onchange="updateAdminOrderStatus('${order.id}', this.value)"
+                        class="w-full px-1.5 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-semibold text-gray-700 focus:outline-none focus:border-primary shadow-2xs">
+                    ${options}
+                </select>
+            `;
+        }
+
         return `
             <tr class="cursor-pointer hover:bg-rose-50/70 transition border-b border-gray-100 group"
                 onclick="if (!event.target.closest('select, a, button, input')) openOrderDetailModal('${order.id}')"
@@ -374,16 +403,7 @@ export function renderLiveOrdersTable(orders) {
                                 class="w-full px-2.5 py-1.5 bg-gradient-to-r from-rose-500 via-pink-600 to-rose-600 hover:from-rose-600 hover:to-pink-700 text-white rounded-lg text-[10px] font-bold shadow-xs hover:shadow transition flex items-center justify-center gap-1 group/btn">
                             <i class="fa-solid fa-bolt text-[9px] group-hover/btn:animate-bounce"></i> Xử lý đơn
                         </button>
-                        <select onchange="updateAdminOrderStatus('${order.id}', this.value)"
-                                class="w-full px-1.5 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-semibold text-gray-700 focus:outline-none focus:border-primary shadow-2xs">
-                            <option value="">Cập nhật nhanh...</option>
-                            <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>✅ Xác nhận đơn</option>
-                            <option value="arranging" ${order.status === 'arranging' ? 'selected' : ''}>🌸 Đang cắm hoa</option>
-                            <option value="shipping" ${order.status === 'shipping' ? 'selected' : ''}>🚚 Đang vận chuyển</option>
-                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>🎉 Giao thành công</option>
-                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>🏁 Hoàn tất đơn</option>
-                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>❌ Hủy đơn hàng</option>
-                        </select>
+                        ${statusActionHtml}
                     </div>
                 </td>
             </tr>
