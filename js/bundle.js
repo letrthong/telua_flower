@@ -12044,53 +12044,162 @@ async function renderLiveStreamConfig(config) {
     await renderAdminLiveStreamFeaturedProducts((config && config.featuredProductIds) || []);
 }
 
+let cachedAdminLiveStreamProducts = [];
+let adminLiveStreamSearchQuery = "";
+let adminLiveStreamFilterMode = "all"; // 'all' | 'pinned'
+
 /**
- * Hiển thị danh sách checkbox các bó hoa để ghim vào phiên Live Stream
+ * Cập nhật số lượng các mẫu hoa đã ghim trên huy hiệu và bộ lọc
  */
-async function renderAdminLiveStreamFeaturedProducts(featuredIds = []) {
+function updateAdminLiveStreamFeaturedBadges() {
+    const featuredList = (adminLiveStreamConfig && adminLiveStreamConfig.featuredProductIds) || [];
+    const countBadge = document.getElementById("adminLiveStreamFeaturedCountBadge");
+    const filterPinnedCount = document.getElementById("adminLiveStreamFilterPinnedCount");
+    if (countBadge) {
+        countBadge.textContent = `Đã ghim: ${featuredList.length} mẫu`;
+    }
+    if (filterPinnedCount) {
+        filterPinnedCount.textContent = featuredList.length;
+    }
+}
+
+/**
+ * Xử lý khi admin gõ từ khóa tìm kiếm tên mẫu hoa ghim
+ */
+function handleAdminLiveStreamProductSearch(keyword = "") {
+    adminLiveStreamSearchQuery = (keyword || "").trim();
+    const clearBtn = document.getElementById("adminLiveStreamProductSearchClearBtn");
+    if (clearBtn) {
+        if (adminLiveStreamSearchQuery) clearBtn.classList.remove("hidden");
+        else clearBtn.classList.add("hidden");
+    }
+    filterAndRenderAdminLiveStreamFeaturedProducts();
+}
+
+/**
+ * Xóa từ khóa tìm kiếm mẫu hoa
+ */
+function clearAdminLiveStreamProductSearch() {
+    const input = document.getElementById("adminLiveStreamProductSearch");
+    if (input) input.value = "";
+    handleAdminLiveStreamProductSearch("");
+}
+
+/**
+ * Chuyển đổi bộ lọc: Tất cả | Chỉ xem mẫu đã ghim
+ */
+function setAdminLiveStreamProductFilter(mode = "all") {
+    adminLiveStreamFilterMode = mode;
+    const btnAll = document.getElementById("btnFilterLiveProdsAll");
+    const btnPinned = document.getElementById("btnFilterLiveProdsPinned");
+    if (btnAll && btnPinned) {
+        if (mode === "pinned") {
+            btnPinned.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white shadow-2xs transition cursor-pointer";
+            btnAll.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition cursor-pointer";
+        } else {
+            btnAll.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gray-800 text-white shadow-2xs transition cursor-pointer";
+            btnPinned.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition cursor-pointer";
+        }
+    }
+    filterAndRenderAdminLiveStreamFeaturedProducts();
+}
+
+/**
+ * Lọc và render danh sách mẫu hoa theo từ khóa tìm kiếm & bộ lọc
+ */
+function filterAndRenderAdminLiveStreamFeaturedProducts() {
     const container = document.getElementById("adminLiveStreamFeaturedContainer");
     if (!container) return;
 
-    let prods = [];
-    try {
-        if (typeof window !== "undefined" && Array.isArray(window.allStorefrontProducts) && window.allStorefrontProducts.length > 0) {
-            prods = window.allStorefrontProducts;
-        } else {
-            const res = await fetch(`${API_BASE}/products?_t=${Date.now()}`);
-            if (res.ok) {
-                const json = await res.json();
-                if (json && Array.isArray(json.data)) prods = json.data;
+    const featuredSet = new Set((adminLiveStreamConfig && Array.isArray(adminLiveStreamConfig.featuredProductIds)) ? adminLiveStreamConfig.featuredProductIds : []);
+    const prods = cachedAdminLiveStreamProducts || [];
+
+    const normQuery = typeof removeVietnameseTones === "function"
+        ? removeVietnameseTones(adminLiveStreamSearchQuery.toLowerCase())
+        : adminLiveStreamSearchQuery.toLowerCase();
+
+    const filtered = prods.filter(p => {
+        if (!p) return false;
+        const isPinned = featuredSet.has(p.id) || featuredSet.has(p.uuid);
+        if (adminLiveStreamFilterMode === "pinned" && !isPinned) {
+            return false;
+        }
+
+        if (normQuery) {
+            const pName = (p.name || "").toLowerCase();
+            const pNameNorm = typeof removeVietnameseTones === "function" ? removeVietnameseTones(pName) : pName;
+            const pCodeNorm = String(p.code || p.id || "").toLowerCase();
+            if (!pNameNorm.includes(normQuery) && !pCodeNorm.includes(normQuery) && !pName.includes(adminLiveStreamSearchQuery.toLowerCase())) {
+                return false;
             }
         }
-    } catch (_) { }
+        return true;
+    });
 
-    if (!prods || prods.length === 0) {
-        container.innerHTML = `<p class="text-xs text-gray-400 py-3 italic col-span-full">Chưa có danh sách mẫu hoa trong hệ thống.</p>`;
+    const countEl = document.getElementById("adminLiveStreamProductVisibleCount");
+    if (countEl) {
+        countEl.textContent = `Hiển thị ${filtered.length} / ${prods.length} mẫu`;
+    }
+
+    updateAdminLiveStreamFeaturedBadges();
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full py-8 text-center text-gray-400 space-y-2">
+                <div class="w-10 h-10 mx-auto rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <p class="text-xs font-medium text-gray-600">Không tìm thấy mẫu hoa nào khớp với từ khóa "${adminLiveStreamSearchQuery}"</p>
+                ${adminLiveStreamSearchQuery ? `<button type="button" onclick="clearAdminLiveStreamProductSearch()" class="text-xs text-rose-600 font-bold hover:underline cursor-pointer">Xóa tìm kiếm để xem tất cả</button>` : ''}
+            </div>
+        `;
         return;
     }
 
-    const featuredSet = new Set(Array.isArray(featuredIds) ? featuredIds : []);
-
-    container.innerHTML = prods.map(p => {
+    container.innerHTML = filtered.map(p => {
         const isChecked = featuredSet.has(p.id) || featuredSet.has(p.uuid);
         const price = p.priceNumber || (p.salePrice ? parseInt(String(p.salePrice).replace(/\D/g, ''), 10) : 0);
         const priceStr = price > 0 ? `${price.toLocaleString('vi-VN')}₫` : '';
         const img = p.image || 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=100';
 
         return `
-            <label class="flex items-center gap-3 p-2.5 rounded-xl border ${isChecked ? 'bg-rose-50/70 border-rose-300' : 'bg-white border-gray-200'} hover:border-rose-400 transition cursor-pointer select-none">
+            <label class="flex items-center gap-3 p-2.5 rounded-xl border ${isChecked ? 'bg-rose-50/80 border-rose-300 shadow-2xs' : 'bg-white border-gray-200'} hover:border-rose-400 transition cursor-pointer select-none">
                 <input type="checkbox" value="${p.id}" ${isChecked ? 'checked' : ''}
                     onchange="toggleAdminLiveStreamFeaturedProduct('${p.id}', this.checked)"
-                    class="rounded text-rose-600 focus:ring-rose-500 w-4 h-4">
-                <img src="${img}" alt="${p.name}" class="w-10 h-10 object-cover rounded-lg border border-gray-100 flex-shrink-0">
+                    class="rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer">
+                <img src="${img}" alt="${p.name}" class="w-10 h-10 object-cover rounded-lg border border-gray-100 flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=100'">
                 <div class="min-w-0 flex-1">
                     <p class="text-xs font-bold text-gray-800 line-clamp-1">${p.name}</p>
                     <p class="text-[11px] text-rose-600 font-semibold">${priceStr}</p>
                 </div>
-                ${isChecked ? '<span class="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.5 rounded flex-shrink-0">Ghim Live</span>' : ''}
+                ${isChecked ? '<span class="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 flex items-center gap-1 shadow-2xs"><i class="fa-solid fa-thumbtack text-[8px]"></i> Ghim</span>' : ''}
             </label>
         `;
     }).join('');
+}
+
+/**
+ * Hiển thị danh sách checkbox các bó hoa để ghim vào phiên Live Stream
+ */
+async function renderAdminLiveStreamFeaturedProducts(featuredIds = []) {
+    if (Array.isArray(featuredIds)) {
+        if (!adminLiveStreamConfig) adminLiveStreamConfig = {};
+        adminLiveStreamConfig.featuredProductIds = [...featuredIds];
+    }
+
+    try {
+        if (typeof window !== "undefined" && Array.isArray(window.allStorefrontProducts) && window.allStorefrontProducts.length > 0) {
+            cachedAdminLiveStreamProducts = window.allStorefrontProducts;
+        } else {
+            const res = await fetch(`${API_BASE}/products?_t=${Date.now()}`);
+            if (res.ok) {
+                const json = await res.json();
+                if (json && Array.isArray(json.data)) cachedAdminLiveStreamProducts = json.data;
+            }
+        }
+    } catch (_) { }
+
+    filterAndRenderAdminLiveStreamFeaturedProducts();
 }
 
 /**
@@ -12106,6 +12215,8 @@ function toggleAdminLiveStreamFeaturedProduct(productId, isChecked) {
     } else if (!isChecked && idx !== -1) {
         adminLiveStreamConfig.featuredProductIds.splice(idx, 1);
     }
+    updateAdminLiveStreamFeaturedBadges();
+    filterAndRenderAdminLiveStreamFeaturedProducts();
 }
 
 /**
@@ -13512,8 +13623,13 @@ if (typeof window !== "undefined") {
     window.handleAdminLiveStreamQrUpload = handleAdminLiveStreamQrUpload;
     window.handleAdminLiveStreamQrUrlInput = handleAdminLiveStreamQrUrlInput;
     window.removeAdminLiveStreamQr = removeAdminLiveStreamQr;
+    window.handleAdminLiveStreamProductSearch = handleAdminLiveStreamProductSearch;
+    window.clearAdminLiveStreamProductSearch = clearAdminLiveStreamProductSearch;
+    window.setAdminLiveStreamProductFilter = setAdminLiveStreamProductFilter;
     window.toggleAdminLiveStreamFeaturedProduct = toggleAdminLiveStreamFeaturedProduct;
     window.renderAdminLiveStreamFeaturedProducts = renderAdminLiveStreamFeaturedProducts;
+    window.filterAndRenderAdminLiveStreamFeaturedProducts = filterAndRenderAdminLiveStreamFeaturedProducts;
+    window.updateAdminLiveStreamFeaturedBadges = updateAdminLiveStreamFeaturedBadges;
     window.loadAdminBanners = loadAdminBanners;
     window.renderAdminBanners = renderAdminBanners;
     window.handleAdminBannerTargetSelect = handleAdminBannerTargetSelect;
