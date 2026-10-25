@@ -499,6 +499,164 @@ export function showLiveStreamConfirmDialog(isEnabling = true) {
 }
 
 /**
+ * Hộp thoại Xác nhận Lưu Cấu Hình Live Stream (Save Live Stream Config Dialog)
+ * Hiển thị tóm tắt đầy đủ: Trạng thái cờ live, Tiêu đề, Tài khoản ngân hàng, Mã QR, và Số mẫu hoa đã ghim
+ * Trả về Promise<boolean>: resolve(true) nếu xác nhận lưu, resolve(false) nếu hủy bỏ
+ */
+export function showSaveLiveStreamConfigDialog({
+    title = "",
+    isLive = false,
+    bankName = "",
+    accountNumber = "",
+    hasQr = false,
+    pinnedCount = 0
+} = {}) {
+    return new Promise((resolve) => {
+        if (typeof document === "undefined") return resolve(false);
+
+        const oldModal = document.getElementById("saveLiveStreamConfirmModalContainer");
+        if (oldModal && oldModal.parentElement) oldModal.parentElement.removeChild(oldModal);
+
+        const container = document.createElement("div");
+        container.id = "saveLiveStreamConfirmModalContainer";
+        container.className = "fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm opacity-0 transition-opacity duration-200 select-none";
+
+        const statusBadge = isLive
+            ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-bold">
+                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Đang BẬT Nhận Đơn
+               </span>`
+            : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-300 text-[11px] font-bold">
+                   <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Đang TẠM DỪNG
+               </span>`;
+
+        container.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-lg w-full overflow-hidden transform scale-95 opacity-0 transition-all duration-200 ease-out flex flex-col">
+                <!-- Header Banner -->
+                <div class="bg-gradient-to-br from-rose-600 via-pink-600 to-rose-700 text-white p-6 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10 space-y-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[11px] font-black tracking-wider uppercase shadow-2xs">
+                            <i class="fa-solid fa-floppy-disk text-xs"></i> LƯU THAY ĐỔI CẤU HÌNH
+                        </span>
+                        <h3 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-snug">Xác Nhận Lưu Cấu Hình Live Stream?</h3>
+                        <p class="text-xs sm:text-[13px] text-white/90 font-medium leading-relaxed">Toàn bộ thông tin tài khoản, ảnh mã QR và danh sách mẫu hoa ghim sẽ được áp dụng trực tiếp cho phiên Live.</p>
+                    </div>
+                </div>
+
+                <!-- Body Summary -->
+                <div class="p-5 sm:p-6 bg-white space-y-3">
+                    <p class="text-xs font-bold text-gray-700 uppercase tracking-wide">Tóm Tắt Cấu Hình Sẽ Được Lưu:</p>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                            <span class="text-gray-500 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-signal text-rose-500"></i> Cổng chốt đơn (#quick-order):
+                            </span>
+                            ${statusBadge}
+                        </div>
+
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                            <span class="text-gray-500 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-heading text-purple-500"></i> Tiêu đề phiên live:
+                            </span>
+                            <span class="font-bold text-gray-800 line-clamp-1 max-w-[220px] text-right">${title || '(Chưa nhập tiêu đề)'}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                            <span class="text-gray-500 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-building-columns text-emerald-500"></i> Tài khoản thụ hưởng:
+                            </span>
+                            <span class="font-bold text-emerald-700">${bankName || 'Ngân hàng'} - ${accountNumber || 'Chưa nhập'}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-100">
+                            <span class="text-gray-500 font-medium flex items-center gap-1.5">
+                                <i class="fa-solid fa-qrcode text-emerald-500"></i> Mã QR chuyển khoản:
+                            </span>
+                            <span class="font-bold ${hasQr ? 'text-emerald-600' : 'text-gray-400'}">
+                                ${hasQr ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Đã có mã QR (Sẵn sàng quét)' : '<i class="fa-solid fa-circle-xmark mr-1"></i> Chưa có mã QR'}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-rose-50/60 border border-rose-100">
+                            <span class="text-gray-700 font-semibold flex items-center gap-1.5">
+                                <i class="fa-solid fa-seedling text-rose-500"></i> Mẫu hoa ghim trong Live:
+                            </span>
+                            <span class="font-extrabold text-rose-600 bg-white px-2 py-0.5 rounded-md border border-rose-200">
+                                Đã ghim: ${pinnedCount} mẫu hoa
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 border-t border-gray-100">
+                    <button type="button" id="saveLiveStreamConfirmCancelBtn"
+                        class="px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm transition cursor-pointer">
+                        Kiểm Tra Lại
+                    </button>
+                    <button type="button" id="saveLiveStreamConfirmOkBtn"
+                        class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-rose-700 hover:from-rose-700 hover:to-pink-700 text-white font-bold text-xs sm:text-sm shadow-lg shadow-rose-600/30 transition transform active:scale-95 cursor-pointer flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Xác Nhận Lưu Ngay
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        const card = container.querySelector("div");
+        const cancelBtn = container.querySelector("#saveLiveStreamConfirmCancelBtn");
+        const okBtn = container.querySelector("#saveLiveStreamConfirmOkBtn");
+
+        let isClosed = false;
+        const closeDialog = (result) => {
+            if (isClosed) return;
+            isClosed = true;
+            document.removeEventListener("keydown", handleKeyDown);
+            container.classList.remove("opacity-100");
+            container.classList.add("opacity-0");
+            if (card) {
+                card.classList.remove("scale-100", "opacity-100");
+                card.classList.add("scale-95", "opacity-0");
+            }
+            setTimeout(() => {
+                if (container.parentElement) container.parentElement.removeChild(container);
+                resolve(result);
+            }, 200);
+        };
+
+        cancelBtn.onclick = () => closeDialog(false);
+        okBtn.onclick = () => closeDialog(true);
+
+        container.onclick = (e) => {
+            if (e.target === container) closeDialog(false);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(false);
+            } else if (e.key === "Enter") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(true);
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown, { once: true });
+
+        requestAnimationFrame(() => {
+            container.classList.remove("opacity-0");
+            container.classList.add("opacity-100");
+            if (card) {
+                card.classList.remove("scale-95", "opacity-0");
+                card.classList.add("scale-100", "opacity-100");
+            }
+            okBtn.focus();
+        });
+    });
+}
+
+/**
  * Khóa màn hình với lớp phủ mờ (Screen Lock Overlay) khi cập nhật dữ liệu
  */
 export function showScreenLock(message = "Đang cập nhật cấu hình & đồng bộ hệ thống...") {
@@ -1036,6 +1194,7 @@ if (typeof window !== "undefined") {
     window.showToast = showToast;
     window.showConfirmDialog = showConfirmDialog;
     window.showLiveStreamConfirmDialog = showLiveStreamConfirmDialog;
+    window.showSaveLiveStreamConfigDialog = showSaveLiveStreamConfigDialog;
     window.showScreenLock = showScreenLock;
     window.hideScreenLock = hideScreenLock;
     window.openStoreMap = openStoreMap;

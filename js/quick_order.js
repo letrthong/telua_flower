@@ -64,10 +64,12 @@ export async function openQuickOrderModal() {
             const bAccEl = document.getElementById("quickOrderBankAccount");
             const bOwnerEl = document.getElementById("quickOrderBankOwner");
             const qrImg = document.getElementById("quickOrderQrImage");
+            const downloadBtn = document.getElementById("quickOrderDownloadQrBtn");
             if (bNameEl) bNameEl.textContent = "—";
             if (bAccEl) bAccEl.textContent = "—";
             if (bOwnerEl) bOwnerEl.textContent = "—";
             if (qrImg) qrImg.removeAttribute("src");
+            if (downloadBtn) downloadBtn.classList.add("hidden");
 
             if (headerLookupBtn) headerLookupBtn.classList.add("hidden");
             if (closedContainer) closedContainer.classList.remove("hidden");
@@ -239,6 +241,7 @@ export function handleQuickOrderProductSelect(selectEl) {
 export function updateQuickOrderQrCode() {
     const qrImg = document.getElementById("quickOrderQrImage");
     const qrEmpty = document.getElementById("quickOrderQrEmptyPlaceholder");
+    const downloadBtn = document.getElementById("quickOrderDownloadQrBtn");
     if (!qrImg) return;
 
     const bInfo = (currentLiveConfig && currentLiveConfig.bankInfo) || {};
@@ -249,11 +252,81 @@ export function updateQuickOrderQrCode() {
         qrImg.src = customQr;
         qrImg.classList.remove("hidden");
         if (qrEmpty) qrEmpty.classList.add("hidden");
+        if (downloadBtn) downloadBtn.classList.remove("hidden");
     } else {
         // Nếu không có mã QR: TUYỆT ĐỐI KHÔNG tự ý sinh/tạo hình ảnh mã QR
         qrImg.removeAttribute("src");
         qrImg.classList.add("hidden");
         if (qrEmpty) qrEmpty.classList.remove("hidden");
+        if (downloadBtn) downloadBtn.classList.add("hidden");
+    }
+}
+
+/**
+ * Tải ảnh mã QR chuyển khoản về máy khách với định dạng JPG (JPEG chuẩn)
+ * Đảm bảo app ngân hàng trên điện thoại (Vietcombank, MB Bank, Techcombank, MoMo...) đọc và quét được 100%
+ */
+export async function downloadQuickOrderQrCode() {
+    const qrImg = document.getElementById("quickOrderQrImage");
+    if (!qrImg || !qrImg.src) {
+        if (typeof notifyUser === "function") {
+            notifyUser("Chưa có ảnh mã QR để tải về.", "warning");
+        }
+        return;
+    }
+
+    try {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = () => reject(new Error("Không thể nạp ảnh mã QR"));
+            img.src = qrImg.src;
+        });
+
+        const width = img.naturalWidth || img.width || 600;
+        const height = img.naturalHeight || img.height || 600;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Không thể khởi tạo Canvas 2D");
+
+        // 1. Phủ nền trắng tinh khiết #FFFFFF (bắt buộc để app ngân hàng quét từ thư viện ảnh không bị lỗi đen nền)
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, width, height);
+
+        // 2. Vẽ hình ảnh mã QR vào giữa canvas
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // 3. Xuất định dạng chuẩn image/jpeg chất lượng cao (0.95)
+        const jpgDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+
+        // 4. Kích hoạt tải về thiết bị với đuôi file .jpg
+        const downloadLink = document.createElement("a");
+        downloadLink.download = `QR_Thanh_Toan_LiveStream_${Date.now()}.jpg`;
+        downloadLink.href = jpgDataUrl;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        if (typeof notifyUser === "function") {
+            notifyUser("Đã tải mã QR dạng JPG! Mở App ngân hàng > Chọn quét ảnh từ album để chuyển khoản.", "success");
+        }
+    } catch (err) {
+        // Fallback: nếu gặp hạn chế CORS trên ảnh external, kích hoạt tải link trực tiếp với tên file .jpg
+        const fallbackLink = document.createElement("a");
+        fallbackLink.download = "QR_Thanh_Toan_LiveStream.jpg";
+        fallbackLink.href = qrImg.src;
+        document.body.appendChild(fallbackLink);
+        fallbackLink.click();
+        document.body.removeChild(fallbackLink);
+
+        if (typeof notifyUser === "function") {
+            notifyUser("Đã tải mã QR về máy.", "info");
+        }
     }
 }
 
@@ -684,21 +757,28 @@ function renderOrderLookupResults(orders, query) {
         <div class="space-y-4">
             <div class="flex items-center justify-between pb-1 border-b border-gray-100">
                 <p class="text-xs font-bold text-gray-700">Tìm thấy <span class="text-rose-600 font-extrabold">${orders.length}</span> đơn hàng cho: <span class="font-mono text-gray-900">${query}</span></p>
-                <span class="text-[10px] text-gray-400">Thời gian thực</span>
+                ${orders.length > 1
+                    ? `<span class="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-2xs flex items-center gap-1"><i class="fa-solid fa-layer-group"></i> Hiển thị cả ${orders.length} đơn</span>`
+                    : `<span class="text-[10px] text-gray-400">Thời gian thực</span>`
+                }
             </div>
     `;
 
-    orders.forEach((ord) => {
+    orders.forEach((ord, idx) => {
         const badge = statusBadgeMap[ord.status] || { label: ord.statusText || ord.status, class: "bg-gray-50 text-gray-600 border-gray-200", icon: "fa-info-circle", step: 1 };
         const stepNum = badge.step;
         const items = ord.items || [];
         const isLive = ord.source === "livestream_quick_order";
+        const orderIndexBadge = orders.length > 1
+            ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs ${idx === 0 ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-gray-100 text-gray-700 border-gray-200'}">Đơn #${orders.length - idx}${idx === 0 ? ' (Mới nhất)' : ''}</span>`
+            : '';
 
         html += `
             <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs hover:shadow-md transition overflow-hidden">
                 <!-- Card Header -->
                 <div class="p-4 bg-gradient-to-r from-gray-50 to-rose-50/20 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
+                        ${orderIndexBadge}
                         <span class="text-xs font-mono font-bold text-gray-900 bg-white px-2.5 py-1 rounded-lg border border-gray-200 shadow-2xs flex items-center gap-1.5">
                             <i class="fa-solid fa-receipt text-rose-500"></i> ${ord.orderCode || ord.id}
                         </span>
@@ -808,5 +888,6 @@ if (typeof window !== "undefined") {
     window.openOrderLookupModal = openOrderLookupModal;
     window.closeOrderLookupModal = closeOrderLookupModal;
     window.handleOrderLookup = handleOrderLookup;
+    window.downloadQuickOrderQrCode = downloadQuickOrderQrCode;
 }
 

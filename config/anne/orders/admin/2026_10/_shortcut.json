@@ -1,5 +1,481 @@
 [
   {
+    "id": "ord_1792934463_e8e11a",
+    "orderCode": "LIVE-261025-98F6",
+    "createdAt": "2026-10-25T20:21:03Z",
+    "updatedAt": "2026-10-25T20:21:03Z",
+    "orderDate": "2026-10-25",
+    "livestreamDate": "2026-10-25",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0988777666",
+    "creatorName": "Khach VIP",
+    "totalAmount": 1200000.0,
+    "transferredAmount": 1200000,
+    "proofImage": "bill3.png",
+    "paymentProofImage": "bill3.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 1200000.0,
+      "itemsTotal": 1200000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "bill3.png",
+      "transferredAmount": 1200000,
+      "transferContent": "LIVE-261025-98F6"
+    },
+    "recipient": {
+      "name": "Khach VIP",
+      "phone": "0988777666",
+      "address": "C"
+    },
+    "sender": {
+      "name": "Khach VIP",
+      "phone": "0988777666"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-25",
+      "timeSlot": "Giao hàng phiên Live Stream",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "livestream_custom",
+        "productName": "Hoa tươi đặt nhanh qua Live Stream",
+        "quantity": 1,
+        "unitPrice": 1200000,
+        "image": "bill3.png"
+      }
+    ],
+    "itemSummary": "Hoa tươi đặt nhanh qua Live Stream x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1792934463_e8e11a.json"
+  },
+  {
+    "id": "ord_1792934463_e5fd06",
+    "orderCode": "LIVE-261025-F682",
+    "createdAt": "2026-10-25T20:21:03Z",
+    "updatedAt": "2026-10-25T20:21:03Z",
+    "orderDate": "2026-10-25",
+    "livestreamDate": "2026-10-25",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0988777666",
+    "creatorName": "Khach VIP",
+    "totalAmount": 800000.0,
+    "transferredAmount": 800000,
+    "proofImage": "bill2.png",
+    "paymentProofImage": "bill2.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 800000.0,
+      "itemsTotal": 800000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "bill2.png",
+      "transferredAmount": 800000,
+      "transferContent": "LIVE-261025-F682"
+    },
+    "recipient": {
+      "name": "Khach VIP",
+      "phone": "0988777666",
+      "address": "B"
+    },
+    "sender": {
+      "name": "Khach VIP",
+      "phone": "0988777666"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-25",
+      "timeSlot": "Giao hàng phiên Live Stream",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "livestream_custom",
+        "productName": "Hoa tươi đặt nhanh qua Live Stream",
+        "quantity": 1,
+        "unitPrice": 800000,
+        "image": "bill2.png"
+      }
+    ],
+    "itemSummary": "Hoa tươi đặt nhanh qua Live Stream x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1792934463_e5fd06.json"
+  },
+  {
+    "id": "ord_1792934463_94fb3c",
+    "orderCode": "LIVE-261025-36FD",
+    "createdAt": "2026-10-25T20:21:03Z",
+    "updatedAt": "2026-10-25T20:21:03Z",
+    "orderDate": "2026-10-25",
+    "livestreamDate": "2026-10-25",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0988777666",
+    "creatorName": "Khach VIP",
+    "totalAmount": 500000.0,
+    "transferredAmount": 500000,
+    "proofImage": "bill1.png",
+    "paymentProofImage": "bill1.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 500000.0,
+      "itemsTotal": 500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "bill1.png",
+      "transferredAmount": 500000,
+      "transferContent": "LIVE-261025-36FD"
+    },
+    "recipient": {
+      "name": "Khach VIP",
+      "phone": "0988777666",
+      "address": "A"
+    },
+    "sender": {
+      "name": "Khach VIP",
+      "phone": "0988777666"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-25",
+      "timeSlot": "Giao hàng phiên Live Stream",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "livestream_custom",
+        "productName": "Hoa tươi đặt nhanh qua Live Stream",
+        "quantity": 1,
+        "unitPrice": 500000,
+        "image": "bill1.png"
+      }
+    ],
+    "itemSummary": "Hoa tươi đặt nhanh qua Live Stream x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1792934463_94fb3c.json"
+  },
+  {
+    "id": "ord_1792934319_372454",
+    "orderCode": "0912999888",
+    "createdAt": "2026-10-25T20:18:39Z",
+    "updatedAt": "2026-10-25T20:18:39Z",
+    "orderDate": "2026-10-25",
+    "livestreamDate": "2026-10-25",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0912999888",
+    "creatorName": "Test User",
+    "totalAmount": 600000.0,
+    "transferredAmount": 600000,
+    "proofImage": "test2.png",
+    "paymentProofImage": "test2.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 600000.0,
+      "itemsTotal": 600000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "test2.png",
+      "transferredAmount": 600000,
+      "transferContent": "0912999888"
+    },
+    "recipient": {
+      "name": "Test User",
+      "phone": "0912999888",
+      "address": "HCMC"
+    },
+    "sender": {
+      "name": "Test User",
+      "phone": "0912999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-25",
+      "timeSlot": "Giao hàng phiên Live Stream",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "livestream_custom",
+        "productName": "Hoa tươi đặt nhanh qua Live Stream",
+        "quantity": 1,
+        "unitPrice": 600000,
+        "image": "test2.png"
+      }
+    ],
+    "itemSummary": "Hoa tươi đặt nhanh qua Live Stream x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1792934319_372454.json"
+  },
+  {
+    "id": "ord_1792934318_bcf6f5",
+    "orderCode": "0912999888",
+    "createdAt": "2026-10-25T20:18:38Z",
+    "updatedAt": "2026-10-25T20:18:38Z",
+    "orderDate": "2026-10-25",
+    "livestreamDate": "2026-10-25",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0912999888",
+    "creatorName": "Test User",
+    "totalAmount": 500000.0,
+    "transferredAmount": 500000,
+    "proofImage": "test.png",
+    "paymentProofImage": "test.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 500000.0,
+      "itemsTotal": 500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "test.png",
+      "transferredAmount": 500000,
+      "transferContent": "0912999888"
+    },
+    "recipient": {
+      "name": "Test User",
+      "phone": "0912999888",
+      "address": "HCMC"
+    },
+    "sender": {
+      "name": "Test User",
+      "phone": "0912999888"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-25",
+      "timeSlot": "Giao hàng phiên Live Stream",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "livestream_custom",
+        "productName": "Hoa tươi đặt nhanh qua Live Stream",
+        "quantity": 1,
+        "unitPrice": 500000,
+        "image": "test.png"
+      }
+    ],
+    "itemSummary": "Hoa tươi đặt nhanh qua Live Stream x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1792934318_bcf6f5.json"
+  },
+  {
+    "id": "ord_1792934829_bdc170",
+    "orderCode": "LIVE-261025-7834",
+    "createdAt": "2026-10-25T13:27:09Z",
+    "updatedAt": "2026-10-25T13:27:09Z",
+    "orderDate": "2026-10-25",
+    "livestreamDate": "2026-10-25",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0356148008",
+    "creatorName": "xxx",
+    "totalAmount": 1500000.0,
+    "transferredAmount": 1500000,
+    "proofImage": "/api/flower/v1/images/proof_1792934829_660b0b44.png",
+    "paymentProofImage": "/api/flower/v1/images/proof_1792934829_660b0b44.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 1500000.0,
+      "itemsTotal": 1500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "/api/flower/v1/images/proof_1792934829_660b0b44.png",
+      "transferredAmount": 1500000,
+      "transferContent": "LIVE-261025-7834"
+    },
+    "recipient": {
+      "name": "xxx",
+      "phone": "0356148008",
+      "address": "xcxc"
+    },
+    "sender": {
+      "name": "xxx",
+      "phone": "0356148008"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-25",
+      "timeSlot": "Giao hàng phiên Live Stream",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "test_b64_1788062614",
+        "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
+        "quantity": 1,
+        "unitPrice": 1500000,
+        "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
+      }
+    ],
+    "itemSummary": "Bình Hoa Gốm Nghệ Thuật Base64 x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1792934829_bdc170.json"
+  },
+  {
+    "id": "ord_1792934118_ce1ec5",
+    "orderCode": "0356148008",
+    "createdAt": "2026-10-25T13:15:18Z",
+    "updatedAt": "2026-10-25T13:15:18Z",
+    "orderDate": "2026-10-25",
+    "livestreamDate": "2026-10-25",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "0356148008",
+    "creatorName": "dfsdfsd",
+    "totalAmount": 1500000.0,
+    "transferredAmount": 1500000,
+    "proofImage": "/api/flower/v1/images/proof_1792934118_266aba52.png",
+    "paymentProofImage": "/api/flower/v1/images/proof_1792934118_266aba52.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 1500000.0,
+      "itemsTotal": 1500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "/api/flower/v1/images/proof_1792934118_266aba52.png",
+      "transferredAmount": 1500000,
+      "transferContent": "0356148008"
+    },
+    "recipient": {
+      "name": "dfsdfsd",
+      "phone": "0356148008",
+      "address": "zczc"
+    },
+    "sender": {
+      "name": "dfsdfsd",
+      "phone": "0356148008"
+    },
+    "delivery": {
+      "fulfillmentType": "delivery",
+      "deliveryDate": "2026-10-25",
+      "timeSlot": "Giao hàng phiên Live Stream",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "test_b64_1788062614",
+        "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
+        "quantity": 1,
+        "unitPrice": 1500000,
+        "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
+      }
+    ],
+    "itemSummary": "Bình Hoa Gốm Nghệ Thuật Base64 x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1792934118_ce1ec5.json"
+  },
+  {
     "id": "ord_1792673091_79cdd5",
     "orderCode": "0356148008",
     "createdAt": "2026-10-22T12:44:51Z",
@@ -13,7 +489,7 @@
     "assignedTo": "staff_admin",
     "assigneeName": "Super Admin (staff_admin)",
     "createdBy": "0356148008",
-    "creatorName": "THong le",
+    "creatorName": "dfsdfsd",
     "totalAmount": 1500000.0,
     "transferredAmount": 1500000,
     "proofImage": "/api/flower/v1/images/proof_1792673091_9ef1b1d6.png",

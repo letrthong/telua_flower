@@ -2716,10 +2716,10 @@ def sync_order_to_user_folder(order: Dict[str, Any]) -> bool:
         "createdAt": created_at
     }
 
-    # Kiểm tra xem tham chiếu đã có trong sổ đơn cá nhân chưa
+    # Kiểm tra xem tham chiếu đã có trong sổ đơn cá nhân chưa (dựa trên orderId duy nhất)
     existing_idx = next(
         (i for i, o in enumerate(user_orders_index) 
-         if (o.get("orderId") == order_id or o.get("id") == order_id or (order_code and o.get("orderCode") == order_code))),
+         if (o.get("orderId") == order_id or o.get("id") == order_id)),
         -1
     )
 

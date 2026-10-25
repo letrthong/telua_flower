@@ -538,9 +538,10 @@ def create_livestream_quick_order(
         product_name = "Hoa tươi đặt nhanh qua Live Stream"
 
     # 5. Khởi tạo đối tượng đơn hàng Live Stream chuẩn:
-    # Mã đơn hàng là chính Số Điện Thoại của khách để dễ nhớ, tra cứu và hiển thị
+    # Mỗi đơn hàng được cấp một mã orderCode độc lập để phân biệt khi khách đặt 2, 3 lần trong phiên
     order_id = f"ord_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:6]}"
-    order_code = (quick_data.get("orderCode") or phone).strip()
+    generated_code = f"LIVE-{datetime.now().strftime('%y%m%d')}-{uuid.uuid4().hex[:4].upper()}"
+    order_code = (quick_data.get("orderCode") or generated_code).strip()
     created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     today_date = datetime.now().strftime("%Y-%m-%d")
 
@@ -664,7 +665,7 @@ def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
                 user_orders = get_user_orders(candidate_phone)
                 for ord_item in user_orders:
                     if isinstance(ord_item, dict):
-                        oid = ord_item.get("id") or ord_item.get("orderCode")
+                        oid = ord_item.get("id") or ord_item.get("orderId")
                         if oid and oid not in seen_ids:
                             seen_ids.add(oid)
                             found_orders.append(ord_item)
@@ -672,13 +673,13 @@ def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
     # 2. Tra cứu trực tiếp theo orderCode hoặc orderId
     direct_order = get_order_by_id(raw_query)
     if direct_order and isinstance(direct_order, dict):
-        oid = direct_order.get("id") or direct_order.get("orderCode")
+        oid = direct_order.get("id") or direct_order.get("orderId")
         if oid and oid not in seen_ids:
             seen_ids.add(oid)
             found_orders.append(direct_order)
 
-    # 3. Fallback tìm kiếm trong các shortcut của tháng hiện tại và tháng trước
-    if not found_orders and len(clean_digits) >= 9:
+    # 3. Quét thêm trong các shortcut của tháng hiện tại và tháng trước để đảm bảo nạp đầy đủ mọi đơn
+    if len(clean_digits) >= 9:
         now = datetime.now()
         months_to_check = [
             now.strftime("%Y_%m"),
@@ -703,10 +704,36 @@ def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
                     code_matched = bool(clean_digits == sc_code or raw_query == sc_code)
 
                     if phone_matched or code_matched:
-                        full_o = get_order_by_id(sc.get("orderId") or sc.get("id"))
-                        if full_o and full_o.get("id") not in seen_ids:
-                            seen_ids.add(full_o.get("id"))
-                            found_orders.append(full_o)
+                        sc_id = sc.get("orderId") or sc.get("id")
+                        if sc_id and sc_id not in seen_ids:
+                            full_o = get_order_by_id(sc_id)
+                            if full_o and full_o.get("id") and full_o.get("id") not in seen_ids:
+                                seen_ids.add(full_o.get("id"))
+                                found_orders.append(full_o)
+
+    # 4. Quét thêm trong các phiên Live Stream theo ngày (livestream_orders)
+    if len(clean_digits) >= 9:
+        try:
+            from data_service import get_livestream_dates, get_livestream_orders_by_date
+            for l_date in get_livestream_dates()[:7]:
+                daily_items = get_livestream_orders_by_date(l_date)
+                for d_it in daily_items:
+                    d_phone = "".join(c for c in str(d_it.get("phone") or "") if c.isdigit())
+                    d_norm = d_phone
+                    if d_norm.startswith("84") and len(d_norm) >= 11:
+                        d_norm = "0" + d_norm[2:]
+                    elif len(d_norm) == 9 and not d_norm.startswith("0"):
+                        d_norm = "0" + d_norm
+
+                    if (clean_digits and (clean_digits == d_phone or clean_digits == d_norm)) or (norm_phone and (norm_phone == d_phone or norm_phone == d_norm)):
+                        d_id = d_it.get("id") or d_it.get("orderCode")
+                        if d_id and d_id not in seen_ids:
+                            full_d = get_order_by_id(d_id)
+                            if full_d and full_d.get("id") and full_d.get("id") not in seen_ids:
+                                seen_ids.add(full_d.get("id"))
+                                found_orders.append(full_d)
+        except Exception:
+            pass
 
     # Sắp xếp đơn mới nhất lên đầu
     found_orders.sort(key=lambda x: str(x.get("createdAt") or x.get("orderDate") or ""), reverse=True)

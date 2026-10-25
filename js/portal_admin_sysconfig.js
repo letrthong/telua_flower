@@ -1,5 +1,5 @@
 import { getAuthToken } from './auth.js';
-import { API_BASE, showConfirmDialog, showLiveStreamConfirmDialog, removeVietnameseTones } from './utils.js';
+import { API_BASE, showConfirmDialog, showLiveStreamConfirmDialog, showSaveLiveStreamConfigDialog, removeVietnameseTones } from './utils.js';
 import { lockScreen, unlockScreen, notifyUser, setAdminPriceLevels, allAdminCategories } from './portal_admin_state.js';
 
 // ==========================================
@@ -335,7 +335,13 @@ export async function renderLiveStreamConfig(config) {
             if (qrEmpty) qrEmpty.classList.add("hidden");
             if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
             if (qrStatus) {
-                qrStatus.textContent = qrImg.startsWith("data:") ? "Mã QR đã tải lên (Tệp ảnh)" : "Mã QR chuyển khoản (URL / Đã tải)";
+                if (qrImg.startsWith("data:image/webp")) {
+                    qrStatus.textContent = "Mã QR đã nén WebP Base64 (Lưu trong config)";
+                } else if (qrImg.startsWith("data:")) {
+                    qrStatus.textContent = "Mã QR Base64 (Lưu trong config)";
+                } else {
+                    qrStatus.textContent = "Mã QR chuyển khoản (URL)";
+                }
                 qrStatus.className = "text-[10px] text-emerald-600 font-bold block mt-1";
             }
         } else {
@@ -557,7 +563,13 @@ export function handleAdminLiveStreamQrUrlInput(url) {
         if (qrEmpty) qrEmpty.classList.add("hidden");
         if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
         if (qrStatus) {
-            qrStatus.textContent = "Mã QR từ đường dẫn URL (Hợp lệ)";
+            if (cleanUrl.startsWith("data:image/webp")) {
+                qrStatus.textContent = "Mã QR đã nén WebP Base64 (Hợp lệ)";
+            } else if (cleanUrl.startsWith("data:")) {
+                qrStatus.textContent = "Mã QR Base64 (Hợp lệ)";
+            } else {
+                qrStatus.textContent = "Mã QR từ đường dẫn URL (Hợp lệ)";
+            }
             qrStatus.className = "text-[10px] text-purple-600 font-bold block mt-1";
         }
     } else {
@@ -566,7 +578,63 @@ export function handleAdminLiveStreamQrUrlInput(url) {
 }
 
 /**
- * Xử lý tải lên ảnh mã QR chuyển khoản ngân hàng
+ * Chuyển đổi và nén tệp hình ảnh sang định dạng WebP Base64 Data URI
+ * Tự động vẽ nền trắng (tránh mã QR PNG trong suốt bị nền đen) và giới hạn kích thước tối đa
+ */
+export function convertImageToWebpBase64(file, maxWidth = 800, maxHeight = 800, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+        if (!file) return reject(new Error("Không có tệp ảnh"));
+        if (!file.type || !file.type.startsWith("image/")) {
+            return reject(new Error("Tệp được chọn không phải là hình ảnh hợp lệ"));
+        }
+
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Không thể đọc tệp ảnh"));
+        reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject(new Error("Không thể giải mã tệp ảnh"));
+            img.onload = () => {
+                try {
+                    let width = img.naturalWidth || img.width;
+                    let height = img.naturalHeight || img.height;
+
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width = Math.max(1, Math.round(width * ratio));
+                        height = Math.max(1, Math.round(height * ratio));
+                    }
+
+                    const canvas = document.createElement("canvas");
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) return reject(new Error("Trình duyệt không hỗ trợ Canvas 2D"));
+
+                    // Phủ nền trắng để đảm bảo mã QR luôn sắc nét và PNG trong suốt không bị đen
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(0, 0, width, height);
+
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Xuất định dạng chuẩn image/jpeg chất lượng cao (0.90) kèm nền trắng để 100% app ngân hàng nhận diện được
+                    let dataUrl = canvas.toDataURL("image/jpeg", 0.90);
+                    if (!dataUrl || !dataUrl.startsWith("data:image/jpeg")) {
+                        dataUrl = canvas.toDataURL("image/webp", quality);
+                    }
+                    resolve(dataUrl);
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+/**
+ * Xử lý tải lên ảnh mã QR chuyển khoản ngân hàng:
+ * Tự động convert ảnh sang định dạng chuẩn JPG Base64 để lưu trực tiếp trong config và tương thích mọi app ngân hàng
  */
 export async function handleAdminLiveStreamQrUpload(event) {
     const file = event.target.files && event.target.files[0];
@@ -578,47 +646,37 @@ export async function handleAdminLiveStreamQrUpload(event) {
         return;
     }
 
-    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("prefix", "qr");
-
-    lockScreen("Đang tải ảnh mã QR chuyển khoản lên máy chủ...");
+    lockScreen("Đang nén & chuyển đổi ảnh mã QR sang JPG Base64 chuẩn quét ngân hàng...");
     try {
-        const res = await fetch(`${API_BASE}/admin/upload-image`, {
-            method: "POST",
-            headers: token ? { "Authorization": `Bearer ${token}` } : {},
-            body: formData
-        });
-        const json = await res.json();
-        if (!res.ok || !json.success) throw new Error(json.message || "Tải ảnh thất bại");
+        const base64Jpg = await convertImageToWebpBase64(file, 800, 800, 0.90);
 
-        const imgUrl = json.data && json.data.url ? json.data.url : "";
-        adminLiveStreamConfig.qrCodeImage = imgUrl;
-        if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = imgUrl;
+        adminLiveStreamConfig.qrCodeImage = base64Jpg;
+        if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = base64Jpg;
 
         // Cập nhật ô nhập URL và xem trước ngay lập tức
         const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
-        if (qrUrlInput) qrUrlInput.value = imgUrl;
+        if (qrUrlInput) qrUrlInput.value = base64Jpg;
 
         const qrPreview = document.getElementById("adminLiveStreamQrPreview");
         const qrEmpty = document.getElementById("adminLiveStreamQrEmpty");
         const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
         const qrStatus = document.getElementById("adminLiveStreamQrStatus");
         if (qrPreview) {
-            qrPreview.src = imgUrl;
+            qrPreview.src = base64Jpg;
             qrPreview.classList.remove("hidden");
         }
         if (qrEmpty) qrEmpty.classList.add("hidden");
         if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
+
+        const approxKb = Math.round((base64Jpg.length * 0.75) / 1024);
         if (qrStatus) {
-            qrStatus.textContent = "Mã QR đã tải lên máy chủ";
+            qrStatus.textContent = `Mã QR đã nén JPG Base64 (~${approxKb} KB) - Chuẩn quét mọi App ngân hàng`;
             qrStatus.className = "text-[10px] text-emerald-600 font-bold block mt-1";
         }
 
-        notifyUser("Tải ảnh mã QR thành công! Hãy nhấn 'Lưu Cấu Hình Live Stream' để áp dụng.", "success");
+        notifyUser(`Đã nén mã QR sang định dạng JPG (~${approxKb} KB)! Nhấn 'Lưu Cấu Hình Live Stream' để áp dụng.`, "success");
     } catch (e) {
-        notifyUser("Lỗi tải ảnh mã QR: " + e.message, "error");
+        notifyUser("Lỗi chuyển đổi ảnh mã QR: " + e.message, "error");
     } finally {
         unlockScreen();
         event.target.value = "";
@@ -734,17 +792,35 @@ export async function saveLiveStreamConfig() {
 
     // Giữ nguyên trạng thái cờ live hiện tại của phiên
     const isLive = toggle ? !!toggle.checked : !!(adminLiveStreamConfig?.enableQuickOrder || adminLiveStreamConfig?.enabled);
+    const title = titleInput ? titleInput.value.trim() : "";
+    const bankName = bankNameInput ? bankNameInput.value.trim() : "";
+    const accountNumber = bankAccInput ? bankAccInput.value.trim() : "";
+    const hasQr = !!(adminLiveStreamConfig?.qrCodeImage || adminLiveStreamConfig?.bankInfo?.qrCodeImage);
+    const pinnedCount = (adminLiveStreamConfig?.featuredProductIds || []).length;
+
+    // Hiển thị hộp thoại xác nhận lưu cấu hình Live Stream
+    const confirmFn = (typeof showSaveLiveStreamConfigDialog === "function")
+        ? showSaveLiveStreamConfigDialog
+        : ((typeof window !== "undefined" && typeof window.showSaveLiveStreamConfigDialog === "function") ? window.showSaveLiveStreamConfigDialog : null);
+
+    const confirmed = confirmFn
+        ? await confirmFn({ title, isLive, bankName, accountNumber, hasQr, pinnedCount })
+        : window.confirm("Bạn có chắc chắn muốn lưu toàn bộ thông tin cấu hình Live Stream xuống hệ thống?");
+
+    if (!confirmed) {
+        return;
+    }
 
     const payload = {
         enableQuickOrder: isLive,
         enabled: isLive,
-        title: titleInput ? titleInput.value.trim() : "",
+        title: title,
         description: descInput ? descInput.value.trim() : "",
         qrCodeImage: adminLiveStreamConfig.qrCodeImage || "",
         featuredProductIds: adminLiveStreamConfig.featuredProductIds || [],
         bankInfo: {
-            bankName: bankNameInput ? bankNameInput.value.trim() : "",
-            accountNumber: bankAccInput ? bankAccInput.value.trim() : "",
+            bankName: bankName,
+            accountNumber: accountNumber,
             accountName: bankOwnerInput ? bankOwnerInput.value.trim() : "",
             qrCodeImage: adminLiveStreamConfig.qrCodeImage || ""
         }
@@ -1938,6 +2014,7 @@ if (typeof window !== "undefined") {
     window.shareQuickOrderLink = shareQuickOrderLink;
     window.previewQuickOrder = previewQuickOrder;
     window.handleAdminLiveStreamQrUpload = handleAdminLiveStreamQrUpload;
+    window.convertImageToWebpBase64 = convertImageToWebpBase64;
     window.handleAdminLiveStreamQrUrlInput = handleAdminLiveStreamQrUrlInput;
     window.removeAdminLiveStreamQr = removeAdminLiveStreamQr;
     window.handleAdminLiveStreamProductSearch = handleAdminLiveStreamProductSearch;

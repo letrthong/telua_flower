@@ -1,0 +1,78 @@
+{
+  "id": "ord_1792934118_ce1ec5",
+  "orderCode": "0356148008",
+  "trackingCode": "0356148008",
+  "createdAt": "2026-10-25T13:15:18Z",
+  "orderDate": "2026-10-25",
+  "orderDay": "2026-10-25",
+  "livestreamDate": "2026-10-25",
+  "updatedAt": "2026-10-25T13:15:18Z",
+  "source": "livestream_quick_order",
+  "branchId": "admin",
+  "assignedBranchId": "admin",
+  "customerId": null,
+  "createdBy": "0356148008",
+  "assignedTo": "staff_admin",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "dfsdfsd",
+    "realName": "dfsdfsd",
+    "phone": "0356148008",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "dfsdfsd",
+    "phone": "0356148008",
+    "address": "zczc",
+    "deliveryNotes": ""
+  },
+  "delivery": {
+    "deliveryDate": "2026-10-25",
+    "timeSlot": "Giao hàng phiên Live Stream",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": false,
+  "items": [
+    {
+      "productId": "test_b64_1788062614",
+      "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
+      "price": 1500000,
+      "quantity": 1,
+      "itemTotal": 1500000,
+      "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
+    }
+  ],
+  "financials": {
+    "subtotal": 1500000,
+    "arrangingFee": 0,
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "totalAmount": 1500000
+  },
+  "totalAmount": 1500000,
+  "paymentMethod": "vietqr",
+  "payment": {
+    "method": "vietqr",
+    "status": "pending_confirmation",
+    "transferredAmount": 1500000,
+    "proofImage": "/api/flower/v1/images/proof_1792934118_266aba52.png",
+    "transferContent": "0356148008"
+  },
+  "paymentProofImage": "/api/flower/v1/images/proof_1792934118_266aba52.png",
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-10-25T13:15:18Z",
+      "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: 0356148008. Số tiền đã chuyển: 1,500,000₫.",
+      "updatedBy": "0356148008"
+    }
+  ],
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "creatorName": "dfsdfsd",
+  "assigneeName": "Super Admin (staff_admin)"
+}

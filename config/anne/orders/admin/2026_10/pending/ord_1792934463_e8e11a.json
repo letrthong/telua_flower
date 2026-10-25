@@ -1,0 +1,78 @@
+{
+  "id": "ord_1792934463_e8e11a",
+  "orderCode": "LIVE-261025-98F6",
+  "trackingCode": "0988777666",
+  "createdAt": "2026-10-25T20:21:03Z",
+  "orderDate": "2026-10-25",
+  "orderDay": "2026-10-25",
+  "livestreamDate": "2026-10-25",
+  "updatedAt": "2026-10-25T20:21:03Z",
+  "source": "livestream_quick_order",
+  "branchId": "admin",
+  "assignedBranchId": "admin",
+  "customerId": null,
+  "createdBy": "0988777666",
+  "assignedTo": "staff_admin",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "Khach VIP",
+    "realName": "Khach VIP",
+    "phone": "0988777666",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Khach VIP",
+    "phone": "0988777666",
+    "address": "C",
+    "deliveryNotes": ""
+  },
+  "delivery": {
+    "deliveryDate": "2026-10-25",
+    "timeSlot": "Giao hàng phiên Live Stream",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": false,
+  "items": [
+    {
+      "productId": "livestream_custom",
+      "productName": "Hoa tươi đặt nhanh qua Live Stream",
+      "price": 1200000,
+      "quantity": 1,
+      "itemTotal": 1200000,
+      "image": "bill3.png"
+    }
+  ],
+  "financials": {
+    "subtotal": 1200000,
+    "arrangingFee": 0,
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "totalAmount": 1200000
+  },
+  "totalAmount": 1200000,
+  "paymentMethod": "vietqr",
+  "payment": {
+    "method": "vietqr",
+    "status": "pending_confirmation",
+    "transferredAmount": 1200000,
+    "proofImage": "bill3.png",
+    "transferContent": "LIVE-261025-98F6"
+  },
+  "paymentProofImage": "bill3.png",
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-10-25T20:21:03Z",
+      "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: LIVE-261025-98F6. Số tiền đã chuyển: 1,200,000₫.",
+      "updatedBy": "0988777666"
+    }
+  ],
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "creatorName": "Khach VIP",
+  "assigneeName": "Super Admin (staff_admin)"
+}

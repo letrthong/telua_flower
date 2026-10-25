@@ -1,0 +1,78 @@
+{
+  "id": "ord_1792934318_bcf6f5",
+  "orderCode": "0912999888",
+  "trackingCode": "0912999888",
+  "createdAt": "2026-10-25T20:18:38Z",
+  "orderDate": "2026-10-25",
+  "orderDay": "2026-10-25",
+  "livestreamDate": "2026-10-25",
+  "updatedAt": "2026-10-25T20:18:38Z",
+  "source": "livestream_quick_order",
+  "branchId": "admin",
+  "assignedBranchId": "admin",
+  "customerId": null,
+  "createdBy": "0912999888",
+  "assignedTo": "staff_admin",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "Test User",
+    "realName": "Test User",
+    "phone": "0912999888",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "Test User",
+    "phone": "0912999888",
+    "address": "HCMC",
+    "deliveryNotes": ""
+  },
+  "delivery": {
+    "deliveryDate": "2026-10-25",
+    "timeSlot": "Giao hàng phiên Live Stream",
+    "isExpress2H": false,
+    "fulfillmentType": "delivery"
+  },
+  "requiresArranging": false,
+  "items": [
+    {
+      "productId": "livestream_custom",
+      "productName": "Hoa tươi đặt nhanh qua Live Stream",
+      "price": 500000,
+      "quantity": 1,
+      "itemTotal": 500000,
+      "image": "test.png"
+    }
+  ],
+  "financials": {
+    "subtotal": 500000,
+    "arrangingFee": 0,
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "totalAmount": 500000
+  },
+  "totalAmount": 500000,
+  "paymentMethod": "vietqr",
+  "payment": {
+    "method": "vietqr",
+    "status": "pending_confirmation",
+    "transferredAmount": 500000,
+    "proofImage": "test.png",
+    "transferContent": "0912999888"
+  },
+  "paymentProofImage": "test.png",
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-10-25T20:18:38Z",
+      "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: 0912999888. Số tiền đã chuyển: 500,000₫.",
+      "updatedBy": "0912999888"
+    }
+  ],
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "creatorName": "Test User",
+  "assigneeName": "Super Admin (staff_admin)"
+}

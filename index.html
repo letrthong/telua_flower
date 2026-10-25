@@ -4810,8 +4810,8 @@
                                     <!-- Bộ nút: Tải ảnh và Xóa -->
                                     <div class="flex items-center gap-1.5 pt-1 flex-wrap">
                                         <label class="cursor-pointer px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
-                                            <i class="fa-solid fa-cloud-arrow-up"></i> Tải Ảnh Lên
-                                            <input type="file" id="adminLiveStreamQrFileInput" accept="image/*" class="hidden" onchange="handleAdminLiveStreamQrUpload(event)">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> Tải Ảnh QR (Chuẩn JPG)
+                                            <input type="file" id="adminLiveStreamQrFileInput" accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden" onchange="handleAdminLiveStreamQrUpload(event)">
                                         </label>
                                         <button type="button" id="adminLiveStreamQrRemoveBtn" onclick="removeAdminLiveStreamQr()"
                                             class="hidden px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition items-center gap-1 cursor-pointer shadow-2xs">
@@ -6809,14 +6809,21 @@
                         </div>
 
                         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-3 bg-emerald-50/40 rounded-xl border border-emerald-100">
-                            <!-- QR Code Box -->
-                            <div id="quickOrderQrContainer" class="w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl border border-emerald-200 shadow-2xs flex-shrink-0 flex items-center justify-center">
-                                <img id="quickOrderQrImage" src="" alt="Mã QR Chuyển Khoản" class="w-full h-full object-contain hidden">
-                                <div id="quickOrderQrEmptyPlaceholder" class="flex flex-col items-center justify-center text-center p-2 text-gray-400">
-                                    <i class="fa-solid fa-qrcode text-3xl text-gray-300 mb-1.5"></i>
-                                    <span class="text-[11px] font-medium text-gray-500">Chưa có mã QR</span>
-                                    <span class="text-[10px] text-gray-400 mt-0.5">Vui lòng CK theo STK</span>
+                            <!-- QR Code Box & Nút Tải Ảnh -->
+                            <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                                <div id="quickOrderQrContainer" class="w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl border border-emerald-200 shadow-2xs flex items-center justify-center">
+                                    <img id="quickOrderQrImage" src="" alt="Mã QR Chuyển Khoản" class="w-full h-full object-contain hidden">
+                                    <div id="quickOrderQrEmptyPlaceholder" class="flex flex-col items-center justify-center text-center p-2 text-gray-400">
+                                        <i class="fa-solid fa-qrcode text-3xl text-gray-300 mb-1.5"></i>
+                                        <span class="text-[11px] font-medium text-gray-500">Chưa có mã QR</span>
+                                        <span class="text-[10px] text-gray-400 mt-0.5">Vui lòng CK theo STK</span>
+                                    </div>
                                 </div>
+                                <button type="button" id="quickOrderDownloadQrBtn" onclick="downloadQuickOrderQrCode()"
+                                    class="hidden w-full px-2 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[11px] font-bold rounded-xl transition flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                                    title="Tải mã QR định dạng JPG chuẩn để quét trực tiếp từ app ngân hàng">
+                                    <i class="fa-solid fa-download"></i> Tải Mã QR (JPG)
+                                </button>
                             </div>
 
                             <!-- Bank Details -->

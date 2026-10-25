@@ -675,6 +675,65 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         data_exact = res_exact.get_json()["data"]
         self.assertGreaterEqual(len(data_exact), 1)
 
+    def test_multiple_orders_same_phone_preserves_all_orders(self):
+        """Kiểm tra khi một số điện thoại đặt 2-3 lần trong phiên live:
+        - Mỗi đơn có mã đơn riêng (LIVE-YYMMDD-XXXX)
+        - Không đơn nào bị ghi đè hay mất
+        - Tra cứu theo số điện thoại trả về đầy đủ tất cả các đơn đã đặt, sắp xếp mới nhất trước
+        """
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+        test_phone = "0934111222"
+
+        # Đặt đơn 1
+        res1 = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Quen 3 Lần",
+            "phone": test_phone,
+            "address": "Địa chỉ đơn 1",
+            "transferredAmount": 300000,
+            "paymentProofImage": "https://example.com/bill1.jpg"
+        })
+        self.assertEqual(res1.status_code, 201)
+        o1 = res1.get_json()["data"]
+
+        # Đặt đơn 2
+        res2 = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Quen 3 Lần",
+            "phone": test_phone,
+            "address": "Địa chỉ đơn 2",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/bill2.jpg"
+        })
+        self.assertEqual(res2.status_code, 201)
+        o2 = res2.get_json()["data"]
+
+        # Đặt đơn 3
+        res3 = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Quen 3 Lần",
+            "phone": test_phone,
+            "address": "Địa chỉ đơn 3",
+            "transferredAmount": 700000,
+            "paymentProofImage": "https://example.com/bill3.jpg"
+        })
+        self.assertEqual(res3.status_code, 201)
+        o3 = res3.get_json()["data"]
+
+        # Kiểm tra mã đơn mỗi lần đặt là duy nhất và khác nhau
+        self.assertNotEqual(o1["orderCode"], o2["orderCode"])
+        self.assertNotEqual(o2["orderCode"], o3["orderCode"])
+        self.assertTrue(o1["orderCode"].startswith("LIVE-"))
+        self.assertTrue(o2["orderCode"].startswith("LIVE-"))
+        self.assertTrue(o3["orderCode"].startswith("LIVE-"))
+
+        # Tra cứu theo số điện thoại
+        res_lookup = self.client.get(f"/api/flower/v1/orders/lookup?query={test_phone}")
+        self.assertEqual(res_lookup.status_code, 200)
+        orders = res_lookup.get_json()["data"]
+
+        # Phải trả về đủ 3 đơn hàng
+        self.assertEqual(len(orders), 3)
+        amounts = [ord_item["totalAmount"] for ord_item in orders]
+        self.assertEqual(amounts, [700000, 500000, 300000])
+
 if __name__ == "__main__":
     unittest.main()
 

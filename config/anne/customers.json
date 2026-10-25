@@ -53,14 +53,40 @@
   {
     "id": "cust_1792673091",
     "phone": "0356148008",
-    "fullName": "THong le",
+    "fullName": "xxx",
     "email": "",
     "tier": "silver",
-    "loyaltyPoints": 150,
-    "totalSpent": 1500000,
-    "orderCount": 1,
+    "loyaltyPoints": 450,
+    "totalSpent": 4500000,
+    "orderCount": 3,
     "flowerPreferences": "",
     "savedAddresses": [],
     "createdAt": "2026-10-22T12:44:51Z"
+  },
+  {
+    "id": "cust_1792934319",
+    "phone": "0912999888",
+    "fullName": "Test User",
+    "email": "",
+    "tier": "silver",
+    "loyaltyPoints": 110,
+    "totalSpent": 1100000,
+    "orderCount": 2,
+    "flowerPreferences": "",
+    "savedAddresses": [],
+    "createdAt": "2026-10-25T20:18:39Z"
+  },
+  {
+    "id": "cust_1792934463",
+    "phone": "0988777666",
+    "fullName": "Khach VIP",
+    "email": "",
+    "tier": "silver",
+    "loyaltyPoints": 250,
+    "totalSpent": 2500000,
+    "orderCount": 3,
+    "flowerPreferences": "",
+    "savedAddresses": [],
+    "createdAt": "2026-10-25T20:21:03Z"
   }
 ]
