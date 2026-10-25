@@ -2,7 +2,7 @@
 // Phân hệ Quản Trị & Xử Lý Đơn Hàng Live Stream Tốc Hành trong Admin Portal (Cổng Quản Trị Hệ Thống)
 
 import { getAuthToken } from './auth.js';
-import { API_BASE, formatVND } from './utils.js';
+import { API_BASE, formatVND, showLiveStreamConfirmDialog } from './utils.js';
 import { notifyUser, lockScreen, unlockScreen } from './portal_admin_state.js';
 import { ADMIN_ORDER_STATUS_META, ADMIN_PAYMENT_STATUS_META, exportOrdersToCsv } from './portal_admin_orders.js';
 
@@ -142,11 +142,15 @@ function updateLiveStreamControlUI(config) {
 export async function toggleLiveStreamQuickStatus(checkbox) {
     if (!checkbox) return;
     const isEnabled = !!checkbox.checked;
-    const confirmMessage = isEnabled
-        ? "BẬT PHIÊN LIVE STREAM & MỞ NHẬN ĐƠN NHANH?\n\n• Cổng đặt hàng (#quick-order) sẽ mở cho khách xem live chốt đơn và gửi ảnh bill.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn BẬT?"
-        : "TẮT PHIÊN LIVE STREAM & ĐÓNG NHẬN ĐƠN?\n\n• Cổng đặt hàng (#quick-order) sẽ tạm dừng nhận đơn mới.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn TẮT?";
+    const confirmFn = (typeof showLiveStreamConfirmDialog === "function")
+        ? showLiveStreamConfirmDialog
+        : ((typeof window !== "undefined" && typeof window.showLiveStreamConfirmDialog === "function") ? window.showLiveStreamConfirmDialog : null);
 
-    if (!window.confirm(confirmMessage)) {
+    const confirmed = confirmFn
+        ? await confirmFn(isEnabled)
+        : window.confirm(isEnabled ? "BẬT PHIÊN LIVE STREAM & MỞ NHẬN ĐƠN NHANH?" : "TẮT PHIÊN LIVE STREAM & ĐÓNG NHẬN ĐƠN?");
+
+    if (!confirmed) {
         checkbox.checked = !isEnabled;
         return;
     }

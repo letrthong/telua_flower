@@ -302,6 +302,203 @@ export function showConfirmDialog({
 }
 
 /**
+ * Hộp thoại Xác nhận Bật/Tắt Live Stream tùy biến cao cấp (Live Stream Confirmation Modal)
+ * Thiết kế giao diện hiện đại, trực quan, hỗ trợ xem nhanh checklist tính năng trước khi bật/tắt
+ * Trả về Promise<boolean>: resolve(true) nếu xác nhận, resolve(false) nếu hủy bỏ
+ */
+export function showLiveStreamConfirmDialog(isEnabling = true) {
+    return new Promise((resolve) => {
+        if (typeof document === "undefined") return resolve(false);
+
+        // Xóa modal cũ nếu còn trên DOM
+        const oldModal = document.getElementById("liveStreamConfirmModalContainer");
+        if (oldModal && oldModal.parentElement) oldModal.parentElement.removeChild(oldModal);
+
+        const container = document.createElement("div");
+        container.id = "liveStreamConfirmModalContainer";
+        container.className = "fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm opacity-0 transition-opacity duration-200 select-none";
+
+        const headerGradient = isEnabling
+            ? "bg-gradient-to-br from-rose-600 via-pink-600 to-rose-700 text-white"
+            : "bg-gradient-to-br from-slate-700 via-slate-800 to-gray-900 text-white";
+
+        const badgeHtml = isEnabling
+            ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[11px] font-black tracking-wider uppercase shadow-2xs">
+                   <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                   <span class="w-2 h-2 rounded-full bg-white"></span>
+                   SẴN SÀNG PHÁT SÓNG
+               </span>`
+            : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-slate-200 text-[11px] font-black tracking-wider uppercase shadow-2xs">
+                   <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                   KẾT THÚC PHIÊN LIVE
+               </span>`;
+
+        const titleText = isEnabling
+            ? "Bật Phiên Live Stream & Mở Nhận Đơn Nhanh?"
+            : "Tắt Phiên Live Stream & Đóng Nhận Đơn?";
+
+        const descText = isEnabling
+            ? "Cổng chốt đơn tốc hành (#quick-order) sẽ mở tức thì cho khách xem live chốt đơn và quét mã VietQR."
+            : "Cổng chốt đơn tốc hành (#quick-order) sẽ tạm ngưng tiếp nhận đơn mới để tránh khách chuyển nhầm tiền.";
+
+        const cardsHtml = isEnabling
+            ? `
+                <div class="space-y-2.5">
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-rose-50/70 border border-rose-100/80 transition hover:bg-rose-50">
+                        <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-rose-200">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Cổng chốt đơn #quick-order mở ngay</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Khách xem livestream có thể chọn mẫu hoa ghim, điền địa chỉ và chốt đơn trong 15 giây.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100/80 transition hover:bg-emerald-50">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-emerald-200">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Thanh toán VietQR & tải ảnh bill</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Hiển thị chính xác STK ngân hàng & mã QR của shop để khách quét chuyển khoản an toàn.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-blue-50/70 border border-blue-100/80 transition hover:bg-blue-50">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-blue-200">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Đồng bộ tức thì toàn hệ thống</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Trạng thái phát trực tiếp sẽ lưu ngay lập tức xuống máy chủ và hiển thị trên tab Quản lý đơn Live.</p>
+                        </div>
+                    </div>
+                </div>
+            `
+            : `
+                <div class="space-y-2.5">
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-amber-50/70 border border-amber-100/80 transition hover:bg-amber-50">
+                        <div class="w-9 h-9 rounded-xl bg-amber-600 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-amber-200">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Tạm dừng nhận đơn mới</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Khách truy cập link #quick-order sẽ thấy thông báo phiên live đang tạm đóng, hướng dẫn xem catalogue.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-rose-50/70 border border-rose-100/80 transition hover:bg-rose-50">
+                        <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-rose-200">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Ẩn thông tin tài khoản & mã QR</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Tuyệt đối không lưu vết số tài khoản trên màn hình khi hết giờ live, phòng tránh khách chuyển nhầm.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200/80 transition hover:bg-slate-100/60">
+                        <div class="w-9 h-9 rounded-xl bg-slate-700 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-slate-300">
+                            <i class="fa-solid fa-box-archive"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Đơn đã chốt được bảo lưu an toàn</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Tất cả đơn hàng khách đã gửi trong phiên live vẫn được lưu trữ đầy đủ để florist cắm hoa và giao hàng.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        const confirmBtnClass = isEnabling
+            ? "bg-gradient-to-r from-rose-600 via-pink-600 to-rose-700 hover:from-rose-700 hover:to-pink-700 text-white shadow-lg shadow-rose-600/30"
+            : "bg-gradient-to-r from-slate-800 to-gray-900 hover:from-slate-900 hover:to-black text-white shadow-lg shadow-gray-900/30";
+
+        const confirmBtnText = isEnabling
+            ? `<i class="fa-solid fa-video mr-1.5"></i> Bật Phiên Live Ngay`
+            : `<i class="fa-solid fa-power-off mr-1.5"></i> Xác Nhận Tắt Live`;
+
+        container.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-lg w-full overflow-hidden transform scale-95 opacity-0 transition-all duration-200 ease-out flex flex-col">
+                <!-- Header Banner -->
+                <div class="${headerGradient} p-6 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10 space-y-2">
+                        <div>${badgeHtml}</div>
+                        <h3 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-snug">${titleText}</h3>
+                        <p class="text-xs sm:text-[13px] text-white/85 font-medium leading-relaxed">${descText}</p>
+                    </div>
+                </div>
+
+                <!-- Body Checklist -->
+                <div class="p-5 sm:p-6 bg-white">
+                    ${cardsHtml}
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 border-t border-gray-100">
+                    <button type="button" id="liveStreamConfirmCancelBtn"
+                        class="px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm transition cursor-pointer">
+                        Để Sau
+                    </button>
+                    <button type="button" id="liveStreamConfirmOkBtn"
+                        class="px-6 py-2.5 rounded-xl ${confirmBtnClass} font-bold text-xs sm:text-sm transition transform active:scale-95 cursor-pointer">
+                        ${confirmBtnText}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        const card = container.querySelector("div");
+        const cancelBtn = container.querySelector("#liveStreamConfirmCancelBtn");
+        const okBtn = container.querySelector("#liveStreamConfirmOkBtn");
+
+        let isClosed = false;
+        const closeDialog = (result) => {
+            if (isClosed) return;
+            isClosed = true;
+            document.removeEventListener("keydown", handleKeyDown);
+            container.classList.remove("opacity-100");
+            container.classList.add("opacity-0");
+            if (card) {
+                card.classList.remove("scale-100", "opacity-100");
+                card.classList.add("scale-95", "opacity-0");
+            }
+            setTimeout(() => {
+                if (container.parentElement) container.parentElement.removeChild(container);
+                resolve(result);
+            }, 200);
+        };
+
+        cancelBtn.onclick = () => closeDialog(false);
+        okBtn.onclick = () => closeDialog(true);
+
+        container.onclick = (e) => {
+            if (e.target === container) closeDialog(false);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(false);
+            } else if (e.key === "Enter") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(true);
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown, { once: true });
+
+        // Animation hiển thị
+        requestAnimationFrame(() => {
+            container.classList.remove("opacity-0");
+            container.classList.add("opacity-100");
+            if (card) {
+                card.classList.remove("scale-95", "opacity-0");
+                card.classList.add("scale-100", "opacity-100");
+            }
+            okBtn.focus();
+        });
+    });
+}
+
+/**
  * Khóa màn hình với lớp phủ mờ (Screen Lock Overlay) khi cập nhật dữ liệu
  */
 export function showScreenLock(message = "Đang cập nhật cấu hình & đồng bộ hệ thống...") {
@@ -838,6 +1035,7 @@ if (typeof window !== "undefined") {
     window.API_BASE = API_BASE;
     window.showToast = showToast;
     window.showConfirmDialog = showConfirmDialog;
+    window.showLiveStreamConfirmDialog = showLiveStreamConfirmDialog;
     window.showScreenLock = showScreenLock;
     window.hideScreenLock = hideScreenLock;
     window.openStoreMap = openStoreMap;

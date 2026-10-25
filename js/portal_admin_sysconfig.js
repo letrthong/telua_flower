@@ -1,5 +1,5 @@
 import { getAuthToken } from './auth.js';
-import { API_BASE, showConfirmDialog } from './utils.js';
+import { API_BASE, showConfirmDialog, showLiveStreamConfirmDialog } from './utils.js';
 import { lockScreen, unlockScreen, notifyUser, setAdminPriceLevels, allAdminCategories } from './portal_admin_state.js';
 
 // ==========================================
@@ -548,11 +548,14 @@ export async function handleLiveStreamQuickToggleConfirm(checkbox) {
     if (!checkbox) return;
 
     const isEnabling = !!checkbox.checked;
-    const confirmMessage = isEnabling
-        ? "BẬT PHIÊN LIVE STREAM & MỞ NHẬN ĐƠN NHANH?\n\n• Cổng đặt hàng (#quick-order) sẽ mở cho khách xem live chốt đơn và gửi ảnh bill.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn BẬT?"
-        : "TẮT PHIÊN LIVE STREAM & ĐÓNG NHẬN ĐƠN?\n\n• Cổng đặt hàng (#quick-order) sẽ tạm dừng nhận đơn mới.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn TẮT?";
+    const confirmFn = (typeof showLiveStreamConfirmDialog === "function")
+        ? showLiveStreamConfirmDialog
+        : ((typeof window !== "undefined" && typeof window.showLiveStreamConfirmDialog === "function") ? window.showLiveStreamConfirmDialog : null);
 
-    const confirmed = window.confirm(confirmMessage);
+    const confirmed = confirmFn
+        ? await confirmFn(isEnabling)
+        : window.confirm(isEnabling ? "BẬT PHIÊN LIVE STREAM & MỞ NHẬN ĐƠN NHANH?" : "TẮT PHIÊN LIVE STREAM & ĐÓNG NHẬN ĐƠN?");
+
     if (!confirmed) {
         checkbox.checked = !isEnabling;
         return;
@@ -1825,7 +1828,6 @@ if (typeof window !== "undefined") {
     window.previewQuickOrder = previewQuickOrder;
     window.handleAdminLiveStreamQrUpload = handleAdminLiveStreamQrUpload;
     window.handleAdminLiveStreamQrUrlInput = handleAdminLiveStreamQrUrlInput;
-    window.generateAutoVietQrForLiveStream = generateAutoVietQrForLiveStream;
     window.removeAdminLiveStreamQr = removeAdminLiveStreamQr;
     window.toggleAdminLiveStreamFeaturedProduct = toggleAdminLiveStreamFeaturedProduct;
     window.renderAdminLiveStreamFeaturedProducts = renderAdminLiveStreamFeaturedProducts;

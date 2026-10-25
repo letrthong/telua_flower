@@ -21,10 +21,18 @@ export async function openQuickOrderModal() {
     const closedContainer = document.getElementById("quickOrderClosedContainer");
     const successContainer = document.getElementById("quickOrderSuccessContainer");
 
+    const liveIcon = document.getElementById("quickOrderLiveIcon");
+    const livePing = document.getElementById("quickOrderLivePing");
+    const liveBadge = document.getElementById("quickOrderLiveBadge");
+    const titleEl = document.getElementById("quickOrderDisplayTitle");
+    const descEl = document.getElementById("quickOrderDisplayDesc");
+    const headerLookupBtn = document.getElementById("quickOrderHeaderLookupBtn");
+
     if (loadingState) loadingState.classList.remove("hidden");
     if (formContainer) formContainer.classList.add("hidden");
     if (closedContainer) closedContainer.classList.add("hidden");
     if (successContainer) successContainer.classList.add("hidden");
+    if (headerLookupBtn) headerLookupBtn.classList.add("hidden");
 
     try {
         const res = await fetch(`${API_BASE}/livestream-config?_t=${Date.now()}`);
@@ -36,25 +44,50 @@ export async function openQuickOrderModal() {
         if (loadingState) loadingState.classList.add("hidden");
 
         if (!isEnabled) {
-            // Cờ chưa bật: hiển thị thông báo tạm đóng & gỡ bỏ hash #quick-order khỏi thanh địa chỉ để không tự động mở lại
-            if (typeof window !== "undefined" && window.location.hash) {
-                const h = window.location.hash.toLowerCase();
-                if (h === "#quick-order" || h === "#livestream" || h === "#live-stream") {
-                    try {
-                        history.replaceState(null, document.title, window.location.pathname + window.location.search);
-                    } catch (_) { }
-                }
+            // ==========================================
+            // TRẠNG THÁI: ENABLE = FALSE (TẠM DỪNG / ĐÃ ĐÓNG)
+            // Tuyệt đối KHÔNG hiện thông tin đơn hàng hay tài khoản ngân hàng
+            // ==========================================
+            if (liveIcon) {
+                liveIcon.className = "w-10 h-10 rounded-2xl bg-gray-200 text-gray-500 flex items-center justify-center text-lg shadow-inner relative border border-gray-300";
             }
-            if (closedContainer) closedContainer.classList.remove("hidden");
-        } else {
-            // Cờ đang bật: hiển thị form đặt hàng nhanh
-            if (formContainer) formContainer.classList.remove("hidden");
+            if (livePing) livePing.classList.add("hidden");
+            if (liveBadge) {
+                liveBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-300 shadow-2xs flex items-center gap-1.5";
+                liveBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Đã Tạm Dừng`;
+            }
+            if (titleEl) titleEl.textContent = "Phiên Live Stream Đang Tạm Đóng";
+            if (descEl) descEl.textContent = "Cửa hàng hiện đang tạm dừng nhận đơn tốc hành qua livestream. Quý khách vui lòng xem catalogue cửa hàng!";
 
-            // Nạp thông tin tiêu đề & lời dặn
-            const titleEl = document.getElementById("quickOrderDisplayTitle");
-            const descEl = document.getElementById("quickOrderDisplayDesc");
-            if (titleEl && config.title) titleEl.textContent = config.title;
-            if (descEl && config.description) descEl.textContent = config.description;
+            // Xóa sạch thông tin tài khoản hiển thị để không lưu vết
+            const bNameEl = document.getElementById("quickOrderBankName");
+            const bAccEl = document.getElementById("quickOrderBankAccount");
+            const bOwnerEl = document.getElementById("quickOrderBankOwner");
+            const qrImg = document.getElementById("quickOrderQrImage");
+            if (bNameEl) bNameEl.textContent = "—";
+            if (bAccEl) bAccEl.textContent = "—";
+            if (bOwnerEl) bOwnerEl.textContent = "—";
+            if (qrImg) qrImg.removeAttribute("src");
+
+            if (headerLookupBtn) headerLookupBtn.classList.add("hidden");
+            if (closedContainer) closedContainer.classList.remove("hidden");
+            if (formContainer) formContainer.classList.add("hidden");
+
+            resetQuickOrderForm();
+        } else {
+            // ==========================================
+            // TRẠNG THÁI: ENABLE = TRUE (ĐANG BẬT / TRỰC TIẾP)
+            // ==========================================
+            if (liveIcon) {
+                liveIcon.className = "w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-lg shadow-md shadow-rose-200 relative";
+            }
+            if (livePing) livePing.classList.remove("hidden");
+            if (liveBadge) {
+                liveBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 shadow-2xs flex items-center gap-1.5";
+                liveBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> Đang Phát Trực Tiếp`;
+            }
+            if (titleEl) titleEl.textContent = config.title || "Đặt Hoa Nhanh Live Stream";
+            if (descEl) descEl.textContent = config.description || "Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!";
 
             // Nạp thông tin tài khoản ngân hàng
             const bInfo = config.bankInfo || {};
@@ -64,6 +97,10 @@ export async function openQuickOrderModal() {
             if (bNameEl) bNameEl.textContent = bInfo.bankName || "Vietcombank";
             if (bAccEl) bAccEl.textContent = bInfo.accountNumber || "0976491322";
             if (bOwnerEl) bOwnerEl.textContent = bInfo.accountName || "NO HOA THA BINH";
+
+            if (headerLookupBtn) headerLookupBtn.classList.remove("hidden");
+            if (formContainer) formContainer.classList.remove("hidden");
+            if (closedContainer) closedContainer.classList.add("hidden");
 
             // Reset form
             resetQuickOrderForm();
@@ -201,6 +238,7 @@ export function handleQuickOrderProductSelect(selectEl) {
  */
 export function updateQuickOrderQrCode() {
     const qrImg = document.getElementById("quickOrderQrImage");
+    const qrEmpty = document.getElementById("quickOrderQrEmptyPlaceholder");
     if (!qrImg) return;
 
     const bInfo = (currentLiveConfig && currentLiveConfig.bankInfo) || {};
@@ -512,7 +550,18 @@ export function openOrderLookupModal(prefillPhone = "") {
     if (initialGuide) initialGuide.classList.remove("hidden");
 
     if (phoneInput) {
-        const val = prefillPhone || localStorage.getItem("telua_last_lookup_phone") || "";
+        // Khi người dùng xóa hoặc đổi số điện thoại trong input, lập tức reset trạng thái cũ
+        phoneInput.oninput = () => {
+            if (errorBox) errorBox.classList.add("hidden");
+            const currentVal = phoneInput.value.trim();
+            if (!currentVal) {
+                if (resultsContainer) resultsContainer.innerHTML = "";
+                if (emptyState) emptyState.classList.add("hidden");
+                if (initialGuide) initialGuide.classList.remove("hidden");
+            }
+        };
+
+        const val = prefillPhone ? prefillPhone.trim() : (localStorage.getItem("telua_last_lookup_phone") || "");
         phoneInput.value = val;
         phoneInput.focus();
         if (val && val.length >= 9) {
@@ -555,6 +604,9 @@ export async function handleOrderLookup(e) {
 
     const query = phoneInput ? phoneInput.value.trim() : "";
     if (!query) {
+        if (resultsContainer) resultsContainer.innerHTML = "";
+        if (emptyState) emptyState.classList.add("hidden");
+        if (initialGuide) initialGuide.classList.remove("hidden");
         if (errorBox) {
             errorBox.textContent = "Vui lòng nhập Số Điện Thoại bạn đã dùng khi đặt hoa.";
             errorBox.classList.remove("hidden");
@@ -562,6 +614,7 @@ export async function handleOrderLookup(e) {
         return;
     }
 
+    // Xóa sạch trạng thái cũ trước khi tra cứu số mới
     if (errorBox) errorBox.classList.add("hidden");
     if (initialGuide) initialGuide.classList.add("hidden");
     if (emptyState) emptyState.classList.add("hidden");
@@ -593,14 +646,16 @@ export async function handleOrderLookup(e) {
                 if (emptyPhoneEl) emptyPhoneEl.textContent = query;
             }
         } else {
+            if (emptyState) emptyState.classList.add("hidden");
             renderOrderLookupResults(orders, query);
         }
     } catch (err) {
+        if (resultsContainer) resultsContainer.innerHTML = "";
+        if (emptyState) emptyState.classList.add("hidden");
         if (errorBox) {
             errorBox.textContent = `Lỗi kết nối máy chủ: ${err.message || "Không thể nạp dữ liệu"}`;
             errorBox.classList.remove("hidden");
         }
-        if (resultsContainer) resultsContainer.innerHTML = "";
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;

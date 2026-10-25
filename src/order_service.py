@@ -650,15 +650,24 @@ def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
     found_orders = []
     seen_ids = set()
 
+    # Chuẩn hóa số điện thoại Việt Nam
+    norm_phone = clean_digits
+    if norm_phone.startswith("84") and len(norm_phone) >= 11:
+        norm_phone = "0" + norm_phone[2:]
+    elif len(norm_phone) == 9 and not norm_phone.startswith("0"):
+        norm_phone = "0" + norm_phone
+
     # 1. Tra cứu theo số điện thoại từ thư mục riêng users/{phone}/orders.json (O(1) nạp siêu tốc)
     if len(clean_digits) >= 9:
-        user_orders = get_user_orders(clean_digits)
-        for ord_item in user_orders:
-            if isinstance(ord_item, dict):
-                oid = ord_item.get("id") or ord_item.get("orderCode")
-                if oid and oid not in seen_ids:
-                    seen_ids.add(oid)
-                    found_orders.append(ord_item)
+        for candidate_phone in [clean_digits, norm_phone]:
+            if candidate_phone:
+                user_orders = get_user_orders(candidate_phone)
+                for ord_item in user_orders:
+                    if isinstance(ord_item, dict):
+                        oid = ord_item.get("id") or ord_item.get("orderCode")
+                        if oid and oid not in seen_ids:
+                            seen_ids.add(oid)
+                            found_orders.append(ord_item)
 
     # 2. Tra cứu trực tiếp theo orderCode hoặc orderId
     direct_order = get_order_by_id(raw_query)
@@ -680,8 +689,20 @@ def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
                 shortcuts = get_order_shortcuts_for_month(b_id, ym)
                 for sc in shortcuts:
                     sc_phone = "".join(c for c in str(sc.get("recipientPhone") or sc.get("senderPhone") or sc.get("createdBy") or "") if c.isdigit())
+                    sc_norm = sc_phone
+                    if sc_norm.startswith("84") and len(sc_norm) >= 11:
+                        sc_norm = "0" + sc_norm[2:]
+                    elif len(sc_norm) == 9 and not sc_norm.startswith("0"):
+                        sc_norm = "0" + sc_norm
+
                     sc_code = str(sc.get("orderCode") or "").strip()
-                    if (clean_digits and clean_digits in sc_phone) or clean_digits == sc_code or raw_query == sc_code:
+                    phone_matched = bool(
+                        (clean_digits and (clean_digits == sc_phone or clean_digits == sc_norm)) or
+                        (norm_phone and (norm_phone == sc_phone or norm_phone == sc_norm))
+                    )
+                    code_matched = bool(clean_digits == sc_code or raw_query == sc_code)
+
+                    if phone_matched or code_matched:
                         full_o = get_order_by_id(sc.get("orderId") or sc.get("id"))
                         if full_o and full_o.get("id") not in seen_ids:
                             seen_ids.add(full_o.get("id"))

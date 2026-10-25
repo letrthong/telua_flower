@@ -650,6 +650,31 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         }, json={"photoUrl": "https://example.com/late_photo.jpg"})
         self.assertEqual(res_photo.status_code, 400)
 
+    def test_lookup_phone_exact_match_not_substring(self):
+        """Kiểm tra tra cứu SĐT phải khớp chính xác, không được trả về đơn cũ của số khác do trùng chuỗi con"""
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+        # 1. Tạo đơn cho số 0356148008
+        self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Chính Chủ",
+            "phone": "0356148008",
+            "address": "123 Đường A, Q.1",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/proof1.jpg"
+        })
+
+        # 2. Khách nhập số mới 035614800 (9 chữ số, là chuỗi con của 0356148008)
+        res_partial = self.client.get("/api/flower/v1/orders/lookup?query=035614800")
+        self.assertEqual(res_partial.status_code, 200)
+        data_partial = res_partial.get_json()["data"]
+        # Phải trả về rỗng, không được hiện đơn của số 0356148008!
+        self.assertEqual(len(data_partial), 0)
+
+        # 3. Khách nhập đúng số 0356148008 -> Phải tìm thấy
+        res_exact = self.client.get("/api/flower/v1/orders/lookup?query=0356148008")
+        self.assertEqual(res_exact.status_code, 200)
+        data_exact = res_exact.get_json()["data"]
+        self.assertGreaterEqual(len(data_exact), 1)
+
 if __name__ == "__main__":
     unittest.main()
 

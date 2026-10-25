@@ -6647,22 +6647,24 @@
             <!-- Header -->
             <div class="px-6 py-4 bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50 border-b border-rose-100 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-lg shadow-md shadow-rose-200 relative">
+                    <div id="quickOrderLiveIcon" class="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-lg shadow-md shadow-rose-200 relative transition-all">
                         <i class="fa-solid fa-video"></i>
-                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-ping"></span>
+                        <span id="quickOrderLivePing" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-ping"></span>
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="font-serif text-base sm:text-lg font-bold text-gray-900" id="quickOrderDisplayTitle">Đặt Hoa Nhanh Live Stream</h3>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">Trực Tiếp</span>
+                            <span id="quickOrderLiveBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 shadow-2xs flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> Trực Tiếp
+                            </span>
                         </div>
                         <p class="text-xs text-gray-500 line-clamp-1" id="quickOrderDisplayDesc">Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="closeQuickOrderModal(); openOrderLookupModal();"
+                    <button type="button" id="quickOrderHeaderLookupBtn" onclick="closeQuickOrderModal(); openOrderLookupModal();"
                         title="Tra cứu đơn hàng đã đặt"
-                        class="text-[11px] font-bold text-gray-600 hover:text-rose-600 px-2.5 py-1.5 bg-white/80 hover:bg-white rounded-xl border border-gray-200 transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                        class="hidden text-[11px] font-bold text-gray-600 hover:text-rose-600 px-2.5 py-1.5 bg-white/80 hover:bg-white rounded-xl border border-gray-200 transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
                         <i class="fa-solid fa-magnifying-glass text-rose-500"></i> <span class="hidden sm:inline">Tra cứu đơn</span>
                     </button>
                     <button type="button" onclick="closeQuickOrderModal()"
@@ -6680,18 +6682,25 @@
 
             <!-- Closed State -->
             <div id="quickOrderClosedContainer" class="hidden p-8 sm:p-12 text-center space-y-4">
-                <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-2xl mx-auto shadow-inner border border-rose-100">
+                <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-2xl mx-auto shadow-inner border border-amber-200">
                     <i class="fa-solid fa-video-slash"></i>
                 </div>
-                <div class="max-w-md mx-auto space-y-1.5">
+                <div class="max-w-md mx-auto space-y-2">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300">
+                        <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                        <span id="quickOrderClosedStatusBadge">Trạng Thái: Đã Tạm Dừng Nhận Đơn (enable: false)</span>
+                    </div>
                     <h4 class="text-base font-bold text-gray-800">Phiên Đặt Hàng Live Stream Đang Tạm Đóng</h4>
                     <p class="text-xs text-gray-500 leading-relaxed">
-                        Hiện tại cửa hàng không có phiên live stream nào đang mở nhận đơn nhanh. Quý khách vui lòng ghé xem catalogue sản phẩm trực tuyến hoặc liên hệ hotline để được phục vụ chu đáo nhất.
+                        Cổng chốt đơn tốc hành qua link <code class="font-mono text-rose-600 bg-rose-50 px-1 py-0.5 rounded font-bold">#quick-order</code> hiện đang tạm ngưng do phiên live stream đã kết thúc hoặc cửa hàng đang tạm nghỉ.
+                    </p>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Quý khách vẫn có thể tra cứu đơn hàng đã đặt trong buổi live, hoặc ghé xem hàng trăm mẫu hoa tươi tại website cửa hàng!
                     </p>
                 </div>
-                <div class="flex items-center justify-center gap-3 pt-2">
+                <div class="flex items-center justify-center pt-2">
                     <button type="button" onclick="closeQuickOrderModal()"
-                        class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                        class="px-6 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-store"></i> Xem Cửa Hàng Trực Tuyến
                     </button>
                 </div>
@@ -6747,7 +6756,7 @@
             </div>
 
             <!-- Form State (Scrollable) -->
-            <div id="quickOrderFormContainer" class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-gray-50/40">
+            <div id="quickOrderFormContainer" class="hidden p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-gray-50/40">
                 <form id="quickOrderForm" onsubmit="handleQuickOrderSubmit(event)" class="space-y-4">
                     <!-- Error Box -->
                     <div id="quickOrderErrorBox" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-200 font-medium"></div>
@@ -6802,12 +6811,12 @@
                             <div class="flex-1 space-y-2 text-xs w-full">
                                 <div>
                                     <span class="text-[11px] text-gray-500 block">Ngân hàng thụ hưởng:</span>
-                                    <span id="quickOrderBankName" class="font-bold text-gray-800">Vietcombank</span>
+                                    <span id="quickOrderBankName" class="font-bold text-gray-800">—</span>
                                 </div>
                                 <div>
                                     <span class="text-[11px] text-gray-500 block">Số tài khoản:</span>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span id="quickOrderBankAccount" class="font-mono text-sm font-extrabold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">0976491322</span>
+                                        <span id="quickOrderBankAccount" class="font-mono text-sm font-extrabold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">—</span>
                                         <button type="button" onclick="copyQuickOrderBankAccount()"
                                             class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition flex items-center gap-1 cursor-pointer shadow-2xs"
                                             title="Sao chép số tài khoản">
@@ -6817,7 +6826,7 @@
                                 </div>
                                 <div>
                                     <span class="text-[11px] text-gray-500 block">Chủ tài khoản:</span>
-                                    <span id="quickOrderBankOwner" class="font-bold text-gray-800 uppercase">NO HOA THA BINH</span>
+                                    <span id="quickOrderBankOwner" class="font-bold text-gray-800 uppercase">—</span>
                                 </div>
                             </div>
                         </div>
