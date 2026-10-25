@@ -36,7 +36,15 @@ export async function openQuickOrderModal() {
         if (loadingState) loadingState.classList.add("hidden");
 
         if (!isEnabled) {
-            // Cờ chưa bật: hiển thị thông báo tạm đóng
+            // Cờ chưa bật: hiển thị thông báo tạm đóng & gỡ bỏ hash #quick-order khỏi thanh địa chỉ để không tự động mở lại
+            if (typeof window !== "undefined" && window.location.hash) {
+                const h = window.location.hash.toLowerCase();
+                if (h === "#quick-order" || h === "#livestream" || h === "#live-stream") {
+                    try {
+                        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+                    } catch (_) { }
+                }
+            }
             if (closedContainer) closedContainer.classList.remove("hidden");
         } else {
             // Cờ đang bật: hiển thị form đặt hàng nhanh
@@ -198,36 +206,17 @@ export function updateQuickOrderQrCode() {
     const bInfo = (currentLiveConfig && currentLiveConfig.bankInfo) || {};
     const customQr = (currentLiveConfig && currentLiveConfig.qrCodeImage) || bInfo.qrCodeImage || "";
 
-    // Nếu admin đã tải lên ảnh mã QR tùy chỉnh
+    // Chỉ hiển thị ảnh mã QR khi admin đã cung cấp/tải ảnh lên cấu hình
     if (customQr) {
         qrImg.src = customQr;
-        return;
+        qrImg.classList.remove("hidden");
+        if (qrEmpty) qrEmpty.classList.add("hidden");
+    } else {
+        // Nếu không có mã QR: TUYỆT ĐỐI KHÔNG tự ý sinh/tạo hình ảnh mã QR
+        qrImg.removeAttribute("src");
+        qrImg.classList.add("hidden");
+        if (qrEmpty) qrEmpty.classList.remove("hidden");
     }
-
-    // Ngược lại, tạo VietQR tự động dựa trên ngân hàng, số tài khoản, số tiền và SĐT
-    const bankName = (bInfo.bankName || "Vietcombank").trim();
-    const bankAccount = (bInfo.accountNumber || "0976491322").trim();
-    const amountInput = document.getElementById("quickOrderAmount");
-    const rawAmount = amountInput ? amountInput.value.replace(/\D/g, "") : "";
-    const amount = rawAmount ? parseInt(rawAmount, 10) : 0;
-
-    const phoneInput = document.getElementById("quickOrderRecipientPhone");
-    const phone = phoneInput ? phoneInput.value.trim() : "";
-    const content = phone ? `LIVE ${phone}` : "DAT HOA LIVE";
-
-    // Chuẩn hóa mã ngân hàng (Vietcombank -> VCB, Techcombank -> TCB, MBBank -> MB, v.v.)
-    let bankCode = bankName.toUpperCase();
-    if (bankCode.includes("VIETCOMBANK") || bankCode === "VCB") bankCode = "VCB";
-    else if (bankCode.includes("TECHCOMBANK") || bankCode === "TCB") bankCode = "TCB";
-    else if (bankCode.includes("MBBANK") || bankCode.includes("QUÂN ĐỘI") || bankCode === "MB") bankCode = "MB";
-    else if (bankCode.includes("ACB")) bankCode = "ACB";
-    else if (bankCode.includes("BIDV")) bankCode = "BIDV";
-    else if (bankCode.includes("VIETINBANK") || bankCode === "CTG") bankCode = "ICB";
-    else if (bankCode.includes("VPBANK")) bankCode = "VPB";
-    else if (bankCode.includes("TPBANK")) bankCode = "TPB";
-
-    const vietQrUrl = `https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}`;
-    qrImg.src = vietQrUrl;
 }
 
 /**

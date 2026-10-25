@@ -4664,10 +4664,6 @@
                                 <p class="text-[11px] text-gray-500">Khi bật cờ, khách xem livestream truy cập link chỉ cần điền Tên, SĐT, Địa chỉ, Số tiền đã chuyển và tải ảnh bill.</p>
                             </div>
                         </div>
-                        <button type="button" onclick="saveLiveStreamConfig()"
-                            class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center flex-shrink-0 cursor-pointer">
-                            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Lưu Cấu Hình Live Stream
-                        </button>
                     </div>
 
                     <!-- Quick Link Share Card -->
@@ -4723,7 +4719,7 @@
                             </div>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                            <input type="checkbox" id="livestreamQuickOrderToggle" class="sr-only peer">
+                            <input type="checkbox" id="livestreamQuickOrderToggle" onchange="handleLiveStreamQuickToggleConfirm(this)" class="sr-only peer">
                             <div class="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-rose-600"></div>
                         </label>
                     </div>
@@ -4790,8 +4786,12 @@
                                 <span class="text-[10px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">Hỗ trợ URL & Tải Ảnh</span>
                             </div>
                             <div class="flex items-start gap-3.5">
-                                <div class="w-28 h-28 rounded-xl bg-gray-50 border border-gray-200 p-1 flex items-center justify-center flex-shrink-0 shadow-2xs relative group">
-                                    <img id="adminLiveStreamQrPreview" src="https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE" alt="QR Preview" class="w-full h-full object-contain rounded-lg">
+                                <div class="w-28 h-28 rounded-xl bg-gray-50 border border-gray-200 p-1 flex items-center justify-center flex-shrink-0 shadow-2xs relative group text-center">
+                                    <img id="adminLiveStreamQrPreview" src="" alt="QR Preview" class="w-full h-full object-contain rounded-lg hidden">
+                                    <div id="adminLiveStreamQrEmpty" class="flex flex-col items-center justify-center text-gray-400 p-2">
+                                        <i class="fa-solid fa-qrcode text-3xl text-gray-300 mb-1"></i>
+                                        <span class="text-[10px] text-gray-400 leading-tight">Chưa có mã QR</span>
+                                    </div>
                                 </div>
                                 <div class="flex-1 space-y-2">
                                     <p class="text-[11px] text-gray-500">Dán link ảnh URL hoặc tải tệp ảnh từ thiết bị:</p>
@@ -4805,18 +4805,14 @@
                                             class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:outline-none focus:border-purple-600 focus:bg-white transition shadow-2xs">
                                     </div>
 
-                                    <span id="adminLiveStreamQrStatus" class="text-[10px] text-gray-500 font-medium block">Mã VietQR tự động theo số tài khoản</span>
+                                    <span id="adminLiveStreamQrStatus" class="text-[10px] text-gray-500 font-medium block">Chưa có ảnh mã QR chuyển khoản</span>
 
-                                    <!-- Bộ nút: Tải ảnh, Tạo tự động và Xóa -->
+                                    <!-- Bộ nút: Tải ảnh và Xóa -->
                                     <div class="flex items-center gap-1.5 pt-1 flex-wrap">
                                         <label class="cursor-pointer px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
                                             <i class="fa-solid fa-cloud-arrow-up"></i> Tải Ảnh Lên
                                             <input type="file" id="adminLiveStreamQrFileInput" accept="image/*" class="hidden" onchange="handleAdminLiveStreamQrUpload(event)">
                                         </label>
-                                        <button type="button" onclick="generateAutoVietQrForLiveStream()" title="Tự động tạo mã VietQR theo Số Tài Khoản & Ngân Hàng ở mục 2"
-                                            class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-2xs">
-                                            <i class="fa-solid fa-wand-magic-sparkles"></i> Tạo VietQR
-                                        </button>
                                         <button type="button" id="adminLiveStreamQrRemoveBtn" onclick="removeAdminLiveStreamQr()"
                                             class="hidden px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition items-center gap-1 cursor-pointer shadow-2xs">
                                             <i class="fa-solid fa-trash-can"></i> Xóa
@@ -4865,6 +4861,24 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Bottom Action Bar: Lưu Cấu Hình Live Stream Dưới Cùng -->
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center space-x-3 text-xs text-gray-600">
+                            <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-base flex-shrink-0 border border-rose-100">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">Hoàn tất chỉnh sửa cấu hình?</p>
+                                <p class="text-[11px] text-gray-500">Nhấn nút bên cạnh để lưu toàn bộ nội dung, tài khoản, ảnh QR và danh sách hoa nổi bật vào hệ thống.</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="saveLiveStreamConfig()"
+                            class="w-full sm:w-auto px-6 py-3 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 flex-shrink-0 cursor-pointer">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <span>Lưu Cấu Hình Live Stream</span>
+                        </button>
                     </div>
                 </section>
             </div>
@@ -6775,8 +6789,13 @@
 
                         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-3 bg-emerald-50/40 rounded-xl border border-emerald-100">
                             <!-- QR Code Box -->
-                            <div class="w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl border border-emerald-200 shadow-2xs flex-shrink-0 flex items-center justify-center">
-                                <img id="quickOrderQrImage" src="https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE" alt="Mã QR Chuyển Khoản" class="w-full h-full object-contain">
+                            <div id="quickOrderQrContainer" class="w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl border border-emerald-200 shadow-2xs flex-shrink-0 flex items-center justify-center">
+                                <img id="quickOrderQrImage" src="" alt="Mã QR Chuyển Khoản" class="w-full h-full object-contain hidden">
+                                <div id="quickOrderQrEmptyPlaceholder" class="flex flex-col items-center justify-center text-center p-2 text-gray-400">
+                                    <i class="fa-solid fa-qrcode text-3xl text-gray-300 mb-1.5"></i>
+                                    <span class="text-[11px] font-medium text-gray-500">Chưa có mã QR</span>
+                                    <span class="text-[10px] text-gray-400 mt-0.5">Vui lòng CK theo STK</span>
+                                </div>
                             </div>
 
                             <!-- Bank Details -->

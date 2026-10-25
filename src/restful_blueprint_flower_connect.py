@@ -1941,8 +1941,15 @@ def api_update_admin_banners():
 
 @flower_connect_api.route("/livestream-config", methods=["GET"])
 def api_get_public_livestream_config():
-    """Lấy cấu hình Live Stream & cờ bật/tắt Đặt hàng nhanh cho Storefront (ETag & Cache-Control)."""
-    return _build_cached_file_response("livestreamConfig.json", lambda: get_livestream_config(use_cache=True), max_age=30)
+    """Lấy cấu hình Live Stream & cờ bật/tắt Đặt hàng nhanh cho Storefront (Cập nhật thời gian thực)."""
+    resp = make_response(jsonify({
+        "success": True,
+        "data": get_livestream_config(use_cache=False)
+    }), 200)
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 
 @flower_connect_api.route("/admin/livestream-config", methods=["GET"])

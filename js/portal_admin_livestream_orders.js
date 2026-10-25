@@ -140,13 +140,24 @@ function updateLiveStreamControlUI(config) {
  * Bật/tắt nhanh phiên Live Stream trực tiếp trên tab Admin
  */
 export async function toggleLiveStreamQuickStatus(checkbox) {
-    const isEnabled = !!(checkbox && checkbox.checked);
+    if (!checkbox) return;
+    const isEnabled = !!checkbox.checked;
+    const confirmMessage = isEnabled
+        ? "BẬT PHIÊN LIVE STREAM & MỞ NHẬN ĐƠN NHANH?\n\n• Cổng đặt hàng (#quick-order) sẽ mở cho khách xem live chốt đơn và gửi ảnh bill.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn BẬT?"
+        : "TẮT PHIÊN LIVE STREAM & ĐÓNG NHẬN ĐƠN?\n\n• Cổng đặt hàng (#quick-order) sẽ tạm dừng nhận đơn mới.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn TẮT?";
+
+    if (!window.confirm(confirmMessage)) {
+        checkbox.checked = !isEnabled;
+        return;
+    }
+
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
-    lockScreen();
+    lockScreen(isEnabled ? "Đang BẬT phiên Live Stream & mở cổng đặt đơn..." : "Đang TẮT phiên Live Stream...");
     try {
         const payload = Object.assign({}, currentLiveStreamConfig || {}, {
-            enableQuickOrder: isEnabled
+            enableQuickOrder: isEnabled,
+            enabled: isEnabled
         });
 
         const res = await fetch(`${API_BASE}/admin/livestream-config`, {
@@ -165,6 +176,11 @@ export async function toggleLiveStreamQuickStatus(checkbox) {
 
         currentLiveStreamConfig = json.data;
         updateLiveStreamControlUI(json.data);
+
+        // Đồng bộ với toggle ở tab Cấu hình hệ thống nếu đang có
+        const sysToggle = document.getElementById("livestreamQuickOrderToggle");
+        if (sysToggle) sysToggle.checked = isEnabled;
+
         notifyUser(
             isEnabled
                 ? "🟢 Đã BẬT nhận đơn Live Stream! Link #quick-order đã sẵn sàng cho khách chốt."

@@ -2939,7 +2939,15 @@ async function openQuickOrderModal() {
         if (loadingState) loadingState.classList.add("hidden");
 
         if (!isEnabled) {
-            // Cờ chưa bật: hiển thị thông báo tạm đóng
+            // Cờ chưa bật: hiển thị thông báo tạm đóng & gỡ bỏ hash #quick-order khỏi thanh địa chỉ để không tự động mở lại
+            if (typeof window !== "undefined" && window.location.hash) {
+                const h = window.location.hash.toLowerCase();
+                if (h === "#quick-order" || h === "#livestream" || h === "#live-stream") {
+                    try {
+                        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+                    } catch (_) { }
+                }
+            }
             if (closedContainer) closedContainer.classList.remove("hidden");
         } else {
             // Cờ đang bật: hiển thị form đặt hàng nhanh
@@ -3101,36 +3109,17 @@ function updateQuickOrderQrCode() {
     const bInfo = (currentLiveConfig && currentLiveConfig.bankInfo) || {};
     const customQr = (currentLiveConfig && currentLiveConfig.qrCodeImage) || bInfo.qrCodeImage || "";
 
-    // Nếu admin đã tải lên ảnh mã QR tùy chỉnh
+    // Chỉ hiển thị ảnh mã QR khi admin đã cung cấp/tải ảnh lên cấu hình
     if (customQr) {
         qrImg.src = customQr;
-        return;
+        qrImg.classList.remove("hidden");
+        if (qrEmpty) qrEmpty.classList.add("hidden");
+    } else {
+        // Nếu không có mã QR: TUYỆT ĐỐI KHÔNG tự ý sinh/tạo hình ảnh mã QR
+        qrImg.removeAttribute("src");
+        qrImg.classList.add("hidden");
+        if (qrEmpty) qrEmpty.classList.remove("hidden");
     }
-
-    // Ngược lại, tạo VietQR tự động dựa trên ngân hàng, số tài khoản, số tiền và SĐT
-    const bankName = (bInfo.bankName || "Vietcombank").trim();
-    const bankAccount = (bInfo.accountNumber || "0976491322").trim();
-    const amountInput = document.getElementById("quickOrderAmount");
-    const rawAmount = amountInput ? amountInput.value.replace(/\D/g, "") : "";
-    const amount = rawAmount ? parseInt(rawAmount, 10) : 0;
-
-    const phoneInput = document.getElementById("quickOrderRecipientPhone");
-    const phone = phoneInput ? phoneInput.value.trim() : "";
-    const content = phone ? `LIVE ${phone}` : "DAT HOA LIVE";
-
-    // Chuẩn hóa mã ngân hàng (Vietcombank -> VCB, Techcombank -> TCB, MBBank -> MB, v.v.)
-    let bankCode = bankName.toUpperCase();
-    if (bankCode.includes("VIETCOMBANK") || bankCode === "VCB") bankCode = "VCB";
-    else if (bankCode.includes("TECHCOMBANK") || bankCode === "TCB") bankCode = "TCB";
-    else if (bankCode.includes("MBBANK") || bankCode.includes("QUÂN ĐỘI") || bankCode === "MB") bankCode = "MB";
-    else if (bankCode.includes("ACB")) bankCode = "ACB";
-    else if (bankCode.includes("BIDV")) bankCode = "BIDV";
-    else if (bankCode.includes("VIETINBANK") || bankCode === "CTG") bankCode = "ICB";
-    else if (bankCode.includes("VPBANK")) bankCode = "VPB";
-    else if (bankCode.includes("TPBANK")) bankCode = "TPB";
-
-    const vietQrUrl = `https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(content)}`;
-    qrImg.src = vietQrUrl;
 }
 
 /**
@@ -11761,6 +11750,7 @@ async function renderLiveStreamConfig(config) {
 
     // Cập nhật xem trước mã QR chuyển khoản ngân hàng
     const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrEmpty = document.getElementById("adminLiveStreamQrEmpty");
     const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
     const qrStatus = document.getElementById("adminLiveStreamQrStatus");
     const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
@@ -11771,16 +11761,21 @@ async function renderLiveStreamConfig(config) {
     if (qrPreview) {
         if (qrImg) {
             qrPreview.src = qrImg;
+            qrPreview.classList.remove("hidden");
+            if (qrEmpty) qrEmpty.classList.add("hidden");
             if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
             if (qrStatus) {
-                qrStatus.textContent = qrImg.startsWith("data:") ? "Mã QR đã tải lên (Tệp ảnh)" : "Mã QR chuyển khoản riêng (URL / Đã tải)";
+                qrStatus.textContent = qrImg.startsWith("data:") ? "Mã QR đã tải lên (Tệp ảnh)" : "Mã QR chuyển khoản (URL / Đã tải)";
                 qrStatus.className = "text-[10px] text-emerald-600 font-bold block mt-1";
             }
         } else {
-            qrPreview.src = "https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE";
+            // Không có mã QR: TUYỆT ĐỐI KHÔNG tự ý sinh/tạo hình ảnh mã QR
+            qrPreview.removeAttribute("src");
+            qrPreview.classList.add("hidden");
+            if (qrEmpty) qrEmpty.classList.remove("hidden");
             if (qrRemoveBtn) qrRemoveBtn.classList.add("hidden");
             if (qrStatus) {
-                qrStatus.textContent = "Mã VietQR tự động theo số tài khoản";
+                qrStatus.textContent = "Chưa có ảnh mã QR chuyển khoản";
                 qrStatus.className = "text-[10px] text-gray-500 font-medium block mt-1";
             }
         }
@@ -11866,13 +11861,19 @@ function toggleAdminLiveStreamFeaturedProduct(productId, isChecked) {
 function handleAdminLiveStreamQrUrlInput(url) {
     const cleanUrl = (url || "").trim();
     adminLiveStreamConfig.qrCodeImage = cleanUrl;
+    if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = cleanUrl;
 
     const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrEmpty = document.getElementById("adminLiveStreamQrEmpty");
     const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
     const qrStatus = document.getElementById("adminLiveStreamQrStatus");
 
     if (cleanUrl) {
-        if (qrPreview) qrPreview.src = cleanUrl;
+        if (qrPreview) {
+            qrPreview.src = cleanUrl;
+            qrPreview.classList.remove("hidden");
+        }
+        if (qrEmpty) qrEmpty.classList.add("hidden");
         if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
         if (qrStatus) {
             qrStatus.textContent = "Mã QR từ đường dẫn URL (Hợp lệ)";
@@ -11881,40 +11882,6 @@ function handleAdminLiveStreamQrUrlInput(url) {
     } else {
         removeAdminLiveStreamQr();
     }
-}
-
-/**
- * Tiện ích: Tự động sinh link ảnh VietQR dựa trên Số tài khoản & Ngân hàng ở mục 2
- */
-function generateAutoVietQrForLiveStream() {
-    const bankNameInput = document.getElementById("livestreamBankNameInput");
-    const bankAccInput = document.getElementById("livestreamBankAccountInput");
-
-    const accNum = bankAccInput ? bankAccInput.value.trim() : "";
-    let rawBank = bankNameInput ? bankNameInput.value.trim() : "VCB";
-
-    if (!accNum) {
-        alert("Vui lòng nhập Số Tài Khoản tại mục '2. Tài Khoản Nhận Chuyển Khoản' trước!");
-        if (bankAccInput) bankAccInput.focus();
-        return;
-    }
-
-    // Trích xuất mã ngân hàng (VD: Vietcombank (VCB) -> VCB)
-    let bankCode = "VCB";
-    const match = rawBank.match(/\((.*?)\)/);
-    if (match && match[1]) {
-        bankCode = match[1].trim();
-    } else if (rawBank) {
-        bankCode = rawBank.replace(/\s+/g, "").toUpperCase();
-    }
-
-    const autoUrl = `https://img.vietqr.io/image/${encodeURIComponent(bankCode)}-${encodeURIComponent(accNum)}-compact2.png?amount=0&addInfo=LIVE`;
-
-    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
-    if (qrUrlInput) qrUrlInput.value = autoUrl;
-
-    handleAdminLiveStreamQrUrlInput(autoUrl);
-    notifyUser(`Đã tạo mã VietQR tự động (${bankCode} - ${accNum}) thành công!`, "success");
 }
 
 /**
@@ -11947,15 +11914,21 @@ async function handleAdminLiveStreamQrUpload(event) {
 
         const imgUrl = json.data && json.data.url ? json.data.url : "";
         adminLiveStreamConfig.qrCodeImage = imgUrl;
+        if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = imgUrl;
 
         // Cập nhật ô nhập URL và xem trước ngay lập tức
         const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
         if (qrUrlInput) qrUrlInput.value = imgUrl;
 
         const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+        const qrEmpty = document.getElementById("adminLiveStreamQrEmpty");
         const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
         const qrStatus = document.getElementById("adminLiveStreamQrStatus");
-        if (qrPreview) qrPreview.src = imgUrl;
+        if (qrPreview) {
+            qrPreview.src = imgUrl;
+            qrPreview.classList.remove("hidden");
+        }
+        if (qrEmpty) qrEmpty.classList.add("hidden");
         if (qrRemoveBtn) qrRemoveBtn.classList.remove("hidden");
         if (qrStatus) {
             qrStatus.textContent = "Mã QR đã tải lên máy chủ";
@@ -11972,23 +11945,98 @@ async function handleAdminLiveStreamQrUpload(event) {
 }
 
 /**
- * Xóa ảnh mã QR riêng để dùng VietQR tự động
+ * Xóa ảnh mã QR chuyển khoản (không tự ý sinh ảnh thay thế)
  */
 function removeAdminLiveStreamQr() {
     adminLiveStreamConfig.qrCodeImage = "";
+    if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = "";
     const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
     const qrPreview = document.getElementById("adminLiveStreamQrPreview");
+    const qrEmpty = document.getElementById("adminLiveStreamQrEmpty");
     const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
     const qrStatus = document.getElementById("adminLiveStreamQrStatus");
 
     if (qrUrlInput) qrUrlInput.value = "";
-    if (qrPreview) qrPreview.src = "https://img.vietqr.io/image/VCB-0976491322-compact2.png?amount=0&addInfo=LIVE";
+    if (qrPreview) {
+        qrPreview.removeAttribute("src");
+        qrPreview.classList.add("hidden");
+    }
+    if (qrEmpty) qrEmpty.classList.remove("hidden");
     if (qrRemoveBtn) qrRemoveBtn.classList.add("hidden");
     if (qrStatus) {
-        qrStatus.textContent = "Mã VietQR tự động theo số tài khoản";
+        qrStatus.textContent = "Chưa có ảnh mã QR chuyển khoản";
         qrStatus.className = "text-[10px] text-gray-500 font-medium block mt-1";
     }
-    notifyUser("Đã gỡ ảnh QR riêng, chuyển sang dùng mã VietQR tự động.", "info");
+    notifyUser("Đã gỡ ảnh mã QR chuyển khoản.", "info");
+}
+
+/**
+ * Xử lý bật/tắt cờ Live Stream có Dialog xác nhận và tự động lưu ngay xuống máy chủ
+ */
+async function handleLiveStreamQuickToggleConfirm(checkbox) {
+    if (!checkbox) checkbox = document.getElementById("livestreamQuickOrderToggle");
+    if (!checkbox) return;
+
+    const isEnabling = !!checkbox.checked;
+    const confirmMessage = isEnabling
+        ? "BẬT PHIÊN LIVE STREAM & MỞ NHẬN ĐƠN NHANH?\n\n• Cổng đặt hàng (#quick-order) sẽ mở cho khách xem live chốt đơn và gửi ảnh bill.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn BẬT?"
+        : "TẮT PHIÊN LIVE STREAM & ĐÓNG NHẬN ĐƠN?\n\n• Cổng đặt hàng (#quick-order) sẽ tạm dừng nhận đơn mới.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn TẮT?";
+
+    const confirmed = window.confirm(confirmMessage);
+    if (!confirmed) {
+        checkbox.checked = !isEnabling;
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen(isEnabling ? "Đang BẬT phiên Live Stream & mở cổng đặt đơn..." : "Đang TẮT phiên Live Stream...");
+
+    try {
+        const payload = Object.assign({}, adminLiveStreamConfig || {}, {
+            enableQuickOrder: isEnabling,
+            enabled: isEnabling
+        });
+
+        const res = await fetch(`${API_BASE}/admin/livestream-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Không thể cập nhật trạng thái Live Stream");
+
+        adminLiveStreamConfig = json.data;
+        await renderLiveStreamConfig(adminLiveStreamConfig);
+
+        // Đồng bộ với toggle và badge ở tab Đơn Live Stream (nếu có trên DOM)
+        const tabLiveToggle = document.getElementById("liveStreamQuickToggle");
+        if (tabLiveToggle) tabLiveToggle.checked = isEnabling;
+        const tabLiveBadge = document.getElementById("liveStreamStatusBadge");
+        if (tabLiveBadge) {
+            if (isEnabling) {
+                tabLiveBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-2xs";
+                tabLiveBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> <i class="fa-solid fa-signal"></i> ĐANG PHÁT SÓNG (BẬT CHỐT ĐƠN)`;
+            } else {
+                tabLiveBadge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200";
+                tabLiveBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-gray-400"></span> <i class="fa-solid fa-pause"></i> ĐÃ TẠM DỪNG (TẮT CHỐT ĐƠN)`;
+            }
+        }
+
+        notifyUser(
+            isEnabling
+                ? "🟢 Đã BẬT phiên Live Stream & mở cổng đặt nhanh thành công!"
+                : "🔴 Đã TẮT phiên Live Stream & tạm dừng nhận đơn thành công!",
+            "success"
+        );
+    } catch (e) {
+        checkbox.checked = !isEnabling;
+        notifyUser("Lỗi cập nhật Live Stream: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
 }
 
 async function saveLiveStreamConfig() {
@@ -12000,9 +12048,12 @@ async function saveLiveStreamConfig() {
     const bankAccInput = document.getElementById("livestreamBankAccountInput");
     const bankOwnerInput = document.getElementById("livestreamBankOwnerInput");
 
+    // Giữ nguyên trạng thái cờ live hiện tại của phiên
+    const isLive = toggle ? !!toggle.checked : !!(adminLiveStreamConfig?.enableQuickOrder || adminLiveStreamConfig?.enabled);
+
     const payload = {
-        enableQuickOrder: toggle ? !!toggle.checked : false,
-        enabled: toggle ? !!toggle.checked : false,
+        enableQuickOrder: isLive,
+        enabled: isLive,
         title: titleInput ? titleInput.value.trim() : "",
         description: descInput ? descInput.value.trim() : "",
         qrCodeImage: adminLiveStreamConfig.qrCodeImage || "",
@@ -12015,7 +12066,7 @@ async function saveLiveStreamConfig() {
         }
     };
 
-    lockScreen("Đang lưu cấu hình Live Stream & Mã QR...");
+    lockScreen("Đang lưu thông tin cấu hình Live Stream (Tiêu đề, STK, Mã QR, Mẫu hoa ghim)...");
     try {
         const res = await fetch(`${API_BASE}/admin/livestream-config`, {
             method: "PUT",
@@ -12031,9 +12082,7 @@ async function saveLiveStreamConfig() {
         adminLiveStreamConfig = json.data;
         await renderLiveStreamConfig(adminLiveStreamConfig);
         notifyUser(
-            adminLiveStreamConfig.enableQuickOrder
-                ? "Đã BẬT cờ Đặt Hàng Nhanh Live Stream thành công! Khách truy cập link sẽ điền form đặt nhanh."
-                : "Đã TẮT cờ Đặt Hàng Nhanh Live Stream thành công!",
+            "Đã lưu thông tin cấu hình Live Stream (Tiêu đề, STK, QR, Bó hoa ghim) thành công!",
             "success"
         );
     } catch (e) {
@@ -13198,6 +13247,7 @@ if (typeof window !== "undefined") {
     window.loadAdminAddonConfig = loadAdminAddonConfig;
     window.saveAddonConfig = saveAddonConfig;
     window.loadAdminLiveStreamConfig = loadAdminLiveStreamConfig;
+    window.handleLiveStreamQuickToggleConfirm = handleLiveStreamQuickToggleConfirm;
     window.saveLiveStreamConfig = saveLiveStreamConfig;
     window.renderLiveStreamConfig = renderLiveStreamConfig;
     window.copyQuickOrderLink = copyQuickOrderLink;
@@ -13734,13 +13784,24 @@ function updateLiveStreamControlUI(config) {
  * Bật/tắt nhanh phiên Live Stream trực tiếp trên tab Admin
  */
 async function toggleLiveStreamQuickStatus(checkbox) {
-    const isEnabled = !!(checkbox && checkbox.checked);
+    if (!checkbox) return;
+    const isEnabled = !!checkbox.checked;
+    const confirmMessage = isEnabled
+        ? "BẬT PHIÊN LIVE STREAM & MỞ NHẬN ĐƠN NHANH?\n\n• Cổng đặt hàng (#quick-order) sẽ mở cho khách xem live chốt đơn và gửi ảnh bill.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn BẬT?"
+        : "TẮT PHIÊN LIVE STREAM & ĐÓNG NHẬN ĐƠN?\n\n• Cổng đặt hàng (#quick-order) sẽ tạm dừng nhận đơn mới.\n• Trạng thái sẽ được lưu ngay lập tức xuống hệ thống.\n\nBạn có chắc chắn muốn TẮT?";
+
+    if (!window.confirm(confirmMessage)) {
+        checkbox.checked = !isEnabled;
+        return;
+    }
+
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
 
-    lockScreen();
+    lockScreen(isEnabled ? "Đang BẬT phiên Live Stream & mở cổng đặt đơn..." : "Đang TẮT phiên Live Stream...");
     try {
         const payload = Object.assign({}, currentLiveStreamConfig || {}, {
-            enableQuickOrder: isEnabled
+            enableQuickOrder: isEnabled,
+            enabled: isEnabled
         });
 
         const res = await fetch(`${API_BASE}/admin/livestream-config`, {
@@ -13759,6 +13820,11 @@ async function toggleLiveStreamQuickStatus(checkbox) {
 
         currentLiveStreamConfig = json.data;
         updateLiveStreamControlUI(json.data);
+
+        // Đồng bộ với toggle ở tab Cấu hình hệ thống nếu đang có
+        const sysToggle = document.getElementById("livestreamQuickOrderToggle");
+        if (sysToggle) sysToggle.checked = isEnabled;
+
         notifyUser(
             isEnabled
                 ? "🟢 Đã BẬT nhận đơn Live Stream! Link #quick-order đã sẵn sàng cho khách chốt."
