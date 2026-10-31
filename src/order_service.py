@@ -631,6 +631,8 @@ def create_livestream_quick_order(
             "transferContent": order_code
         },
         "paymentProofImage": proof_url,
+        "shareHash": f"#order={order_code}",
+        "comments": [],
         "history": [
             {
                 "status": "pending",
@@ -809,11 +811,90 @@ def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
             "transferredAmount": o.get("transferredAmount") or payment.get("transferredAmount") or payment.get("amountPaid") or 0,
             "paymentProofImage": o.get("paymentProofImage") or payment.get("proofImage") or "",
             "flowerPhotos": flower_photos,
+            "shareHash": f"#order={o.get('orderCode') or o.get('id')}",
+            "comments": o.get("comments") or [],
+            "canComment": st not in ["delivered", "completed", "cancelled", "returned"],
             "history": o.get("history") or []
         }
         public_results.append(public_item)
 
     return public_results
+
+def add_order_customer_comment(
+    order_id_or_code: str,
+    comment_data: Dict[str, Any]
+) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Khách hàng gửi bình luận / ghi chú thay đổi thông tin trực tiếp trên đơn hàng (qua link #hash hoặc tra cứu):
+    - Chỉ cho phép khi đơn hàng CHƯA giao xong (status không thuộc delivered, completed, cancelled, returned).
+    - Sau khi đơn hàng đã giao xong (delivered / completed), chức năng bình luận tự động đóng lại.
+    """
+    if not order_id_or_code or not str(order_id_or_code).strip():
+        return False, None, "Thiếu mã đơn hàng để gửi bình luận"
+
+    clean_key = str(order_id_or_code).strip()
+    order = get_order_by_id(clean_key)
+    if not order:
+        return False, None, f"Không tìm thấy đơn hàng '{clean_key}'"
+
+    cur_status = str(order.get("status") or "pending").strip().lower()
+    if cur_status in ["delivered", "completed", "cancelled", "returned"]:
+        return False, None, "Đơn hàng đã giao hoàn tất (hoặc đã đóng), chức năng bình luận thay đổi thông tin đã kết thúc"
+
+    if not isinstance(comment_data, dict):
+        comment_data = {}
+
+    message = str(
+        comment_data.get("message")
+        or comment_data.get("comment")
+        or comment_data.get("content")
+        or ""
+    ).strip()
+    if not message:
+        return False, None, "Vui lòng nhập nội dung bình luận / thông tin cần thay đổi"
+
+    recipient = order.get("recipient") or {}
+    author = str(
+        comment_data.get("authorName")
+        or comment_data.get("author")
+        or recipient.get("name")
+        or order.get("customerName")
+        or "Khách hàng"
+    ).strip()
+    role = str(comment_data.get("role") or "customer").strip()
+    now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    comment_entry = {
+        "id": f"cmt_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:4]}",
+        "author": author,
+        "role": role,
+        "message": message,
+        "createdAt": now_iso
+    }
+
+    comments = order.get("comments")
+    if not isinstance(comments, list):
+        comments = []
+    comments.append(comment_entry)
+    order["comments"] = comments
+    order["updatedAt"] = now_iso
+
+    history = order.get("history")
+    if not isinstance(history, list):
+        history = []
+    history.append({
+        "status": cur_status,
+        "updatedAt": now_iso,
+        "note": f"Khách bình luận / báo thay đổi thông tin: {message}",
+        "updatedBy": author
+    })
+    order["history"] = history
+
+    if not save_order(order):
+        return False, None, "Không thể lưu bình luận vào đơn hàng"
+
+    sync_order_to_user_folder(order)
+    return True, order, None
 
 
 def get_order_updated_at(order: Dict[str, Any]) -> str:

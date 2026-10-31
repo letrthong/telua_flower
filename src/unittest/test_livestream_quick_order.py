@@ -853,6 +853,7 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
 
         # Kiểm tra các hàm Sort và Persistence trong portal_admin_livestream_orders.js
         self.assertIn("export function getLiveOrderDeliverySortKey(", live_js)
+        self.assertIn("export function getLiveOrderTimeOnlySortKey(", live_js)
         self.assertIn("export function sortLiveOrdersList(", live_js)
         self.assertIn("export function handleLiveOrderSortChange(", live_js)
         self.assertIn("export function toggleLiveOrderColumnSort(", live_js)
@@ -862,6 +863,20 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         self.assertIn("export function getLiveOrderRowStatusLocal(", live_js)
         self.assertIn("telua_live_orders_filter_state_v1", live_js)
         self.assertIn("telua_live_order_row_status_v1", live_js)
+        self.assertIn("export function toggleLiveStreamHeaderStats(", live_js)
+        self.assertIn("export function restoreLiveStreamHeaderStatsVisibility(", live_js)
+        self.assertIn("telua_live_header_stats_visible_v1", live_js)
+
+        for rel_html in ["index.html", os.path.join("config", "index.html")]:
+            html_path = os.path.join(root_dir, rel_html)
+            with open(html_path, "r", encoding="utf-8") as f:
+                html_content = f.read()
+            self.assertIn('id="liveStreamHeaderAndStatsContainer" class="space-y-4 hidden"', html_content)
+            self.assertIn('id="btnToggleLiveStreamHeaderStats"', html_content)
+            self.assertIn('id="sortIconLive_deliveryDate"', html_content)
+            self.assertIn('id="sortIconLive_deliveryTime"', html_content)
+            self.assertIn("toggleLiveOrderColumnSort('deliveryDate')", html_content)
+            self.assertIn("toggleLiveOrderColumnSort('deliveryTime')", html_content)
 
         # Tạo 3 đơn với các khung giờ 10:00, 08:00, 09:00 và kiểm tra cập nhật status
         created_ids = []

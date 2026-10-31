@@ -3,10 +3,10 @@
     "id": "ord_1793443570_408e13",
     "orderCode": "LIVE-261031-D808",
     "createdAt": "2026-10-31T10:46:10Z",
-    "updatedAt": "2026-10-31T10:46:10Z",
+    "updatedAt": "2026-10-31T16:16:28Z",
     "orderDate": "2026-10-31",
     "livestreamDate": "2026-10-31",
-    "status": "pending",
+    "status": "confirmed",
     "source": "livestream_quick_order",
     "orderType": "",
     "branchId": "admin",
@@ -65,7 +65,7 @@
     "customerId": "",
     "note": "",
     "notes": "",
-    "detailPath": "orders/admin/2026_10/pending/ord_1793443570_408e13.json"
+    "detailPath": "orders/admin/2026_10/confirmed/ord_1793443570_408e13.json"
   },
   {
     "id": "ord_1792934463_e8e11a",

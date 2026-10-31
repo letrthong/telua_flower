@@ -12,7 +12,78 @@ export let currentLiveOrderSort = "delivery_asc";
 
 const LIVE_FILTER_STORAGE_KEY = "telua_live_orders_filter_state_v1";
 const LIVE_ROW_STATUS_STORAGE_KEY = "telua_live_order_row_status_v1";
+const LIVE_HEADER_STATS_VISIBLE_KEY = "telua_live_header_stats_visible_v1";
 let _liveFilterStateRestored = false;
+
+/**
+ * Áp dụng trạng thái Ẩn/Hiện của Bàn Điều Khiển & Thống Kê Live Stream lên giao diện
+ */
+export function applyLiveStreamHeaderStatsVisibility(isVisible) {
+    const container = document.getElementById("liveStreamHeaderAndStatsContainer");
+    const btn = document.getElementById("btnToggleLiveStreamHeaderStats");
+    const icon = document.getElementById("iconToggleLiveStreamHeaderStats");
+    const label = document.getElementById("labelToggleLiveStreamHeaderStats");
+
+    if (container) {
+        if (isVisible) {
+            container.classList.remove("hidden");
+        } else {
+            container.classList.add("hidden");
+        }
+    }
+
+    if (icon) {
+        icon.className = isVisible
+            ? "fa-regular fa-eye-slash text-gray-600"
+            : "fa-regular fa-eye text-rose-600";
+    }
+    if (label) {
+        label.textContent = isVisible
+            ? "Ẩn Bàn Điều Khiển & Thống Kê"
+            : "Hiện Bàn Điều Khiển & Thống Kê";
+    }
+    if (btn) {
+        btn.className = isVisible
+            ? "px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            : "px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer";
+    }
+}
+
+/**
+ * Khôi phục cấu hình Ẩn/Hiện Bàn Điều Khiển & Thống Kê từ trình duyệt (Mặc định: false = Ẩn)
+ */
+export function restoreLiveStreamHeaderStatsVisibility() {
+    let isVisible = false;
+    if (typeof localStorage !== "undefined") {
+        try {
+            const saved = localStorage.getItem(LIVE_HEADER_STATS_VISIBLE_KEY);
+            // Mặc định là false (hide) nếu chưa có trong localStorage
+            isVisible = (saved === "true" || saved === "1");
+        } catch (e) {
+            isVisible = false;
+        }
+    }
+    applyLiveStreamHeaderStatsVisibility(isVisible);
+    return isVisible;
+}
+
+/**
+ * Bật/Tắt (Hiện/Ẩn) Bàn Điều Khiển & Thống Kê Live Stream và lưu cấu hình vào localStorage
+ */
+export function toggleLiveStreamHeaderStats(forceVisible = undefined) {
+    const container = document.getElementById("liveStreamHeaderAndStatsContainer");
+    const currentlyVisible = container ? !container.classList.contains("hidden") : false;
+    const nextVisible = (typeof forceVisible === "boolean") ? forceVisible : !currentlyVisible;
+
+    applyLiveStreamHeaderStatsVisibility(nextVisible);
+
+    if (typeof localStorage !== "undefined") {
+        try {
+            localStorage.setItem(LIVE_HEADER_STATS_VISIBLE_KEY, nextVisible ? "true" : "false");
+        } catch (e) { }
+    }
+    return nextVisible;
+}
 
 /**
  * Lưu trạng thái các selectBox lọc & sắp xếp của Bàn Điều Khiển Live Stream vào trình duyệt (localStorage)
@@ -145,7 +216,31 @@ export function getLiveOrderDeliverySortKey(order) {
 }
 
 /**
- * Sắp xếp danh sách đơn Live Stream theo chế độ được chọn
+ * Tạo khóa sắp xếp ưu tiên theo Cột Giờ Nhận (HH:MM trước, sau đó tới Ngày Nhận YYYY-MM-DD)
+ */
+export function getLiveOrderTimeOnlySortKey(order) {
+    if (!order || typeof order !== "object") return "99:99_9999-99-99";
+    const rawDate = (order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "";
+    const datePart = (rawDate && String(rawDate).trim().length >= 10)
+        ? String(rawDate).trim().slice(0, 10)
+        : "9999-99-99";
+
+    const rawSlot = String((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "").trim();
+    let timePart = "23:59";
+    if (!rawSlot || rawSlot.toLowerCase().includes("giao ngay") || rawSlot.toLowerCase().includes("sớm nhất")) {
+        timePart = "00:00";
+    } else {
+        const m = rawSlot.match(/(\d{1,2}):(\d{2})/);
+        if (m) {
+            timePart = `${String(m[1]).padStart(2, "0")}:${m[2]}`;
+        }
+    }
+    const createdPart = String(order.createdAt || "");
+    return `${timePart}_${datePart}_${createdPart}`;
+}
+
+/**
+ * Sắp xếp danh sách đơn Live Stream theo chế độ được chọn (hỗ trợ cả cột Ngày Nhận và cột Giờ Nhận độc lập)
  */
 export function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
     if (!Array.isArray(orders)) return [];
@@ -153,10 +248,16 @@ export function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
     const mode = sortMode || "delivery_asc";
 
     list.sort((a, b) => {
-        if (mode === "delivery_asc" || mode === "delivery_desc") {
+        if (mode === "delivery_asc" || mode === "delivery_desc" || mode === "deliveryDate_asc" || mode === "deliveryDate_desc") {
             const ka = getLiveOrderDeliverySortKey(a);
             const kb = getLiveOrderDeliverySortKey(b);
-            return mode === "delivery_asc" ? ka.localeCompare(kb) : kb.localeCompare(ka);
+            const isAsc = (mode === "delivery_asc" || mode === "deliveryDate_asc");
+            return isAsc ? ka.localeCompare(kb) : kb.localeCompare(ka);
+        }
+        if (mode === "deliveryTime_asc" || mode === "deliveryTime_desc") {
+            const ka = getLiveOrderTimeOnlySortKey(a);
+            const kb = getLiveOrderTimeOnlySortKey(b);
+            return mode === "deliveryTime_asc" ? ka.localeCompare(kb) : kb.localeCompare(ka);
         }
         if (mode === "amount_asc" || mode === "amount_desc") {
             const aa = Number(a.totalAmount) || Number(a.financials?.totalAmount) || Number(a.transferredAmount) || 0;
@@ -175,14 +276,18 @@ export function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
 function updateLiveSortHeaderIcons() {
     const map = {
         created: document.getElementById("sortIconLive_created"),
+        deliveryDate: document.getElementById("sortIconLive_deliveryDate"),
+        deliveryTime: document.getElementById("sortIconLive_deliveryTime"),
         delivery: document.getElementById("sortIconLive_delivery"),
         amount: document.getElementById("sortIconLive_amount")
     };
     Object.entries(map).forEach(([col, iconEl]) => {
         if (!iconEl) return;
-        if (currentLiveOrderSort === `${col}_asc`) {
+        const isAsc = (currentLiveOrderSort === `${col}_asc`) || (col === "deliveryDate" && currentLiveOrderSort === "delivery_asc");
+        const isDesc = (currentLiveOrderSort === `${col}_desc`) || (col === "deliveryDate" && currentLiveOrderSort === "delivery_desc");
+        if (isAsc) {
             iconEl.className = "fa-solid fa-sort-up text-[10px] ml-0.5 text-rose-600";
-        } else if (currentLiveOrderSort === `${col}_desc`) {
+        } else if (isDesc) {
             iconEl.className = "fa-solid fa-sort-down text-[10px] ml-0.5 text-rose-600";
         } else {
             iconEl.className = "fa-solid fa-sort text-[10px] ml-0.5 text-gray-400";
@@ -231,6 +336,9 @@ function getLiveStatusMeta(status, map) {
 export async function loadLiveStreamOrders() {
     const tbody = document.getElementById("adminLiveOrdersTableBody");
     if (!tbody) return;
+
+    // Khôi phục trạng thái Ẩn/Hiện Bàn Điều Khiển & Thống Kê (mặc định: Ẩn)
+    restoreLiveStreamHeaderStatsVisibility();
 
     // Khôi phục trạng thái selectBox từ localStorage ở lần nạp đầu tiên sau khi refresh trang,
     // và lưu lại trạng thái mới nhất ở các lần người dùng đổi bộ lọc
@@ -473,7 +581,7 @@ export function renderLiveOrdersTable(orders) {
     updateLiveSortHeaderIcons();
 
     if (!Array.isArray(orders) || orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-gray-400">
+        tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-gray-400">
             <i class="fa-solid fa-video-slash text-2xl text-gray-300 mb-2 block"></i>
             Chưa có đơn hàng nào từ Live Stream phù hợp với bộ lọc hiện tại.
         </td></tr>`;
@@ -579,16 +687,22 @@ export function renderLiveOrdersTable(orders) {
                     ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}
                 </td>
 
-                <td class="p-3 align-top bg-rose-50/20">
+                <td class="p-3 align-top bg-rose-50/15">
                     <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-rose-200 text-rose-700 text-[10px] font-bold shadow-2xs">
                         <i class="fa-regular fa-calendar-check text-[9px]"></i>
                         <span>${formatLiveReceivingDateLabel((order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "")}</span>
                     </div>
-                    <div class="text-[11px] font-extrabold text-emerald-700 mt-1 flex items-center gap-1">
+                    <div class="text-[10px] text-gray-400 font-mono mt-1">
+                        ${(order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || ""}
+                    </div>
+                </td>
+
+                <td class="p-3 align-top bg-emerald-50/15">
+                    <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-emerald-700 text-[11px] font-extrabold shadow-2xs">
                         <i class="fa-regular fa-clock text-[10px] text-emerald-600"></i>
                         <span>${(order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "⚡ Giao ngay (Sớm nhất)"}</span>
                     </div>
-                    <div class="text-[10px] text-gray-500 mt-0.5">
+                    <div class="text-[10px] text-gray-500 mt-1">
                         ${((order.delivery && order.delivery.fulfillmentType === 'pickup') || order.fulfillmentType === 'pickup' || String(deliveryAddress).includes('Nhận trực tiếp tại Shop'))
                             ? '<span class="text-emerald-700 font-bold"><i class="fa-solid fa-store text-[9px]"></i> Nhận tại Shop</span>'
                             : '<span><i class="fa-solid fa-truck-fast text-[9px] text-gray-400"></i> Giao tận nơi</span>'}
@@ -705,12 +819,19 @@ if (typeof window !== "undefined") {
     window.restoreLiveOrderFilterState = restoreLiveOrderFilterState;
     window.saveLiveOrderRowStatusLocal = saveLiveOrderRowStatusLocal;
     window.getLiveOrderRowStatusLocal = getLiveOrderRowStatusLocal;
+    window.toggleLiveStreamHeaderStats = toggleLiveStreamHeaderStats;
+    window.restoreLiveStreamHeaderStatsVisibility = restoreLiveStreamHeaderStatsVisibility;
+    window.applyLiveStreamHeaderStatsVisibility = applyLiveStreamHeaderStatsVisibility;
 
     if (typeof document !== "undefined") {
         if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", () => restoreLiveOrderFilterState());
+            document.addEventListener("DOMContentLoaded", () => {
+                restoreLiveOrderFilterState();
+                restoreLiveStreamHeaderStatsVisibility();
+            });
         } else {
             restoreLiveOrderFilterState();
+            restoreLiveStreamHeaderStatsVisibility();
         }
     }
 }

@@ -2111,6 +2111,7 @@ def build_order_shortcut_item(order: Dict[str, Any]) -> Dict[str, Any]:
         "customerId": order.get("customerId") or order.get("userId") or "",
         "note": order.get("note") or order.get("notes") or "",
         "notes": order.get("notes") or order.get("note") or "",
+        "comments": order.get("comments") or [],
         "detailPath": detail_rel_path
     }
 
@@ -3612,7 +3613,8 @@ def sync_order_to_daily_livestream(order: Dict[str, Any]) -> bool:
         "branchName": order.get("branchName") or "Trung Tâm (Admin)",
         "shipperName": (order.get("delivery") or {}).get("shipperName") or "",
         "shipperPhone": (order.get("delivery") or {}).get("shipperPhone") or "",
-        "notes": order.get("notes") or order.get("cardMessage") or ""
+        "notes": order.get("notes") or order.get("cardMessage") or "",
+        "comments": order.get("comments") or []
     }
 
     found = False

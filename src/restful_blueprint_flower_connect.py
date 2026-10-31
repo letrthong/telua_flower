@@ -69,7 +69,8 @@ from order_service import (
     query_admin_orders,
     dispatch_order_to_branch,
     filter_tasks_for_staff,
-    lookup_orders_by_phone_or_code
+    lookup_orders_by_phone_or_code,
+    add_order_customer_comment
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -388,6 +389,31 @@ def api_lookup_orders():
         "count": len(results),
         "data": results
     }), 200
+
+@flower_connect_api.route("/orders/<order_id>/comments", methods=["POST"])
+@flower_connect_api.route("/orders/comments", methods=["POST"])
+def api_add_order_comment(order_id=None):
+    """
+    API cho phép khách hàng gửi bình luận / ghi chú thay đổi thông tin trên đơn hàng:
+    - Hoạt động khi đơn hàng đang xử lý (pending, confirmed, arranging, shipping).
+    - Tự động khóa và trả lỗi 400 sau khi đơn hàng đã giao xong (delivered / completed / cancelled).
+    """
+    data = request.get_json(silent=True) or request.form.to_dict() or {}
+    target_id = order_id or data.get("orderId") or data.get("orderCode") or ""
+    ok, updated_order, err = add_order_customer_comment(target_id, data)
+    if not ok:
+        return jsonify({"success": False, "message": err or "Không thể gửi bình luận"}), 400
+    return jsonify({
+        "success": True,
+        "message": "Đã gửi ghi chú / bình luận cập nhật lên đơn hàng thành công!",
+        "data": {
+            "orderId": updated_order.get("id"),
+            "orderCode": updated_order.get("orderCode"),
+            "status": updated_order.get("status"),
+            "canComment": updated_order.get("status") not in ["delivered", "completed", "cancelled", "returned"],
+            "comments": updated_order.get("comments") or []
+        }
+    }), 201
 
 
 @flower_connect_api.route("/orders/<order_id>", methods=["GET"])

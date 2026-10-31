@@ -2645,8 +2645,10 @@
 
                 <!-- ================= TAB: ĐƠN LIVE STREAM (LIVESTREAM QUICK ORDERS) ================= -->
                 <section id="tabContentLivestreamOrders" class="space-y-4 hidden">
+                    <!-- Khối Bàn Điều Khiển & Thống Kê (Mặc định ẩn - Lưu trạng thái trên trình duyệt) -->
+                    <div id="liveStreamHeaderAndStatsContainer" class="space-y-4 hidden">
                     <!-- Top Control Banner: Điều Khiển & Trạng Thái Phiên Live Stream -->
-                    <div class="bg-gradient-to-r from-rose-50/90 via-pink-50/50 to-white p-5 rounded-2xl border border-rose-100 shadow-2xs space-y-4">
+                    <div id="liveStreamHeaderBannerSection" class="bg-gradient-to-r from-rose-50/90 via-pink-50/50 to-white p-5 rounded-2xl border border-rose-100 shadow-2xs space-y-4">
                         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                             <div class="flex items-start sm:items-center gap-3.5">
                                 <div class="w-11 h-11 rounded-2xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-md shadow-rose-200 flex-shrink-0">
@@ -2686,6 +2688,13 @@
                                     class="px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
                                     title="Mở Cấu hình STK ngân hàng, ảnh mã QR và danh sách hoa ghim">
                                     <i class="fa-solid fa-gear text-rose-500"></i> Cài Đặt Live Stream
+                                </button>
+
+                                <!-- Nút Thu Gọn / Ẩn Bàn Điều Khiển & Thống Kê -->
+                                <button type="button" onclick="toggleLiveStreamHeaderStats(false)"
+                                    class="px-3 py-2 bg-white hover:bg-rose-50 text-gray-600 hover:text-rose-700 border border-gray-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
+                                    title="Ẩn Bàn Điều Khiển & Thống Kê để mở rộng diện tích bảng đơn hàng">
+                                    <i class="fa-regular fa-eye-slash text-gray-500"></i> Ẩn Bàn Điều Khiển
                                 </button>
                             </div>
                         </div>
@@ -2753,6 +2762,7 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     <!-- Bảng Danh Sách Đơn Hàng Live Stream & Bộ Lọc -->
                     <div class="bg-white rounded-xl border border-gray-200 shadow-2xs overflow-hidden">
@@ -2806,9 +2816,13 @@
 
                                 <select id="sortLiveOrdersSelect" onchange="handleLiveOrderSortChange(this.value)"
                                     class="px-3 py-1.5 bg-rose-50/70 border border-rose-200 rounded-xl text-xs font-bold text-rose-700 focus:outline-none focus:border-rose-500 cursor-pointer"
-                                    title="Sắp xếp đơn hàng theo thời gian nhận hoa hoặc thời gian đặt">
-                                    <option value="delivery_asc">🕒 Sắp xếp: Giờ nhận sớm nhất</option>
-                                    <option value="delivery_desc">🕒 Sắp xếp: Giờ nhận muộn nhất</option>
+                                    title="Sắp xếp đơn hàng theo Ngày nhận, Giờ nhận hoa hoặc Thời gian đặt">
+                                    <option value="delivery_asc">⚡ Sắp xếp: Ngày & Giờ nhận sớm nhất</option>
+                                    <option value="delivery_desc">⚡ Sắp xếp: Ngày & Giờ nhận muộn nhất</option>
+                                    <option value="deliveryDate_asc">📅 Sắp xếp: Ngày nhận (Tăng dần)</option>
+                                    <option value="deliveryDate_desc">📅 Sắp xếp: Ngày nhận (Giảm dần)</option>
+                                    <option value="deliveryTime_asc">🕒 Sắp xếp: Giờ nhận (08h → 21h)</option>
+                                    <option value="deliveryTime_desc">🕒 Sắp xếp: Giờ nhận (21h → 08h)</option>
                                     <option value="created_desc">🆕 Sắp xếp: Mới đặt nhất</option>
                                     <option value="created_asc">⏳ Sắp xếp: Đặt cũ nhất</option>
                                     <option value="amount_desc">💰 Sắp xếp: Tiền cao → thấp</option>
@@ -2816,10 +2830,23 @@
                                 </select>
                             </div>
 
-                            <button type="button" onclick="loadLiveStreamOrders()"
-                                class="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
-                                <i class="fa-solid fa-arrows-rotate text-gray-500"></i> Làm Mới
-                            </button>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <button type="button" id="btnToggleLiveStreamHeaderStats" onclick="toggleLiveStreamHeaderStats()"
+                                    class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                                    title="Hiện hoặc ẩn Bàn Điều Khiển & Thống Kê Live Stream (Tự động lưu trên trình duyệt)">
+                                    <i id="iconToggleLiveStreamHeaderStats" class="fa-regular fa-eye text-rose-600"></i>
+                                    <span id="labelToggleLiveStreamHeaderStats">Hiện Bàn Điều Khiển & Thống Kê</span>
+                                </button>
+                                <button type="button" onclick="exportLiveStreamOrdersCsv()"
+                                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                                    title="Xuất danh sách đơn Live Stream ra file Excel (Chia tab theo từng ngày)">
+                                    <i class="fa-solid fa-file-excel"></i> Xuất Excel
+                                </button>
+                                <button type="button" onclick="loadLiveStreamOrders()"
+                                    class="px-3.5 py-1.5 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                    <i class="fa-solid fa-arrows-rotate text-gray-500"></i> Làm Mới
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Filter Info Bar (Hiển thị ngày đang chọn & số đơn) -->
@@ -2843,8 +2870,11 @@
                                         </th>
                                         <th class="p-3">Người Đặt</th>
                                         <th class="p-3">Người Nhận & Địa Chỉ</th>
-                                        <th class="p-3 cursor-pointer hover:text-rose-600 transition bg-rose-50/40 text-rose-800" onclick="toggleLiveOrderColumnSort('delivery')" title="Nhấn để sắp xếp theo Ngày & Giờ nhận hoa">
-                                            Thời Gian Nhận <i id="sortIconLive_delivery" class="fa-solid fa-sort-up text-[10px] ml-0.5 text-rose-600"></i>
+                                        <th class="p-3 cursor-pointer hover:text-rose-600 transition bg-rose-50/40 text-rose-800" onclick="toggleLiveOrderColumnSort('deliveryDate')" title="Nhấn để sắp xếp theo Ngày nhận hoa">
+                                            Ngày Nhận <i id="sortIconLive_deliveryDate" class="fa-solid fa-sort text-[10px] ml-0.5 text-rose-600"></i>
+                                        </th>
+                                        <th class="p-3 cursor-pointer hover:text-emerald-700 transition bg-emerald-50/40 text-emerald-800" onclick="toggleLiveOrderColumnSort('deliveryTime')" title="Nhấn để sắp xếp theo Giờ nhận hoa (08:00 -> 21:00)">
+                                            Giờ Nhận <i id="sortIconLive_deliveryTime" class="fa-solid fa-sort text-[10px] ml-0.5 text-emerald-600"></i>
                                         </th>
                                         <th class="p-3">Chi Nhánh Điều Phối</th>
                                         <th class="p-3">Thực Hiện</th>
@@ -2858,7 +2888,7 @@
                                 </thead>
                                 <tbody id="adminLiveOrdersTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
                                     <tr>
-                                        <td colspan="10" class="p-8 text-center text-gray-400">
+                                        <td colspan="11" class="p-8 text-center text-gray-400">
                                             <i class="fa-solid fa-circle-notch fa-spin text-xl text-rose-500 mb-2 block"></i>
                                             Đang tải danh sách đơn Live Stream...
                                         </td>
@@ -6795,6 +6825,10 @@
                     <button type="button" onclick="const p = (document.getElementById('quickOrderSuccessPhone') ? document.getElementById('quickOrderSuccessPhone').textContent.trim() : ''); closeQuickOrderModal(); openOrderLookupModal(p);"
                         class="w-full sm:w-auto px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-md shadow-rose-200 transition cursor-pointer flex items-center justify-center gap-2">
                         <i class="fa-solid fa-magnifying-glass"></i> Tra Cứu Tiến Độ Đơn Ngay
+                    </button>
+                    <button type="button" id="btnShareQuickOrderHash" onclick="copyQuickOrderSuccessHashLink()"
+                        class="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-200 transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-share-nodes"></i> Share Link #Hash Đơn Hàng
                     </button>
                     <button type="button" onclick="closeQuickOrderModal()"
                         class="w-full sm:w-auto px-5 py-2.5 bg-gray-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer">

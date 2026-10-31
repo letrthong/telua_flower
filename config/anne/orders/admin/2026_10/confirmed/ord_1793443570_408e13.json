@@ -6,7 +6,7 @@
   "orderDate": "2026-10-31",
   "orderDay": "2026-10-31",
   "livestreamDate": "2026-10-31",
-  "updatedAt": "2026-10-31T10:46:10Z",
+  "updatedAt": "2026-10-31T16:16:28Z",
   "source": "livestream_quick_order",
   "branchId": "admin",
   "assignedBranchId": "admin",
@@ -14,7 +14,7 @@
   "createdBy": "096876878678",
   "assignedTo": "staff_admin",
   "assignedBy": "system",
-  "status": "pending",
+  "status": "confirmed",
   "cardMessage": "",
   "ribbonBanner": "",
   "sender": {
@@ -73,6 +73,12 @@
       "updatedAt": "2026-10-31T10:46:10Z",
       "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: LIVE-261031-D808. Số tiền đã chuyển: 1,500,000₫.",
       "updatedBy": "096876878678"
+    },
+    {
+      "status": "confirmed",
+      "updatedAt": "2026-10-31T16:16:28Z",
+      "note": "Cập nhật trạng thái bởi super_admin",
+      "updatedBy": "staff_admin"
     }
   ],
   "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
