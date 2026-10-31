@@ -901,6 +901,22 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         self.assertEqual(matched[0].get("status"), "arranging")
         self.assertEqual(matched[0].get("delivery", {}).get("timeSlot"), "08:00")
 
+    def test_export_excel_creates_tabs_per_day(self):
+        """
+        Kiểm tra tính năng Xuất Excel tạo Tab (Worksheet) riêng cho từng ngày
+        trong js/portal_admin_orders.js và js/bundle.js.
+        """
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        orders_js_path = os.path.join(root_dir, "js", "portal_admin_orders.js")
+        with open(orders_js_path, "r", encoding="utf-8") as f:
+            orders_js = f.read()
+
+        self.assertIn("export function groupOrdersByDayForExcel(", orders_js)
+        self.assertIn("export function buildOrdersMultiSheetExcelXml(", orders_js)
+        self.assertIn('<Worksheet ss:Name="', orders_js)
+        self.assertIn("application/vnd.ms-excel;charset=utf-8;", orders_js)
+        self.assertIn("Tong Hop Tat Ca", orders_js)
+
 if __name__ == "__main__":
     unittest.main()
 

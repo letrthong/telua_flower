@@ -14693,16 +14693,85 @@ async function dispatchAdminOrder(orderId, targetBranchId) {
 }
 
 /**
- * Xuất danh sách đơn hàng ra file Excel / CSV (UTF-8 BOM hiển thị chuẩn tiếng Việt)
+ * Nhóm danh sách đơn hàng theo từng ngày (YYYY-MM-DD) để tạo Tab (Worksheet) riêng cho mỗi ngày trong Excel
  */
-function exportOrdersToCsv(ordersToExport, filename = "danh_sach_don_hang.csv") {
-    if (!Array.isArray(ordersToExport) || ordersToExport.length === 0) {
-        notifyUser("Không có đơn hàng nào để xuất file!", "warning");
-        return;
-    }
+function groupOrdersByDayForExcel(ordersToExport = []) {
+    const groups = {};
+    if (!Array.isArray(ordersToExport)) return groups;
+
+    ordersToExport.forEach(o => {
+        if (!o || typeof o !== "object") return;
+        const rawDate = (o.delivery && o.delivery.deliveryDate)
+            || o.deliveryDate
+            || o.livestreamDate
+            || o.orderDay
+            || o.orderDate
+            || (o.createdAt ? String(o.createdAt).slice(0, 10) : "")
+            || "Khac";
+        const dayKey = String(rawDate).trim().slice(0, 10) || "Khac";
+        if (!groups[dayKey]) groups[dayKey] = [];
+        groups[dayKey].push(o);
+    });
+
+    // Sắp xếp các đơn trong mỗi ngày theo giờ nhận hoa sớm nhất trước
+    Object.keys(groups).forEach(dayKey => {
+        groups[dayKey].sort((a, b) => {
+            const slotA = String((a.delivery && a.delivery.timeSlot) || a.deliveryTime || a.timeSlot || "");
+            const slotB = String((b.delivery && b.delivery.timeSlot) || b.deliveryTime || b.timeSlot || "");
+            const normSlot = (s) => {
+                if (!s || s.toLowerCase().includes("giao ngay") || s.toLowerCase().includes("sớm nhất")) return "00:00";
+                const m = s.match(/(\d{1,2}):(\d{2})/);
+                return m ? `${String(m[1]).padStart(2, "0")}:${m[2]}` : "23:59";
+            };
+            const cmp = normSlot(slotA).localeCompare(normSlot(slotB));
+            if (cmp !== 0) return cmp;
+            return String(a.createdAt || "").localeCompare(String(b.createdAt || ""));
+        });
+    });
+
+    return groups;
+}
+
+/**
+ * Tạo nội dung XML SpreadsheetML (Excel Workbook .xls) gồm nhiều Tab (Worksheet) cho từng ngày
+ */
+function buildOrdersMultiSheetExcelXml(ordersToExport = []) {
+    const escapeXml = (val) => {
+        if (val === null || val === undefined) return "";
+        return String(val)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&apos;");
+    };
+
+    const sanitizeSheetName = (rawName, usedNames) => {
+        // Tên tab trong Excel tối đa 31 ký tự và không chứa: \ / ? * : [ ]
+        let clean = String(rawName || "Sheet").replace(/[\\/?*:[\]]/g, "-").trim().slice(0, 28);
+        if (!clean) clean = "Ngay";
+        let candidate = clean;
+        let idx = 2;
+        while (usedNames.has(candidate.toLowerCase())) {
+            candidate = `${clean.slice(0, 25)}_${idx++}`;
+        }
+        usedNames.add(candidate.toLowerCase());
+        return candidate;
+    };
+
+    const formatDaySheetLabel = (dayKey) => {
+        const parts = String(dayKey).split("-");
+        if (parts.length === 3) {
+            return `Ngay ${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return `Ngay ${dayKey}`;
+    };
 
     const headers = [
         "Mã Đơn Hàng",
+        "Ngày Nhận Hoa",
+        "Khung Giờ Nhận",
+        "Hình Thức Nhận",
         "Ngày Đặt",
         "Kênh Đặt",
         "Khách Đặt",
@@ -14719,63 +14788,153 @@ function exportOrdersToCsv(ordersToExport, filename = "danh_sach_don_hang.csv") 
         "Ảnh Chuyển Khoản"
     ];
 
-    const escapeCsv = (val) => {
-        if (val === null || val === undefined) return '""';
-        const str = String(val).replace(/"/g, '""');
-        return `"${str}"`;
+    const buildWorksheetXml = (sheetName, sheetOrders) => {
+        let totalRevenue = 0;
+        const rowsXml = sheetOrders.map(o => {
+            const isLive = (o.source === "livestream_quick_order" || o.source === "livestream");
+            const sender = o.sender || {};
+            const recipient = o.recipient || {};
+            const delivery = o.delivery || {};
+            const total = Number(o.totalAmount) || Number(o.financials?.totalAmount) || Number(o.transferredAmount) || 0;
+            if ((o.status || "").toLowerCase() !== "cancelled") {
+                totalRevenue += total;
+            }
+            const item = (o.items && o.items[0]) || {};
+            const flowerName = item.productName || "Hoa tươi";
+            const qty = Number(item.quantity) || 1;
+            const proof = o.payment?.proofImage || o.paymentProofImage || o.proofImage || "";
+            const deliveryDate = delivery.deliveryDate || o.deliveryDate || o.orderDate || "";
+            const timeSlot = delivery.timeSlot || o.deliveryTime || o.timeSlot || "Giao ngay trong ngày (Sớm nhất)";
+            const fulfillment = (delivery.fulfillmentType === "pickup" || o.fulfillmentType === "pickup")
+                ? "Nhận tại Shop"
+                : "Giao tận nơi";
+            const statusLabel = (ADMIN_ORDER_STATUS_META[o.status] && ADMIN_ORDER_STATUS_META[o.status].label) || o.status || "Chờ xử lý";
+
+            const cells = [
+                { type: "String", val: o.orderCode || o.id || "" },
+                { type: "String", val: deliveryDate },
+                { type: "String", val: timeSlot },
+                { type: "String", val: fulfillment },
+                { type: "String", val: o.createdAt || o.orderDate || "" },
+                { type: "String", val: isLive ? "Live Stream (Nhanh)" : "Website" },
+                { type: "String", val: o.creatorName || o.customerName || sender.name || recipient.name || "" },
+                { type: "String", val: sender.phone || o.phone || recipient.phone || "" },
+                { type: "String", val: recipient.name || o.customerName || "" },
+                { type: "String", val: recipient.phone || o.phone || "" },
+                { type: "String", val: recipient.address || o.address || "" },
+                { type: "String", val: flowerName },
+                { type: "Number", val: qty },
+                { type: "Number", val: total },
+                { type: "String", val: o.payment?.status === "paid" ? "Đã thanh toán" : "Chờ đối soát" },
+                { type: "String", val: statusLabel },
+                { type: "String", val: o.cardMessage || o.notes || recipient.deliveryNotes || "" },
+                { type: "String", val: proof }
+            ];
+
+            return `<Row>${cells.map(c => `<Cell ss:StyleID="sData"><Data ss:Type="${c.type}">${escapeXml(c.val)}</Data></Cell>`).join("")}</Row>`;
+        }).join("\n");
+
+        const headerRowXml = `<Row ss:Height="24">${headers.map(h => `<Cell ss:StyleID="sHeader"><Data ss:Type="String">${escapeXml(h)}</Data></Cell>`).join("")}</Row>`;
+        const summaryRowXml = `<Row ss:Height="22">` +
+            `<Cell ss:StyleID="sTotal"><Data ss:Type="String">TỔNG CỘNG (${sheetOrders.length} đơn)</Data></Cell>` +
+            `<Cell ss:StyleID="sTotal" ss:MergeAcross="11"><Data ss:Type="String"></Data></Cell>` +
+            `<Cell ss:StyleID="sTotalNum"><Data ss:Type="Number">${totalRevenue}</Data></Cell>` +
+            `<Cell ss:StyleID="sTotal" ss:MergeAcross="3"><Data ss:Type="String"></Data></Cell>` +
+            `</Row>`;
+
+        return `<Worksheet ss:Name="${escapeXml(sheetName)}">\n<Table>\n${headerRowXml}\n${rowsXml}\n${summaryRowXml}\n</Table>\n</Worksheet>`;
     };
 
-    const rows = ordersToExport.map(o => {
-        const isLive = (o.source === "livestream_quick_order" || o.source === "livestream");
-        const sender = o.sender || {};
-        const recipient = o.recipient || {};
-        const total = Number(o.totalAmount) || Number(o.financials?.totalAmount) || 0;
-        const item = (o.items && o.items[0]) || {};
-        const flowerName = item.productName || "Hoa tươi";
-        const qty = item.quantity || 1;
-        const proof = o.payment?.proofImage || o.paymentProofImage || "";
+    const groups = groupOrdersByDayForExcel(ordersToExport);
+    const sortedDayKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+    const usedNames = new Set();
+    const worksheets = [];
 
-        return [
-            escapeCsv(o.orderCode || o.id || ""),
-            escapeCsv(o.createdAt || o.orderDate || ""),
-            escapeCsv(isLive ? "Live Stream (Nhanh)" : "Website"),
-            escapeCsv(o.creatorName || sender.name || ""),
-            escapeCsv(sender.phone || ""),
-            escapeCsv(recipient.name || ""),
-            escapeCsv(recipient.phone || ""),
-            escapeCsv(recipient.address || ""),
-            escapeCsv(flowerName),
-            escapeCsv(qty),
-            escapeCsv(total),
-            escapeCsv(o.payment?.status === "paid" ? "Đã thanh toán" : "Chờ đối soát"),
-            escapeCsv(o.status || "Chờ xử lý"),
-            escapeCsv(o.cardMessage || recipient.deliveryNotes || ""),
-            escapeCsv(proof)
-        ].join(",");
+    // 1. Tạo từng Tab riêng cho mỗi ngày
+    sortedDayKeys.forEach(dayKey => {
+        const sheetName = sanitizeSheetName(formatDaySheetLabel(dayKey), usedNames);
+        worksheets.push(buildWorksheetXml(sheetName, groups[dayKey]));
     });
 
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    // 2. Tạo thêm Tab Tổng Hợp nếu có nhiều hơn 1 ngày (hoặc luôn có tab Tổng Hợp ở cuối để đối chiếu)
+    if (sortedDayKeys.length > 1) {
+        const allSheetName = sanitizeSheetName("Tong Hop Tat Ca", usedNames);
+        worksheets.push(buildWorksheetXml(allSheetName, ordersToExport));
+    }
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Arial" ss:Size="10"/>
+  </Style>
+  <Style ss:ID="sHeader">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>
+   <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#E11D48" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sData">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Arial" ss:Size="10"/>
+  </Style>
+  <Style ss:ID="sTotal">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#9F1239"/>
+   <Interior ss:Color="#FFF1F2" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="sTotalNum">
+   <Alignment ss:Vertical="Center" ss:Horizontal="Right"/>
+   <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#BE123C"/>
+   <Interior ss:Color="#FFF1F2" ss:Pattern="Solid"/>
+   <NumberFormat ss:Format="#,##0"/>
+  </Style>
+ </Styles>
+ ${worksheets.join("\n ")}
+</Workbook>`;
+}
+
+/**
+ * Xuất danh sách đơn hàng ra file Excel nhiều Tab theo từng ngày (.xls)
+ */
+function exportOrdersToCsv(ordersToExport, filename = "danh_sach_don_hang.xls") {
+    if (!Array.isArray(ordersToExport) || ordersToExport.length === 0) {
+        notifyUser("Không có đơn hàng nào để xuất file!", "warning");
+        return;
+    }
+
+    const groups = groupOrdersByDayForExcel(ordersToExport);
+    const dayCount = Object.keys(groups).length;
+    const xmlContent = buildOrdersMultiSheetExcelXml(ordersToExport);
+    const excelFilename = String(filename || "danh_sach_don_hang.xls").replace(/\.csv$/i, ".xls");
+
+    const blob = new Blob([xmlContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", filename);
+    link.setAttribute("download", excelFilename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    notifyUser(`Đã xuất ${ordersToExport.length} đơn hàng ra file Excel / CSV thành công!`, "success");
+    notifyUser(`Đã xuất ${ordersToExport.length} đơn hàng ra file Excel (${dayCount} tab theo từng ngày) thành công!`, "success");
 }
 
+const exportOrdersToExcelByDay = exportOrdersToCsv;
+
 /**
- * Xuất các đơn hàng đang hiển thị trên bảng
+ * Xuất các đơn hàng đang hiển thị trên bảng (chia tab theo từng ngày)
  */
 function exportCurrentAdminOrdersToCsv() {
-    exportOrdersToCsv(lastLoadedAdminOrders, `don_hang_${new Date().toISOString().slice(0, 10)}.csv`);
+    exportOrdersToCsv(lastLoadedAdminOrders, `don_hang_${new Date().toISOString().slice(0, 10)}.xls`);
 }
 
 /**
- * Tải và xuất toàn bộ đơn hàng từ phiên Live Stream
+ * Tải và xuất toàn bộ đơn hàng từ phiên Live Stream (chia tab theo từng ngày)
  */
 async function exportLiveStreamOrdersCsv() {
     const token = typeof getAuthToken === "function" ? getAuthToken() : "";
@@ -14789,7 +14948,7 @@ async function exportLiveStreamOrdersCsv() {
             notifyUser("Chưa có đơn hàng nào từ Live Stream để xuất!", "info");
             return;
         }
-        exportOrdersToCsv(orders, `don_hang_livestream_${new Date().toISOString().slice(0, 10)}.csv`);
+        exportOrdersToCsv(orders, `don_hang_livestream_${new Date().toISOString().slice(0, 10)}.xls`);
     } catch (e) {
         notifyUser("Lỗi khi tải đơn hàng live stream: " + e.message, "error");
     }
@@ -14813,6 +14972,9 @@ if (typeof window !== "undefined") {
     window.updateAdminOrderStatus = updateAdminOrderStatus;
     window.dispatchAdminOrder = dispatchAdminOrder;
     window.exportOrdersToCsv = exportOrdersToCsv;
+    window.exportOrdersToExcelByDay = exportOrdersToExcelByDay;
+    window.groupOrdersByDayForExcel = groupOrdersByDayForExcel;
+    window.buildOrdersMultiSheetExcelXml = buildOrdersMultiSheetExcelXml;
     window.exportCurrentAdminOrdersToCsv = exportCurrentAdminOrdersToCsv;
     window.exportLiveStreamOrdersCsv = exportLiveStreamOrdersCsv;
     window.filterAdminOrdersBySource = filterAdminOrdersBySource;
