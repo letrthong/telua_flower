@@ -352,12 +352,116 @@ export function closeQuickOrderModal() {
 }
 
 /**
+ * Lấy chuỗi ngày hôm nay theo giờ địa phương (YYYY-MM-DD)
+ */
+export function getQuickOrderTodayStr() {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Định dạng chuỗi YYYY-MM-DD sang nhãn hiển thị thân thiện (VD: "Hôm nay (31/10/2026)" hoặc "31/10/2026")
+ */
+export function formatQuickOrderDateDisplay(dateStr, shortBadge = false) {
+    if (!dateStr || typeof dateStr !== "string") return "Hôm nay";
+    const clean = dateStr.trim().slice(0, 10);
+    const parts = clean.split("-");
+    if (parts.length !== 3) return dateStr;
+    const [yyyy, mm, dd] = parts;
+    const todayStr = getQuickOrderTodayStr();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+
+    if (clean === todayStr) {
+        return shortBadge ? `Hôm nay (${dd}/${mm})` : `Hôm nay (${dd}/${mm}/${yyyy})`;
+    }
+    if (clean === tomStr) {
+        return shortBadge ? `Ngày mai (${dd}/${mm})` : `Ngày mai (${dd}/${mm}/${yyyy})`;
+    }
+    return `${dd}/${mm}/${yyyy}`;
+}
+
+/**
+ * Khởi tạo mặc định Ngày nhận hoa = Hôm nay và Khung giờ nhận mặc định
+ */
+export function initQuickOrderDeliveryDateTime() {
+    const todayStr = getQuickOrderTodayStr();
+    const dateInput = document.getElementById("quickOrderDeliveryDate");
+    const timeSelect = document.getElementById("quickOrderDeliveryTime");
+    const badgeEl = document.getElementById("quickOrderDateBadge");
+
+    if (dateInput) {
+        dateInput.min = todayStr;
+        dateInput.value = todayStr;
+    }
+    if (timeSelect && timeSelect.options.length > 0) {
+        timeSelect.selectedIndex = 0;
+    }
+    if (badgeEl) {
+        badgeEl.textContent = formatQuickOrderDateDisplay(todayStr, true);
+    }
+}
+
+/**
+ * Cập nhật nhãn badge khi khách đổi ngày nhận hoa trong Quick Order
+ */
+export function handleQuickOrderDateChange(inputEl) {
+    if (!inputEl) inputEl = document.getElementById("quickOrderDeliveryDate");
+    const badgeEl = document.getElementById("quickOrderDateBadge");
+    if (!inputEl || !badgeEl) return;
+
+    const val = inputEl.value || getQuickOrderTodayStr();
+    badgeEl.textContent = formatQuickOrderDateDisplay(val, true);
+}
+
+/**
+ * Xử lý khi khách bật/tắt tùy chọn "Nhận Hoa Trực Tiếp Tại Shop" (Enable Box)
+ */
+export function handleQuickOrderPickupToggle(checkboxEl) {
+    if (!checkboxEl) checkboxEl = document.getElementById("quickOrderPickupCheckbox");
+    const isPickup = !!(checkboxEl && checkboxEl.checked);
+    const addrContainer = document.getElementById("quickOrderAddressContainer");
+    const addrInput = document.getElementById("quickOrderRecipientAddress");
+    const shopInfo = document.getElementById("quickOrderPickupShopInfo");
+    const badgeEl = document.getElementById("quickOrderPickupBadge");
+
+    if (isPickup) {
+        if (addrContainer) addrContainer.classList.add("hidden");
+        if (addrInput) addrInput.required = false;
+        if (shopInfo) shopInfo.classList.remove("hidden");
+        if (badgeEl) {
+            badgeEl.textContent = "Đã bật nhận tại Shop";
+            badgeEl.className = "text-[10px] bg-emerald-600 text-white font-bold px-2.5 py-0.5 rounded-full border border-emerald-700 shadow-2xs";
+        }
+    } else {
+        if (addrContainer) addrContainer.classList.remove("hidden");
+        if (addrInput) addrInput.required = true;
+        if (shopInfo) shopInfo.classList.add("hidden");
+        if (badgeEl) {
+            badgeEl.textContent = "Freeship";
+            badgeEl.className = "text-[10px] bg-white text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-200";
+        }
+    }
+}
+
+/**
  * Reset dữ liệu form đặt hàng nhanh
  */
 function resetQuickOrderForm() {
     const form = document.getElementById("quickOrderForm");
     if (form) form.reset();
     selectedProofFile = null;
+
+    initQuickOrderDeliveryDateTime();
+
+    const pickupCheckbox = document.getElementById("quickOrderPickupCheckbox");
+    if (pickupCheckbox) pickupCheckbox.checked = false;
+    handleQuickOrderPickupToggle(pickupCheckbox);
 
     const previewContainer = document.getElementById("quickOrderProofPreviewContainer");
     const uploadPlaceholder = document.getElementById("quickOrderUploadPlaceholder");
@@ -464,6 +568,9 @@ export async function handleQuickOrderSubmit(event) {
     const nameInput = document.getElementById("quickOrderRecipientName");
     const phoneInput = document.getElementById("quickOrderRecipientPhone");
     const addressInput = document.getElementById("quickOrderRecipientAddress");
+    const pickupCheckbox = document.getElementById("quickOrderPickupCheckbox");
+    const deliveryDateInput = document.getElementById("quickOrderDeliveryDate");
+    const deliveryTimeInput = document.getElementById("quickOrderDeliveryTime");
     const amountInput = document.getElementById("quickOrderAmount");
     const notesInput = document.getElementById("quickOrderNotes");
     const productSelect = document.getElementById("quickOrderProductSelect");
@@ -474,7 +581,12 @@ export async function handleQuickOrderSubmit(event) {
 
     const name = nameInput ? nameInput.value.trim() : "";
     const phone = phoneInput ? phoneInput.value.trim() : "";
-    const address = addressInput ? addressInput.value.trim() : "";
+    const isPickup = !!(pickupCheckbox && pickupCheckbox.checked);
+    const fulfillmentType = isPickup ? "pickup" : "delivery";
+    const rawAddress = addressInput ? addressInput.value.trim() : "";
+    const address = isPickup ? (rawAddress || "Nhận trực tiếp tại Shop") : rawAddress;
+    const deliveryDate = (deliveryDateInput && deliveryDateInput.value) ? deliveryDateInput.value.trim() : getQuickOrderTodayStr();
+    const deliveryTime = (deliveryTimeInput && deliveryTimeInput.value) ? deliveryTimeInput.value.trim() : "Giao ngay trong ngày (Sớm nhất)";
     const rawAmount = amountInput ? amountInput.value.replace(/\D/g, "") : "";
     const amount = rawAmount ? parseInt(rawAmount, 10) : 0;
     const notes = notesInput ? notesInput.value.trim() : "";
@@ -522,6 +634,11 @@ export async function handleQuickOrderSubmit(event) {
     formData.append("recipientName", name);
     formData.append("phone", phone);
     formData.append("address", address);
+    formData.append("fulfillmentType", fulfillmentType);
+    formData.append("isPickup", isPickup ? "true" : "false");
+    formData.append("deliveryDate", deliveryDate);
+    formData.append("deliveryTime", deliveryTime);
+    formData.append("timeSlot", deliveryTime);
     formData.append("transferredAmount", amount.toString());
     formData.append("notes", notes);
     formData.append("paymentProof", selectedProofFile);
@@ -560,6 +677,7 @@ export async function handleQuickOrderSubmit(event) {
         const nameEl = document.getElementById("quickOrderSuccessName");
         const phoneEl = document.getElementById("quickOrderSuccessPhone");
         const addrEl = document.getElementById("quickOrderSuccessAddress");
+        const deliveryTimeEl = document.getElementById("quickOrderSuccessDeliveryTime");
         const amtEl = document.getElementById("quickOrderSuccessAmount");
         const flowerEl = document.getElementById("quickOrderSuccessFlower");
 
@@ -567,6 +685,11 @@ export async function handleQuickOrderSubmit(event) {
         if (nameEl) nameEl.textContent = name;
         if (phoneEl) phoneEl.textContent = phone;
         if (addrEl) addrEl.textContent = address;
+        if (deliveryTimeEl) {
+            const finalDate = (newOrder.delivery && newOrder.delivery.deliveryDate) || newOrder.deliveryDate || deliveryDate;
+            const finalSlot = (newOrder.delivery && newOrder.delivery.timeSlot) || newOrder.deliveryTime || deliveryTime;
+            deliveryTimeEl.textContent = `${formatQuickOrderDateDisplay(finalDate)} • ${finalSlot}`;
+        }
         if (amtEl) amtEl.textContent = typeof formatVND === "function" ? formatVND(amount) : `${amount.toLocaleString("vi-VN")}₫`;
         if (flowerEl) flowerEl.textContent = selectedProductName;
 
@@ -843,6 +966,10 @@ function renderOrderLookupResults(orders, query) {
                             <span class="text-gray-500 flex-shrink-0 mr-2">Địa chỉ giao:</span>
                             <span class="font-medium text-gray-700 text-right line-clamp-2">${ord.deliveryAddress || 'Nhận tại tiệm'}</span>
                         </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 flex-shrink-0 mr-2">Thời gian nhận:</span>
+                            <span class="font-bold text-emerald-700 text-right">${formatQuickOrderDateDisplay(ord.deliveryDate || (ord.delivery && ord.delivery.deliveryDate) || '')}${(ord.deliveryTimeSlot || ord.deliveryTime || (ord.delivery && ord.delivery.timeSlot)) ? ' • ' + (ord.deliveryTimeSlot || ord.deliveryTime || (ord.delivery && ord.delivery.timeSlot)) : ''}</span>
+                        </div>
                         <div class="flex justify-between pt-1 border-t border-gray-200/60 font-bold">
                             <span class="text-gray-600">Tổng thanh toán:</span>
                             <span class="text-rose-600 text-xs">${formatVND(ord.totalAmount || ord.transferredAmount || 0)}</span>
@@ -889,5 +1016,18 @@ if (typeof window !== "undefined") {
     window.closeOrderLookupModal = closeOrderLookupModal;
     window.handleOrderLookup = handleOrderLookup;
     window.downloadQuickOrderQrCode = downloadQuickOrderQrCode;
+    window.initQuickOrderDeliveryDateTime = initQuickOrderDeliveryDateTime;
+    window.handleQuickOrderDateChange = handleQuickOrderDateChange;
+    window.handleQuickOrderPickupToggle = handleQuickOrderPickupToggle;
+    window.getQuickOrderTodayStr = getQuickOrderTodayStr;
+    window.formatQuickOrderDateDisplay = formatQuickOrderDateDisplay;
+
+    if (typeof document !== "undefined") {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => initQuickOrderDeliveryDateTime());
+        } else {
+            initQuickOrderDeliveryDateTime();
+        }
+    }
 }
 

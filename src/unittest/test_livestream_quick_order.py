@@ -734,6 +734,73 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         amounts = [ord_item["totalAmount"] for ord_item in orders]
         self.assertEqual(amounts, [700000, 500000, 300000])
 
+    def test_quick_order_delivery_date_and_time_defaults_to_today(self):
+        """
+        Kiểm tra ngày nhận hoa và thời gian nhận trong Quick Order:
+        - Mặc định là ngày hôm nay (YYYY-MM-DD) và khung giờ mặc định khi không truyền.
+        - Lưu và trả về đúng ngày nhận + khung giờ nhận khi khách chọn cụ thể.
+        """
+        from datetime import datetime
+        today_str = datetime.now().strftime("%Y-%m-%d")
+
+        # 1. Đặt đơn không truyền deliveryDate/deliveryTime -> mặc định hôm nay
+        res_default = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Mặc Định Hôm Nay",
+            "phone": "0912000111",
+            "address": "100 Nguyễn Huệ, Quận 1",
+            "transferredAmount": 450000,
+            "paymentProofImage": "https://example.com/bill_today.jpg"
+        })
+        self.assertEqual(res_default.status_code, 201)
+        ord_default = res_default.get_json()["data"]
+        self.assertEqual(ord_default.get("deliveryDate"), today_str)
+        self.assertEqual(ord_default.get("delivery", {}).get("deliveryDate"), today_str)
+        self.assertEqual(ord_default.get("delivery", {}).get("timeSlot"), "Giao ngay trong ngày (Sớm nhất)")
+
+        # 2. Đặt đơn có chọn ngày nhận và khung giờ nhận cụ thể
+        custom_date = "2026-12-25"
+        custom_slot = "15:00 - 17:00 (Xế chiều)"
+        res_custom = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Hẹn Giờ Giao",
+            "phone": "0912000222",
+            "address": "200 Lê Lợi, Quận 1",
+            "deliveryDate": custom_date,
+            "deliveryTime": custom_slot,
+            "transferredAmount": 650000,
+            "paymentProofImage": "https://example.com/bill_custom.jpg"
+        })
+        self.assertEqual(res_custom.status_code, 201)
+        ord_custom = res_custom.get_json()["data"]
+        self.assertEqual(ord_custom.get("deliveryDate"), custom_date)
+        self.assertEqual(ord_custom.get("deliveryTime"), custom_slot)
+        self.assertEqual(ord_custom.get("delivery", {}).get("deliveryDate"), custom_date)
+        self.assertEqual(ord_custom.get("delivery", {}).get("timeSlot"), custom_slot)
+
+        # 3. Kiểm tra API lookup trả về đúng deliveryDate & deliveryTimeSlot
+        res_lookup = self.client.get("/api/flower/v1/orders/lookup?query=0912000222")
+        self.assertEqual(res_lookup.status_code, 200)
+        lookup_list = res_lookup.get_json()["data"]
+        self.assertTrue(len(lookup_list) >= 1)
+        self.assertEqual(lookup_list[0].get("deliveryDate"), custom_date)
+        self.assertEqual(lookup_list[0].get("deliveryTimeSlot"), custom_slot)
+
+        # 4. Đặt đơn tích chọn "Nhận tại Shop" (isPickup=true / fulfillmentType="pickup"), không cần nhập địa chỉ
+        res_pickup = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Nhận Tại Shop",
+            "phone": "0912000333",
+            "address": "",
+            "isPickup": "true",
+            "fulfillmentType": "pickup",
+            "transferredAmount": 520000,
+            "paymentProofImage": "https://example.com/bill_pickup.jpg"
+        })
+        self.assertEqual(res_pickup.status_code, 201)
+        ord_pickup = res_pickup.get_json()["data"]
+        self.assertEqual(ord_pickup.get("fulfillmentType"), "pickup")
+        self.assertEqual(ord_pickup.get("delivery", {}).get("fulfillmentType"), "pickup")
+        self.assertEqual(ord_pickup.get("recipient", {}).get("address"), "Nhận trực tiếp tại Shop")
+        self.assertEqual(ord_pickup.get("deliveryDate"), today_str)
+
 if __name__ == "__main__":
     unittest.main()
 

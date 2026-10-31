@@ -1,5 +1,5 @@
 import { getAuthToken } from './auth.js';
-import { API_BASE, showConfirmDialog, showLiveStreamConfirmDialog, showSaveLiveStreamConfigDialog, removeVietnameseTones } from './utils.js';
+import { API_BASE, showConfirmDialog, showLiveStreamConfirmDialog, showSaveLiveStreamConfigDialog, showLiveStreamPaymentBlockConfirmDialog, removeVietnameseTones } from './utils.js';
 import { lockScreen, unlockScreen, notifyUser, setAdminPriceLevels, allAdminCategories } from './portal_admin_state.js';
 
 // ==========================================
@@ -284,7 +284,146 @@ export async function loadAdminLiveStreamConfig() {
             statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi nạp`;
         }
     }
+    // Mặc định luôn bật khóa bảo vệ chống gõ nhầm mỗi khi nạp cấu hình (chỉ lưu tạm trên web)
+    isLiveStreamPaymentBlocked = true;
     await renderLiveStreamConfig(adminLiveStreamConfig);
+}
+
+// =========================================================================
+// KHÓA BẢO VỆ CHỐNG SỬA NHẦM THÔNG TIN THANH TOÁN (CARD 2: TÀI KHOẢN & CARD 3: QR)
+// Mặc định là ENABLE (isLiveStreamPaymentBlocked = true) - Chỉ lưu tạm trên giao diện Web
+// =========================================================================
+let isLiveStreamPaymentBlocked = true;
+
+export function getLiveStreamPaymentBlockState() {
+    return isLiveStreamPaymentBlocked;
+}
+
+export async function toggleLiveStreamPaymentBlock(forcedState = null) {
+    const nextState = (forcedState !== null) ? !!forcedState : !isLiveStreamPaymentBlocked;
+
+    // Nếu thay đổi trạng thái, hiển thị Dialog xác nhận
+    if (nextState !== isLiveStreamPaymentBlocked) {
+        const willUnlock = !nextState; // nextState = false nghĩa là Mở Khóa (isBlocked = false)
+        let confirmed = false;
+
+        if (typeof showLiveStreamPaymentBlockConfirmDialog === "function") {
+            confirmed = await showLiveStreamPaymentBlockConfirmDialog(willUnlock);
+        } else if (typeof showConfirmDialog === "function") {
+            confirmed = await showConfirmDialog({
+                title: willUnlock ? "Mở Khóa Chỉnh Sửa Thông Tin Thanh Toán?" : "Kích Hoạt Lại Khóa Chống Sửa?",
+                message: willUnlock
+                    ? "Tài khoản nhận tiền và Mã QR là thông tin tài chính nhạy cảm. Bạn có chắc chắn muốn mở khóa bảo vệ để chỉnh sửa?"
+                    : "Hệ thống sẽ khóa bảo vệ lại toàn bộ ô nhập tài khoản và ảnh QR để ngăn thao tác gõ hoặc chỉnh sửa ngoài ý muốn.",
+                detail: willUnlock ? "Khóa bảo vệ chỉ mở tạm thời trong phiên làm việc hiện tại và sẽ tự động khóa lại sau khi lưu cấu hình." : "",
+                confirmText: willUnlock ? "Mở Khóa Chỉnh Sửa" : "Khóa Lại Ngay",
+                cancelText: willUnlock ? "Giữ Khóa Bảo Vệ" : "Hủy Bỏ",
+                type: willUnlock ? "warning" : "info",
+                icon: willUnlock ? "fa-solid fa-lock-open" : "fa-solid fa-lock"
+            });
+        } else {
+            confirmed = window.confirm(willUnlock ? "Bạn có chắc chắn muốn mở khóa chỉnh sửa thông tin thanh toán không?" : "Bạn có muốn khóa lại không?");
+        }
+
+        if (!confirmed) return;
+
+        isLiveStreamPaymentBlocked = nextState;
+    }
+
+    applyLiveStreamPaymentBlockUI(isLiveStreamPaymentBlocked);
+
+    if (isLiveStreamPaymentBlocked) {
+        if (typeof showToast === "function") {
+            showToast("🔒 Đã BẬT khóa bảo vệ: Thông tin Tài khoản & Mã QR đang được khóa chống gõ nhầm!", "info");
+        }
+    } else {
+        if (typeof showToast === "function") {
+            showToast("🔓 Đã MỞ KHÓA: Bạn có thể chỉnh sửa Tài khoản & Mã QR (Chỉ tạm thời trên web)!", "warning");
+        }
+    }
+}
+
+export async function handleLiveStreamLockedInputClick() {
+    if (isLiveStreamPaymentBlocked) {
+        await toggleLiveStreamPaymentBlock(false);
+    }
+}
+
+export function applyLiveStreamPaymentBlockUI(isBlocked = isLiveStreamPaymentBlocked) {
+    const btnBank = document.getElementById("btnToggleBankBlock");
+    const btnQr = document.getElementById("btnToggleQrBlock");
+
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+    const bankOwnerInput = document.getElementById("livestreamBankOwnerInput");
+
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    const qrFileInput = document.getElementById("adminLiveStreamQrFileInput");
+    const qrUploadLabel = document.getElementById("adminLiveStreamQrUploadLabel");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+
+    // 1. Cập nhật giao diện nút bấm trên Card 2 và Card 3
+    const updateBtn = (btn) => {
+        if (!btn) return;
+        if (isBlocked) {
+            btn.className = "px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300";
+            btn.innerHTML = `<i class="fa-solid fa-lock text-amber-600"></i> <span>Khóa chống sửa: BẬT</span>`;
+            btn.title = "Đang bật khóa bảo vệ chống gõ nhầm. Bấm để mở khóa chỉnh sửa";
+        } else {
+            btn.className = "px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300";
+            btn.innerHTML = `<i class="fa-solid fa-lock-open text-emerald-600"></i> <span>Khóa chống sửa: TẮT</span>`;
+            btn.title = "Đang mở khóa chỉnh sửa. Bấm để khóa lại";
+        }
+    };
+    updateBtn(btnBank);
+    updateBtn(btnQr);
+
+    // 2. Card 2: Các trường tài khoản
+    [bankNameInput, bankAccInput, bankOwnerInput].forEach(inp => {
+        if (!inp) return;
+        inp.readOnly = isBlocked;
+        if (isBlocked) {
+            inp.classList.add("bg-gray-100", "text-gray-500", "cursor-not-allowed", "select-none");
+            inp.classList.remove("focus:bg-white");
+        } else {
+            inp.classList.remove("bg-gray-100", "text-gray-500", "cursor-not-allowed", "select-none");
+            inp.classList.add("focus:bg-white");
+        }
+    });
+
+    // 3. Card 3: Mã QR
+    if (qrUrlInput) {
+        qrUrlInput.readOnly = isBlocked;
+        if (isBlocked) {
+            qrUrlInput.classList.add("bg-gray-100", "text-gray-500", "cursor-not-allowed");
+            qrUrlInput.classList.remove("focus:bg-white");
+        } else {
+            qrUrlInput.classList.remove("bg-gray-100", "text-gray-500", "cursor-not-allowed");
+            qrUrlInput.classList.add("focus:bg-white");
+        }
+    }
+
+    if (qrUploadLabel) {
+        if (isBlocked) {
+            qrUploadLabel.classList.add("pointer-events-none", "opacity-40", "cursor-not-allowed");
+            qrUploadLabel.classList.remove("cursor-pointer");
+        } else {
+            qrUploadLabel.classList.remove("pointer-events-none", "opacity-40", "cursor-not-allowed");
+            qrUploadLabel.classList.add("cursor-pointer");
+        }
+    }
+
+    if (qrFileInput) {
+        qrFileInput.disabled = isBlocked;
+    }
+
+    if (qrRemoveBtn) {
+        if (isBlocked) {
+            qrRemoveBtn.classList.add("pointer-events-none", "opacity-40", "cursor-not-allowed");
+        } else {
+            qrRemoveBtn.classList.remove("pointer-events-none", "opacity-40", "cursor-not-allowed");
+        }
+    }
 }
 
 export async function renderLiveStreamConfig(config) {
@@ -362,6 +501,9 @@ export async function renderLiveStreamConfig(config) {
         const pathname = window.location.pathname.replace(/\/+$/, "");
         linkInput.value = `${origin}${pathname}#quick-order`;
     }
+
+    // Áp dụng trạng thái khóa bảo vệ thanh toán lên giao diện (mặc định là khóa)
+    applyLiveStreamPaymentBlockUI(isLiveStreamPaymentBlocked);
 
     // Hiển thị danh sách bó hoa nổi bật ghim trong phiên live
     await renderAdminLiveStreamFeaturedProducts((config && config.featuredProductIds) || []);
@@ -546,6 +688,10 @@ export function toggleAdminLiveStreamFeaturedProduct(productId, isChecked) {
  * Cập nhật ảnh mã QR Live Stream trực tiếp từ ô nhập đường dẫn URL
  */
 export function handleAdminLiveStreamQrUrlInput(url) {
+    if (isLiveStreamPaymentBlocked) {
+        handleLiveStreamLockedInputClick();
+        return;
+    }
     const cleanUrl = (url || "").trim();
     adminLiveStreamConfig.qrCodeImage = cleanUrl;
     if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = cleanUrl;
@@ -637,6 +783,11 @@ export function convertImageToWebpBase64(file, maxWidth = 800, maxHeight = 800, 
  * Tự động convert ảnh sang định dạng chuẩn JPG Base64 để lưu trực tiếp trong config và tương thích mọi app ngân hàng
  */
 export async function handleAdminLiveStreamQrUpload(event) {
+    if (isLiveStreamPaymentBlocked) {
+        handleLiveStreamLockedInputClick();
+        if (event && event.target) event.target.value = "";
+        return;
+    }
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
@@ -687,6 +838,10 @@ export async function handleAdminLiveStreamQrUpload(event) {
  * Xóa ảnh mã QR chuyển khoản (không tự ý sinh ảnh thay thế)
  */
 export function removeAdminLiveStreamQr() {
+    if (isLiveStreamPaymentBlocked) {
+        handleLiveStreamLockedInputClick();
+        return;
+    }
     adminLiveStreamConfig.qrCodeImage = "";
     if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = "";
     const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
@@ -840,6 +995,7 @@ export async function saveLiveStreamConfig() {
         if (!res.ok || !json.success) throw new Error(json.message || "Không thể lưu cấu hình Live Stream");
 
         adminLiveStreamConfig = json.data;
+        isLiveStreamPaymentBlocked = true;
         await renderLiveStreamConfig(adminLiveStreamConfig);
         notifyUser(
             "Đã lưu thông tin cấu hình Live Stream (Tiêu đề, STK, QR, Bó hoa ghim) thành công!",
@@ -2039,4 +2195,8 @@ if (typeof window !== "undefined") {
     window.validatePriceLevelModalNumbers = validatePriceLevelModalNumbers;
     window.savePriceLevelFromModal = savePriceLevelFromModal;
     window.deletePriceLevel = deletePriceLevel;
+    window.toggleLiveStreamPaymentBlock = toggleLiveStreamPaymentBlock;
+    window.handleLiveStreamLockedInputClick = handleLiveStreamLockedInputClick;
+    window.applyLiveStreamPaymentBlockUI = applyLiveStreamPaymentBlockUI;
+    window.getLiveStreamPaymentBlockState = getLiveStreamPaymentBlockState;
 }

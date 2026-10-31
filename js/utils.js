@@ -657,6 +657,170 @@ export function showSaveLiveStreamConfigDialog({
 }
 
 /**
+ * Hộp thoại Xác nhận Mở/Khóa Bảo Vệ Chống Sửa Thông Tin Thanh Toán Live Stream
+ * @param {boolean} willUnlock - true nếu yêu cầu Mở Khóa, false nếu yêu cầu Bật Khóa lại
+ * @returns {Promise<boolean>} - resolve(true) nếu người dùng đồng ý, resolve(false) nếu hủy
+ */
+export function showLiveStreamPaymentBlockConfirmDialog(willUnlock = true) {
+    return new Promise((resolve) => {
+        if (typeof document === "undefined") return resolve(false);
+
+        const oldModal = document.getElementById("liveStreamPaymentBlockConfirmModalContainer");
+        if (oldModal && oldModal.parentElement) oldModal.parentElement.removeChild(oldModal);
+
+        const container = document.createElement("div");
+        container.id = "liveStreamPaymentBlockConfirmModalContainer";
+        container.className = "fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm opacity-0 transition-opacity duration-200 select-none";
+
+        const headerGradient = willUnlock
+            ? "bg-gradient-to-br from-amber-600 via-orange-600 to-amber-700 text-white"
+            : "bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-white";
+
+        const badgeHtml = willUnlock
+            ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[11px] font-black tracking-wider uppercase shadow-2xs">
+                   <i class="fa-solid fa-lock-open text-xs"></i> YÊU CẦU MỞ KHÓA
+               </span>`
+            : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[11px] font-black tracking-wider uppercase shadow-2xs">
+                   <i class="fa-solid fa-lock text-xs"></i> BẬT KHÓA BẢO VỆ
+               </span>`;
+
+        const titleText = willUnlock
+            ? "Mở Khóa Chỉnh Sửa Thông Tin Thanh Toán?"
+            : "Kích Hoạt Lại Khóa Chống Gõ Nhầm?";
+
+        const descText = willUnlock
+            ? "Tài khoản nhận tiền và Mã QR là thông tin tài chính nhạy cảm. Bạn có chắc chắn muốn mở khóa bảo vệ để chỉnh sửa?"
+            : "Hệ thống sẽ khóa bảo vệ toàn bộ ô nhập tài khoản và ảnh QR để ngăn thao tác gõ hoặc chỉnh sửa ngoài ý muốn.";
+
+        const actionPointsHtml = willUnlock
+            ? `
+                <div class="space-y-2.5">
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-amber-50/80 border border-amber-200/80 transition">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-amber-200">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Cho phép sửa STK & đổi ảnh QR</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Các ô nhập tên ngân hàng, STK, chủ tài khoản và tải ảnh QR sẽ có thể nhập liệu bình thường.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-blue-50/80 border border-blue-200/80 transition">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-blue-200">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Chỉ mở tạm thời trên trình duyệt</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Trạng thái mở khóa không lưu vào máy chủ. Hệ thống sẽ tự động khóa lại ngay sau khi bạn lưu cấu hình hoặc tải lại trang.</p>
+                        </div>
+                    </div>
+                </div>
+            `
+            : `
+                <div class="space-y-2.5">
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 transition">
+                        <div class="w-9 h-9 rounded-xl bg-slate-700 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-slate-300">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Khóa an toàn tuyệt đối</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Toàn bộ các ô nhập STK và nút tải/xóa QR sẽ chuyển sang chế độ chỉ đọc để tránh chạm nhầm.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        const confirmBtnClass = willUnlock
+            ? "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 text-white shadow-amber-600/30"
+            : "bg-slate-800 hover:bg-slate-900 text-white shadow-slate-800/30";
+
+        const confirmBtnText = willUnlock ? "Mở Khóa Chỉnh Sửa" : "Khóa Lại Ngay";
+        const cancelBtnText = willUnlock ? "Giữ Khóa Bảo Vệ" : "Hủy Bỏ";
+
+        container.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-md w-full overflow-hidden transform scale-95 opacity-0 transition-all duration-200 ease-out flex flex-col">
+                <!-- Header Banner -->
+                <div class="${headerGradient} p-6 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10 space-y-2">
+                        ${badgeHtml}
+                        <h3 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-snug">${titleText}</h3>
+                        <p class="text-xs sm:text-[13px] text-white/90 font-medium leading-relaxed">${descText}</p>
+                    </div>
+                </div>
+
+                <!-- Body Points -->
+                <div class="p-5 sm:p-6 bg-white space-y-3">
+                    ${actionPointsHtml}
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 border-t border-gray-100">
+                    <button type="button" id="paymentBlockConfirmCancelBtn"
+                        class="px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm transition cursor-pointer">
+                        ${cancelBtnText}
+                    </button>
+                    <button type="button" id="paymentBlockConfirmOkBtn"
+                        class="px-5 py-2.5 rounded-xl ${confirmBtnClass} font-bold text-xs sm:text-sm shadow-lg transition transform active:scale-95 cursor-pointer flex items-center gap-2">
+                        <i class="${willUnlock ? 'fa-solid fa-lock-open' : 'fa-solid fa-lock'}"></i> ${confirmBtnText}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        const card = container.querySelector("div");
+        const cancelBtn = container.querySelector("#paymentBlockConfirmCancelBtn");
+        const okBtn = container.querySelector("#paymentBlockConfirmOkBtn");
+
+        let isClosed = false;
+        const closeDialog = (result) => {
+            if (isClosed) return;
+            isClosed = true;
+            document.removeEventListener("keydown", handleKeyDown);
+            container.classList.remove("opacity-100");
+            container.classList.add("opacity-0");
+            if (card) {
+                card.classList.remove("scale-100", "opacity-100");
+                card.classList.add("scale-95", "opacity-0");
+            }
+            setTimeout(() => {
+                if (container.parentElement) container.parentElement.removeChild(container);
+                resolve(result);
+            }, 200);
+        };
+
+        cancelBtn.onclick = () => closeDialog(false);
+        okBtn.onclick = () => closeDialog(true);
+
+        container.onclick = (e) => {
+            if (e.target === container) closeDialog(false);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(false);
+            } else if (e.key === "Enter") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(true);
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown, { once: true });
+
+        requestAnimationFrame(() => {
+            container.classList.remove("opacity-0");
+            container.classList.add("opacity-100");
+            if (card) {
+                card.classList.remove("scale-95", "opacity-0");
+                card.classList.add("scale-100", "opacity-100");
+            }
+            okBtn.focus();
+        });
+    });
+}
+
+/**
  * Khóa màn hình với lớp phủ mờ (Screen Lock Overlay) khi cập nhật dữ liệu
  */
 export function showScreenLock(message = "Đang cập nhật cấu hình & đồng bộ hệ thống...") {
@@ -1195,6 +1359,7 @@ if (typeof window !== "undefined") {
     window.showConfirmDialog = showConfirmDialog;
     window.showLiveStreamConfirmDialog = showLiveStreamConfirmDialog;
     window.showSaveLiveStreamConfigDialog = showSaveLiveStreamConfigDialog;
+    window.showLiveStreamPaymentBlockConfirmDialog = showLiveStreamPaymentBlockConfirmDialog;
     window.showScreenLock = showScreenLock;
     window.hideScreenLock = hideScreenLock;
     window.openStoreMap = openStoreMap;

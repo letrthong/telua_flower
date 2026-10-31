@@ -4750,26 +4750,33 @@
 
                         <!-- Thông tin tài khoản nhận tiền (5 cols) -->
                         <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4">
-                            <div class="flex items-center space-x-2 pb-3 border-b border-gray-100">
-                                <i class="fa-solid fa-building-columns text-emerald-600"></i>
-                                <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wide">2. Tài Khoản Nhận Chuyển Khoản</h5>
+                            <div class="flex items-center justify-between pb-3 border-b border-gray-100 flex-wrap gap-2">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-building-columns text-emerald-600"></i>
+                                    <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wide">2. Tài Khoản Nhận Chuyển Khoản</h5>
+                                </div>
+                                <button type="button" id="btnToggleBankBlock" onclick="toggleLiveStreamPaymentBlock()"
+                                    class="px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300"
+                                    title="Đang bật khóa bảo vệ chống gõ nhầm. Bấm để mở khóa chỉnh sửa">
+                                    <i class="fa-solid fa-lock text-amber-600"></i> <span>Khóa chống sửa: BẬT</span>
+                                </button>
                             </div>
                             <div class="space-y-3.5">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Ngân Hàng Tiếp Nhận</label>
-                                    <input type="text" id="livestreamBankNameInput"
+                                    <input type="text" id="livestreamBankNameInput" onclick="handleLiveStreamLockedInputClick()"
                                         class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:border-emerald-600 focus:bg-white transition"
                                         placeholder="Vietcombank (VCB)">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Số Tài Khoản</label>
-                                    <input type="text" id="livestreamBankAccountInput"
+                                    <input type="text" id="livestreamBankAccountInput" onclick="handleLiveStreamLockedInputClick()"
                                         class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold text-emerald-700 focus:outline-none focus:border-emerald-600 focus:bg-white transition"
                                         placeholder="0976491322">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Tên Chủ Tài Khoản</label>
-                                    <input type="text" id="livestreamBankOwnerInput"
+                                    <input type="text" id="livestreamBankOwnerInput" onclick="handleLiveStreamLockedInputClick()"
                                         class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold uppercase focus:outline-none focus:border-emerald-600 focus:bg-white transition"
                                         placeholder="NO HOA THA BINH">
                                 </div>
@@ -4778,12 +4785,19 @@
 
                         <!-- Card 3: Mã QR Chuyển Khoản Ngân Hàng (5 cols) -->
                         <div class="lg:col-span-5 bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4">
-                            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                            <div class="flex items-center justify-between pb-3 border-b border-gray-100 flex-wrap gap-2">
                                 <div class="flex items-center space-x-2">
                                     <i class="fa-solid fa-qrcode text-purple-600"></i>
                                     <h5 class="font-bold text-xs text-gray-800 uppercase tracking-wide">3. Mã QR Chuyển Khoản Ngân Hàng</h5>
                                 </div>
-                                <span class="text-[10px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">Hỗ trợ URL & Tải Ảnh</span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" id="btnToggleQrBlock" onclick="toggleLiveStreamPaymentBlock()"
+                                        class="px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300"
+                                        title="Đang bật khóa bảo vệ chống gõ nhầm. Bấm để mở khóa chỉnh sửa">
+                                        <i class="fa-solid fa-lock text-amber-600"></i> <span>Khóa chống sửa: BẬT</span>
+                                    </button>
+                                    <span class="text-[10px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100 hidden sm:inline">Hỗ trợ URL & Tải Ảnh</span>
+                                </div>
                             </div>
                             <div class="flex items-start gap-3.5">
                                 <div class="w-28 h-28 rounded-xl bg-gray-50 border border-gray-200 p-1 flex items-center justify-center flex-shrink-0 shadow-2xs relative group text-center">
@@ -4799,7 +4813,7 @@
                                     <!-- Nhập đường dẫn URL ảnh QR trực tiếp -->
                                     <div class="relative">
                                         <i class="fa-solid fa-link absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                        <input type="text" id="adminLiveStreamQrUrlInput"
+                                        <input type="text" id="adminLiveStreamQrUrlInput" onclick="handleLiveStreamLockedInputClick()"
                                             oninput="handleAdminLiveStreamQrUrlInput(this.value)"
                                             placeholder="Dán link ảnh QR (https://...)"
                                             class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono focus:outline-none focus:border-purple-600 focus:bg-white transition shadow-2xs">
@@ -4809,7 +4823,7 @@
 
                                     <!-- Bộ nút: Tải ảnh và Xóa -->
                                     <div class="flex items-center gap-1.5 pt-1 flex-wrap">
-                                        <label class="cursor-pointer px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
+                                        <label id="adminLiveStreamQrUploadLabel" class="cursor-pointer px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs">
                                             <i class="fa-solid fa-cloud-arrow-up"></i> Tải Ảnh QR (Chuẩn JPG)
                                             <input type="file" id="adminLiveStreamQrFileInput" accept="image/jpeg,image/png,image/webp,image/jpg" class="hidden" onchange="handleAdminLiveStreamQrUpload(event)">
                                         </label>
@@ -6653,9 +6667,9 @@
 
     <!-- ================= MODAL ĐẶT HÀNG NHANH LIVE STREAM (QUICK ORDER) ================= -->
     <div id="quickOrderModal" onclick="if (event.target === this) closeQuickOrderModal();"
-        class="fixed inset-0 bg-black/70 backdrop-blur-md z-[240] items-center justify-center p-3 sm:p-4"
+        class="fixed inset-0 bg-black/70 backdrop-blur-md z-[240] items-center justify-center p-1.5 sm:p-3"
         style="display: none;">
-        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-rose-100 max-h-[94vh] flex flex-col animate-fadeIn relative">
+        <div class="bg-white w-[98vw] max-w-6xl rounded-3xl shadow-2xl overflow-hidden border border-rose-100 max-h-[96vh] flex flex-col animate-fadeIn relative">
             <!-- Header -->
             <div class="px-6 py-4 bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50 border-b border-rose-100 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center space-x-3">
@@ -6674,9 +6688,9 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="closeQuickOrderModal(); openOrderLookupModal();"
+                    <button type="button" id="quickOrderHeaderLookupBtn" onclick="closeQuickOrderModal(); openOrderLookupModal();"
                         title="Tra cứu đơn hàng đã đặt"
-                        class="text-[11px] font-bold text-gray-600 hover:text-rose-600 px-2.5 py-1.5 bg-white/80 hover:bg-white rounded-xl border border-gray-200 transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                        class="hidden text-[11px] font-bold text-gray-600 hover:text-rose-600 px-2.5 py-1.5 bg-white/80 hover:bg-white rounded-xl border border-gray-200 transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
                         <i class="fa-solid fa-magnifying-glass text-rose-500"></i> <span class="hidden sm:inline">Tra cứu đơn</span>
                     </button>
                     <button type="button" onclick="closeQuickOrderModal()"
@@ -6710,13 +6724,9 @@
                         Quý khách vẫn có thể tra cứu đơn hàng đã đặt trong buổi live, hoặc ghé xem hàng trăm mẫu hoa tươi tại website cửa hàng!
                     </p>
                 </div>
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
-                    <button type="button" onclick="closeQuickOrderModal(); openOrderLookupModal();"
-                        class="w-full sm:w-auto px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
-                        <i class="fa-solid fa-magnifying-glass text-rose-500"></i> Tra Cứu Đơn Đã Đặt
-                    </button>
+                <div class="flex items-center justify-center pt-2">
                     <button type="button" onclick="closeQuickOrderModal()"
-                        class="w-full sm:w-auto px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer">
+                        class="px-6 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-store"></i> Xem Cửa Hàng Trực Tuyến
                     </button>
                 </div>
@@ -6753,6 +6763,10 @@
                         <span class="text-gray-500 font-medium flex-shrink-0 mr-2">Địa chỉ giao:</span>
                         <span id="quickOrderSuccessAddress" class="font-medium text-gray-700 text-right line-clamp-2">—</span>
                     </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500 font-medium">Thời gian nhận hoa:</span>
+                        <span id="quickOrderSuccessDeliveryTime" class="font-bold text-emerald-700 text-right">—</span>
+                    </div>
                     <div class="flex items-center justify-between pt-2 border-t border-gray-200/80">
                         <span class="text-gray-600 font-bold">Số tiền đã chuyển:</span>
                         <span id="quickOrderSuccessAmount" class="font-bold text-rose-600 text-sm">0₫</span>
@@ -6772,7 +6786,7 @@
             </div>
 
             <!-- Form State (Scrollable) -->
-            <div id="quickOrderFormContainer" class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-gray-50/40">
+            <div id="quickOrderFormContainer" class="hidden p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-gray-50/40">
                 <form id="quickOrderForm" onsubmit="handleQuickOrderSubmit(event)" class="space-y-4">
                     <!-- Error Box -->
                     <div id="quickOrderErrorBox" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-200 font-medium"></div>
@@ -6814,8 +6828,8 @@
 
                         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-3 bg-emerald-50/40 rounded-xl border border-emerald-100">
                             <!-- QR Code Box & Nút Tải Ảnh -->
-                            <div class="flex flex-col items-center gap-2 flex-shrink-0">
-                                <div id="quickOrderQrContainer" class="w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl border border-emerald-200 shadow-2xs flex items-center justify-center">
+                            <div class="flex flex-col items-center gap-2.5 flex-shrink-0 w-full sm:w-auto">
+                                <div id="quickOrderQrContainer" class="w-60 h-60 sm:w-64 sm:h-64 md:w-72 md:h-72 bg-white p-2.5 rounded-2xl border-2 border-emerald-200 shadow-sm flex items-center justify-center">
                                     <img id="quickOrderQrImage" src="" alt="Mã QR Chuyển Khoản" class="w-full h-full object-contain hidden">
                                     <div id="quickOrderQrEmptyPlaceholder" class="flex flex-col items-center justify-center text-center p-2 text-gray-400">
                                         <i class="fa-solid fa-qrcode text-3xl text-gray-300 mb-1.5"></i>
@@ -6834,12 +6848,12 @@
                             <div class="flex-1 space-y-2 text-xs w-full">
                                 <div>
                                     <span class="text-[11px] text-gray-500 block">Ngân hàng thụ hưởng:</span>
-                                    <span id="quickOrderBankName" class="font-bold text-gray-800">Vietcombank</span>
+                                    <span id="quickOrderBankName" class="font-bold text-gray-800">—</span>
                                 </div>
                                 <div>
                                     <span class="text-[11px] text-gray-500 block">Số tài khoản:</span>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span id="quickOrderBankAccount" class="font-mono text-sm font-extrabold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">0976491322</span>
+                                        <span id="quickOrderBankAccount" class="font-mono text-sm font-extrabold text-emerald-700 bg-white px-2.5 py-1 rounded-lg border border-emerald-200">—</span>
                                         <button type="button" onclick="copyQuickOrderBankAccount()"
                                             class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition flex items-center gap-1 cursor-pointer shadow-2xs"
                                             title="Sao chép số tài khoản">
@@ -6849,7 +6863,7 @@
                                 </div>
                                 <div>
                                     <span class="text-[11px] text-gray-500 block">Chủ tài khoản:</span>
-                                    <span id="quickOrderBankOwner" class="font-bold text-gray-800 uppercase">NO HOA THA BINH</span>
+                                    <span id="quickOrderBankOwner" class="font-bold text-gray-800 uppercase">—</span>
                                 </div>
                             </div>
                         </div>
@@ -6875,10 +6889,71 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Địa Chỉ Nhận Hoa Chi Tiết *</label>
+                        <!-- Tùy chọn Nhận Tại Shop (Enable Box) -->
+                        <label for="quickOrderPickupCheckbox" class="flex items-center justify-between p-3 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl border border-emerald-200 cursor-pointer transition select-none">
+                            <div class="flex items-center gap-2.5">
+                                <input type="checkbox" id="quickOrderPickupCheckbox" onchange="handleQuickOrderPickupToggle(this)"
+                                    class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
+                                <div>
+                                    <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-store text-emerald-600"></i> Nhận Hoa Trực Tiếp Tại Shop
+                                    </span>
+                                    <span class="text-[11px] text-gray-500 block">Tích chọn nếu bạn ghé cửa hàng lấy hoa (Miễn phí vận chuyển)</span>
+                                </div>
+                            </div>
+                            <span id="quickOrderPickupBadge" class="text-[10px] bg-white text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-200">Freeship</span>
+                        </label>
+
+                        <div id="quickOrderPickupShopInfo" class="hidden p-3 bg-emerald-50/80 rounded-xl border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                            <span>Hình thức nhận hoa: <strong>Nhận trực tiếp tại Shop</strong> (Không cần nhập địa chỉ giao hàng)</span>
+                        </div>
+
+                        <div id="quickOrderAddressContainer">
+                            <div class="flex flex-wrap items-baseline justify-between gap-1 mb-1">
+                                <label class="text-xs font-bold text-gray-700">Địa Chỉ Nhận Hoa Chi Tiết *</label>
+                                <span class="text-[11px] font-semibold text-rose-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-truck-fast text-[10px]"></i> (Shop sẽ tính thêm phí vận chuyển tới địa chỉ của bạn)
+                                </span>
+                            </div>
                             <input type="text" id="quickOrderRecipientAddress" required placeholder="Số nhà, tên đường, phường/xã, quận/huyện, TP..."
                                 class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-rose-500 focus:bg-white transition">
+                        </div>
+
+                        <!-- Ngày nhận hoa & Thời gian giao nhận (Mặc định: Hôm nay) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-rose-50/40 rounded-xl border border-rose-100">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1 flex items-center justify-between">
+                                    <span><i class="fa-regular fa-calendar-check text-rose-500 mr-1"></i> Ngày Nhận Hoa *</span>
+                                    <span id="quickOrderDateBadge" class="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold border border-rose-200">Hôm nay</span>
+                                </label>
+                                <input type="date" id="quickOrderDeliveryDate" required
+                                    onchange="handleQuickOrderDateChange(this)"
+                                    class="w-full px-3 py-2 bg-white border border-rose-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-rose-500 transition cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">
+                                    <i class="fa-regular fa-clock text-rose-500 mr-1"></i> Thời Gian Nhận *
+                                </label>
+                                <select id="quickOrderDeliveryTime" required
+                                    class="w-full px-3 py-2 bg-white border border-rose-200 rounded-xl text-xs font-bold text-gray-800 focus:outline-none focus:border-rose-500 transition cursor-pointer">
+                                    <option value="Giao ngay trong ngày (Sớm nhất)">⚡ Giao ngay trong ngày (Sớm nhất)</option>
+                                    <option value="08:00">08:00 (8h sáng)</option>
+                                    <option value="09:00">09:00 (9h sáng)</option>
+                                    <option value="10:00">10:00 (10h sáng)</option>
+                                    <option value="11:00">11:00 (11h trưa)</option>
+                                    <option value="12:00">12:00 (12h trưa)</option>
+                                    <option value="13:00">13:00 (1h chiều)</option>
+                                    <option value="14:00">14:00 (2h chiều)</option>
+                                    <option value="15:00">15:00 (3h chiều)</option>
+                                    <option value="16:00">16:00 (4h chiều)</option>
+                                    <option value="17:00">17:00 (5h chiều)</option>
+                                    <option value="18:00">18:00 (6h tối)</option>
+                                    <option value="19:00">19:00 (7h tối)</option>
+                                    <option value="20:00">20:00 (8h tối)</option>
+                                    <option value="21:00">21:00 (9h tối)</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

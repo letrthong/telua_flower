@@ -668,6 +668,170 @@ function showSaveLiveStreamConfigDialog({
 }
 
 /**
+ * Hộp thoại Xác nhận Mở/Khóa Bảo Vệ Chống Sửa Thông Tin Thanh Toán Live Stream
+ * @param {boolean} willUnlock - true nếu yêu cầu Mở Khóa, false nếu yêu cầu Bật Khóa lại
+ * @returns {Promise<boolean>} - resolve(true) nếu người dùng đồng ý, resolve(false) nếu hủy
+ */
+function showLiveStreamPaymentBlockConfirmDialog(willUnlock = true) {
+    return new Promise((resolve) => {
+        if (typeof document === "undefined") return resolve(false);
+
+        const oldModal = document.getElementById("liveStreamPaymentBlockConfirmModalContainer");
+        if (oldModal && oldModal.parentElement) oldModal.parentElement.removeChild(oldModal);
+
+        const container = document.createElement("div");
+        container.id = "liveStreamPaymentBlockConfirmModalContainer";
+        container.className = "fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm opacity-0 transition-opacity duration-200 select-none";
+
+        const headerGradient = willUnlock
+            ? "bg-gradient-to-br from-amber-600 via-orange-600 to-amber-700 text-white"
+            : "bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-white";
+
+        const badgeHtml = willUnlock
+            ? `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[11px] font-black tracking-wider uppercase shadow-2xs">
+                   <i class="fa-solid fa-lock-open text-xs"></i> YÊU CẦU MỞ KHÓA
+               </span>`
+            : `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-[11px] font-black tracking-wider uppercase shadow-2xs">
+                   <i class="fa-solid fa-lock text-xs"></i> BẬT KHÓA BẢO VỆ
+               </span>`;
+
+        const titleText = willUnlock
+            ? "Mở Khóa Chỉnh Sửa Thông Tin Thanh Toán?"
+            : "Kích Hoạt Lại Khóa Chống Gõ Nhầm?";
+
+        const descText = willUnlock
+            ? "Tài khoản nhận tiền và Mã QR là thông tin tài chính nhạy cảm. Bạn có chắc chắn muốn mở khóa bảo vệ để chỉnh sửa?"
+            : "Hệ thống sẽ khóa bảo vệ toàn bộ ô nhập tài khoản và ảnh QR để ngăn thao tác gõ hoặc chỉnh sửa ngoài ý muốn.";
+
+        const actionPointsHtml = willUnlock
+            ? `
+                <div class="space-y-2.5">
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-amber-50/80 border border-amber-200/80 transition">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-amber-200">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Cho phép sửa STK & đổi ảnh QR</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Các ô nhập tên ngân hàng, STK, chủ tài khoản và tải ảnh QR sẽ có thể nhập liệu bình thường.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-blue-50/80 border border-blue-200/80 transition">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-blue-200">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Chỉ mở tạm thời trên trình duyệt</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Trạng thái mở khóa không lưu vào máy chủ. Hệ thống sẽ tự động khóa lại ngay sau khi bạn lưu cấu hình hoặc tải lại trang.</p>
+                        </div>
+                    </div>
+                </div>
+            `
+            : `
+                <div class="space-y-2.5">
+                    <div class="flex items-start gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200 transition">
+                        <div class="w-9 h-9 rounded-xl bg-slate-700 text-white flex items-center justify-center text-sm flex-shrink-0 shadow-md shadow-slate-300">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-bold text-gray-900">Khóa an toàn tuyệt đối</p>
+                            <p class="text-[11px] text-gray-600 mt-0.5 leading-relaxed">Toàn bộ các ô nhập STK và nút tải/xóa QR sẽ chuyển sang chế độ chỉ đọc để tránh chạm nhầm.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        const confirmBtnClass = willUnlock
+            ? "bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 text-white shadow-amber-600/30"
+            : "bg-slate-800 hover:bg-slate-900 text-white shadow-slate-800/30";
+
+        const confirmBtnText = willUnlock ? "Mở Khóa Chỉnh Sửa" : "Khóa Lại Ngay";
+        const cancelBtnText = willUnlock ? "Giữ Khóa Bảo Vệ" : "Hủy Bỏ";
+
+        container.innerHTML = `
+            <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-md w-full overflow-hidden transform scale-95 opacity-0 transition-all duration-200 ease-out flex flex-col">
+                <!-- Header Banner -->
+                <div class="${headerGradient} p-6 relative overflow-hidden">
+                    <div class="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="relative z-10 space-y-2">
+                        ${badgeHtml}
+                        <h3 class="text-lg sm:text-xl font-bold tracking-tight text-white leading-snug">${titleText}</h3>
+                        <p class="text-xs sm:text-[13px] text-white/90 font-medium leading-relaxed">${descText}</p>
+                    </div>
+                </div>
+
+                <!-- Body Points -->
+                <div class="p-5 sm:p-6 bg-white space-y-3">
+                    ${actionPointsHtml}
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="flex items-center justify-end gap-3 px-6 py-4 bg-gray-50/80 border-t border-gray-100">
+                    <button type="button" id="paymentBlockConfirmCancelBtn"
+                        class="px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs sm:text-sm transition cursor-pointer">
+                        ${cancelBtnText}
+                    </button>
+                    <button type="button" id="paymentBlockConfirmOkBtn"
+                        class="px-5 py-2.5 rounded-xl ${confirmBtnClass} font-bold text-xs sm:text-sm shadow-lg transition transform active:scale-95 cursor-pointer flex items-center gap-2">
+                        <i class="${willUnlock ? 'fa-solid fa-lock-open' : 'fa-solid fa-lock'}"></i> ${confirmBtnText}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(container);
+
+        const card = container.querySelector("div");
+        const cancelBtn = container.querySelector("#paymentBlockConfirmCancelBtn");
+        const okBtn = container.querySelector("#paymentBlockConfirmOkBtn");
+
+        let isClosed = false;
+        const closeDialog = (result) => {
+            if (isClosed) return;
+            isClosed = true;
+            document.removeEventListener("keydown", handleKeyDown);
+            container.classList.remove("opacity-100");
+            container.classList.add("opacity-0");
+            if (card) {
+                card.classList.remove("scale-100", "opacity-100");
+                card.classList.add("scale-95", "opacity-0");
+            }
+            setTimeout(() => {
+                if (container.parentElement) container.parentElement.removeChild(container);
+                resolve(result);
+            }, 200);
+        };
+
+        cancelBtn.onclick = () => closeDialog(false);
+        okBtn.onclick = () => closeDialog(true);
+
+        container.onclick = (e) => {
+            if (e.target === container) closeDialog(false);
+        };
+
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(false);
+            } else if (e.key === "Enter") {
+                document.removeEventListener("keydown", handleKeyDown);
+                closeDialog(true);
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown, { once: true });
+
+        requestAnimationFrame(() => {
+            container.classList.remove("opacity-0");
+            container.classList.add("opacity-100");
+            if (card) {
+                card.classList.remove("scale-95", "opacity-0");
+                card.classList.add("scale-100", "opacity-100");
+            }
+            okBtn.focus();
+        });
+    });
+}
+
+/**
  * Khóa màn hình với lớp phủ mờ (Screen Lock Overlay) khi cập nhật dữ liệu
  */
 function showScreenLock(message = "Đang cập nhật cấu hình & đồng bộ hệ thống...") {
@@ -1206,6 +1370,7 @@ if (typeof window !== "undefined") {
     window.showConfirmDialog = showConfirmDialog;
     window.showLiveStreamConfirmDialog = showLiveStreamConfirmDialog;
     window.showSaveLiveStreamConfigDialog = showSaveLiveStreamConfigDialog;
+    window.showLiveStreamPaymentBlockConfirmDialog = showLiveStreamPaymentBlockConfirmDialog;
     window.showScreenLock = showScreenLock;
     window.hideScreenLock = hideScreenLock;
     window.openStoreMap = openStoreMap;
@@ -3612,12 +3777,116 @@ function closeQuickOrderModal() {
 }
 
 /**
+ * Lấy chuỗi ngày hôm nay theo giờ địa phương (YYYY-MM-DD)
+ */
+function getQuickOrderTodayStr() {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * Định dạng chuỗi YYYY-MM-DD sang nhãn hiển thị thân thiện (VD: "Hôm nay (31/10/2026)" hoặc "31/10/2026")
+ */
+function formatQuickOrderDateDisplay(dateStr, shortBadge = false) {
+    if (!dateStr || typeof dateStr !== "string") return "Hôm nay";
+    const clean = dateStr.trim().slice(0, 10);
+    const parts = clean.split("-");
+    if (parts.length !== 3) return dateStr;
+    const [yyyy, mm, dd] = parts;
+    const todayStr = getQuickOrderTodayStr();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+
+    if (clean === todayStr) {
+        return shortBadge ? `Hôm nay (${dd}/${mm})` : `Hôm nay (${dd}/${mm}/${yyyy})`;
+    }
+    if (clean === tomStr) {
+        return shortBadge ? `Ngày mai (${dd}/${mm})` : `Ngày mai (${dd}/${mm}/${yyyy})`;
+    }
+    return `${dd}/${mm}/${yyyy}`;
+}
+
+/**
+ * Khởi tạo mặc định Ngày nhận hoa = Hôm nay và Khung giờ nhận mặc định
+ */
+function initQuickOrderDeliveryDateTime() {
+    const todayStr = getQuickOrderTodayStr();
+    const dateInput = document.getElementById("quickOrderDeliveryDate");
+    const timeSelect = document.getElementById("quickOrderDeliveryTime");
+    const badgeEl = document.getElementById("quickOrderDateBadge");
+
+    if (dateInput) {
+        dateInput.min = todayStr;
+        dateInput.value = todayStr;
+    }
+    if (timeSelect && timeSelect.options.length > 0) {
+        timeSelect.selectedIndex = 0;
+    }
+    if (badgeEl) {
+        badgeEl.textContent = formatQuickOrderDateDisplay(todayStr, true);
+    }
+}
+
+/**
+ * Cập nhật nhãn badge khi khách đổi ngày nhận hoa trong Quick Order
+ */
+function handleQuickOrderDateChange(inputEl) {
+    if (!inputEl) inputEl = document.getElementById("quickOrderDeliveryDate");
+    const badgeEl = document.getElementById("quickOrderDateBadge");
+    if (!inputEl || !badgeEl) return;
+
+    const val = inputEl.value || getQuickOrderTodayStr();
+    badgeEl.textContent = formatQuickOrderDateDisplay(val, true);
+}
+
+/**
+ * Xử lý khi khách bật/tắt tùy chọn "Nhận Hoa Trực Tiếp Tại Shop" (Enable Box)
+ */
+function handleQuickOrderPickupToggle(checkboxEl) {
+    if (!checkboxEl) checkboxEl = document.getElementById("quickOrderPickupCheckbox");
+    const isPickup = !!(checkboxEl && checkboxEl.checked);
+    const addrContainer = document.getElementById("quickOrderAddressContainer");
+    const addrInput = document.getElementById("quickOrderRecipientAddress");
+    const shopInfo = document.getElementById("quickOrderPickupShopInfo");
+    const badgeEl = document.getElementById("quickOrderPickupBadge");
+
+    if (isPickup) {
+        if (addrContainer) addrContainer.classList.add("hidden");
+        if (addrInput) addrInput.required = false;
+        if (shopInfo) shopInfo.classList.remove("hidden");
+        if (badgeEl) {
+            badgeEl.textContent = "Đã bật nhận tại Shop";
+            badgeEl.className = "text-[10px] bg-emerald-600 text-white font-bold px-2.5 py-0.5 rounded-full border border-emerald-700 shadow-2xs";
+        }
+    } else {
+        if (addrContainer) addrContainer.classList.remove("hidden");
+        if (addrInput) addrInput.required = true;
+        if (shopInfo) shopInfo.classList.add("hidden");
+        if (badgeEl) {
+            badgeEl.textContent = "Freeship";
+            badgeEl.className = "text-[10px] bg-white text-emerald-700 font-bold px-2 py-0.5 rounded-full border border-emerald-200";
+        }
+    }
+}
+
+/**
  * Reset dữ liệu form đặt hàng nhanh
  */
 function resetQuickOrderForm() {
     const form = document.getElementById("quickOrderForm");
     if (form) form.reset();
     selectedProofFile = null;
+
+    initQuickOrderDeliveryDateTime();
+
+    const pickupCheckbox = document.getElementById("quickOrderPickupCheckbox");
+    if (pickupCheckbox) pickupCheckbox.checked = false;
+    handleQuickOrderPickupToggle(pickupCheckbox);
 
     const previewContainer = document.getElementById("quickOrderProofPreviewContainer");
     const uploadPlaceholder = document.getElementById("quickOrderUploadPlaceholder");
@@ -3724,6 +3993,9 @@ async function handleQuickOrderSubmit(event) {
     const nameInput = document.getElementById("quickOrderRecipientName");
     const phoneInput = document.getElementById("quickOrderRecipientPhone");
     const addressInput = document.getElementById("quickOrderRecipientAddress");
+    const pickupCheckbox = document.getElementById("quickOrderPickupCheckbox");
+    const deliveryDateInput = document.getElementById("quickOrderDeliveryDate");
+    const deliveryTimeInput = document.getElementById("quickOrderDeliveryTime");
     const amountInput = document.getElementById("quickOrderAmount");
     const notesInput = document.getElementById("quickOrderNotes");
     const productSelect = document.getElementById("quickOrderProductSelect");
@@ -3734,7 +4006,12 @@ async function handleQuickOrderSubmit(event) {
 
     const name = nameInput ? nameInput.value.trim() : "";
     const phone = phoneInput ? phoneInput.value.trim() : "";
-    const address = addressInput ? addressInput.value.trim() : "";
+    const isPickup = !!(pickupCheckbox && pickupCheckbox.checked);
+    const fulfillmentType = isPickup ? "pickup" : "delivery";
+    const rawAddress = addressInput ? addressInput.value.trim() : "";
+    const address = isPickup ? (rawAddress || "Nhận trực tiếp tại Shop") : rawAddress;
+    const deliveryDate = (deliveryDateInput && deliveryDateInput.value) ? deliveryDateInput.value.trim() : getQuickOrderTodayStr();
+    const deliveryTime = (deliveryTimeInput && deliveryTimeInput.value) ? deliveryTimeInput.value.trim() : "Giao ngay trong ngày (Sớm nhất)";
     const rawAmount = amountInput ? amountInput.value.replace(/\D/g, "") : "";
     const amount = rawAmount ? parseInt(rawAmount, 10) : 0;
     const notes = notesInput ? notesInput.value.trim() : "";
@@ -3782,6 +4059,11 @@ async function handleQuickOrderSubmit(event) {
     formData.append("recipientName", name);
     formData.append("phone", phone);
     formData.append("address", address);
+    formData.append("fulfillmentType", fulfillmentType);
+    formData.append("isPickup", isPickup ? "true" : "false");
+    formData.append("deliveryDate", deliveryDate);
+    formData.append("deliveryTime", deliveryTime);
+    formData.append("timeSlot", deliveryTime);
     formData.append("transferredAmount", amount.toString());
     formData.append("notes", notes);
     formData.append("paymentProof", selectedProofFile);
@@ -3820,6 +4102,7 @@ async function handleQuickOrderSubmit(event) {
         const nameEl = document.getElementById("quickOrderSuccessName");
         const phoneEl = document.getElementById("quickOrderSuccessPhone");
         const addrEl = document.getElementById("quickOrderSuccessAddress");
+        const deliveryTimeEl = document.getElementById("quickOrderSuccessDeliveryTime");
         const amtEl = document.getElementById("quickOrderSuccessAmount");
         const flowerEl = document.getElementById("quickOrderSuccessFlower");
 
@@ -3827,6 +4110,11 @@ async function handleQuickOrderSubmit(event) {
         if (nameEl) nameEl.textContent = name;
         if (phoneEl) phoneEl.textContent = phone;
         if (addrEl) addrEl.textContent = address;
+        if (deliveryTimeEl) {
+            const finalDate = (newOrder.delivery && newOrder.delivery.deliveryDate) || newOrder.deliveryDate || deliveryDate;
+            const finalSlot = (newOrder.delivery && newOrder.delivery.timeSlot) || newOrder.deliveryTime || deliveryTime;
+            deliveryTimeEl.textContent = `${formatQuickOrderDateDisplay(finalDate)} • ${finalSlot}`;
+        }
         if (amtEl) amtEl.textContent = typeof formatVND === "function" ? formatVND(amount) : `${amount.toLocaleString("vi-VN")}₫`;
         if (flowerEl) flowerEl.textContent = selectedProductName;
 
@@ -4103,6 +4391,10 @@ function renderOrderLookupResults(orders, query) {
                             <span class="text-gray-500 flex-shrink-0 mr-2">Địa chỉ giao:</span>
                             <span class="font-medium text-gray-700 text-right line-clamp-2">${ord.deliveryAddress || 'Nhận tại tiệm'}</span>
                         </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 flex-shrink-0 mr-2">Thời gian nhận:</span>
+                            <span class="font-bold text-emerald-700 text-right">${formatQuickOrderDateDisplay(ord.deliveryDate || (ord.delivery && ord.delivery.deliveryDate) || '')}${(ord.deliveryTimeSlot || ord.deliveryTime || (ord.delivery && ord.delivery.timeSlot)) ? ' • ' + (ord.deliveryTimeSlot || ord.deliveryTime || (ord.delivery && ord.delivery.timeSlot)) : ''}</span>
+                        </div>
                         <div class="flex justify-between pt-1 border-t border-gray-200/60 font-bold">
                             <span class="text-gray-600">Tổng thanh toán:</span>
                             <span class="text-rose-600 text-xs">${formatVND(ord.totalAmount || ord.transferredAmount || 0)}</span>
@@ -4149,6 +4441,19 @@ if (typeof window !== "undefined") {
     window.closeOrderLookupModal = closeOrderLookupModal;
     window.handleOrderLookup = handleOrderLookup;
     window.downloadQuickOrderQrCode = downloadQuickOrderQrCode;
+    window.initQuickOrderDeliveryDateTime = initQuickOrderDeliveryDateTime;
+    window.handleQuickOrderDateChange = handleQuickOrderDateChange;
+    window.handleQuickOrderPickupToggle = handleQuickOrderPickupToggle;
+    window.getQuickOrderTodayStr = getQuickOrderTodayStr;
+    window.formatQuickOrderDateDisplay = formatQuickOrderDateDisplay;
+
+    if (typeof document !== "undefined") {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => initQuickOrderDeliveryDateTime());
+        } else {
+            initQuickOrderDeliveryDateTime();
+        }
+    }
 }
 
 
@@ -12230,7 +12535,146 @@ async function loadAdminLiveStreamConfig() {
             statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi nạp`;
         }
     }
+    // Mặc định luôn bật khóa bảo vệ chống gõ nhầm mỗi khi nạp cấu hình (chỉ lưu tạm trên web)
+    isLiveStreamPaymentBlocked = true;
     await renderLiveStreamConfig(adminLiveStreamConfig);
+}
+
+// =========================================================================
+// KHÓA BẢO VỆ CHỐNG SỬA NHẦM THÔNG TIN THANH TOÁN (CARD 2: TÀI KHOẢN & CARD 3: QR)
+// Mặc định là ENABLE (isLiveStreamPaymentBlocked = true) - Chỉ lưu tạm trên giao diện Web
+// =========================================================================
+let isLiveStreamPaymentBlocked = true;
+
+function getLiveStreamPaymentBlockState() {
+    return isLiveStreamPaymentBlocked;
+}
+
+async function toggleLiveStreamPaymentBlock(forcedState = null) {
+    const nextState = (forcedState !== null) ? !!forcedState : !isLiveStreamPaymentBlocked;
+
+    // Nếu thay đổi trạng thái, hiển thị Dialog xác nhận
+    if (nextState !== isLiveStreamPaymentBlocked) {
+        const willUnlock = !nextState; // nextState = false nghĩa là Mở Khóa (isBlocked = false)
+        let confirmed = false;
+
+        if (typeof showLiveStreamPaymentBlockConfirmDialog === "function") {
+            confirmed = await showLiveStreamPaymentBlockConfirmDialog(willUnlock);
+        } else if (typeof showConfirmDialog === "function") {
+            confirmed = await showConfirmDialog({
+                title: willUnlock ? "Mở Khóa Chỉnh Sửa Thông Tin Thanh Toán?" : "Kích Hoạt Lại Khóa Chống Sửa?",
+                message: willUnlock
+                    ? "Tài khoản nhận tiền và Mã QR là thông tin tài chính nhạy cảm. Bạn có chắc chắn muốn mở khóa bảo vệ để chỉnh sửa?"
+                    : "Hệ thống sẽ khóa bảo vệ lại toàn bộ ô nhập tài khoản và ảnh QR để ngăn thao tác gõ hoặc chỉnh sửa ngoài ý muốn.",
+                detail: willUnlock ? "Khóa bảo vệ chỉ mở tạm thời trong phiên làm việc hiện tại và sẽ tự động khóa lại sau khi lưu cấu hình." : "",
+                confirmText: willUnlock ? "Mở Khóa Chỉnh Sửa" : "Khóa Lại Ngay",
+                cancelText: willUnlock ? "Giữ Khóa Bảo Vệ" : "Hủy Bỏ",
+                type: willUnlock ? "warning" : "info",
+                icon: willUnlock ? "fa-solid fa-lock-open" : "fa-solid fa-lock"
+            });
+        } else {
+            confirmed = window.confirm(willUnlock ? "Bạn có chắc chắn muốn mở khóa chỉnh sửa thông tin thanh toán không?" : "Bạn có muốn khóa lại không?");
+        }
+
+        if (!confirmed) return;
+
+        isLiveStreamPaymentBlocked = nextState;
+    }
+
+    applyLiveStreamPaymentBlockUI(isLiveStreamPaymentBlocked);
+
+    if (isLiveStreamPaymentBlocked) {
+        if (typeof showToast === "function") {
+            showToast("🔒 Đã BẬT khóa bảo vệ: Thông tin Tài khoản & Mã QR đang được khóa chống gõ nhầm!", "info");
+        }
+    } else {
+        if (typeof showToast === "function") {
+            showToast("🔓 Đã MỞ KHÓA: Bạn có thể chỉnh sửa Tài khoản & Mã QR (Chỉ tạm thời trên web)!", "warning");
+        }
+    }
+}
+
+async function handleLiveStreamLockedInputClick() {
+    if (isLiveStreamPaymentBlocked) {
+        await toggleLiveStreamPaymentBlock(false);
+    }
+}
+
+function applyLiveStreamPaymentBlockUI(isBlocked = isLiveStreamPaymentBlocked) {
+    const btnBank = document.getElementById("btnToggleBankBlock");
+    const btnQr = document.getElementById("btnToggleQrBlock");
+
+    const bankNameInput = document.getElementById("livestreamBankNameInput");
+    const bankAccInput = document.getElementById("livestreamBankAccountInput");
+    const bankOwnerInput = document.getElementById("livestreamBankOwnerInput");
+
+    const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
+    const qrFileInput = document.getElementById("adminLiveStreamQrFileInput");
+    const qrUploadLabel = document.getElementById("adminLiveStreamQrUploadLabel");
+    const qrRemoveBtn = document.getElementById("adminLiveStreamQrRemoveBtn");
+
+    // 1. Cập nhật giao diện nút bấm trên Card 2 và Card 3
+    const updateBtn = (btn) => {
+        if (!btn) return;
+        if (isBlocked) {
+            btn.className = "px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300";
+            btn.innerHTML = `<i class="fa-solid fa-lock text-amber-600"></i> <span>Khóa chống sửa: BẬT</span>`;
+            btn.title = "Đang bật khóa bảo vệ chống gõ nhầm. Bấm để mở khóa chỉnh sửa";
+        } else {
+            btn.className = "px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300";
+            btn.innerHTML = `<i class="fa-solid fa-lock-open text-emerald-600"></i> <span>Khóa chống sửa: TẮT</span>`;
+            btn.title = "Đang mở khóa chỉnh sửa. Bấm để khóa lại";
+        }
+    };
+    updateBtn(btnBank);
+    updateBtn(btnQr);
+
+    // 2. Card 2: Các trường tài khoản
+    [bankNameInput, bankAccInput, bankOwnerInput].forEach(inp => {
+        if (!inp) return;
+        inp.readOnly = isBlocked;
+        if (isBlocked) {
+            inp.classList.add("bg-gray-100", "text-gray-500", "cursor-not-allowed", "select-none");
+            inp.classList.remove("focus:bg-white");
+        } else {
+            inp.classList.remove("bg-gray-100", "text-gray-500", "cursor-not-allowed", "select-none");
+            inp.classList.add("focus:bg-white");
+        }
+    });
+
+    // 3. Card 3: Mã QR
+    if (qrUrlInput) {
+        qrUrlInput.readOnly = isBlocked;
+        if (isBlocked) {
+            qrUrlInput.classList.add("bg-gray-100", "text-gray-500", "cursor-not-allowed");
+            qrUrlInput.classList.remove("focus:bg-white");
+        } else {
+            qrUrlInput.classList.remove("bg-gray-100", "text-gray-500", "cursor-not-allowed");
+            qrUrlInput.classList.add("focus:bg-white");
+        }
+    }
+
+    if (qrUploadLabel) {
+        if (isBlocked) {
+            qrUploadLabel.classList.add("pointer-events-none", "opacity-40", "cursor-not-allowed");
+            qrUploadLabel.classList.remove("cursor-pointer");
+        } else {
+            qrUploadLabel.classList.remove("pointer-events-none", "opacity-40", "cursor-not-allowed");
+            qrUploadLabel.classList.add("cursor-pointer");
+        }
+    }
+
+    if (qrFileInput) {
+        qrFileInput.disabled = isBlocked;
+    }
+
+    if (qrRemoveBtn) {
+        if (isBlocked) {
+            qrRemoveBtn.classList.add("pointer-events-none", "opacity-40", "cursor-not-allowed");
+        } else {
+            qrRemoveBtn.classList.remove("pointer-events-none", "opacity-40", "cursor-not-allowed");
+        }
+    }
 }
 
 async function renderLiveStreamConfig(config) {
@@ -12308,6 +12752,9 @@ async function renderLiveStreamConfig(config) {
         const pathname = window.location.pathname.replace(/\/+$/, "");
         linkInput.value = `${origin}${pathname}#quick-order`;
     }
+
+    // Áp dụng trạng thái khóa bảo vệ thanh toán lên giao diện (mặc định là khóa)
+    applyLiveStreamPaymentBlockUI(isLiveStreamPaymentBlocked);
 
     // Hiển thị danh sách bó hoa nổi bật ghim trong phiên live
     await renderAdminLiveStreamFeaturedProducts((config && config.featuredProductIds) || []);
@@ -12492,6 +12939,10 @@ function toggleAdminLiveStreamFeaturedProduct(productId, isChecked) {
  * Cập nhật ảnh mã QR Live Stream trực tiếp từ ô nhập đường dẫn URL
  */
 function handleAdminLiveStreamQrUrlInput(url) {
+    if (isLiveStreamPaymentBlocked) {
+        handleLiveStreamLockedInputClick();
+        return;
+    }
     const cleanUrl = (url || "").trim();
     adminLiveStreamConfig.qrCodeImage = cleanUrl;
     if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = cleanUrl;
@@ -12583,6 +13034,11 @@ function convertImageToWebpBase64(file, maxWidth = 800, maxHeight = 800, quality
  * Tự động convert ảnh sang định dạng chuẩn JPG Base64 để lưu trực tiếp trong config và tương thích mọi app ngân hàng
  */
 async function handleAdminLiveStreamQrUpload(event) {
+    if (isLiveStreamPaymentBlocked) {
+        handleLiveStreamLockedInputClick();
+        if (event && event.target) event.target.value = "";
+        return;
+    }
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
@@ -12633,6 +13089,10 @@ async function handleAdminLiveStreamQrUpload(event) {
  * Xóa ảnh mã QR chuyển khoản (không tự ý sinh ảnh thay thế)
  */
 function removeAdminLiveStreamQr() {
+    if (isLiveStreamPaymentBlocked) {
+        handleLiveStreamLockedInputClick();
+        return;
+    }
     adminLiveStreamConfig.qrCodeImage = "";
     if (adminLiveStreamConfig.bankInfo) adminLiveStreamConfig.bankInfo.qrCodeImage = "";
     const qrUrlInput = document.getElementById("adminLiveStreamQrUrlInput");
@@ -12786,6 +13246,7 @@ async function saveLiveStreamConfig() {
         if (!res.ok || !json.success) throw new Error(json.message || "Không thể lưu cấu hình Live Stream");
 
         adminLiveStreamConfig = json.data;
+        isLiveStreamPaymentBlocked = true;
         await renderLiveStreamConfig(adminLiveStreamConfig);
         notifyUser(
             "Đã lưu thông tin cấu hình Live Stream (Tiêu đề, STK, QR, Bó hoa ghim) thành công!",
@@ -13985,6 +14446,10 @@ if (typeof window !== "undefined") {
     window.validatePriceLevelModalNumbers = validatePriceLevelModalNumbers;
     window.savePriceLevelFromModal = savePriceLevelFromModal;
     window.deletePriceLevel = deletePriceLevel;
+    window.toggleLiveStreamPaymentBlock = toggleLiveStreamPaymentBlock;
+    window.handleLiveStreamLockedInputClick = handleLiveStreamLockedInputClick;
+    window.applyLiveStreamPaymentBlockUI = applyLiveStreamPaymentBlockUI;
+    window.getLiveStreamPaymentBlockState = getLiveStreamPaymentBlockState;
 }
 
 
@@ -14730,6 +15195,10 @@ function renderLiveOrdersTable(orders) {
                     <div class="text-[10px] text-gray-500 font-mono">${recipient.phone || customerPhone}</div>
                     <div class="text-[10px] text-gray-600 mt-0.5 max-w-[160px] xl:max-w-[280px] 2xl:max-w-[380px] line-clamp-2" title="${deliveryAddress}">
                         📍 ${deliveryAddress}
+                    </div>
+                    <div class="text-[10px] text-emerald-700 font-semibold mt-1 flex items-center gap-1 flex-wrap">
+                        <span>🕒 Nhận: ${(order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "Hôm nay"}</span>
+                        ${((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot) ? `<span class="text-gray-500 font-normal">• ${(order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot}</span>` : ''}
                     </div>
                     ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}
                 </td>

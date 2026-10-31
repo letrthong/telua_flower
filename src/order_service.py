@@ -514,6 +514,12 @@ def create_livestream_quick_order(
     # 3. Ràng buộc các trường bắt buộc
     if not customer_name:
         return False, None, "Vui lòng nhập họ và tên người nhận hoa"
+    raw_fulfillment = str(quick_data.get("fulfillmentType") or (quick_data.get("delivery") or {}).get("fulfillmentType") or "").strip().lower()
+    is_pickup_flag = str(quick_data.get("isPickup") or "").strip().lower() in ("true", "1", "yes", "on")
+    fulfillment_type = "pickup" if (raw_fulfillment == "pickup" or is_pickup_flag) else "delivery"
+    if fulfillment_type == "pickup" and not address:
+        address = "Nhận trực tiếp tại Shop"
+
     if not phone or len(phone) < 9:
         return False, None, "Vui lòng nhập số điện thoại người nhận hợp lệ"
     if not address:
@@ -544,6 +550,17 @@ def create_livestream_quick_order(
     order_code = (quick_data.get("orderCode") or generated_code).strip()
     created_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
     today_date = datetime.now().strftime("%Y-%m-%d")
+
+    # Ngày nhận hoa & Khung giờ nhận hoa (mặc định: hôm nay)
+    raw_delivery_date = str(quick_data.get("deliveryDate") or (quick_data.get("delivery") or {}).get("deliveryDate") or "").strip()
+    delivery_date_str = raw_delivery_date if (raw_delivery_date and len(raw_delivery_date) >= 8) else today_date
+    raw_time_slot = str(
+        quick_data.get("deliveryTime")
+        or quick_data.get("timeSlot")
+        or (quick_data.get("delivery") or {}).get("timeSlot")
+        or ""
+    ).strip()
+    time_slot_str = raw_time_slot if raw_time_slot else "Giao ngay trong ngày (Sớm nhất)"
 
     new_order = {
         "id": order_id,
@@ -577,11 +594,14 @@ def create_livestream_quick_order(
             "address": address,
             "deliveryNotes": notes
         },
+        "fulfillmentType": fulfillment_type,
+        "deliveryDate": delivery_date_str,
+        "deliveryTime": time_slot_str,
         "delivery": {
-            "deliveryDate": datetime.now().strftime("%Y-%m-%d"),
-            "timeSlot": "Giao hàng phiên Live Stream",
+            "deliveryDate": delivery_date_str,
+            "timeSlot": time_slot_str,
             "isExpress2H": False,
-            "fulfillmentType": "delivery"
+            "fulfillmentType": fulfillment_type
         },
         "requiresArranging": False,
         "items": [
@@ -777,8 +797,10 @@ def lookup_orders_by_phone_or_code(query_str: str) -> List[Dict[str, Any]]:
             "recipientName": recipient.get("name") or o.get("customerName") or "Quý khách",
             "recipientPhone": full_phone,
             "maskedPhone": masked_phone,
+            "fulfillmentType": (o.get("delivery") or {}).get("fulfillmentType") or o.get("fulfillmentType") or "delivery",
             "deliveryAddress": recipient.get("address") or recipient.get("deliveryAddress") or "",
-            "deliveryTimeSlot": (o.get("delivery") or {}).get("timeSlot") or "",
+            "deliveryDate": (o.get("delivery") or {}).get("deliveryDate") or o.get("deliveryDate") or o.get("orderDate") or "",
+            "deliveryTimeSlot": (o.get("delivery") or {}).get("timeSlot") or o.get("deliveryTime") or "",
             "items": items,
             "totalAmount": o.get("totalAmount") or financials.get("totalAmount") or 0,
             "cardMessage": o.get("cardMessage") or (o.get("customization") or {}).get("cardMessage") or "",

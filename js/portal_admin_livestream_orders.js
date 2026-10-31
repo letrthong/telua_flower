@@ -376,6 +376,10 @@ export function renderLiveOrdersTable(orders) {
                     <div class="text-[10px] text-gray-600 mt-0.5 max-w-[160px] xl:max-w-[280px] 2xl:max-w-[380px] line-clamp-2" title="${deliveryAddress}">
                         📍 ${deliveryAddress}
                     </div>
+                    <div class="text-[10px] text-emerald-700 font-semibold mt-1 flex items-center gap-1 flex-wrap">
+                        <span>🕒 Nhận: ${(order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "Hôm nay"}</span>
+                        ${((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot) ? `<span class="text-gray-500 font-normal">• ${(order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot}</span>` : ''}
+                    </div>
                     ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}
                 </td>
 
