@@ -1,0 +1,81 @@
+{
+  "id": "ord_1793443570_408e13",
+  "orderCode": "LIVE-261031-D808",
+  "trackingCode": "096876878678",
+  "createdAt": "2026-10-31T10:46:10Z",
+  "orderDate": "2026-10-31",
+  "orderDay": "2026-10-31",
+  "livestreamDate": "2026-10-31",
+  "updatedAt": "2026-10-31T10:46:10Z",
+  "source": "livestream_quick_order",
+  "branchId": "admin",
+  "assignedBranchId": "admin",
+  "customerId": null,
+  "createdBy": "096876878678",
+  "assignedTo": "staff_admin",
+  "assignedBy": "system",
+  "status": "pending",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "đ",
+    "realName": "đ",
+    "phone": "096876878678",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "đ",
+    "phone": "096876878678",
+    "address": "Nhận trực tiếp tại Shop",
+    "deliveryNotes": ""
+  },
+  "fulfillmentType": "pickup",
+  "deliveryDate": "2026-10-31",
+  "deliveryTime": "18:00",
+  "delivery": {
+    "deliveryDate": "2026-10-31",
+    "timeSlot": "18:00",
+    "isExpress2H": false,
+    "fulfillmentType": "pickup"
+  },
+  "requiresArranging": false,
+  "items": [
+    {
+      "productId": "test_b64_1788062614",
+      "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
+      "price": 1500000,
+      "quantity": 1,
+      "itemTotal": 1500000,
+      "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
+    }
+  ],
+  "financials": {
+    "subtotal": 1500000,
+    "arrangingFee": 0,
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "totalAmount": 1500000
+  },
+  "totalAmount": 1500000,
+  "paymentMethod": "vietqr",
+  "payment": {
+    "method": "vietqr",
+    "status": "pending_confirmation",
+    "transferredAmount": 1500000,
+    "proofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+    "transferContent": "LIVE-261031-D808"
+  },
+  "paymentProofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-10-31T10:46:10Z",
+      "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: LIVE-261031-D808. Số tiền đã chuyển: 1,500,000₫.",
+      "updatedBy": "096876878678"
+    }
+  ],
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "creatorName": "đ",
+  "assigneeName": "Super Admin (staff_admin)"
+}

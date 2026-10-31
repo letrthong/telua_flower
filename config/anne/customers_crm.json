@@ -88,5 +88,18 @@
     "flowerPreferences": "",
     "savedAddresses": [],
     "createdAt": "2026-10-25T20:21:03Z"
+  },
+  {
+    "id": "cust_1793443571",
+    "phone": "096876878678",
+    "fullName": "đ",
+    "email": "",
+    "tier": "silver",
+    "loyaltyPoints": 150,
+    "totalSpent": 1500000,
+    "orderCount": 1,
+    "flowerPreferences": "",
+    "savedAddresses": [],
+    "createdAt": "2026-10-31T10:46:11Z"
   }
 ]

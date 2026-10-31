@@ -8,6 +8,85 @@ import { ADMIN_ORDER_STATUS_META, ADMIN_PAYMENT_STATUS_META, exportOrdersToCsv }
 
 export let lastLoadedLiveOrders = [];
 export let currentLiveStreamConfig = null;
+export let currentLiveOrderSort = "delivery_asc";
+
+const LIVE_FILTER_STORAGE_KEY = "telua_live_orders_filter_state_v1";
+const LIVE_ROW_STATUS_STORAGE_KEY = "telua_live_order_row_status_v1";
+let _liveFilterStateRestored = false;
+
+/**
+ * Lưu trạng thái các selectBox lọc & sắp xếp của Bàn Điều Khiển Live Stream vào trình duyệt (localStorage)
+ */
+export function saveLiveOrderFilterState() {
+    if (typeof localStorage === "undefined") return;
+    try {
+        const statusEl = document.getElementById("filterLiveOrderStatus");
+        const paymentEl = document.getElementById("filterLiveOrderPayment");
+        const sortEl = document.getElementById("sortLiveOrdersSelect");
+        const dateEl = document.getElementById("filterLiveOrderDate");
+        const state = {
+            status: statusEl ? statusEl.value : "all",
+            paymentStatus: paymentEl ? paymentEl.value : "all",
+            sort: (sortEl && sortEl.value) ? sortEl.value : currentLiveOrderSort,
+            date: dateEl ? dateEl.value : ""
+        };
+        localStorage.setItem(LIVE_FILTER_STORAGE_KEY, JSON.stringify(state));
+    } catch (e) { }
+}
+
+/**
+ * Khôi phục trạng thái các selectBox lọc & sắp xếp từ localStorage khi tải lại trang (Refresh)
+ */
+export function restoreLiveOrderFilterState() {
+    if (_liveFilterStateRestored || typeof localStorage === "undefined") return;
+    _liveFilterStateRestored = true;
+    try {
+        const raw = localStorage.getItem(LIVE_FILTER_STORAGE_KEY);
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        if (!state || typeof state !== "object") return;
+
+        const statusEl = document.getElementById("filterLiveOrderStatus");
+        const paymentEl = document.getElementById("filterLiveOrderPayment");
+        const sortEl = document.getElementById("sortLiveOrdersSelect");
+        const dateEl = document.getElementById("filterLiveOrderDate");
+
+        if (statusEl && state.status) statusEl.value = state.status;
+        if (paymentEl && state.paymentStatus) paymentEl.value = state.paymentStatus;
+        if (sortEl && state.sort) {
+            sortEl.value = state.sort;
+            currentLiveOrderSort = state.sort;
+        }
+        if (dateEl && typeof state.date === "string") {
+            dateEl.value = state.date;
+        }
+    } catch (e) { }
+}
+
+/**
+ * Lưu/đọc trạng thái status selectBox từng đơn hàng trong trình duyệt để đồng bộ tức thì khi F5
+ */
+export function saveLiveOrderRowStatusLocal(orderId, status) {
+    if (!orderId || !status || typeof localStorage === "undefined") return;
+    try {
+        const raw = localStorage.getItem(LIVE_ROW_STATUS_STORAGE_KEY);
+        const map = raw ? JSON.parse(raw) : {};
+        map[orderId] = status;
+        localStorage.setItem(LIVE_ROW_STATUS_STORAGE_KEY, JSON.stringify(map));
+    } catch (e) { }
+}
+
+export function getLiveOrderRowStatusLocal(orderId) {
+    if (!orderId || typeof localStorage === "undefined") return "";
+    try {
+        const raw = localStorage.getItem(LIVE_ROW_STATUS_STORAGE_KEY);
+        if (!raw) return "";
+        const map = JSON.parse(raw);
+        return (map && map[orderId]) ? map[orderId] : "";
+    } catch (e) {
+        return "";
+    }
+}
 
 function formatLiveDate(isoStr) {
     if (!isoStr) return "";
@@ -20,6 +99,122 @@ function formatLiveDate(isoStr) {
         hour: "2-digit",
         minute: "2-digit"
     });
+}
+
+function formatLiveReceivingDateLabel(dateStr) {
+    if (!dateStr || typeof dateStr !== "string") return "Hôm nay";
+    const clean = dateStr.trim().slice(0, 10);
+    const parts = clean.split("-");
+    if (parts.length !== 3) return dateStr;
+    const [yyyy, mm, dd] = parts;
+
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+
+    if (clean === todayStr) return `Hôm nay (${dd}/${mm})`;
+    if (clean === tomStr) return `Ngày mai (${dd}/${mm})`;
+    return `${dd}/${mm}/${yyyy}`;
+}
+
+/**
+ * Tạo khóa chuẩn hóa YYYY-MM-DD_HH:MM để sắp xếp chính xác theo Ngày nhận & Giờ nhận hoa
+ */
+export function getLiveOrderDeliverySortKey(order) {
+    if (!order || typeof order !== "object") return "9999-99-99_99:99";
+    const rawDate = (order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "";
+    const datePart = (rawDate && String(rawDate).trim().length >= 10)
+        ? String(rawDate).trim().slice(0, 10)
+        : "9999-99-99";
+
+    const rawSlot = String((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "").trim();
+    let timePart = "23:59";
+    if (!rawSlot || rawSlot.toLowerCase().includes("giao ngay") || rawSlot.toLowerCase().includes("sớm nhất")) {
+        // Ưu tiên đơn "Giao ngay trong ngày (Sớm nhất)" lên đầu trong cùng ngày
+        timePart = "00:00";
+    } else {
+        const m = rawSlot.match(/(\d{1,2}):(\d{2})/);
+        if (m) {
+            timePart = `${String(m[1]).padStart(2, "0")}:${m[2]}`;
+        }
+    }
+    const createdPart = String(order.createdAt || "");
+    return `${datePart}_${timePart}_${createdPart}`;
+}
+
+/**
+ * Sắp xếp danh sách đơn Live Stream theo chế độ được chọn
+ */
+export function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
+    if (!Array.isArray(orders)) return [];
+    const list = [...orders];
+    const mode = sortMode || "delivery_asc";
+
+    list.sort((a, b) => {
+        if (mode === "delivery_asc" || mode === "delivery_desc") {
+            const ka = getLiveOrderDeliverySortKey(a);
+            const kb = getLiveOrderDeliverySortKey(b);
+            return mode === "delivery_asc" ? ka.localeCompare(kb) : kb.localeCompare(ka);
+        }
+        if (mode === "amount_asc" || mode === "amount_desc") {
+            const aa = Number(a.totalAmount) || Number(a.financials?.totalAmount) || Number(a.transferredAmount) || 0;
+            const ab = Number(b.totalAmount) || Number(b.financials?.totalAmount) || Number(b.transferredAmount) || 0;
+            return mode === "amount_asc" ? (aa - ab) : (ab - aa);
+        }
+        // Mặc định: created_desc hoặc created_asc
+        const ca = String(a.createdAt || a.orderDate || "");
+        const cb = String(b.createdAt || b.orderDate || "");
+        return mode === "created_asc" ? ca.localeCompare(cb) : cb.localeCompare(ca);
+    });
+
+    return list;
+}
+
+function updateLiveSortHeaderIcons() {
+    const map = {
+        created: document.getElementById("sortIconLive_created"),
+        delivery: document.getElementById("sortIconLive_delivery"),
+        amount: document.getElementById("sortIconLive_amount")
+    };
+    Object.entries(map).forEach(([col, iconEl]) => {
+        if (!iconEl) return;
+        if (currentLiveOrderSort === `${col}_asc`) {
+            iconEl.className = "fa-solid fa-sort-up text-[10px] ml-0.5 text-rose-600";
+        } else if (currentLiveOrderSort === `${col}_desc`) {
+            iconEl.className = "fa-solid fa-sort-down text-[10px] ml-0.5 text-rose-600";
+        } else {
+            iconEl.className = "fa-solid fa-sort text-[10px] ml-0.5 text-gray-400";
+        }
+    });
+}
+
+/**
+ * Xử lý khi Admin chọn chế độ sắp xếp từ dropdown
+ */
+export function handleLiveOrderSortChange(sortMode) {
+    currentLiveOrderSort = sortMode || "delivery_asc";
+    const selectEl = document.getElementById("sortLiveOrdersSelect");
+    if (selectEl && selectEl.value !== currentLiveOrderSort) {
+        selectEl.value = currentLiveOrderSort;
+    }
+    saveLiveOrderFilterState();
+    updateLiveSortHeaderIcons();
+    renderLiveOrdersTable(lastLoadedLiveOrders);
+}
+
+/**
+ * Xử lý khi Admin nhấp trực tiếp vào tiêu đề cột để đảo chiều sắp xếp
+ */
+export function toggleLiveOrderColumnSort(colName) {
+    if (!colName) return;
+    if (currentLiveOrderSort === `${colName}_asc`) {
+        currentLiveOrderSort = `${colName}_desc`;
+    } else {
+        currentLiveOrderSort = `${colName}_asc`;
+    }
+    handleLiveOrderSortChange(currentLiveOrderSort);
 }
 
 function getLiveStatusMeta(status, map) {
@@ -37,7 +232,15 @@ export async function loadLiveStreamOrders() {
     const tbody = document.getElementById("adminLiveOrdersTableBody");
     if (!tbody) return;
 
-    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">
+    // Khôi phục trạng thái selectBox từ localStorage ở lần nạp đầu tiên sau khi refresh trang,
+    // và lưu lại trạng thái mới nhất ở các lần người dùng đổi bộ lọc
+    if (!_liveFilterStateRestored) {
+        restoreLiveOrderFilterState();
+    } else {
+        saveLiveOrderFilterState();
+    }
+
+    tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-gray-400">
         <i class="fa-solid fa-circle-notch fa-spin text-xl text-rose-500 mb-2 block"></i>
         <span>Đang nạp danh sách đơn Live Stream...</span>
     </td></tr>`;
@@ -263,18 +466,29 @@ export function renderLiveOrdersTable(orders) {
     const tbody = document.getElementById("adminLiveOrdersTableBody");
     if (!tbody) return;
 
+    const selectEl = document.getElementById("sortLiveOrdersSelect");
+    if (selectEl && selectEl.value) {
+        currentLiveOrderSort = selectEl.value;
+    }
+    updateLiveSortHeaderIcons();
+
     if (!Array.isArray(orders) || orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-gray-400">
+        tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-gray-400">
             <i class="fa-solid fa-video-slash text-2xl text-gray-300 mb-2 block"></i>
             Chưa có đơn hàng nào từ Live Stream phù hợp với bộ lọc hiện tại.
         </td></tr>`;
         return;
     }
 
+    const sortedOrders = sortLiveOrdersList(orders, currentLiveOrderSort);
     const branches = (typeof window !== "undefined" && Array.isArray(window.allAdminBranches)) ? window.allAdminBranches : [];
 
-    tbody.innerHTML = orders.map(order => {
-        const statusMeta = getLiveStatusMeta(order.status, ADMIN_ORDER_STATUS_META);
+    tbody.innerHTML = sortedOrders.map(order => {
+        const savedRowStatus = getLiveOrderRowStatusLocal(order.id);
+        const curStatus = (savedRowStatus || order.status || 'pending').toLowerCase();
+        order.status = curStatus;
+
+        const statusMeta = getLiveStatusMeta(curStatus, ADMIN_ORDER_STATUS_META);
         const payMeta = getLiveStatusMeta(order.payment?.status, ADMIN_PAYMENT_STATUS_META);
         const total = Number(order.totalAmount) || Number(order.financials?.totalAmount) || 0;
         const transferred = Number(order.transferredAmount) || Number(order.payment?.amountPaid) || 0;
@@ -301,34 +515,20 @@ export function renderLiveOrdersTable(orders) {
             <option value="${b.id}" ${b.id === branchId ? 'selected' : ''}>📍 ${b.name || b.id}</option>
         `).join("");
 
-        const curStatus = (order.status || 'pending').toLowerCase();
-        const isTerminal = ['delivered', 'completed', 'cancelled', 'returned'].includes(curStatus);
-        const STATUS_LEVELS = { pending: 1, confirmed: 2, arranging: 3, in_progress: 3, photo_sent: 3, shipping: 4, ready_for_pickup: 4, delivered: 5, completed: 5 };
-        const curLevel = STATUS_LEVELS[curStatus] || 1;
+        let options = `<option value="pending" ${curStatus === 'pending' ? 'selected' : ''}>⏳ Chờ xác nhận</option>`;
+        options += `<option value="confirmed" ${curStatus === 'confirmed' ? 'selected' : ''}>✅ Xác nhận đơn</option>`;
+        options += `<option value="arranging" ${(curStatus === 'arranging' || curStatus === 'in_progress' || curStatus === 'photo_sent') ? 'selected' : ''}>🌸 Đang cắm hoa</option>`;
+        options += `<option value="shipping" ${(curStatus === 'shipping' || curStatus === 'ready_for_pickup') ? 'selected' : ''}>🚚 Đang vận chuyển</option>`;
+        options += `<option value="delivered" ${curStatus === 'delivered' ? 'selected' : ''}>🎉 Giao thành công</option>`;
+        options += `<option value="completed" ${curStatus === 'completed' ? 'selected' : ''}>🏁 Hoàn tất đơn</option>`;
+        options += `<option value="cancelled" ${curStatus === 'cancelled' ? 'selected' : ''}>❌ Hủy đơn hàng</option>`;
 
-        let statusActionHtml = '';
-        if (isTerminal) {
-            statusActionHtml = `
-                <div class="w-full px-2 py-1 bg-gray-50 border border-gray-200 rounded-lg text-[10px] font-bold text-gray-400 flex items-center justify-center gap-1 cursor-not-allowed" title="Đơn hàng đã hoàn tất hoặc kết thúc, không thể thay đổi trạng thái">
-                    <i class="fa-solid fa-lock text-[9px]"></i> Đã chốt xong
-                </div>
-            `;
-        } else {
-            let options = '<option value="">Cập nhật nhanh...</option>';
-            if (curLevel < 2) options += '<option value="confirmed">✅ Xác nhận đơn</option>';
-            if (curLevel < 3) options += '<option value="arranging">🌸 Đang cắm hoa</option>';
-            if (curLevel < 4) options += '<option value="shipping">🚚 Đang vận chuyển</option>';
-            if (curLevel < 5) options += '<option value="delivered">🎉 Giao thành công</option>';
-            options += '<option value="completed">🏁 Hoàn tất đơn</option>';
-            options += '<option value="cancelled">❌ Hủy đơn hàng</option>';
-
-            statusActionHtml = `
-                <select onchange="updateAdminOrderStatus('${order.id}', this.value)"
-                        class="w-full px-1.5 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-semibold text-gray-700 focus:outline-none focus:border-primary shadow-2xs">
-                    ${options}
-                </select>
-            `;
-        }
+        const statusActionHtml = `
+            <select onchange="saveLiveOrderRowStatusLocal('${order.id}', this.value); updateAdminOrderStatus('${order.id}', this.value)"
+                    class="w-full px-1.5 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-semibold text-gray-700 focus:outline-none focus:border-primary shadow-2xs">
+                ${options}
+            </select>
+        `;
 
         return `
             <tr class="cursor-pointer hover:bg-rose-50/70 transition border-b border-gray-100 group"
@@ -373,14 +573,26 @@ export function renderLiveOrdersTable(orders) {
                 <td class="p-3 align-top">
                     <div class="text-xs text-gray-700 font-bold">${recipient.name || customerName}</div>
                     <div class="text-[10px] text-gray-500 font-mono">${recipient.phone || customerPhone}</div>
-                    <div class="text-[10px] text-gray-600 mt-0.5 max-w-[160px] xl:max-w-[280px] 2xl:max-w-[380px] line-clamp-2" title="${deliveryAddress}">
+                    <div class="text-[10px] text-gray-600 mt-0.5 max-w-[160px] xl:max-w-[260px] 2xl:max-w-[340px] line-clamp-2" title="${deliveryAddress}">
                         📍 ${deliveryAddress}
                     </div>
-                    <div class="text-[10px] text-emerald-700 font-semibold mt-1 flex items-center gap-1 flex-wrap">
-                        <span>🕒 Nhận: ${(order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "Hôm nay"}</span>
-                        ${((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot) ? `<span class="text-gray-500 font-normal">• ${(order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot}</span>` : ''}
-                    </div>
                     ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}
+                </td>
+
+                <td class="p-3 align-top bg-rose-50/20">
+                    <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-rose-200 text-rose-700 text-[10px] font-bold shadow-2xs">
+                        <i class="fa-regular fa-calendar-check text-[9px]"></i>
+                        <span>${formatLiveReceivingDateLabel((order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "")}</span>
+                    </div>
+                    <div class="text-[11px] font-extrabold text-emerald-700 mt-1 flex items-center gap-1">
+                        <i class="fa-regular fa-clock text-[10px] text-emerald-600"></i>
+                        <span>${(order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "⚡ Giao ngay (Sớm nhất)"}</span>
+                    </div>
+                    <div class="text-[10px] text-gray-500 mt-0.5">
+                        ${((order.delivery && order.delivery.fulfillmentType === 'pickup') || order.fulfillmentType === 'pickup' || String(deliveryAddress).includes('Nhận trực tiếp tại Shop'))
+                            ? '<span class="text-emerald-700 font-bold"><i class="fa-solid fa-store text-[9px]"></i> Nhận tại Shop</span>'
+                            : '<span><i class="fa-solid fa-truck-fast text-[9px] text-gray-400"></i> Giao tận nơi</span>'}
+                    </div>
                 </td>
 
                 <td class="p-3 align-top" onclick="event.stopPropagation()">
@@ -486,5 +698,20 @@ if (typeof window !== "undefined") {
     window.toggleLiveStreamQuickStatus = toggleLiveStreamQuickStatus;
     window.copyLiveStreamQuickLink = copyLiveStreamQuickLink;
     window.setLiveOrderDateFilter = setLiveOrderDateFilter;
+    window.handleLiveOrderSortChange = handleLiveOrderSortChange;
+    window.toggleLiveOrderColumnSort = toggleLiveOrderColumnSort;
+    window.sortLiveOrdersList = sortLiveOrdersList;
+    window.saveLiveOrderFilterState = saveLiveOrderFilterState;
+    window.restoreLiveOrderFilterState = restoreLiveOrderFilterState;
+    window.saveLiveOrderRowStatusLocal = saveLiveOrderRowStatusLocal;
+    window.getLiveOrderRowStatusLocal = getLiveOrderRowStatusLocal;
+
+    if (typeof document !== "undefined") {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => restoreLiveOrderFilterState());
+        } else {
+            restoreLiveOrderFilterState();
+        }
+    }
 }
 

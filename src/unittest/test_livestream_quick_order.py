@@ -801,6 +801,106 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         self.assertEqual(ord_pickup.get("recipient", {}).get("address"), "Nhận trực tiếp tại Shop")
         self.assertEqual(ord_pickup.get("deliveryDate"), today_str)
 
+    def test_quick_order_hourly_time_slots_and_pickup_ui_elements(self):
+        """
+        Kiểm tra giao diện Quick Order (index.html, config/index.html, js/quick_order.js):
+        - Có trường chọn Ngày nhận hoa (#quickOrderDeliveryDate) và Thời gian nhận (#quickOrderDeliveryTime)
+          với các mốc giờ cụ thể 08:00, 09:00, 10:00 ... 21:00.
+        - Có Enable Box "Nhận Hoa Trực Tiếp Tại Shop" (#quickOrderPickupCheckbox).
+        - Dialog rộng tối đa (max-w-6xl) và khung QR lớn (w-60 h-60 sm:w-64 sm:h-64 md:w-72 md:h-72).
+        """
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        for rel_html in ["index.html", os.path.join("config", "index.html")]:
+            html_path = os.path.join(root_dir, rel_html)
+            with open(html_path, "r", encoding="utf-8") as f:
+                html_content = f.read()
+
+            # Kiểm tra các mốc giờ 08:00, 09:00, 10:00 ... 21:00
+            self.assertIn('id="quickOrderDeliveryDate"', html_content)
+            self.assertIn('id="quickOrderDeliveryTime"', html_content)
+            for hr in ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]:
+                self.assertIn(f'<option value="{hr}">', html_content)
+
+            # Kiểm tra Enable Box Nhận tại Shop
+            self.assertIn('id="quickOrderPickupCheckbox"', html_content)
+            self.assertIn('handleQuickOrderPickupToggle(this)', html_content)
+            self.assertIn('id="quickOrderPickupShopInfo"', html_content)
+
+            # Kiểm tra chiều rộng tối đa của Dialog và kích thước QR lớn
+            self.assertIn('max-w-6xl', html_content)
+            self.assertIn('w-60 h-60 sm:w-64 sm:h-64 md:w-72 md:h-72', html_content)
+
+        qo_js_path = os.path.join(root_dir, "js", "quick_order.js")
+        with open(qo_js_path, "r", encoding="utf-8") as f:
+            qo_js = f.read()
+        self.assertIn("export function initQuickOrderDeliveryDateTime()", qo_js)
+        self.assertIn("export function handleQuickOrderPickupToggle(", qo_js)
+
+    def test_admin_livestream_dashboard_receiving_time_sort_and_status_persistence(self):
+        """
+        Kiểm tra Bàn Điều Khiển & Xử Lý Đơn Live Stream Tốc Hành:
+        - Hiển thị cột Thời Gian Nhận và hỗ trợ Sort theo giờ nhận (08:00, 09:00, 10:00...), ngày tạo, tổng tiền.
+        - Lưu trạng thái status SelectBox (cả bộ lọc lẫn từng dòng đơn hàng) vào localStorage để F5 không mất.
+        - API cập nhật trạng thái đơn Live Stream lưu bền vững và trả về đúng trạng thái sau khi tải lại.
+        """
+        from datetime import datetime
+        today_str = datetime.now().strftime("%Y-%m-%d")
+
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        live_js_path = os.path.join(root_dir, "js", "portal_admin_livestream_orders.js")
+        with open(live_js_path, "r", encoding="utf-8") as f:
+            live_js = f.read()
+
+        # Kiểm tra các hàm Sort và Persistence trong portal_admin_livestream_orders.js
+        self.assertIn("export function getLiveOrderDeliverySortKey(", live_js)
+        self.assertIn("export function sortLiveOrdersList(", live_js)
+        self.assertIn("export function handleLiveOrderSortChange(", live_js)
+        self.assertIn("export function toggleLiveOrderColumnSort(", live_js)
+        self.assertIn("export function saveLiveOrderFilterState()", live_js)
+        self.assertIn("export function restoreLiveOrderFilterState()", live_js)
+        self.assertIn("export function saveLiveOrderRowStatusLocal(", live_js)
+        self.assertIn("export function getLiveOrderRowStatusLocal(", live_js)
+        self.assertIn("telua_live_orders_filter_state_v1", live_js)
+        self.assertIn("telua_live_order_row_status_v1", live_js)
+
+        # Tạo 3 đơn với các khung giờ 10:00, 08:00, 09:00 và kiểm tra cập nhật status
+        created_ids = []
+        for slot, name_suffix in [("10:00", "10h"), ("08:00", "8h"), ("09:00", "9h")]:
+            res = self.client.post("/api/flower/v1/orders/quick-order", json={
+                "recipientName": f"Khách Giờ {name_suffix}",
+                "phone": "0988777666",
+                "address": "123 Lê Lợi, Q1",
+                "deliveryDate": today_str,
+                "deliveryTime": slot,
+                "transferredAmount": 400000,
+                "paymentProofImage": "https://example.com/bill_slot.jpg"
+            })
+            self.assertEqual(res.status_code, 201)
+            created_ids.append(res.get_json()["data"]["id"])
+
+        # Cập nhật status của đơn 08:00 sang "arranging" qua API Admin
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        target_order_id = created_ids[1]
+        res_status = self.client.put(
+            f"/api/flower/v1/admin/orders/{target_order_id}/status",
+            headers=admin_headers,
+            json={"status": "arranging"}
+        )
+        self.assertEqual(res_status.status_code, 200)
+        self.assertTrue(res_status.get_json()["success"])
+
+        # Tải lại danh sách đơn Live Stream (mô phỏng F5 / refresh trang) -> status phải giữ nguyên "arranging"
+        res_list = self.client.get(
+            f"/api/flower/v1/admin/orders?timeframe=all&source=livestream_quick_order&date={today_str}",
+            headers=admin_headers
+        )
+        self.assertEqual(res_list.status_code, 200)
+        orders_after_refresh = res_list.get_json()["data"]["orders"]
+        matched = [o for o in orders_after_refresh if o.get("id") == target_order_id]
+        self.assertEqual(len(matched), 1)
+        self.assertEqual(matched[0].get("status"), "arranging")
+        self.assertEqual(matched[0].get("delivery", {}).get("timeSlot"), "08:00")
+
 if __name__ == "__main__":
     unittest.main()
 

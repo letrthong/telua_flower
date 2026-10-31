@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ord_1793443570_408e13",
+    "orderCode": "LIVE-261031-D808",
+    "createdAt": "2026-10-31T10:46:10Z",
+    "updatedAt": "2026-10-31T10:46:10Z",
+    "orderDate": "2026-10-31",
+    "livestreamDate": "2026-10-31",
+    "deliveryDate": "2026-10-31",
+    "deliveryTime": "18:00",
+    "timeSlot": "18:00",
+    "status": "pending",
+    "customerName": "đ",
+    "phone": "096876878678",
+    "address": "Nhận trực tiếp tại Shop",
+    "totalAmount": 1500000.0,
+    "transferredAmount": 1500000.0,
+    "proofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+    "paymentStatus": "pending_confirmation",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "shipperName": "",
+    "shipperPhone": "",
+    "notes": ""
+  }
+]

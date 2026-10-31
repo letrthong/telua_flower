@@ -2803,6 +2803,17 @@
                                     <option value="paid">💳 Đã thanh toán</option>
                                     <option value="unpaid">⌛ Chờ xác nhận / Chưa TT</option>
                                 </select>
+
+                                <select id="sortLiveOrdersSelect" onchange="handleLiveOrderSortChange(this.value)"
+                                    class="px-3 py-1.5 bg-rose-50/70 border border-rose-200 rounded-xl text-xs font-bold text-rose-700 focus:outline-none focus:border-rose-500 cursor-pointer"
+                                    title="Sắp xếp đơn hàng theo thời gian nhận hoa hoặc thời gian đặt">
+                                    <option value="delivery_asc">🕒 Sắp xếp: Giờ nhận sớm nhất</option>
+                                    <option value="delivery_desc">🕒 Sắp xếp: Giờ nhận muộn nhất</option>
+                                    <option value="created_desc">🆕 Sắp xếp: Mới đặt nhất</option>
+                                    <option value="created_asc">⏳ Sắp xếp: Đặt cũ nhất</option>
+                                    <option value="amount_desc">💰 Sắp xếp: Tiền cao → thấp</option>
+                                    <option value="amount_asc">💰 Sắp xếp: Tiền thấp → cao</option>
+                                </select>
                             </div>
 
                             <button type="button" onclick="loadLiveStreamOrders()"
@@ -2825,14 +2836,21 @@
                         <!-- Table -->
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-xs" id="adminLiveOrdersTable">
-                                <thead class="bg-gray-50/80 text-[11px] font-bold text-gray-600 uppercase border-b border-gray-200 tracking-wider">
+                                <thead class="bg-gray-50/80 text-[11px] font-bold text-gray-600 uppercase border-b border-gray-200 tracking-wider select-none">
                                     <tr>
-                                        <th class="p-3">Mã Đơn & Mẫu Hoa & Bill</th>
+                                        <th class="p-3 cursor-pointer hover:text-rose-600 transition" onclick="toggleLiveOrderColumnSort('created')" title="Nhấn để sắp xếp theo thời gian đặt đơn">
+                                            Mã Đơn & Mẫu Hoa & Bill <i id="sortIconLive_created" class="fa-solid fa-sort text-[10px] ml-0.5 text-gray-400"></i>
+                                        </th>
                                         <th class="p-3">Người Đặt</th>
                                         <th class="p-3">Người Nhận & Địa Chỉ</th>
+                                        <th class="p-3 cursor-pointer hover:text-rose-600 transition bg-rose-50/40 text-rose-800" onclick="toggleLiveOrderColumnSort('delivery')" title="Nhấn để sắp xếp theo Ngày & Giờ nhận hoa">
+                                            Thời Gian Nhận <i id="sortIconLive_delivery" class="fa-solid fa-sort-up text-[10px] ml-0.5 text-rose-600"></i>
+                                        </th>
                                         <th class="p-3">Chi Nhánh Điều Phối</th>
                                         <th class="p-3">Thực Hiện</th>
-                                        <th class="p-3">Tổng Tiền</th>
+                                        <th class="p-3 cursor-pointer hover:text-rose-600 transition" onclick="toggleLiveOrderColumnSort('amount')" title="Nhấn để sắp xếp theo Tổng tiền">
+                                            Tổng Tiền <i id="sortIconLive_amount" class="fa-solid fa-sort text-[10px] ml-0.5 text-gray-400"></i>
+                                        </th>
                                         <th class="p-3">Thanh Toán</th>
                                         <th class="p-3">Trạng Thái</th>
                                         <th class="p-3 text-center">Thao Tác</th>
@@ -2840,7 +2858,7 @@
                                 </thead>
                                 <tbody id="adminLiveOrdersTableBody" class="divide-y divide-gray-100 font-medium text-gray-700">
                                     <tr>
-                                        <td colspan="9" class="p-8 text-center text-gray-400">
+                                        <td colspan="10" class="p-8 text-center text-gray-400">
                                             <i class="fa-solid fa-circle-notch fa-spin text-xl text-rose-500 mb-2 block"></i>
                                             Đang tải danh sách đơn Live Stream...
                                         </td>

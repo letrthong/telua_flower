@@ -1,5 +1,73 @@
 [
   {
+    "id": "ord_1793443570_408e13",
+    "orderCode": "LIVE-261031-D808",
+    "createdAt": "2026-10-31T10:46:10Z",
+    "updatedAt": "2026-10-31T10:46:10Z",
+    "orderDate": "2026-10-31",
+    "livestreamDate": "2026-10-31",
+    "status": "pending",
+    "source": "livestream_quick_order",
+    "orderType": "",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "assignedBranchId": "admin",
+    "assignedTo": "staff_admin",
+    "assigneeName": "Super Admin (staff_admin)",
+    "createdBy": "096876878678",
+    "creatorName": "đ",
+    "totalAmount": 1500000.0,
+    "transferredAmount": 1500000,
+    "proofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+    "paymentProofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+    "selectedProduct": {},
+    "financials": {
+      "totalAmount": 1500000.0,
+      "itemsTotal": 1500000.0,
+      "shippingFee": 0.0,
+      "discountAmount": 0.0
+    },
+    "payment": {
+      "status": "pending_confirmation",
+      "method": "vietqr",
+      "proofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+      "transferredAmount": 1500000,
+      "transferContent": "LIVE-261031-D808"
+    },
+    "recipient": {
+      "name": "đ",
+      "phone": "096876878678",
+      "address": "Nhận trực tiếp tại Shop"
+    },
+    "sender": {
+      "name": "đ",
+      "phone": "096876878678"
+    },
+    "delivery": {
+      "fulfillmentType": "pickup",
+      "deliveryDate": "2026-10-31",
+      "timeSlot": "18:00",
+      "shipperName": "",
+      "shipperPhone": ""
+    },
+    "items": [
+      {
+        "productId": "test_b64_1788062614",
+        "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
+        "quantity": 1,
+        "unitPrice": 1500000,
+        "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
+      }
+    ],
+    "itemSummary": "Bình Hoa Gốm Nghệ Thuật Base64 x1",
+    "itemCount": 1,
+    "requiresArranging": false,
+    "customerId": "",
+    "note": "",
+    "notes": "",
+    "detailPath": "orders/admin/2026_10/pending/ord_1793443570_408e13.json"
+  },
+  {
     "id": "ord_1792934463_e8e11a",
     "orderCode": "LIVE-261025-98F6",
     "createdAt": "2026-10-25T20:21:03Z",
