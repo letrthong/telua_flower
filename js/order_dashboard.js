@@ -516,6 +516,79 @@ export function closeOrderDetailModal() {
         modal.classList.add("hidden");
     }
     currentOpenOrderId = null;
+    if (typeof window !== "undefined") {
+        const currentHash = (window.location.hash || "").replace(/^#\/?/, "").trim();
+        if (currentHash.startsWith("order=") || currentHash.startsWith("order/")) {
+            try {
+                window.history.replaceState(null, "", window.location.pathname + window.location.search);
+            } catch (_) {}
+        }
+    }
+}
+
+/**
+ * Gửi bình luận / ghi chú thay đổi thông tin ngay trong Modal Chi Tiết Đơn Hàng
+ */
+export async function submitOrderDetailComment(e, orderCodeOrId, orderIdForReload = "") {
+    if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+    }
+    const code = (orderCodeOrId || "").toString().trim();
+    if (!code) return;
+
+    const msgInput = document.getElementById("ordDetailCommentInput");
+    const submitBtn = document.getElementById("btnSubmitOrdDetailComment");
+    const message = msgInput ? msgInput.value.trim() : "";
+
+    if (!message) {
+        if (typeof showToast === "function") showToast("Vui lòng nhập nội dung bình luận / thay đổi thông tin.", "warning");
+        if (msgInput) msgInput.focus();
+        return;
+    }
+
+    const user = dashGetCurrentUser();
+    const isStaffUser = !!(user && INTERNAL_ROLES.includes(user.role));
+    const authorName = (user && (user.fullName || user.username))
+        ? `${user.fullName || user.username}`
+        : (isStaffUser ? "Nhân viên Website" : "Khách hàng");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : (localStorage.getItem("flower_auth_token") || "");
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang gửi...`;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(code)}/comments`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                orderCode: code,
+                message,
+                authorName,
+                role: user?.role || "customer",
+                isStaff: isStaffUser
+            })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể gửi bình luận cho đơn hàng này.");
+        }
+        if (msgInput) msgInput.value = "";
+        if (typeof showToast === "function") showToast("💬 Đã gửi bình luận lên đơn hàng!", "success");
+        await openOrderDetailModal(orderIdForReload || code);
+        if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+    } catch (err) {
+        if (typeof showToast === "function") showToast(err.message || "Lỗi khi gửi bình luận", "error");
+        else alert(err.message || "Lỗi khi gửi bình luận");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> Gửi Bình Luận`;
+        }
+    }
 }
 
 /**
@@ -728,9 +801,89 @@ function populateOrderDetail(order) {
     if (loadingEl) loadingEl.classList.add("hidden");
     if (contentEl) contentEl.classList.remove("hidden");
 
-    // 1. Header
+    // 1. Header & #order=<mã_đơn> Share Hash Link
+    const displayOrderCode = order.orderCode || order.id || "NHTB-ORDER";
     const codeEl = document.getElementById("ordDetailCode");
-    if (codeEl) codeEl.textContent = order.orderCode || order.id || "NHTB-ORDER";
+    if (codeEl) codeEl.textContent = displayOrderCode;
+
+    const hashTagStr = `#order=${displayOrderCode}`;
+    const fullShareUrl = (typeof window !== "undefined" && typeof window.getOrderShareHashUrl === "function")
+        ? window.getOrderShareHashUrl(displayOrderCode)
+        : ((typeof window !== "undefined") ? `${window.location.origin}${window.location.pathname}#order=${encodeURIComponent(displayOrderCode)}` : hashTagStr);
+
+    const headerHashTextEl = document.getElementById("ordDetailHeaderHashText");
+    if (headerHashTextEl) headerHashTextEl.textContent = hashTagStr;
+
+    const hashTagLabelEl = document.getElementById("ordDetailHashTagLabel");
+    if (hashTagLabelEl) hashTagLabelEl.textContent = hashTagStr;
+
+    const shareUrlInputEl = document.getElementById("ordDetailShareHashUrlInput");
+    if (shareUrlInputEl) shareUrlInputEl.value = fullShareUrl;
+
+    if (typeof window !== "undefined" && window.history && typeof window.history.replaceState === "function") {
+        try {
+            window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#order=${encodeURIComponent(displayOrderCode)}`);
+        } catch (_) {}
+    }
+
+    // Render Bình luận / Ghi chú thay đổi thông tin ngay trong Modal Chi Tiết Đơn Hàng (Hỗ trợ cả Nhân viên Website & Khách hàng)
+    const commentsBoxEl = document.getElementById("ordDetailCustomerCommentsBox");
+    if (commentsBoxEl) {
+        const commentsList = Array.isArray(order.comments) ? order.comments : [];
+        const stLower = String(order.status || "pending").toLowerCase();
+        const isCustomerLocked = (order.canComment === false) || ["delivered", "completed", "cancelled", "returned"].includes(stLower);
+        const currentUser = dashGetCurrentUser();
+        const isStaffUser = !!(currentUser && INTERNAL_ROLES.includes(currentUser.role));
+        const canCommentNow = isStaffUser || !isCustomerLocked;
+
+        commentsBoxEl.innerHTML = `
+            <div class="flex items-center justify-between flex-wrap gap-1">
+                <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                    <i class="fa-regular fa-comments text-rose-500"></i> Bình Luận / Ghi Chú Đơn Hàng (${commentsList.length})
+                </span>
+                <span class="text-[10px] font-semibold ${!isCustomerLocked ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (isStaffUser ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : 'text-gray-500 bg-gray-100 border-gray-200')} px-2 py-0.5 rounded-full border">
+                    ${!isCustomerLocked ? '🟢 Đang mở bình luận (Khách & Nhân viên)' : (isStaffUser ? '👩‍💼 Nhân viên Website vẫn có thể ghi chú / bình luận' : '🔒 Đã giao xong (Đóng bình luận)')}
+                </span>
+            </div>
+            ${commentsList.length > 0 ? `
+                <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1 mt-1.5">
+                    ${commentsList.map(c => {
+                        const isStaffCmt = !!(c.isStaff || (c.role && c.role !== "customer"));
+                        const authorDisplay = c.authorName || c.author || (isStaffCmt ? "Nhân viên Website" : "Khách hàng");
+                        return `
+                        <div class="p-2 rounded-lg ${isStaffCmt ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-amber-200'} border text-xs shadow-2xs">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-bold ${isStaffCmt ? 'text-indigo-900' : 'text-amber-900'} flex items-center gap-1">
+                                    <i class="fa-solid ${isStaffCmt ? 'fa-user-shield text-indigo-600' : 'fa-user-pen text-amber-600'} text-[10px]"></i>
+                                    ${authorDisplay}
+                                    ${isStaffCmt ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.2 rounded-full">Nhân viên</span>' : ''}
+                                </span>
+                                <span class="text-[10px] text-gray-400 font-mono">${c.createdAt ? dashFormatDate(c.createdAt) : ""}</span>
+                            </div>
+                            <p class="text-gray-800 mt-0.5 whitespace-pre-line">${c.message || ""}</p>
+                        </div>
+                        `;
+                    }).join("")}
+                </div>
+            ` : `<p class="text-[11px] text-gray-400 italic mt-1">Chưa có bình luận thay đổi thông tin nào trên đơn hàng này.</p>`}
+            ${canCommentNow ? `
+                <form onsubmit="submitOrderDetailComment(event, '${displayOrderCode}', '${order.id || displayOrderCode}')" class="flex flex-col sm:flex-row gap-2 mt-2">
+                    <input type="text" id="ordDetailCommentInput"
+                        placeholder="${isStaffUser ? 'Nhân viên nhập phản hồi / ghi chú xử lý đơn hàng...' : 'Nhập ghi chú thay đổi thông tin (SĐT, giờ nhận, địa chỉ, lời chúc)...'}"
+                        class="flex-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-gray-800 focus:outline-none focus:border-indigo-500">
+                    <button type="submit" id="btnSubmitOrdDetailComment"
+                        class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition flex items-center justify-center gap-1 flex-shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi Bình Luận
+                    </button>
+                </form>
+            ` : `
+                <div class="mt-1.5 p-2 rounded-lg bg-gray-100 border border-gray-200 text-[11px] text-gray-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-lock text-gray-400"></i>
+                    <span>Đơn hàng đã giao hoàn tất — Chức năng bình luận thay đổi thông tin đã kết thúc.</span>
+                </div>
+            `}
+        `;
+    }
 
     const createdEl = document.getElementById("ordDetailCreatedAt");
     if (createdEl) {
@@ -1503,4 +1656,5 @@ if (typeof window !== "undefined") {
     window.onDashboardFilterChange = onDashboardFilterChange;
     window.renderOrderProgressStepper = renderOrderProgressStepper;
     window.printOrderDetail = printOrderDetail;
+    window.submitOrderDetailComment = submitOrderDetailComment;
 }

@@ -394,11 +394,23 @@ def api_lookup_orders():
 @flower_connect_api.route("/orders/comments", methods=["POST"])
 def api_add_order_comment(order_id=None):
     """
-    API cho phép khách hàng gửi bình luận / ghi chú thay đổi thông tin trên đơn hàng:
-    - Hoạt động khi đơn hàng đang xử lý (pending, confirmed, arranging, shipping).
-    - Tự động khóa và trả lỗi 400 sau khi đơn hàng đã giao xong (delivered / completed / cancelled).
+    API cho phép khách hàng và nhân viên website gửi bình luận / ghi chú thay đổi thông tin trên đơn hàng:
+    - Với khách hàng: Hoạt động khi đơn hàng đang xử lý (pending, confirmed, arranging, shipping) và tự động khóa sau khi đã giao xong (delivered / completed / cancelled).
+    - Với nhân viên website (có JWT token nhân viên hoặc quyền nội bộ): Luôn hỗ trợ gửi bình luận / phản hồi khi nhấp vào đơn hàng.
     """
     data = request.get_json(silent=True) or request.form.to_dict() or {}
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        valid, payload, _ = verify_jwt_token(token)
+        if valid and payload:
+            user_role = str(payload.get("role") or "").strip().lower()
+            if user_role in ["super_admin", "branch_manager", "florist", "sales_consultant", "shipper", "accountant", "staff", "admin"]:
+                data["isStaff"] = True
+                data["authorRole"] = user_role
+                if not data.get("authorName"):
+                    data["authorName"] = payload.get("fullName") or payload.get("username") or "Nhân viên Website"
+
     target_id = order_id or data.get("orderId") or data.get("orderCode") or ""
     ok, updated_order, err = add_order_customer_comment(target_id, data)
     if not ok:

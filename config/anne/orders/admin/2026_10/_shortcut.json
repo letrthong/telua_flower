@@ -3,7 +3,7 @@
     "id": "ord_1793443570_408e13",
     "orderCode": "LIVE-261031-D808",
     "createdAt": "2026-10-31T10:46:10Z",
-    "updatedAt": "2026-10-31T16:16:28Z",
+    "updatedAt": "2026-10-31T16:54:32Z",
     "orderDate": "2026-10-31",
     "livestreamDate": "2026-10-31",
     "status": "confirmed",
@@ -65,6 +65,33 @@
     "customerId": "",
     "note": "",
     "notes": "",
+    "comments": [
+      {
+        "id": "cmt_1793464062_530d",
+        "author": "Khách hàng",
+        "role": "customer",
+        "message": "xxxx",
+        "createdAt": "2026-10-31T16:27:42Z"
+      },
+      {
+        "id": "cmt_1793465659_6e4c",
+        "author": "Tổng Quản Trị Hệ Thống",
+        "authorName": "Tổng Quản Trị Hệ Thống",
+        "role": "super_admin",
+        "isStaff": true,
+        "message": "x",
+        "createdAt": "2026-10-31T16:54:19Z"
+      },
+      {
+        "id": "cmt_1793465672_6743",
+        "author": "Tổng Quản Trị Hệ Thống",
+        "authorName": "Tổng Quản Trị Hệ Thống",
+        "role": "super_admin",
+        "isStaff": true,
+        "message": "x",
+        "createdAt": "2026-10-31T16:54:32Z"
+      }
+    ],
     "detailPath": "orders/admin/2026_10/confirmed/ord_1793443570_408e13.json"
   },
   {

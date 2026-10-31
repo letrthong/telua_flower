@@ -828,6 +828,11 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
 
             # Kiểm tra chiều rộng tối đa của Dialog và kích thước QR lớn
             self.assertIn('max-w-6xl', html_content)
+            self.assertIn('id="orderLookupModal"', html_content)
+            self.assertIn('bg-white w-[98vw] max-w-6xl rounded-3xl', html_content)
+            self.assertIn('id="ordDetailShareHashBar"', html_content)
+            self.assertIn('id="ordDetailShareHashUrlInput"', html_content)
+            self.assertIn('id="ordDetailCustomerCommentsBox"', html_content)
             self.assertIn('w-60 h-60 sm:w-64 sm:h-64 md:w-72 md:h-72', html_content)
 
         qo_js_path = os.path.join(root_dir, "js", "quick_order.js")
@@ -852,9 +857,11 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
             live_js = f.read()
 
         # Kiểm tra các hàm Sort và Persistence trong portal_admin_livestream_orders.js
+        self.assertIn("export function extractLiveOrderDateAndTime(", live_js)
         self.assertIn("export function getLiveOrderDeliverySortKey(", live_js)
         self.assertIn("export function getLiveOrderTimeOnlySortKey(", live_js)
         self.assertIn("export function sortLiveOrdersList(", live_js)
+        self.assertIn("if (pa.datePart !== pb.datePart)", live_js)
         self.assertIn("export function handleLiveOrderSortChange(", live_js)
         self.assertIn("export function toggleLiveOrderColumnSort(", live_js)
         self.assertIn("export function saveLiveOrderFilterState()", live_js)
@@ -931,6 +938,98 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         self.assertIn('<Worksheet ss:Name="', orders_js)
         self.assertIn("application/vnd.ms-excel;charset=utf-8;", orders_js)
         self.assertIn("Tong Hop Tat Ca", orders_js)
+
+    def test_order_share_hash_and_customer_comments_lifecycle(self):
+        """
+        Kiểm tra chức năng chia sẻ đơn hàng qua #hash (#order=<orderCode>) và bình luận khách hàng:
+        1. Khi đặt đơn nhanh thành công, đơn hàng có `shareHash` (#order=LIVE-...) và `comments: []`.
+        2. Khách hàng có thể gửi comment thay đổi thông tin (đổi giờ nhận, địa chỉ, lời chúc) khi đơn đang xử lý
+           (pending, confirmed, arranging, shipping) và `canComment` là True.
+        3. Sau khi đơn hàng đã giao xong (`delivered` hoặc `completed`), chức năng comment bị khóa (`canComment: False`)
+           và API trả về lỗi 400 nếu cố tình gửi thêm comment.
+        """
+        # 1. Đặt đơn nhanh
+        res_create = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Test Hash & Comment",
+            "phone": "0933444555",
+            "address": "10 Hai Bà Trưng, Q1",
+            "deliveryTime": "10:00",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/bill_hash.jpg"
+        })
+        self.assertEqual(res_create.status_code, 201)
+        order_data = res_create.get_json()["data"]
+        order_id = order_data["id"]
+        order_code = order_data["orderCode"]
+        self.assertEqual(order_data.get("shareHash"), f"#order={order_code}")
+        self.assertEqual(order_data.get("comments"), [])
+
+        # 2. Khách gửi comment thay đổi thông tin qua mã đơn (orderCode) khi đơn đang pending
+        res_comment_1 = self.client.post(f"/api/flower/v1/orders/{order_code}/comments", json={
+            "authorName": "Chị Lan (Khách đặt)",
+            "message": "Shop ơi đổi giờ nhận sang 14:00 và đổi địa chỉ sang 25 Lê Duẩn giúp mình nhé!"
+        })
+        self.assertEqual(res_comment_1.status_code, 201)
+        c1_body = res_comment_1.get_json()
+        self.assertTrue(c1_body["success"])
+        self.assertTrue(c1_body["data"]["canComment"])
+        self.assertEqual(len(c1_body["data"]["comments"]), 1)
+        self.assertIn("25 Lê Duẩn", c1_body["data"]["comments"][0]["message"])
+
+        # 3. Tra cứu đơn theo mã đơn (#order=<orderCode>) -> thấy comment và canComment=True
+        res_lookup_active = self.client.get(f"/api/flower/v1/orders/lookup?query={order_code}")
+        self.assertEqual(res_lookup_active.status_code, 200)
+        lookup_orders = res_lookup_active.get_json()["data"]
+        self.assertEqual(len(lookup_orders), 1)
+        self.assertEqual(lookup_orders[0]["shareHash"], f"#order={order_code}")
+        self.assertTrue(lookup_orders[0]["canComment"])
+        self.assertEqual(len(lookup_orders[0]["comments"]), 1)
+
+        # 4. Admin chuyển trạng thái sang "shipping" (đang giao) -> khách vẫn có thể comment thêm
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        self.client.put(
+            f"/api/flower/v1/admin/orders/{order_id}/status",
+            headers=admin_headers,
+            json={"status": "shipping"}
+        )
+        res_comment_2 = self.client.post(f"/api/flower/v1/orders/{order_id}/comments", json={
+            "message": "Shipper tới nơi gọi số 0933444555 giúp mình nha."
+        })
+        self.assertEqual(res_comment_2.status_code, 201)
+        self.assertEqual(len(res_comment_2.get_json()["data"]["comments"]), 2)
+
+        # 5. Admin chuyển trạng thái sang "delivered" (đã giao xong) -> chức năng comment kết thúc
+        res_delivered = self.client.put(
+            f"/api/flower/v1/admin/orders/{order_id}/status",
+            headers=admin_headers,
+            json={"status": "delivered"}
+        )
+        self.assertEqual(res_delivered.status_code, 200)
+
+        # Thử gửi comment của khách sau khi đã giao xong -> phải bị từ chối với HTTP 400
+        res_comment_blocked = self.client.post(f"/api/flower/v1/orders/{order_code}/comments", json={
+            "message": "Muốn đổi địa chỉ sau khi đã giao"
+        })
+        self.assertEqual(res_comment_blocked.status_code, 400)
+        self.assertFalse(res_comment_blocked.get_json()["success"])
+
+        # 6. Nhân viên Website (có JWT token nhân viên) nhấp vào đơn hàng vẫn hỗ trợ gửi comment / ghi chú phản hồi
+        res_staff_comment = self.client.post(
+            f"/api/flower/v1/orders/{order_code}/comments",
+            headers=admin_headers,
+            json={"message": "Nhân viên xác nhận đã cập nhật thông tin và giao hoa thành công cho khách."}
+        )
+        self.assertEqual(res_staff_comment.status_code, 201)
+        staff_cmt_data = res_staff_comment.get_json()["data"]
+        self.assertEqual(len(staff_cmt_data["comments"]), 3)
+        self.assertTrue(staff_cmt_data["comments"][-1].get("isStaff"))
+
+        # Tra cứu lại -> canComment cho khách là False, và cả 3 comment (2 của khách + 1 của nhân viên) hiển thị đầy đủ
+        res_lookup_done = self.client.get(f"/api/flower/v1/orders/lookup?query={order_code}")
+        self.assertEqual(res_lookup_done.status_code, 200)
+        done_order = res_lookup_done.get_json()["data"][0]
+        self.assertFalse(done_order["canComment"])
+        self.assertEqual(len(done_order["comments"]), 3)
 
 if __name__ == "__main__":
     unittest.main()

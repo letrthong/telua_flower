@@ -1,87 +1,103 @@
 {
   "id": "ord_1793443570_408e13",
   "orderCode": "LIVE-261031-D808",
-  "trackingCode": "096876878678",
   "createdAt": "2026-10-31T10:46:10Z",
+  "updatedAt": "2026-10-31T16:54:32Z",
   "orderDate": "2026-10-31",
-  "orderDay": "2026-10-31",
   "livestreamDate": "2026-10-31",
-  "updatedAt": "2026-10-31T16:16:28Z",
-  "source": "livestream_quick_order",
-  "branchId": "admin",
-  "assignedBranchId": "admin",
-  "customerId": null,
-  "createdBy": "096876878678",
-  "assignedTo": "staff_admin",
-  "assignedBy": "system",
   "status": "confirmed",
-  "cardMessage": "",
-  "ribbonBanner": "",
-  "sender": {
-    "name": "đ",
-    "realName": "đ",
-    "phone": "096876878678",
-    "email": "",
-    "isAnonymous": false
+  "source": "livestream_quick_order",
+  "orderType": "",
+  "branchId": "admin",
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "assignedBranchId": "admin",
+  "assignedTo": "staff_admin",
+  "assigneeName": "Super Admin (staff_admin)",
+  "createdBy": "096876878678",
+  "creatorName": "đ",
+  "totalAmount": 1500000.0,
+  "transferredAmount": 1500000,
+  "proofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+  "paymentProofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+  "selectedProduct": {},
+  "financials": {
+    "totalAmount": 1500000.0,
+    "itemsTotal": 1500000.0,
+    "shippingFee": 0.0,
+    "discountAmount": 0.0
+  },
+  "payment": {
+    "status": "pending_confirmation",
+    "method": "vietqr",
+    "proofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
+    "transferredAmount": 1500000,
+    "transferContent": "LIVE-261031-D808"
   },
   "recipient": {
     "name": "đ",
     "phone": "096876878678",
-    "address": "Nhận trực tiếp tại Shop",
-    "deliveryNotes": ""
+    "address": "Nhận trực tiếp tại Shop"
   },
-  "fulfillmentType": "pickup",
-  "deliveryDate": "2026-10-31",
-  "deliveryTime": "18:00",
+  "sender": {
+    "name": "đ",
+    "phone": "096876878678"
+  },
   "delivery": {
+    "fulfillmentType": "pickup",
     "deliveryDate": "2026-10-31",
     "timeSlot": "18:00",
-    "isExpress2H": false,
-    "fulfillmentType": "pickup"
+    "shipperName": "",
+    "shipperPhone": ""
   },
-  "requiresArranging": false,
   "items": [
     {
       "productId": "test_b64_1788062614",
       "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
-      "price": 1500000,
       "quantity": 1,
-      "itemTotal": 1500000,
+      "unitPrice": 1500000,
       "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
     }
   ],
-  "financials": {
-    "subtotal": 1500000,
-    "arrangingFee": 0,
-    "shippingFee": 0,
-    "discountAmount": 0,
-    "totalAmount": 1500000
-  },
-  "totalAmount": 1500000,
-  "paymentMethod": "vietqr",
-  "payment": {
-    "method": "vietqr",
-    "status": "pending_confirmation",
-    "transferredAmount": 1500000,
-    "proofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
-    "transferContent": "LIVE-261031-D808"
-  },
-  "paymentProofImage": "/api/flower/v1/images/proof_1793443570_1f0cd773.png",
-  "history": [
+  "itemSummary": "Bình Hoa Gốm Nghệ Thuật Base64 x1",
+  "itemCount": 1,
+  "requiresArranging": false,
+  "customerId": "",
+  "note": "",
+  "notes": "",
+  "comments": [
     {
-      "status": "pending",
-      "updatedAt": "2026-10-31T10:46:10Z",
-      "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: LIVE-261031-D808. Số tiền đã chuyển: 1,500,000₫.",
-      "updatedBy": "096876878678"
+      "id": "cmt_1793464062_530d",
+      "author": "Khách hàng",
+      "role": "customer",
+      "message": "xxxx",
+      "createdAt": "2026-10-31T16:27:42Z"
     },
     {
-      "status": "confirmed",
-      "updatedAt": "2026-10-31T16:16:28Z",
-      "note": "Cập nhật trạng thái bởi super_admin",
-      "updatedBy": "staff_admin"
+      "id": "cmt_1793465659_6e4c",
+      "author": "Tổng Quản Trị Hệ Thống",
+      "authorName": "Tổng Quản Trị Hệ Thống",
+      "role": "super_admin",
+      "isStaff": true,
+      "message": "x",
+      "createdAt": "2026-10-31T16:54:19Z"
+    },
+    {
+      "id": "cmt_1793465672_6743",
+      "author": "Tổng Quản Trị Hệ Thống",
+      "authorName": "Tổng Quản Trị Hệ Thống",
+      "role": "super_admin",
+      "isStaff": true,
+      "message": "x",
+      "createdAt": "2026-10-31T16:54:32Z"
     }
   ],
-  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
-  "creatorName": "đ",
-  "assigneeName": "Super Admin (staff_admin)"
+  "detailPath": "orders/admin/2026_10/confirmed/ord_1793443570_408e13.json",
+  "history": [
+    {
+      "status": "confirmed",
+      "updatedAt": "2026-10-31T16:54:32Z",
+      "note": "Nhân viên phản hồi / ghi chú trên đơn: x",
+      "updatedBy": "Tổng Quản Trị Hệ Thống"
+    }
+  ]
 }

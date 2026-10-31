@@ -4185,7 +4185,7 @@ function openOrderLookupModal(prefillPhone = "") {
         const val = prefillPhone ? prefillPhone.trim() : (localStorage.getItem("telua_last_lookup_phone") || "");
         phoneInput.value = val;
         phoneInput.focus();
-        if (val && val.length >= 9) {
+        if (val && val.length >= 3) {
             handleOrderLookup();
         }
     }
@@ -4201,10 +4201,168 @@ function closeOrderLookupModal() {
         modal.classList.add("hidden");
     }
     const currentHash = (window.location.hash || "").replace(/^#\/?/, "").trim();
-    if (currentHash === "tra-cuu" || currentHash === "tracking" || currentHash === "lookup" || currentHash.startsWith("tra-cuu")) {
+    if (
+        currentHash === "tra-cuu" ||
+        currentHash === "tracking" ||
+        currentHash === "lookup" ||
+        currentHash.startsWith("tra-cuu") ||
+        currentHash.startsWith("order=") ||
+        currentHash.startsWith("order/") ||
+        currentHash.startsWith("tracking=") ||
+        currentHash.startsWith("lookup=")
+    ) {
         try {
             history.replaceState(null, "", window.location.pathname + window.location.search);
         } catch (_) {}
+    }
+}
+
+/**
+ * Tạo đường dẫn chia sẻ đơn hàng qua #hash
+ */
+function getOrderShareHashUrl(orderCode) {
+    const code = (orderCode || "").toString().trim();
+    if (!code) return "";
+    if (typeof window === "undefined") return `#order=${encodeURIComponent(code)}`;
+    const origin = window.location.origin || "";
+    const pathname = window.location.pathname || "/";
+    return `${origin}${pathname}#order=${encodeURIComponent(code)}`;
+}
+
+/**
+ * Sao chép đường dẫn chia sẻ #hash của đơn hàng vào bộ nhớ tạm
+ */
+function copyOrderShareHashLink(orderCode) {
+    const code = (orderCode || "").toString().trim();
+    if (!code) return "";
+    const shareUrl = getOrderShareHashUrl(code);
+    try {
+        if (typeof window !== "undefined" && window.history && typeof window.history.replaceState === "function") {
+            window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#order=${encodeURIComponent(code)}`);
+        }
+    } catch (_) {}
+
+    if (typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            if (typeof notifyUser === "function") {
+                notifyUser(`🔗 Đã sao chép link chia sẻ đơn hàng (#order=${code})!`, "success");
+            }
+        }).catch(() => {
+            if (typeof notifyUser === "function") {
+                notifyUser(`🔗 Link chia sẻ đơn hàng: ${shareUrl}`, "info");
+            }
+        });
+    } else if (typeof notifyUser === "function") {
+        notifyUser(`🔗 Link chia sẻ đơn hàng: ${shareUrl}`, "info");
+    }
+    return shareUrl;
+}
+
+/**
+ * Sao chép link #hash từ màn hình đặt đơn nhanh thành công
+ */
+function copyQuickOrderSuccessHashLink() {
+    const codeEl = document.getElementById("quickOrderSuccessCode");
+    const code = codeEl ? codeEl.textContent.trim() : "";
+    if (!code) return "";
+    return copyOrderShareHashLink(code);
+}
+
+/**
+ * Kiểm tra xem người dùng hiện tại có phải là Nhân viên Website đang đăng nhập hay không
+ */
+function getLoggedInWebsiteStaff() {
+    if (typeof window === "undefined") return null;
+    const STAFF_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant", "shipper", "accountant", "staff", "admin"];
+    try {
+        let user = window.currentUser || null;
+        if (!user) {
+            const raw = localStorage.getItem("flower_user") || localStorage.getItem("telua_current_user");
+            if (raw) user = JSON.parse(raw);
+        }
+        if (user && user.role && STAFF_ROLES.includes(String(user.role).toLowerCase())) {
+            return user;
+        }
+    } catch (_) {}
+    return null;
+}
+
+/**
+ * Gửi bình luận / thông báo thay đổi thông tin từ phía khách hàng hoặc nhân viên website lên đơn hàng
+ */
+async function submitOrderCustomerComment(e, orderCodeOrId, lookupQuery = "") {
+    if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+    }
+    const code = (orderCodeOrId || "").toString().trim();
+    if (!code) return;
+
+    const safeDomId = code.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const msgInput = document.getElementById(`orderCommentInput_${safeDomId}`);
+    const authorInput = document.getElementById(`orderCommentAuthor_${safeDomId}`);
+    const submitBtn = document.getElementById(`btnSubmitOrderComment_${safeDomId}`);
+
+    const message = msgInput ? msgInput.value.trim() : "";
+    const staffUser = getLoggedInWebsiteStaff();
+    const defaultName = staffUser ? (staffUser.fullName || staffUser.username || "Nhân viên Website") : "Khách hàng";
+    const authorName = (authorInput && authorInput.value.trim()) ? authorInput.value.trim() : defaultName;
+
+    if (!message) {
+        if (typeof notifyUser === "function") {
+            notifyUser("Vui lòng nhập nội dung ghi chú / thông tin cần thay đổi.", "warning");
+        }
+        if (msgInput) msgInput.focus();
+        return;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang gửi...`;
+    }
+
+    const token = (typeof getAuthToken === "function" ? getAuthToken() : "") || (typeof localStorage !== "undefined" ? (localStorage.getItem("flower_auth_token") || "") : "");
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(code)}/comments`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                orderCode: code,
+                message,
+                authorName,
+                role: staffUser ? staffUser.role : "customer",
+                isStaff: !!staffUser
+            })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể gửi bình luận cho đơn hàng này.");
+        }
+
+        if (msgInput) msgInput.value = "";
+        if (typeof notifyUser === "function") {
+            notifyUser("💬 Đã gửi ghi chú / cập nhật thông tin cho đơn hàng!", "success");
+        }
+
+        // Nạp lại danh sách tra cứu để hiển thị ngay comment mới
+        const phoneInput = document.getElementById("lookupPhoneInput");
+        if (phoneInput && !phoneInput.value.trim() && (lookupQuery || code)) {
+            phoneInput.value = lookupQuery || code;
+        }
+        await handleOrderLookup();
+    } catch (err) {
+        if (typeof notifyUser === "function") {
+            notifyUser(err.message || "Lỗi khi gửi bình luận", "error");
+        } else {
+            alert(err.message || "Lỗi khi gửi bình luận");
+        }
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> Gửi Ghi Chú`;
+        }
     }
 }
 
@@ -4321,21 +4479,55 @@ function renderOrderLookupResults(orders, query) {
             ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-2xs ${idx === 0 ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-gray-100 text-gray-700 border-gray-200'}">Đơn #${orders.length - idx}${idx === 0 ? ' (Mới nhất)' : ''}</span>`
             : '';
 
+        const orderCodeOrId = ord.orderCode || ord.id || "";
+        const safeDomId = orderCodeOrId.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const commentsList = Array.isArray(ord.comments) ? ord.comments : [];
+        const statusLower = (ord.status || "").toLowerCase();
+        const isCommentLocked = (ord.canComment === false) || ["delivered", "completed", "cancelled", "returned"].includes(statusLower);
+        const shareHashUrl = getOrderShareHashUrl(orderCodeOrId);
+
+        if (idx === 0 && orderCodeOrId && typeof window !== "undefined" && window.history && typeof window.history.replaceState === "function") {
+            try {
+                window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#order=${encodeURIComponent(orderCodeOrId)}`);
+            } catch (_) {}
+        }
+
         html += `
             <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs hover:shadow-md transition overflow-hidden">
                 <!-- Card Header -->
                 <div class="p-4 bg-gradient-to-r from-gray-50 to-rose-50/20 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
                         ${orderIndexBadge}
                         <span class="text-xs font-mono font-bold text-gray-900 bg-white px-2.5 py-1 rounded-lg border border-gray-200 shadow-2xs flex items-center gap-1.5">
-                            <i class="fa-solid fa-receipt text-rose-500"></i> ${ord.orderCode || ord.id}
+                            <i class="fa-solid fa-receipt text-rose-500"></i> ${orderCodeOrId}
                         </span>
+                        <button type="button" onclick="copyOrderShareHashLink('${orderCodeOrId}')"
+                            class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1 cursor-pointer"
+                            title="Sao chép link #hash chia sẻ đơn hàng này">
+                            <i class="fa-solid fa-share-nodes"></i> #order=${orderCodeOrId}
+                        </button>
                         ${isLive ? `<span class="text-[10px] bg-red-600 text-white font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1"><i class="fa-solid fa-video text-[8px]"></i> Live Stream</span>` : ""}
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${badge.class}">
                             <i class="fa-solid ${badge.icon}"></i> ${badge.label}
                         </span>
+                    </div>
+                </div>
+
+                <!-- Thanh hiển thị Link Share #order=<mã_đơn> trực tiếp -->
+                <div class="px-4 py-2.5 bg-indigo-50/50 border-b border-indigo-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                    <span class="text-[11px] font-bold text-indigo-900 flex items-center gap-1.5">
+                        <i class="fa-solid fa-link text-indigo-600"></i> Link Share Đơn Hàng (<code class="font-mono text-indigo-700">#order=${orderCodeOrId}</code>):
+                    </span>
+                    <div class="flex items-center gap-1.5 flex-1 sm:max-w-md">
+                        <input type="text" readonly value="${shareHashUrl}"
+                            onclick="this.select()"
+                            class="flex-1 px-2.5 py-1 bg-white border border-indigo-200 rounded-lg text-[11px] font-mono font-semibold text-indigo-800 focus:outline-none select-all">
+                        <button type="button" onclick="copyOrderShareHashLink('${orderCodeOrId}')"
+                            class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-lg transition flex items-center gap-1 flex-shrink-0 cursor-pointer">
+                            <i class="fa-regular fa-copy"></i> Copy
+                        </button>
                     </div>
                 </div>
 
@@ -4417,6 +4609,64 @@ function renderOrderLookupResults(orders, query) {
                             </a>
                         ` : ''}
                     </div>
+
+                    <!-- Khu vực Bình Luận / Ghi Chú Thay Đổi Thông Tin Khách Hàng -->
+                    <div class="mt-3 pt-3 border-t border-gray-100 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-gray-800 flex items-center gap-1.5">
+                                <i class="fa-regular fa-comments text-rose-500"></i> Ghi Chú / Thay Đổi Thông Tin Đơn Hàng (${commentsList.length})
+                            </span>
+                            <span class="text-[10px] font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">#order=${orderCodeOrId}</span>
+                        </div>
+
+                        ${commentsList.length > 0 ? `
+                            <div class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                                ${commentsList.map(c => {
+                                    const isStaffCmt = !!(c.isStaff || (c.role && c.role !== "customer"));
+                                    const authorDisp = c.authorName || c.author || (isStaffCmt ? "Nhân viên Website" : "Khách hàng");
+                                    return `
+                                    <div class="p-2.5 rounded-xl ${isStaffCmt ? 'bg-indigo-50/70 border-indigo-200' : 'bg-amber-50/70 border-amber-200/80'} border text-[11px]">
+                                        <div class="flex items-center justify-between gap-2 mb-0.5">
+                                            <span class="font-bold ${isStaffCmt ? 'text-indigo-900' : 'text-amber-900'} flex items-center gap-1">
+                                                <i class="fa-solid ${isStaffCmt ? 'fa-user-shield text-indigo-600' : 'fa-user-pen text-amber-600'} text-[9px]"></i>
+                                                ${authorDisp}
+                                                ${isStaffCmt ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.2 rounded-full">Nhân viên</span>' : ''}
+                                            </span>
+                                            <span class="text-[10px] text-gray-400 font-mono">${c.createdAt ? new Date(c.createdAt).toLocaleString("vi-VN") : ""}</span>
+                                        </div>
+                                        <p class="text-gray-800 whitespace-pre-line">${c.message || ""}</p>
+                                    </div>
+                                    `;
+                                }).join("")}
+                            </div>
+                        ` : `
+                            <p class="text-[11px] text-gray-400 italic">Chưa có ghi chú bổ sung nào trên đơn hàng này.</p>
+                        `}
+
+                        ${(!isCommentLocked || !!getLoggedInWebsiteStaff()) ? `
+                            <form onsubmit="submitOrderCustomerComment(event, '${orderCodeOrId}', '${query}')" class="space-y-2 bg-gray-50 p-2.5 rounded-xl border border-gray-200/80">
+                                <div class="text-[10px] text-gray-600 font-medium">
+                                    ${getLoggedInWebsiteStaff()
+                                        ? '👩‍💼 Bạn đang đăng nhập với quyền <strong>Nhân viên Website</strong> — Có thể gửi phản hồi / ghi chú xử lý trực tiếp trên đơn này:'
+                                        : '💡 Cần đổi SĐT, giờ nhận hoa, địa chỉ hoặc lời chúc trên thiệp? Hãy để lại bình luận bên dưới để tiệm cập nhật ngay:'}
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <input type="text" id="orderCommentInput_${safeDomId}"
+                                        placeholder="${getLoggedInWebsiteStaff() ? 'Nhập phản hồi của nhân viên hoặc ghi chú cập nhật đơn hàng...' : 'VD: Đổi giờ giao sang 15:00 giúp mình, hoặc đổi địa chỉ nhận...'}"
+                                        class="flex-1 px-3 py-2 rounded-lg border border-gray-300 bg-white text-xs text-gray-800 focus:outline-none focus:border-rose-500">
+                                    <button type="submit" id="btnSubmitOrderComment_${safeDomId}"
+                                        class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition flex items-center justify-center gap-1 flex-shrink-0 cursor-pointer">
+                                        <i class="fa-solid fa-paper-plane"></i> Gửi Ghi Chú
+                                    </button>
+                                </div>
+                            </form>
+                        ` : `
+                            <div class="p-2.5 rounded-xl bg-gray-100 border border-gray-200 text-[11px] text-gray-500 font-medium flex items-center gap-2">
+                                <i class="fa-solid fa-lock text-gray-400"></i>
+                                <span>Đơn hàng đã giao hoàn tất — Chức năng bình luận / thay đổi thông tin trên đơn này đã kết thúc.</span>
+                            </div>
+                        `}
+                    </div>
                 </div>
             </div>
         `;
@@ -4446,6 +4696,10 @@ if (typeof window !== "undefined") {
     window.handleQuickOrderPickupToggle = handleQuickOrderPickupToggle;
     window.getQuickOrderTodayStr = getQuickOrderTodayStr;
     window.formatQuickOrderDateDisplay = formatQuickOrderDateDisplay;
+    window.getOrderShareHashUrl = getOrderShareHashUrl;
+    window.copyOrderShareHashLink = copyOrderShareHashLink;
+    window.copyQuickOrderSuccessHashLink = copyQuickOrderSuccessHashLink;
+    window.submitOrderCustomerComment = submitOrderCustomerComment;
 
     if (typeof document !== "undefined") {
         if (document.readyState === "loading") {
@@ -6662,6 +6916,79 @@ function closeOrderDetailModal() {
         modal.classList.add("hidden");
     }
     currentOpenOrderId = null;
+    if (typeof window !== "undefined") {
+        const currentHash = (window.location.hash || "").replace(/^#\/?/, "").trim();
+        if (currentHash.startsWith("order=") || currentHash.startsWith("order/")) {
+            try {
+                window.history.replaceState(null, "", window.location.pathname + window.location.search);
+            } catch (_) {}
+        }
+    }
+}
+
+/**
+ * Gửi bình luận / ghi chú thay đổi thông tin ngay trong Modal Chi Tiết Đơn Hàng
+ */
+async function submitOrderDetailComment(e, orderCodeOrId, orderIdForReload = "") {
+    if (e && typeof e.preventDefault === "function") {
+        e.preventDefault();
+    }
+    const code = (orderCodeOrId || "").toString().trim();
+    if (!code) return;
+
+    const msgInput = document.getElementById("ordDetailCommentInput");
+    const submitBtn = document.getElementById("btnSubmitOrdDetailComment");
+    const message = msgInput ? msgInput.value.trim() : "";
+
+    if (!message) {
+        if (typeof showToast === "function") showToast("Vui lòng nhập nội dung bình luận / thay đổi thông tin.", "warning");
+        if (msgInput) msgInput.focus();
+        return;
+    }
+
+    const user = dashGetCurrentUser();
+    const isStaffUser = !!(user && INTERNAL_ROLES.includes(user.role));
+    const authorName = (user && (user.fullName || user.username))
+        ? `${user.fullName || user.username}`
+        : (isStaffUser ? "Nhân viên Website" : "Khách hàng");
+    const token = typeof getAuthToken === "function" ? getAuthToken() : (localStorage.getItem("flower_auth_token") || "");
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang gửi...`;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(code)}/comments`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+                orderCode: code,
+                message,
+                authorName,
+                role: user?.role || "customer",
+                isStaff: isStaffUser
+            })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể gửi bình luận cho đơn hàng này.");
+        }
+        if (msgInput) msgInput.value = "";
+        if (typeof showToast === "function") showToast("💬 Đã gửi bình luận lên đơn hàng!", "success");
+        await openOrderDetailModal(orderIdForReload || code);
+        if (typeof loadLiveStreamOrders === "function") loadLiveStreamOrders();
+    } catch (err) {
+        if (typeof showToast === "function") showToast(err.message || "Lỗi khi gửi bình luận", "error");
+        else alert(err.message || "Lỗi khi gửi bình luận");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane mr-1"></i> Gửi Bình Luận`;
+        }
+    }
 }
 
 /**
@@ -6874,9 +7201,89 @@ function populateOrderDetail(order) {
     if (loadingEl) loadingEl.classList.add("hidden");
     if (contentEl) contentEl.classList.remove("hidden");
 
-    // 1. Header
+    // 1. Header & #order=<mã_đơn> Share Hash Link
+    const displayOrderCode = order.orderCode || order.id || "NHTB-ORDER";
     const codeEl = document.getElementById("ordDetailCode");
-    if (codeEl) codeEl.textContent = order.orderCode || order.id || "NHTB-ORDER";
+    if (codeEl) codeEl.textContent = displayOrderCode;
+
+    const hashTagStr = `#order=${displayOrderCode}`;
+    const fullShareUrl = (typeof window !== "undefined" && typeof window.getOrderShareHashUrl === "function")
+        ? window.getOrderShareHashUrl(displayOrderCode)
+        : ((typeof window !== "undefined") ? `${window.location.origin}${window.location.pathname}#order=${encodeURIComponent(displayOrderCode)}` : hashTagStr);
+
+    const headerHashTextEl = document.getElementById("ordDetailHeaderHashText");
+    if (headerHashTextEl) headerHashTextEl.textContent = hashTagStr;
+
+    const hashTagLabelEl = document.getElementById("ordDetailHashTagLabel");
+    if (hashTagLabelEl) hashTagLabelEl.textContent = hashTagStr;
+
+    const shareUrlInputEl = document.getElementById("ordDetailShareHashUrlInput");
+    if (shareUrlInputEl) shareUrlInputEl.value = fullShareUrl;
+
+    if (typeof window !== "undefined" && window.history && typeof window.history.replaceState === "function") {
+        try {
+            window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#order=${encodeURIComponent(displayOrderCode)}`);
+        } catch (_) {}
+    }
+
+    // Render Bình luận / Ghi chú thay đổi thông tin ngay trong Modal Chi Tiết Đơn Hàng (Hỗ trợ cả Nhân viên Website & Khách hàng)
+    const commentsBoxEl = document.getElementById("ordDetailCustomerCommentsBox");
+    if (commentsBoxEl) {
+        const commentsList = Array.isArray(order.comments) ? order.comments : [];
+        const stLower = String(order.status || "pending").toLowerCase();
+        const isCustomerLocked = (order.canComment === false) || ["delivered", "completed", "cancelled", "returned"].includes(stLower);
+        const currentUser = dashGetCurrentUser();
+        const isStaffUser = !!(currentUser && INTERNAL_ROLES.includes(currentUser.role));
+        const canCommentNow = isStaffUser || !isCustomerLocked;
+
+        commentsBoxEl.innerHTML = `
+            <div class="flex items-center justify-between flex-wrap gap-1">
+                <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                    <i class="fa-regular fa-comments text-rose-500"></i> Bình Luận / Ghi Chú Đơn Hàng (${commentsList.length})
+                </span>
+                <span class="text-[10px] font-semibold ${!isCustomerLocked ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : (isStaffUser ? 'text-indigo-700 bg-indigo-50 border-indigo-200' : 'text-gray-500 bg-gray-100 border-gray-200')} px-2 py-0.5 rounded-full border">
+                    ${!isCustomerLocked ? '🟢 Đang mở bình luận (Khách & Nhân viên)' : (isStaffUser ? '👩‍💼 Nhân viên Website vẫn có thể ghi chú / bình luận' : '🔒 Đã giao xong (Đóng bình luận)')}
+                </span>
+            </div>
+            ${commentsList.length > 0 ? `
+                <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1 mt-1.5">
+                    ${commentsList.map(c => {
+                        const isStaffCmt = !!(c.isStaff || (c.role && c.role !== "customer"));
+                        const authorDisplay = c.authorName || c.author || (isStaffCmt ? "Nhân viên Website" : "Khách hàng");
+                        return `
+                        <div class="p-2 rounded-lg ${isStaffCmt ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-amber-200'} border text-xs shadow-2xs">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-bold ${isStaffCmt ? 'text-indigo-900' : 'text-amber-900'} flex items-center gap-1">
+                                    <i class="fa-solid ${isStaffCmt ? 'fa-user-shield text-indigo-600' : 'fa-user-pen text-amber-600'} text-[10px]"></i>
+                                    ${authorDisplay}
+                                    ${isStaffCmt ? '<span class="text-[9px] bg-indigo-600 text-white px-1.5 py-0.2 rounded-full">Nhân viên</span>' : ''}
+                                </span>
+                                <span class="text-[10px] text-gray-400 font-mono">${c.createdAt ? dashFormatDate(c.createdAt) : ""}</span>
+                            </div>
+                            <p class="text-gray-800 mt-0.5 whitespace-pre-line">${c.message || ""}</p>
+                        </div>
+                        `;
+                    }).join("")}
+                </div>
+            ` : `<p class="text-[11px] text-gray-400 italic mt-1">Chưa có bình luận thay đổi thông tin nào trên đơn hàng này.</p>`}
+            ${canCommentNow ? `
+                <form onsubmit="submitOrderDetailComment(event, '${displayOrderCode}', '${order.id || displayOrderCode}')" class="flex flex-col sm:flex-row gap-2 mt-2">
+                    <input type="text" id="ordDetailCommentInput"
+                        placeholder="${isStaffUser ? 'Nhân viên nhập phản hồi / ghi chú xử lý đơn hàng...' : 'Nhập ghi chú thay đổi thông tin (SĐT, giờ nhận, địa chỉ, lời chúc)...'}"
+                        class="flex-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-gray-800 focus:outline-none focus:border-indigo-500">
+                    <button type="submit" id="btnSubmitOrdDetailComment"
+                        class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition flex items-center justify-center gap-1 flex-shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi Bình Luận
+                    </button>
+                </form>
+            ` : `
+                <div class="mt-1.5 p-2 rounded-lg bg-gray-100 border border-gray-200 text-[11px] text-gray-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-lock text-gray-400"></i>
+                    <span>Đơn hàng đã giao hoàn tất — Chức năng bình luận thay đổi thông tin đã kết thúc.</span>
+                </div>
+            `}
+        `;
+    }
 
     const createdEl = document.getElementById("ordDetailCreatedAt");
     if (createdEl) {
@@ -7649,6 +8056,7 @@ if (typeof window !== "undefined") {
     window.onDashboardFilterChange = onDashboardFilterChange;
     window.renderOrderProgressStepper = renderOrderProgressStepper;
     window.printOrderDetail = printOrderDetail;
+    window.submitOrderDetailComment = submitOrderDetailComment;
 }
 
 
@@ -15173,56 +15581,67 @@ function formatLiveReceivingDateLabel(dateStr) {
 }
 
 /**
- * Tạo khóa chuẩn hóa YYYY-MM-DD_HH:MM để sắp xếp chính xác theo Ngày nhận & Giờ nhận hoa
+ * Trích xuất chuẩn hóa Ngày Nhận (YYYY-MM-DD) và Giờ Nhận (HH:MM) của đơn hàng Live Stream
  */
-function getLiveOrderDeliverySortKey(order) {
-    if (!order || typeof order !== "object") return "9999-99-99_99:99";
-    const rawDate = (order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "";
+function extractLiveOrderDateAndTime(order) {
+    if (!order || typeof order !== "object") {
+        return { datePart: "9999-99-99", timePart: "99:99", createdPart: "" };
+    }
+    const rawDate =
+        (order.delivery && order.delivery.deliveryDate) ||
+        order.deliveryDate ||
+        order.orderDate ||
+        order.createdAt ||
+        "";
     const datePart = (rawDate && String(rawDate).trim().length >= 10)
         ? String(rawDate).trim().slice(0, 10)
         : "9999-99-99";
 
-    const rawSlot = String((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "").trim();
+    const rawSlot = String(
+        (order.delivery && order.delivery.timeSlot) ||
+        order.deliveryTime ||
+        order.timeSlot ||
+        ""
+    ).trim();
+
     let timePart = "23:59";
     if (!rawSlot || rawSlot.toLowerCase().includes("giao ngay") || rawSlot.toLowerCase().includes("sớm nhất")) {
-        // Ưu tiên đơn "Giao ngay trong ngày (Sớm nhất)" lên đầu trong cùng ngày
+        // Ưu tiên đơn "Giao ngay trong ngày (Sớm nhất)" lên đầu trong cùng ngày nhận
         timePart = "00:00";
     } else {
-        const m = rawSlot.match(/(\d{1,2}):(\d{2})/);
+        const m = rawSlot.match(/(\d{1,2})(?::(\d{2}))?\s*h?/i);
         if (m) {
-            timePart = `${String(m[1]).padStart(2, "0")}:${m[2]}`;
+            const hh = String(m[1]).padStart(2, "0");
+            const mm = m[2] ? String(m[2]).padStart(2, "0") : "00";
+            timePart = `${hh}:${mm}`;
         }
     }
     const createdPart = String(order.createdAt || "");
+    return { datePart, timePart, createdPart };
+}
+
+/**
+ * Tạo khóa chuẩn hóa YYYY-MM-DD_HH:MM để sắp xếp chính xác theo Ngày nhận & Giờ nhận hoa
+ */
+function getLiveOrderDeliverySortKey(order) {
+    const { datePart, timePart, createdPart } = extractLiveOrderDateAndTime(order);
     return `${datePart}_${timePart}_${createdPart}`;
 }
 
 /**
- * Tạo khóa sắp xếp ưu tiên theo Cột Giờ Nhận (HH:MM trước, sau đó tới Ngày Nhận YYYY-MM-DD)
+ * Tạo khóa sắp xếp Giờ Nhận theo từng Ngày Nhận (Nhóm theo YYYY-MM-DD trước, sau đó sắp xếp HH:MM trong ngày đó)
  */
 function getLiveOrderTimeOnlySortKey(order) {
-    if (!order || typeof order !== "object") return "99:99_9999-99-99";
-    const rawDate = (order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "";
-    const datePart = (rawDate && String(rawDate).trim().length >= 10)
-        ? String(rawDate).trim().slice(0, 10)
-        : "9999-99-99";
-
-    const rawSlot = String((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "").trim();
-    let timePart = "23:59";
-    if (!rawSlot || rawSlot.toLowerCase().includes("giao ngay") || rawSlot.toLowerCase().includes("sớm nhất")) {
-        timePart = "00:00";
-    } else {
-        const m = rawSlot.match(/(\d{1,2}):(\d{2})/);
-        if (m) {
-            timePart = `${String(m[1]).padStart(2, "0")}:${m[2]}`;
-        }
-    }
-    const createdPart = String(order.createdAt || "");
-    return `${timePart}_${datePart}_${createdPart}`;
+    const { datePart, timePart, createdPart } = extractLiveOrderDateAndTime(order);
+    return `${datePart}_${timePart}_${createdPart}`;
 }
 
 /**
- * Sắp xếp danh sách đơn Live Stream theo chế độ được chọn (hỗ trợ cả cột Ngày Nhận và cột Giờ Nhận độc lập)
+ * Sắp xếp danh sách đơn Live Stream theo chế độ được chọn:
+ * - Khi sort theo Giờ Nhận (deliveryTime_asc / deliveryTime_desc): gom nhóm theo Ngày Nhận trước,
+ *   sau đó trong cùng một Ngày Nhận (VD: hôm nay có 10 đơn) sẽ sắp xếp theo Giờ Nhận (08:00 -> 09:00 -> 10:00... hoặc ngược lại).
+ * - Khi sort theo Ngày Nhận (deliveryDate_asc / deliveryDate_desc): sắp xếp theo Ngày Nhận trước,
+ *   và trong cùng một Ngày Nhận luôn sắp xếp Giờ Nhận từ sớm đến muộn (08:00 -> 09:00 -> 10:00...).
  */
 function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
     if (!Array.isArray(orders)) return [];
@@ -15230,16 +15649,40 @@ function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
     const mode = sortMode || "delivery_asc";
 
     list.sort((a, b) => {
-        if (mode === "delivery_asc" || mode === "delivery_desc" || mode === "deliveryDate_asc" || mode === "deliveryDate_desc") {
+        if (mode === "deliveryTime_asc" || mode === "deliveryTime_desc") {
+            const pa = extractLiveOrderDateAndTime(a);
+            const pb = extractLiveOrderDateAndTime(b);
+            // 1. Luôn gom theo Ngày Nhận trước
+            if (pa.datePart !== pb.datePart) {
+                return pa.datePart.localeCompare(pb.datePart);
+            }
+            // 2. Trong cùng 1 Ngày Nhận, sắp xếp theo Giờ Nhận (tăng dần hoặc giảm dần)
+            if (pa.timePart !== pb.timePart) {
+                return mode === "deliveryTime_asc"
+                    ? pa.timePart.localeCompare(pb.timePart)
+                    : pb.timePart.localeCompare(pa.timePart);
+            }
+            return pa.createdPart.localeCompare(pb.createdPart);
+        }
+        if (mode === "deliveryDate_asc" || mode === "deliveryDate_desc") {
+            const pa = extractLiveOrderDateAndTime(a);
+            const pb = extractLiveOrderDateAndTime(b);
+            // 1. Sắp xếp theo Ngày Nhận tăng hoặc giảm
+            if (pa.datePart !== pb.datePart) {
+                return mode === "deliveryDate_asc"
+                    ? pa.datePart.localeCompare(pb.datePart)
+                    : pb.datePart.localeCompare(pa.datePart);
+            }
+            // 2. Trong cùng 1 Ngày Nhận, sắp xếp theo Giờ Nhận từ sớm tới muộn
+            if (pa.timePart !== pb.timePart) {
+                return pa.timePart.localeCompare(pb.timePart);
+            }
+            return pa.createdPart.localeCompare(pb.createdPart);
+        }
+        if (mode === "delivery_asc" || mode === "delivery_desc") {
             const ka = getLiveOrderDeliverySortKey(a);
             const kb = getLiveOrderDeliverySortKey(b);
-            const isAsc = (mode === "delivery_asc" || mode === "deliveryDate_asc");
-            return isAsc ? ka.localeCompare(kb) : kb.localeCompare(ka);
-        }
-        if (mode === "deliveryTime_asc" || mode === "deliveryTime_desc") {
-            const ka = getLiveOrderTimeOnlySortKey(a);
-            const kb = getLiveOrderTimeOnlySortKey(b);
-            return mode === "deliveryTime_asc" ? ka.localeCompare(kb) : kb.localeCompare(ka);
+            return mode === "delivery_asc" ? ka.localeCompare(kb) : kb.localeCompare(ka);
         }
         if (mode === "amount_asc" || mode === "amount_desc") {
             const aa = Number(a.totalAmount) || Number(a.financials?.totalAmount) || Number(a.transferredAmount) || 0;
@@ -15627,6 +16070,12 @@ function renderLiveOrdersTable(orders) {
                 <td class="p-3 align-top">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <span class="font-mono text-[11px] font-bold text-gray-800">${order.orderCode || order.id || ""}</span>
+                        <button type="button"
+                            onclick="event.stopPropagation(); if (typeof copyOrderShareHashLink === 'function') copyOrderShareHashLink('${order.orderCode || order.id || ""}');"
+                            class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[9px] font-bold transition cursor-pointer"
+                            title="Sao chép link #hash chia sẻ đơn hàng (#order=${order.orderCode || order.id || ""})">
+                            <i class="fa-solid fa-hashtag text-[8px]"></i> Share
+                        </button>
                         <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[9px] font-extrabold border border-rose-200">
                             <i class="fa-solid fa-video text-[8px] animate-pulse"></i> LIVE
                         </span>
@@ -15667,6 +16116,15 @@ function renderLiveOrdersTable(orders) {
                         📍 ${deliveryAddress}
                     </div>
                     ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}
+                    ${(Array.isArray(order.comments) && order.comments.length > 0) ? `
+                        <div class="mt-1 space-y-1">
+                            ${order.comments.slice(-2).map(c => `
+                                <div class="text-[10px] text-amber-800 bg-amber-50 p-1 rounded border border-amber-200">
+                                    <span class="font-bold">📝 ${c.authorName || "Khách"}:</span> ${c.message || ""}
+                                </div>
+                            `).join("")}
+                        </div>
+                    ` : ''}
                 </td>
 
                 <td class="p-3 align-top bg-rose-50/15">
@@ -15797,6 +16255,7 @@ if (typeof window !== "undefined") {
     window.handleLiveOrderSortChange = handleLiveOrderSortChange;
     window.toggleLiveOrderColumnSort = toggleLiveOrderColumnSort;
     window.sortLiveOrdersList = sortLiveOrdersList;
+    window.extractLiveOrderDateAndTime = extractLiveOrderDateAndTime;
     window.saveLiveOrderFilterState = saveLiveOrderFilterState;
     window.restoreLiveOrderFilterState = restoreLiveOrderFilterState;
     window.saveLiveOrderRowStatusLocal = saveLiveOrderRowStatusLocal;
@@ -21597,8 +22056,25 @@ async function initApp() {
                     openQuickOrderModal();
                 }
             }, 100);
-        } else if (initialHash === 'tra-cuu' || initialHash === 'tracking' || initialHash === 'lookup' || initialHash.startsWith('tra-cuu')) {
-            const phoneParam = urlParams.get('phone') || (initialHash.includes('/') ? initialHash.split('/')[1] : '');
+        } else if (
+            initialHash === 'tra-cuu' ||
+            initialHash === 'tracking' ||
+            initialHash === 'lookup' ||
+            initialHash.startsWith('tra-cuu') ||
+            initialHash.startsWith('order=') ||
+            initialHash.startsWith('order/') ||
+            initialHash.startsWith('tracking=') ||
+            initialHash.startsWith('tracking/') ||
+            initialHash.startsWith('lookup=') ||
+            initialHash.startsWith('lookup/')
+        ) {
+            let hashQuery = '';
+            if (initialHash.includes('=')) {
+                hashQuery = decodeURIComponent(initialHash.split('=').slice(1).join('=').trim());
+            } else if (initialHash.includes('/')) {
+                hashQuery = decodeURIComponent(initialHash.split('/').slice(1).join('/').trim());
+            }
+            const phoneParam = urlParams.get('order') || urlParams.get('phone') || hashQuery;
             setTimeout(() => {
                 if (typeof openOrderLookupModal === 'function') {
                     openOrderLookupModal(phoneParam);
@@ -21642,8 +22118,24 @@ async function initApp() {
                         if (typeof openQuickOrderModal === 'function') {
                             openQuickOrderModal();
                         }
-                    } else if (hashTarget === 'tra-cuu' || hashTarget === 'tracking' || hashTarget === 'lookup' || hashTarget.startsWith('tra-cuu')) {
-                        const phoneFromHash = hashTarget.includes('/') ? hashTarget.split('/')[1] : '';
+                    } else if (
+                        hashTarget === 'tra-cuu' ||
+                        hashTarget === 'tracking' ||
+                        hashTarget === 'lookup' ||
+                        hashTarget.startsWith('tra-cuu') ||
+                        hashTarget.startsWith('order=') ||
+                        hashTarget.startsWith('order/') ||
+                        hashTarget.startsWith('tracking=') ||
+                        hashTarget.startsWith('tracking/') ||
+                        hashTarget.startsWith('lookup=') ||
+                        hashTarget.startsWith('lookup/')
+                    ) {
+                        let phoneFromHash = '';
+                        if (hashTarget.includes('=')) {
+                            phoneFromHash = decodeURIComponent(hashTarget.split('=').slice(1).join('=').trim());
+                        } else if (hashTarget.includes('/')) {
+                            phoneFromHash = decodeURIComponent(hashTarget.split('/').slice(1).join('/').trim());
+                        }
                         if (typeof openOrderLookupModal === 'function') {
                             openOrderLookupModal(phoneFromHash);
                         }

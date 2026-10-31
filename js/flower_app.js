@@ -2364,8 +2364,25 @@ async function initApp() {
                     openQuickOrderModal();
                 }
             }, 100);
-        } else if (initialHash === 'tra-cuu' || initialHash === 'tracking' || initialHash === 'lookup' || initialHash.startsWith('tra-cuu')) {
-            const phoneParam = urlParams.get('phone') || (initialHash.includes('/') ? initialHash.split('/')[1] : '');
+        } else if (
+            initialHash === 'tra-cuu' ||
+            initialHash === 'tracking' ||
+            initialHash === 'lookup' ||
+            initialHash.startsWith('tra-cuu') ||
+            initialHash.startsWith('order=') ||
+            initialHash.startsWith('order/') ||
+            initialHash.startsWith('tracking=') ||
+            initialHash.startsWith('tracking/') ||
+            initialHash.startsWith('lookup=') ||
+            initialHash.startsWith('lookup/')
+        ) {
+            let hashQuery = '';
+            if (initialHash.includes('=')) {
+                hashQuery = decodeURIComponent(initialHash.split('=').slice(1).join('=').trim());
+            } else if (initialHash.includes('/')) {
+                hashQuery = decodeURIComponent(initialHash.split('/').slice(1).join('/').trim());
+            }
+            const phoneParam = urlParams.get('order') || urlParams.get('phone') || hashQuery;
             setTimeout(() => {
                 if (typeof openOrderLookupModal === 'function') {
                     openOrderLookupModal(phoneParam);
@@ -2409,8 +2426,24 @@ async function initApp() {
                         if (typeof openQuickOrderModal === 'function') {
                             openQuickOrderModal();
                         }
-                    } else if (hashTarget === 'tra-cuu' || hashTarget === 'tracking' || hashTarget === 'lookup' || hashTarget.startsWith('tra-cuu')) {
-                        const phoneFromHash = hashTarget.includes('/') ? hashTarget.split('/')[1] : '';
+                    } else if (
+                        hashTarget === 'tra-cuu' ||
+                        hashTarget === 'tracking' ||
+                        hashTarget === 'lookup' ||
+                        hashTarget.startsWith('tra-cuu') ||
+                        hashTarget.startsWith('order=') ||
+                        hashTarget.startsWith('order/') ||
+                        hashTarget.startsWith('tracking=') ||
+                        hashTarget.startsWith('tracking/') ||
+                        hashTarget.startsWith('lookup=') ||
+                        hashTarget.startsWith('lookup/')
+                    ) {
+                        let phoneFromHash = '';
+                        if (hashTarget.includes('=')) {
+                            phoneFromHash = decodeURIComponent(hashTarget.split('=').slice(1).join('=').trim());
+                        } else if (hashTarget.includes('/')) {
+                            phoneFromHash = decodeURIComponent(hashTarget.split('/').slice(1).join('/').trim());
+                        }
                         if (typeof openOrderLookupModal === 'function') {
                             openOrderLookupModal(phoneFromHash);
                         }

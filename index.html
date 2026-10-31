@@ -1933,6 +1933,12 @@
                             <h3 class="font-serif text-lg font-bold text-gray-800">Chi Tiết Đơn Hàng</h3>
                             <span id="ordDetailCode"
                                 class="font-mono text-xs font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-md border border-emerald-200">...</span>
+                            <button type="button" id="ordDetailHeaderShareHashBtn"
+                                onclick="copyOrderShareHashLink(document.getElementById('ordDetailCode')?.textContent?.trim() || '')"
+                                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-mono font-bold transition cursor-pointer shadow-2xs"
+                                title="Nhấp để sao chép link chia sẻ #order=<mã_đơn>">
+                                <i class="fa-solid fa-share-nodes text-[10px]"></i> <span id="ordDetailHeaderHashText">#order=...</span>
+                            </button>
                         </div>
                         <p id="ordDetailCreatedAt" class="text-xs text-gray-500 mt-0.5">Thời gian tạo đơn</p>
                     </div>
@@ -1959,6 +1965,41 @@
 
             <!-- Main Content (Scrollable) -->
             <div id="ordDetailContent" class="hidden overflow-y-auto flex-1 p-5 sm:p-6 space-y-5 bg-gray-50/40">
+                <!-- Share #Hash Link & Comment Bar (Hiển thị ngay khi nhấp vào đơn hàng) -->
+                <div id="ordDetailShareHashBar"
+                    class="bg-gradient-to-r from-indigo-50/90 via-rose-50/40 to-white rounded-xl border border-indigo-200 p-3.5 shadow-2xs space-y-2.5">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs shadow-2xs flex-shrink-0">
+                                <i class="fa-solid fa-hashtag"></i>
+                            </span>
+                            <div>
+                                <div class="text-xs font-bold text-gray-800 flex items-center gap-1.5 flex-wrap">
+                                    <span>Link Share Đơn Hàng (<code id="ordDetailHashTagLabel" class="font-mono text-indigo-700 bg-white px-1.5 py-0.5 rounded border border-indigo-200">#order=...</code>)</span>
+                                </div>
+                                <p class="text-[11px] text-gray-500">Gửi link này cho khách để theo dõi tiến độ & bình luận thay đổi thông tin (tự khóa khi giao xong)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 flex-wrap sm:flex-nowrap">
+                            <input type="text" id="ordDetailShareHashUrlInput" readonly
+                                class="w-full sm:w-64 px-2.5 py-1.5 bg-white border border-indigo-200 rounded-lg text-[11px] font-mono font-bold text-indigo-800 focus:outline-none select-all"
+                                value="#order=...">
+                            <button type="button" onclick="copyOrderShareHashLink(document.getElementById('ordDetailCode')?.textContent?.trim() || '')"
+                                class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition flex items-center gap-1 flex-shrink-0 cursor-pointer shadow-2xs">
+                                <i class="fa-regular fa-copy"></i> Copy Link
+                            </button>
+                            <button type="button" onclick="const c = document.getElementById('ordDetailCode')?.textContent?.trim(); if (c) { closeOrderDetailModal(); openOrderLookupModal(c); }"
+                                class="px-2.5 py-1.5 bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition flex items-center gap-1 flex-shrink-0 cursor-pointer shadow-2xs"
+                                title="Mở giao diện khách xem & bình luận qua #hash">
+                                <i class="fa-regular fa-comments"></i> Mở Trang Khách
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Danh sách bình luận / thay đổi thông tin của khách trên đơn này -->
+                    <div id="ordDetailCustomerCommentsBox" class="pt-2 border-t border-indigo-100/80 space-y-2">
+                    </div>
+                </div>
+
                 <!-- Status Banner Card -->
                 <div
                     class="bg-white rounded-xl border border-gray-200 p-4 shadow-2xs flex flex-wrap items-center justify-between gap-3">
@@ -7074,8 +7115,8 @@
     <!-- MODAL TRA CỨU ĐƠN HÀNG THỜI GIAN THỰC (ORDER LOOKUP / TRACKING MODAL)       -->
     <!-- URL Hash: #tra-cuu, #tracking, #lookup                                    -->
     <!-- ========================================================================= -->
-    <div id="orderLookupModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/60 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto" style="display: none;">
-        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-gray-100 my-auto">
+    <div id="orderLookupModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/60 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto" style="display: none;">
+        <div class="bg-white w-[98vw] max-w-6xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-100 my-auto">
             <!-- Modal Header -->
             <div class="p-4 sm:p-5 bg-gradient-to-r from-rose-50 via-pink-50 to-white border-b border-rose-100 flex items-center justify-between">
                 <div class="flex items-center gap-3">

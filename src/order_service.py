@@ -837,12 +837,16 @@ def add_order_customer_comment(
     if not order:
         return False, None, f"Không tìm thấy đơn hàng '{clean_key}'"
 
-    cur_status = str(order.get("status") or "pending").strip().lower()
-    if cur_status in ["delivered", "completed", "cancelled", "returned"]:
-        return False, None, "Đơn hàng đã giao hoàn tất (hoặc đã đóng), chức năng bình luận thay đổi thông tin đã kết thúc"
-
     if not isinstance(comment_data, dict):
         comment_data = {}
+
+    STAFF_ROLES = {"super_admin", "branch_manager", "florist", "sales_consultant", "shipper", "accountant", "staff", "admin"}
+    role = str(comment_data.get("authorRole") or comment_data.get("role") or "customer").strip().lower()
+    is_staff = bool(comment_data.get("isStaff")) or (role in STAFF_ROLES)
+
+    cur_status = str(order.get("status") or "pending").strip().lower()
+    if not is_staff and cur_status in ["delivered", "completed", "cancelled", "returned"]:
+        return False, None, "Đơn hàng đã giao hoàn tất (hoặc đã đóng), chức năng bình luận thay đổi thông tin đã kết thúc"
 
     message = str(
         comment_data.get("message")
@@ -854,20 +858,20 @@ def add_order_customer_comment(
         return False, None, "Vui lòng nhập nội dung bình luận / thông tin cần thay đổi"
 
     recipient = order.get("recipient") or {}
+    default_author = "Nhân viên Website" if is_staff else (recipient.get("name") or order.get("customerName") or "Khách hàng")
     author = str(
         comment_data.get("authorName")
         or comment_data.get("author")
-        or recipient.get("name")
-        or order.get("customerName")
-        or "Khách hàng"
+        or default_author
     ).strip()
-    role = str(comment_data.get("role") or "customer").strip()
     now_iso = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     comment_entry = {
         "id": f"cmt_{int(datetime.now().timestamp())}_{uuid.uuid4().hex[:4]}",
         "author": author,
+        "authorName": author,
         "role": role,
+        "isStaff": is_staff,
         "message": message,
         "createdAt": now_iso
     }
@@ -882,10 +886,11 @@ def add_order_customer_comment(
     history = order.get("history")
     if not isinstance(history, list):
         history = []
+    note_prefix = "Nhân viên phản hồi / ghi chú trên đơn" if is_staff else "Khách bình luận / báo thay đổi thông tin"
     history.append({
         "status": cur_status,
         "updatedAt": now_iso,
-        "note": f"Khách bình luận / báo thay đổi thông tin: {message}",
+        "note": f"{note_prefix}: {message}",
         "updatedBy": author
     })
     order["history"] = history

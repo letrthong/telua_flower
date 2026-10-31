@@ -191,56 +191,67 @@ function formatLiveReceivingDateLabel(dateStr) {
 }
 
 /**
- * Tạo khóa chuẩn hóa YYYY-MM-DD_HH:MM để sắp xếp chính xác theo Ngày nhận & Giờ nhận hoa
+ * Trích xuất chuẩn hóa Ngày Nhận (YYYY-MM-DD) và Giờ Nhận (HH:MM) của đơn hàng Live Stream
  */
-export function getLiveOrderDeliverySortKey(order) {
-    if (!order || typeof order !== "object") return "9999-99-99_99:99";
-    const rawDate = (order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "";
+export function extractLiveOrderDateAndTime(order) {
+    if (!order || typeof order !== "object") {
+        return { datePart: "9999-99-99", timePart: "99:99", createdPart: "" };
+    }
+    const rawDate =
+        (order.delivery && order.delivery.deliveryDate) ||
+        order.deliveryDate ||
+        order.orderDate ||
+        order.createdAt ||
+        "";
     const datePart = (rawDate && String(rawDate).trim().length >= 10)
         ? String(rawDate).trim().slice(0, 10)
         : "9999-99-99";
 
-    const rawSlot = String((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "").trim();
+    const rawSlot = String(
+        (order.delivery && order.delivery.timeSlot) ||
+        order.deliveryTime ||
+        order.timeSlot ||
+        ""
+    ).trim();
+
     let timePart = "23:59";
     if (!rawSlot || rawSlot.toLowerCase().includes("giao ngay") || rawSlot.toLowerCase().includes("sớm nhất")) {
-        // Ưu tiên đơn "Giao ngay trong ngày (Sớm nhất)" lên đầu trong cùng ngày
+        // Ưu tiên đơn "Giao ngay trong ngày (Sớm nhất)" lên đầu trong cùng ngày nhận
         timePart = "00:00";
     } else {
-        const m = rawSlot.match(/(\d{1,2}):(\d{2})/);
+        const m = rawSlot.match(/(\d{1,2})(?::(\d{2}))?\s*h?/i);
         if (m) {
-            timePart = `${String(m[1]).padStart(2, "0")}:${m[2]}`;
+            const hh = String(m[1]).padStart(2, "0");
+            const mm = m[2] ? String(m[2]).padStart(2, "0") : "00";
+            timePart = `${hh}:${mm}`;
         }
     }
     const createdPart = String(order.createdAt || "");
+    return { datePart, timePart, createdPart };
+}
+
+/**
+ * Tạo khóa chuẩn hóa YYYY-MM-DD_HH:MM để sắp xếp chính xác theo Ngày nhận & Giờ nhận hoa
+ */
+export function getLiveOrderDeliverySortKey(order) {
+    const { datePart, timePart, createdPart } = extractLiveOrderDateAndTime(order);
     return `${datePart}_${timePart}_${createdPart}`;
 }
 
 /**
- * Tạo khóa sắp xếp ưu tiên theo Cột Giờ Nhận (HH:MM trước, sau đó tới Ngày Nhận YYYY-MM-DD)
+ * Tạo khóa sắp xếp Giờ Nhận theo từng Ngày Nhận (Nhóm theo YYYY-MM-DD trước, sau đó sắp xếp HH:MM trong ngày đó)
  */
 export function getLiveOrderTimeOnlySortKey(order) {
-    if (!order || typeof order !== "object") return "99:99_9999-99-99";
-    const rawDate = (order.delivery && order.delivery.deliveryDate) || order.deliveryDate || order.orderDate || "";
-    const datePart = (rawDate && String(rawDate).trim().length >= 10)
-        ? String(rawDate).trim().slice(0, 10)
-        : "9999-99-99";
-
-    const rawSlot = String((order.delivery && order.delivery.timeSlot) || order.deliveryTime || order.timeSlot || "").trim();
-    let timePart = "23:59";
-    if (!rawSlot || rawSlot.toLowerCase().includes("giao ngay") || rawSlot.toLowerCase().includes("sớm nhất")) {
-        timePart = "00:00";
-    } else {
-        const m = rawSlot.match(/(\d{1,2}):(\d{2})/);
-        if (m) {
-            timePart = `${String(m[1]).padStart(2, "0")}:${m[2]}`;
-        }
-    }
-    const createdPart = String(order.createdAt || "");
-    return `${timePart}_${datePart}_${createdPart}`;
+    const { datePart, timePart, createdPart } = extractLiveOrderDateAndTime(order);
+    return `${datePart}_${timePart}_${createdPart}`;
 }
 
 /**
- * Sắp xếp danh sách đơn Live Stream theo chế độ được chọn (hỗ trợ cả cột Ngày Nhận và cột Giờ Nhận độc lập)
+ * Sắp xếp danh sách đơn Live Stream theo chế độ được chọn:
+ * - Khi sort theo Giờ Nhận (deliveryTime_asc / deliveryTime_desc): gom nhóm theo Ngày Nhận trước,
+ *   sau đó trong cùng một Ngày Nhận (VD: hôm nay có 10 đơn) sẽ sắp xếp theo Giờ Nhận (08:00 -> 09:00 -> 10:00... hoặc ngược lại).
+ * - Khi sort theo Ngày Nhận (deliveryDate_asc / deliveryDate_desc): sắp xếp theo Ngày Nhận trước,
+ *   và trong cùng một Ngày Nhận luôn sắp xếp Giờ Nhận từ sớm đến muộn (08:00 -> 09:00 -> 10:00...).
  */
 export function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
     if (!Array.isArray(orders)) return [];
@@ -248,16 +259,40 @@ export function sortLiveOrdersList(orders, sortMode = currentLiveOrderSort) {
     const mode = sortMode || "delivery_asc";
 
     list.sort((a, b) => {
-        if (mode === "delivery_asc" || mode === "delivery_desc" || mode === "deliveryDate_asc" || mode === "deliveryDate_desc") {
+        if (mode === "deliveryTime_asc" || mode === "deliveryTime_desc") {
+            const pa = extractLiveOrderDateAndTime(a);
+            const pb = extractLiveOrderDateAndTime(b);
+            // 1. Luôn gom theo Ngày Nhận trước
+            if (pa.datePart !== pb.datePart) {
+                return pa.datePart.localeCompare(pb.datePart);
+            }
+            // 2. Trong cùng 1 Ngày Nhận, sắp xếp theo Giờ Nhận (tăng dần hoặc giảm dần)
+            if (pa.timePart !== pb.timePart) {
+                return mode === "deliveryTime_asc"
+                    ? pa.timePart.localeCompare(pb.timePart)
+                    : pb.timePart.localeCompare(pa.timePart);
+            }
+            return pa.createdPart.localeCompare(pb.createdPart);
+        }
+        if (mode === "deliveryDate_asc" || mode === "deliveryDate_desc") {
+            const pa = extractLiveOrderDateAndTime(a);
+            const pb = extractLiveOrderDateAndTime(b);
+            // 1. Sắp xếp theo Ngày Nhận tăng hoặc giảm
+            if (pa.datePart !== pb.datePart) {
+                return mode === "deliveryDate_asc"
+                    ? pa.datePart.localeCompare(pb.datePart)
+                    : pb.datePart.localeCompare(pa.datePart);
+            }
+            // 2. Trong cùng 1 Ngày Nhận, sắp xếp theo Giờ Nhận từ sớm tới muộn
+            if (pa.timePart !== pb.timePart) {
+                return pa.timePart.localeCompare(pb.timePart);
+            }
+            return pa.createdPart.localeCompare(pb.createdPart);
+        }
+        if (mode === "delivery_asc" || mode === "delivery_desc") {
             const ka = getLiveOrderDeliverySortKey(a);
             const kb = getLiveOrderDeliverySortKey(b);
-            const isAsc = (mode === "delivery_asc" || mode === "deliveryDate_asc");
-            return isAsc ? ka.localeCompare(kb) : kb.localeCompare(ka);
-        }
-        if (mode === "deliveryTime_asc" || mode === "deliveryTime_desc") {
-            const ka = getLiveOrderTimeOnlySortKey(a);
-            const kb = getLiveOrderTimeOnlySortKey(b);
-            return mode === "deliveryTime_asc" ? ka.localeCompare(kb) : kb.localeCompare(ka);
+            return mode === "delivery_asc" ? ka.localeCompare(kb) : kb.localeCompare(ka);
         }
         if (mode === "amount_asc" || mode === "amount_desc") {
             const aa = Number(a.totalAmount) || Number(a.financials?.totalAmount) || Number(a.transferredAmount) || 0;
@@ -645,6 +680,12 @@ export function renderLiveOrdersTable(orders) {
                 <td class="p-3 align-top">
                     <div class="flex items-center gap-1.5 flex-wrap">
                         <span class="font-mono text-[11px] font-bold text-gray-800">${order.orderCode || order.id || ""}</span>
+                        <button type="button"
+                            onclick="event.stopPropagation(); if (typeof copyOrderShareHashLink === 'function') copyOrderShareHashLink('${order.orderCode || order.id || ""}');"
+                            class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[9px] font-bold transition cursor-pointer"
+                            title="Sao chép link #hash chia sẻ đơn hàng (#order=${order.orderCode || order.id || ""})">
+                            <i class="fa-solid fa-hashtag text-[8px]"></i> Share
+                        </button>
                         <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[9px] font-extrabold border border-rose-200">
                             <i class="fa-solid fa-video text-[8px] animate-pulse"></i> LIVE
                         </span>
@@ -685,6 +726,15 @@ export function renderLiveOrdersTable(orders) {
                         📍 ${deliveryAddress}
                     </div>
                     ${order.notes ? `<div class="text-[10px] text-pink-700 bg-pink-50/70 p-1 rounded mt-1 border border-pink-100 italic" title="${order.notes}">💬 "${order.notes}"</div>` : ''}
+                    ${(Array.isArray(order.comments) && order.comments.length > 0) ? `
+                        <div class="mt-1 space-y-1">
+                            ${order.comments.slice(-2).map(c => `
+                                <div class="text-[10px] text-amber-800 bg-amber-50 p-1 rounded border border-amber-200">
+                                    <span class="font-bold">📝 ${c.authorName || "Khách"}:</span> ${c.message || ""}
+                                </div>
+                            `).join("")}
+                        </div>
+                    ` : ''}
                 </td>
 
                 <td class="p-3 align-top bg-rose-50/15">
@@ -815,6 +865,7 @@ if (typeof window !== "undefined") {
     window.handleLiveOrderSortChange = handleLiveOrderSortChange;
     window.toggleLiveOrderColumnSort = toggleLiveOrderColumnSort;
     window.sortLiveOrdersList = sortLiveOrdersList;
+    window.extractLiveOrderDateAndTime = extractLiveOrderDateAndTime;
     window.saveLiveOrderFilterState = saveLiveOrderFilterState;
     window.restoreLiveOrderFilterState = restoreLiveOrderFilterState;
     window.saveLiveOrderRowStatusLocal = saveLiveOrderRowStatusLocal;
