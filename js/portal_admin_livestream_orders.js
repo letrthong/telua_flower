@@ -418,6 +418,7 @@ export async function loadLiveStreamOrders() {
         if (json.success && json.data) {
             const orders = Array.isArray(json.data.orders) ? json.data.orders : [];
             lastLoadedLiveOrders = orders;
+            if (typeof window !== "undefined") window.lastLoadedLiveOrders = lastLoadedLiveOrders;
             renderLiveOrdersTable(lastLoadedLiveOrders);
             updateLiveKPIs(lastLoadedLiveOrders);
             updateLiveOrderFilterInfoBar(filterDate, orders.length);
@@ -451,6 +452,9 @@ async function fetchLiveConfigQuietly(headers = {}) {
  */
 function updateLiveStreamControlUI(config) {
     const isLive = !!(config.enableQuickOrder || config.enabled);
+    if (typeof window !== "undefined" && typeof window.syncQuickOrderButtonsVisibility === "function") {
+        window.syncQuickOrderButtonsVisibility(isLive);
+    }
     const toggleEl = document.getElementById("liveStreamQuickToggle");
     const statusBadge = document.getElementById("liveStreamStatusBadge");
     const statusText = document.getElementById("liveStreamStatusText");

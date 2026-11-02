@@ -31,7 +31,7 @@ const DASH_PAYMENT_STATUS_META = {
     failed:   { label: "Thanh toán lỗi",  color: "bg-red-100 text-red-700 border-red-200",           icon: "fa-circle-xmark" }
 };
 
-const INTERNAL_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant"];
+const INTERNAL_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant", "shipper", "accountant", "staff", "admin"];
 
 export const DASH_KNOWN_BRANCHES = [
     {
@@ -123,6 +123,12 @@ function dashGetStatusMeta(status, map) {
 function dashGetCurrentUser() {
     if (typeof getCurrentUser === "function") return getCurrentUser();
     if (typeof window !== "undefined" && typeof window.getCurrentUser === "function") return window.getCurrentUser();
+    if (typeof localStorage !== "undefined") {
+        try {
+            const raw = localStorage.getItem("telua_auth_user") || localStorage.getItem("flower_user");
+            if (raw) return JSON.parse(raw);
+        } catch (_) {}
+    }
     return null;
 }
 
@@ -486,8 +492,12 @@ export async function openOrderDetailModal(orderId) {
         }
         throw new Error(json.message || "Không thể tải chi tiết đơn hàng");
     } catch (err) {
-        // Fallback: Tìm trong danh sách cache đã tải trước đó
-        const cached = cachedDashboardOrders.find(o => o.id === cleanId || o.orderCode === cleanId);
+        // Fallback: Tìm trong danh sách cache đã tải trước đó (Dashboard, Live Stream, hoặc Admin Orders)
+        const liveList = (typeof window !== "undefined" && Array.isArray(window.lastLoadedLiveOrders)) ? window.lastLoadedLiveOrders : [];
+        const adminList = (typeof window !== "undefined" && Array.isArray(window.lastLoadedAdminOrders)) ? window.lastLoadedAdminOrders : [];
+        const cached = cachedDashboardOrders.find(o => o.id === cleanId || o.orderCode === cleanId)
+            || liveList.find(o => o.id === cleanId || o.orderCode === cleanId)
+            || adminList.find(o => o.id === cleanId || o.orderCode === cleanId);
         if (cached) {
             populateOrderDetail(cached);
             return;
@@ -547,11 +557,13 @@ export async function submitOrderDetailComment(e, orderCodeOrId, orderIdForReloa
     }
 
     const user = dashGetCurrentUser();
-    const isStaffUser = !!(user && INTERNAL_ROLES.includes(user.role));
+    const isStaffUser = true;
     const authorName = (user && (user.fullName || user.username))
         ? `${user.fullName || user.username}`
-        : (isStaffUser ? "Nhân viên Website" : "Khách hàng");
-    const token = typeof getAuthToken === "function" ? getAuthToken() : (localStorage.getItem("flower_auth_token") || "");
+        : "Nhân viên Website";
+    const token = typeof getAuthToken === "function"
+        ? getAuthToken()
+        : ((typeof localStorage !== "undefined") ? (localStorage.getItem("telua_auth_token") || localStorage.getItem("flower_auth_token") || "") : "");
     const headers = { "Content-Type": "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -833,8 +845,8 @@ function populateOrderDetail(order) {
         const stLower = String(order.status || "pending").toLowerCase();
         const isCustomerLocked = (order.canComment === false) || ["delivered", "completed", "cancelled", "returned"].includes(stLower);
         const currentUser = dashGetCurrentUser();
-        const isStaffUser = !!(currentUser && INTERNAL_ROLES.includes(currentUser.role));
-        const canCommentNow = isStaffUser || !isCustomerLocked;
+        const isStaffUser = true;
+        const canCommentNow = true;
 
         commentsBoxEl.innerHTML = `
             <div class="flex items-center justify-between flex-wrap gap-1">
@@ -867,7 +879,7 @@ function populateOrderDetail(order) {
                 </div>
             ` : `<p class="text-[11px] text-gray-400 italic mt-1">Chưa có bình luận thay đổi thông tin nào trên đơn hàng này.</p>`}
             ${canCommentNow ? `
-                <form onsubmit="submitOrderDetailComment(event, '${displayOrderCode}', '${order.id || displayOrderCode}')" class="flex flex-col sm:flex-row gap-2 mt-2">
+                <form onsubmit="submitOrderDetailComment(event, '${order.id || displayOrderCode}', '${order.id || displayOrderCode}')" class="flex flex-col sm:flex-row gap-2 mt-2">
                     <input type="text" id="ordDetailCommentInput"
                         placeholder="${isStaffUser ? 'Nhân viên nhập phản hồi / ghi chú xử lý đơn hàng...' : 'Nhập ghi chú thay đổi thông tin (SĐT, giờ nhận, địa chỉ, lời chúc)...'}"
                         class="flex-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-gray-800 focus:outline-none focus:border-indigo-500">

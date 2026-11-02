@@ -1983,7 +1983,7 @@ def extract_year_month_from_order(order: Dict[str, Any]) -> str:
     order_id = order.get("id") or ""
     if order_id.startswith("ord_") and len(order_id) >= 10:
         raw_ym = order_id[4:10]
-        if raw_ym.isdigit() and len(raw_ym) == 6:
+        if raw_ym.isdigit() and len(raw_ym) == 6 and raw_ym.startswith("20") and 1 <= int(raw_ym[4:6]) <= 12:
             return f"{raw_ym[:4]}_{raw_ym[4:]}"
 
     return datetime.now().strftime("%Y_%m")
@@ -2109,8 +2109,8 @@ def build_order_shortcut_item(order: Dict[str, Any]) -> Dict[str, Any]:
         "itemCount": item_count,
         "requiresArranging": order.get("requiresArranging") if "requiresArranging" in order else True,
         "customerId": order.get("customerId") or order.get("userId") or "",
-        "note": order.get("note") or order.get("notes") or "",
-        "notes": order.get("notes") or order.get("note") or "",
+        "note": order.get("note") or order.get("notes") or (recipient.get("deliveryNotes") if isinstance(recipient, dict) else "") or order.get("cardMessage") or "",
+        "notes": order.get("notes") or order.get("note") or (recipient.get("deliveryNotes") if isinstance(recipient, dict) else "") or order.get("cardMessage") or "",
         "comments": order.get("comments") or [],
         "detailPath": detail_rel_path
     }
@@ -2390,7 +2390,7 @@ def get_order_by_id(
 
     if not year_month and clean_oid.startswith("ord_") and len(clean_oid) >= 10:
         raw_ym = clean_oid[4:10]
-        if raw_ym.isdigit() and len(raw_ym) == 6:
+        if raw_ym.isdigit() and len(raw_ym) == 6 and raw_ym.startswith("20") and 1 <= int(raw_ym[4:6]) <= 12:
             year_month = f"{raw_ym[:4]}_{raw_ym[4:]}"
 
     # 1. Tra cứu trực tiếp O(1) nếu đã biết branch, ym, status
@@ -2454,10 +2454,25 @@ def get_order_by_id(
                 if isinstance(data, dict):
                     return data
 
-    # 5. Tìm kiếm theo orderCode
+    # 5. Tìm kiếm theo orderCode trong tháng hoặc trên toàn hệ thống
     candidates = read_orders_by_month(year_month, branch_id)
     for o in candidates:
         if o.get("id") == clean_oid or o.get("orderCode") == clean_oid:
+            matched_id = o.get("id")
+            if matched_id and matched_id != clean_oid:
+                full_obj = get_order_by_id(matched_id, year_month=year_month, branch_id=o.get("branchId") or branch_id, status=o.get("status"))
+                if isinstance(full_obj, dict):
+                    return full_obj
+            return o
+
+    all_candidates = get_all_orders_across_all_months(branch_id=branch_id)
+    for o in all_candidates:
+        if o.get("id") == clean_oid or o.get("orderCode") == clean_oid:
+            matched_id = o.get("id")
+            if matched_id and matched_id != clean_oid:
+                full_obj = get_order_by_id(matched_id, branch_id=o.get("branchId") or branch_id, status=o.get("status"))
+                if isinstance(full_obj, dict):
+                    return full_obj
             return o
 
     return None

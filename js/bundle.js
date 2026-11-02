@@ -3429,6 +3429,76 @@ if (typeof window !== "undefined") {
 let selectedProofFile = null;
 let cachedStorefrontProducts = [];
 let currentLiveConfig = null;
+let currentQuickOrderToken = "";
+
+/**
+ * Làm mới mã bảo mật phiên đặt đơn nhanh (One-Time HMAC Security Token)
+ */
+/**
+ * Đồng bộ trạng thái Ẩn/Hiện của các nút "Đặt Nhanh" cạnh nút "Tra Cứu Đơn"
+ * theo cờ enableQuickOrder của phiên Live Stream.
+ */
+function syncQuickOrderButtonsVisibility(isEnabled) {
+    const enabled = !!isEnabled;
+    const mobBtn = document.getElementById("headerQuickOrderBtnMobile");
+    const deskBtn = document.getElementById("headerQuickOrderBtnDesktop");
+    const lookupHdrBtn = document.getElementById("lookupHeaderQuickOrderBtn");
+    const lookupActBtn = document.getElementById("lookupQuickOrderActionBtn");
+
+    if (mobBtn) {
+        mobBtn.classList.toggle("hidden", !enabled);
+        mobBtn.classList.toggle("flex", enabled);
+    }
+    if (deskBtn) {
+        deskBtn.classList.toggle("hidden", !enabled);
+        deskBtn.classList.toggle("md:flex", enabled);
+    }
+    if (lookupHdrBtn) {
+        lookupHdrBtn.classList.toggle("hidden", !enabled);
+    }
+    if (lookupActBtn) {
+        lookupActBtn.classList.toggle("hidden", !enabled);
+    }
+}
+
+/**
+ * Kiểm tra cấu hình Live Stream từ máy chủ để tự động hiện/ẩn nút Đặt Nhanh trên Header & Tra Cứu
+ */
+async function checkAndSyncQuickOrderButtons() {
+    try {
+        const res = await fetch(`${API_BASE}/livestream-config?_t=${Date.now()}`);
+        if (!res.ok) return false;
+        const json = await res.json();
+        const cfg = (json && json.data) ? json.data : {};
+        currentLiveConfig = cfg;
+        if (cfg.quickOrderToken) {
+            currentQuickOrderToken = cfg.quickOrderToken;
+            const tokenEl = document.getElementById("quickOrderSecurityToken");
+            if (tokenEl) tokenEl.value = currentQuickOrderToken;
+        }
+        const isEnabled = !!(cfg.enableQuickOrder || cfg.enabled);
+        syncQuickOrderButtonsVisibility(isEnabled);
+        return isEnabled;
+    } catch (_) {
+        return false;
+    }
+}
+
+async function refreshQuickOrderSecurityToken() {
+    try {
+        const res = await fetch(`${API_BASE}/orders/quick-order-token?_t=${Date.now()}`);
+        if (res.ok) {
+            const json = await res.json();
+            if (json && json.data && json.data.quickOrderToken) {
+                currentQuickOrderToken = json.data.quickOrderToken;
+                const tokenEl = document.getElementById("quickOrderSecurityToken");
+                if (tokenEl) tokenEl.value = currentQuickOrderToken;
+                return currentQuickOrderToken;
+            }
+        }
+    } catch (_) {}
+    return currentQuickOrderToken;
+}
 
 /**
  * Mở modal Đặt Hàng Nhanh Live Stream:
@@ -3464,7 +3534,13 @@ async function openQuickOrderModal() {
         const json = await res.json();
         const config = (json && json.data) ? json.data : {};
         currentLiveConfig = config;
+        if (config.quickOrderToken) {
+            currentQuickOrderToken = config.quickOrderToken;
+            const tokenEl = document.getElementById("quickOrderSecurityToken");
+            if (tokenEl) tokenEl.value = currentQuickOrderToken;
+        }
         const isEnabled = !!(config.enableQuickOrder || config.enabled);
+        syncQuickOrderButtonsVisibility(isEnabled);
 
         if (loadingState) loadingState.classList.add("hidden");
 
@@ -3812,10 +3888,23 @@ function formatQuickOrderDateDisplay(dateStr, shortBadge = false) {
 }
 
 /**
- * Khởi tạo mặc định Ngày nhận hoa = Hôm nay và Khung giờ nhận mặc định
+ * Tính khung giờ nhận hàng mặc định theo thời gian hiện tại (làm tròn lên giờ tiếp theo:
+ * VD: hiện tại 8h10 -> mặc định 09:00; 9h15 -> 10:00)
+ */
+function getDefaultQuickOrderDeliveryTime(nowDate = new Date()) {
+    const d = (nowDate instanceof Date && !isNaN(nowDate.getTime())) ? nowDate : new Date();
+    const nextHour = d.getHours() + 1;
+    const clampedHour = Math.min(Math.max(nextHour, 8), 21);
+    return `${String(clampedHour).padStart(2, "0")}:00`;
+}
+
+/**
+ * Khởi tạo mặc định Ngày nhận hoa = Hôm nay và Khung giờ nhận mặc định theo giờ hiện tại (+1h)
  */
 function initQuickOrderDeliveryDateTime() {
+    const nowDate = new Date();
     const todayStr = getQuickOrderTodayStr();
+    const defaultTimeSlot = getDefaultQuickOrderDeliveryTime(nowDate);
     const dateInput = document.getElementById("quickOrderDeliveryDate");
     const timeSelect = document.getElementById("quickOrderDeliveryTime");
     const badgeEl = document.getElementById("quickOrderDateBadge");
@@ -3825,7 +3914,12 @@ function initQuickOrderDeliveryDateTime() {
         dateInput.value = todayStr;
     }
     if (timeSelect && timeSelect.options.length > 0) {
-        timeSelect.selectedIndex = 0;
+        const hasOption = Array.from(timeSelect.options).some(opt => opt.value === defaultTimeSlot);
+        if (hasOption) {
+            timeSelect.value = defaultTimeSlot;
+        } else {
+            timeSelect.selectedIndex = 0;
+        }
     }
     if (badgeEl) {
         badgeEl.textContent = formatQuickOrderDateDisplay(todayStr, true);
@@ -3997,6 +4091,7 @@ async function handleQuickOrderSubmit(event) {
     const deliveryDateInput = document.getElementById("quickOrderDeliveryDate");
     const deliveryTimeInput = document.getElementById("quickOrderDeliveryTime");
     const amountInput = document.getElementById("quickOrderAmount");
+    const cardMsgInput = document.getElementById("quickOrderCardMessage");
     const notesInput = document.getElementById("quickOrderNotes");
     const productSelect = document.getElementById("quickOrderProductSelect");
     const errBox = document.getElementById("quickOrderErrorBox");
@@ -4011,10 +4106,12 @@ async function handleQuickOrderSubmit(event) {
     const rawAddress = addressInput ? addressInput.value.trim() : "";
     const address = isPickup ? (rawAddress || "Nhận trực tiếp tại Shop") : rawAddress;
     const deliveryDate = (deliveryDateInput && deliveryDateInput.value) ? deliveryDateInput.value.trim() : getQuickOrderTodayStr();
-    const deliveryTime = (deliveryTimeInput && deliveryTimeInput.value) ? deliveryTimeInput.value.trim() : "Giao ngay trong ngày (Sớm nhất)";
+    const deliveryTime = (deliveryTimeInput && deliveryTimeInput.value) ? deliveryTimeInput.value.trim() : getDefaultQuickOrderDeliveryTime();
     const rawAmount = amountInput ? amountInput.value.replace(/\D/g, "") : "";
     const amount = rawAmount ? parseInt(rawAmount, 10) : 0;
-    const notes = notesInput ? notesInput.value.trim() : "";
+    const cardMessage = cardMsgInput ? cardMsgInput.value.trim() : "";
+    const rawNote = notesInput ? notesInput.value.trim() : "";
+    const notes = rawNote && cardMessage ? `${rawNote} | Thiệp: ${cardMessage}` : (rawNote || cardMessage);
 
     // Lấy thông tin bó hoa đã chọn
     const selectedProductId = productSelect ? productSelect.value : "livestream_custom";
@@ -4066,11 +4163,23 @@ async function handleQuickOrderSubmit(event) {
     formData.append("timeSlot", deliveryTime);
     formData.append("transferredAmount", amount.toString());
     formData.append("notes", notes);
+    if (cardMessage) formData.append("cardMessage", cardMessage);
     formData.append("paymentProof", selectedProofFile);
     formData.append("productId", selectedProductId);
     formData.append("productName", selectedProductName);
     if (selectedProductImage) {
         formData.append("productImage", selectedProductImage);
+    }
+
+    // Đính kèm mã bảo mật phiên (HMAC One-Time Token) & trường Honeypot chống Bot
+    const tokenInputEl = document.getElementById("quickOrderSecurityToken");
+    const activeSecToken = (tokenInputEl && tokenInputEl.value) ? tokenInputEl.value.trim() : currentQuickOrderToken;
+    if (activeSecToken) {
+        formData.append("quickOrderToken", activeSecToken);
+    }
+    const botTrapEl = document.getElementById("quickOrderBotTrapWebsite");
+    if (botTrapEl) {
+        formData.append("websiteUrl", botTrapEl.value || "");
     }
 
     // Disable button & hiện loading
@@ -4080,11 +4189,18 @@ async function handleQuickOrderSubmit(event) {
     }
 
     try {
+        const reqHeaders = { "X-Requested-With": "TeluaQuickOrderWeb" };
+        if (activeSecToken) reqHeaders["X-Quick-Order-Token"] = activeSecToken;
         const res = await fetch(`${API_BASE}/orders/quick-order`, {
             method: "POST",
+            headers: reqHeaders,
             body: formData
         });
         const json = await res.json();
+        if (json && json.nextQuickOrderToken) {
+            currentQuickOrderToken = json.nextQuickOrderToken;
+            if (tokenInputEl) tokenInputEl.value = currentQuickOrderToken;
+        }
 
         if (!res.ok || !json.success) {
             throw new Error(json.message || "Không thể gửi đơn hàng nhanh");
@@ -4117,6 +4233,16 @@ async function handleQuickOrderSubmit(event) {
         }
         if (amtEl) amtEl.textContent = typeof formatVND === "function" ? formatVND(amount) : `${amount.toLocaleString("vi-VN")}₫`;
         if (flowerEl) flowerEl.textContent = selectedProductName;
+        const notesRowEl = document.getElementById("quickOrderSuccessNotesRow");
+        const notesValEl = document.getElementById("quickOrderSuccessNotes");
+        if (notesRowEl && notesValEl) {
+            if (notes) {
+                notesValEl.textContent = notes;
+                notesRowEl.classList.remove("hidden");
+            } else {
+                notesRowEl.classList.add("hidden");
+            }
+        }
 
         if (typeof notifyUser === "function") {
             notifyUser(`🎉 Đặt đơn nhanh thành công! Mã đơn: ${newOrder.orderCode || ""}`, "success");
@@ -4155,6 +4281,7 @@ function showQuickOrderError(msg) {
 function openOrderLookupModal(prefillPhone = "") {
     const modal = document.getElementById("orderLookupModal");
     if (!modal) return;
+    checkAndSyncQuickOrderButtons();
 
     modal.style.display = "flex";
     modal.classList.remove("hidden");
@@ -4275,9 +4402,9 @@ function getLoggedInWebsiteStaff() {
     if (typeof window === "undefined") return null;
     const STAFF_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant", "shipper", "accountant", "staff", "admin"];
     try {
-        let user = window.currentUser || null;
-        if (!user) {
-            const raw = localStorage.getItem("flower_user") || localStorage.getItem("telua_current_user");
+        let user = (typeof window.getCurrentUser === "function" ? window.getCurrentUser() : null) || window.currentUser || null;
+        if (!user && typeof localStorage !== "undefined") {
+            const raw = localStorage.getItem("telua_auth_user") || localStorage.getItem("flower_user") || localStorage.getItem("telua_current_user");
             if (raw) user = JSON.parse(raw);
         }
         if (user && user.role && STAFF_ROLES.includes(String(user.role).toLowerCase())) {
@@ -4320,7 +4447,7 @@ async function submitOrderCustomerComment(e, orderCodeOrId, lookupQuery = "") {
         submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang gửi...`;
     }
 
-    const token = (typeof getAuthToken === "function" ? getAuthToken() : "") || (typeof localStorage !== "undefined" ? (localStorage.getItem("flower_auth_token") || "") : "");
+    const token = (typeof getAuthToken === "function" ? getAuthToken() : "") || (typeof localStorage !== "undefined" ? (localStorage.getItem("telua_auth_token") || localStorage.getItem("flower_auth_token") || "") : "");
     const headers = { "Content-Type": "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -4691,7 +4818,11 @@ if (typeof window !== "undefined") {
     window.closeOrderLookupModal = closeOrderLookupModal;
     window.handleOrderLookup = handleOrderLookup;
     window.downloadQuickOrderQrCode = downloadQuickOrderQrCode;
+    window.getDefaultQuickOrderDeliveryTime = getDefaultQuickOrderDeliveryTime;
     window.initQuickOrderDeliveryDateTime = initQuickOrderDeliveryDateTime;
+    window.refreshQuickOrderSecurityToken = refreshQuickOrderSecurityToken;
+    window.syncQuickOrderButtonsVisibility = syncQuickOrderButtonsVisibility;
+    window.checkAndSyncQuickOrderButtons = checkAndSyncQuickOrderButtons;
     window.handleQuickOrderDateChange = handleQuickOrderDateChange;
     window.handleQuickOrderPickupToggle = handleQuickOrderPickupToggle;
     window.getQuickOrderTodayStr = getQuickOrderTodayStr;
@@ -4703,9 +4834,13 @@ if (typeof window !== "undefined") {
 
     if (typeof document !== "undefined") {
         if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", () => initQuickOrderDeliveryDateTime());
+            document.addEventListener("DOMContentLoaded", () => {
+                initQuickOrderDeliveryDateTime();
+                checkAndSyncQuickOrderButtons();
+            });
         } else {
             initQuickOrderDeliveryDateTime();
+            checkAndSyncQuickOrderButtons();
         }
     }
 }
@@ -6431,7 +6566,7 @@ const DASH_PAYMENT_STATUS_META = {
     failed:   { label: "Thanh toán lỗi",  color: "bg-red-100 text-red-700 border-red-200",           icon: "fa-circle-xmark" }
 };
 
-const INTERNAL_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant"];
+const INTERNAL_ROLES = ["super_admin", "branch_manager", "florist", "sales_consultant", "shipper", "accountant", "staff", "admin"];
 
 const DASH_KNOWN_BRANCHES = [
     {
@@ -6523,6 +6658,12 @@ function dashGetStatusMeta(status, map) {
 function dashGetCurrentUser() {
     if (typeof getCurrentUser === "function") return getCurrentUser();
     if (typeof window !== "undefined" && typeof window.getCurrentUser === "function") return window.getCurrentUser();
+    if (typeof localStorage !== "undefined") {
+        try {
+            const raw = localStorage.getItem("telua_auth_user") || localStorage.getItem("flower_user");
+            if (raw) return JSON.parse(raw);
+        } catch (_) {}
+    }
     return null;
 }
 
@@ -6886,8 +7027,12 @@ async function openOrderDetailModal(orderId) {
         }
         throw new Error(json.message || "Không thể tải chi tiết đơn hàng");
     } catch (err) {
-        // Fallback: Tìm trong danh sách cache đã tải trước đó
-        const cached = cachedDashboardOrders.find(o => o.id === cleanId || o.orderCode === cleanId);
+        // Fallback: Tìm trong danh sách cache đã tải trước đó (Dashboard, Live Stream, hoặc Admin Orders)
+        const liveList = (typeof window !== "undefined" && Array.isArray(window.lastLoadedLiveOrders)) ? window.lastLoadedLiveOrders : [];
+        const adminList = (typeof window !== "undefined" && Array.isArray(window.lastLoadedAdminOrders)) ? window.lastLoadedAdminOrders : [];
+        const cached = cachedDashboardOrders.find(o => o.id === cleanId || o.orderCode === cleanId)
+            || liveList.find(o => o.id === cleanId || o.orderCode === cleanId)
+            || adminList.find(o => o.id === cleanId || o.orderCode === cleanId);
         if (cached) {
             populateOrderDetail(cached);
             return;
@@ -6947,11 +7092,13 @@ async function submitOrderDetailComment(e, orderCodeOrId, orderIdForReload = "")
     }
 
     const user = dashGetCurrentUser();
-    const isStaffUser = !!(user && INTERNAL_ROLES.includes(user.role));
+    const isStaffUser = true;
     const authorName = (user && (user.fullName || user.username))
         ? `${user.fullName || user.username}`
-        : (isStaffUser ? "Nhân viên Website" : "Khách hàng");
-    const token = typeof getAuthToken === "function" ? getAuthToken() : (localStorage.getItem("flower_auth_token") || "");
+        : "Nhân viên Website";
+    const token = typeof getAuthToken === "function"
+        ? getAuthToken()
+        : ((typeof localStorage !== "undefined") ? (localStorage.getItem("telua_auth_token") || localStorage.getItem("flower_auth_token") || "") : "");
     const headers = { "Content-Type": "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -7233,8 +7380,8 @@ function populateOrderDetail(order) {
         const stLower = String(order.status || "pending").toLowerCase();
         const isCustomerLocked = (order.canComment === false) || ["delivered", "completed", "cancelled", "returned"].includes(stLower);
         const currentUser = dashGetCurrentUser();
-        const isStaffUser = !!(currentUser && INTERNAL_ROLES.includes(currentUser.role));
-        const canCommentNow = isStaffUser || !isCustomerLocked;
+        const isStaffUser = true;
+        const canCommentNow = true;
 
         commentsBoxEl.innerHTML = `
             <div class="flex items-center justify-between flex-wrap gap-1">
@@ -7267,7 +7414,7 @@ function populateOrderDetail(order) {
                 </div>
             ` : `<p class="text-[11px] text-gray-400 italic mt-1">Chưa có bình luận thay đổi thông tin nào trên đơn hàng này.</p>`}
             ${canCommentNow ? `
-                <form onsubmit="submitOrderDetailComment(event, '${displayOrderCode}', '${order.id || displayOrderCode}')" class="flex flex-col sm:flex-row gap-2 mt-2">
+                <form onsubmit="submitOrderDetailComment(event, '${order.id || displayOrderCode}', '${order.id || displayOrderCode}')" class="flex flex-col sm:flex-row gap-2 mt-2">
                     <input type="text" id="ordDetailCommentInput"
                         placeholder="${isStaffUser ? 'Nhân viên nhập phản hồi / ghi chú xử lý đơn hàng...' : 'Nhập ghi chú thay đổi thông tin (SĐT, giờ nhận, địa chỉ, lời chúc)...'}"
                         class="flex-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-gray-800 focus:outline-none focus:border-indigo-500">
@@ -15808,6 +15955,7 @@ async function loadLiveStreamOrders() {
         if (json.success && json.data) {
             const orders = Array.isArray(json.data.orders) ? json.data.orders : [];
             lastLoadedLiveOrders = orders;
+            if (typeof window !== "undefined") window.lastLoadedLiveOrders = lastLoadedLiveOrders;
             renderLiveOrdersTable(lastLoadedLiveOrders);
             updateLiveKPIs(lastLoadedLiveOrders);
             updateLiveOrderFilterInfoBar(filterDate, orders.length);
@@ -15841,6 +15989,9 @@ async function fetchLiveConfigQuietly(headers = {}) {
  */
 function updateLiveStreamControlUI(config) {
     const isLive = !!(config.enableQuickOrder || config.enabled);
+    if (typeof window !== "undefined" && typeof window.syncQuickOrderButtonsVisibility === "function") {
+        window.syncQuickOrderButtonsVisibility(isLive);
+    }
     const toggleEl = document.getElementById("liveStreamQuickToggle");
     const statusBadge = document.getElementById("liveStreamStatusBadge");
     const statusText = document.getElementById("liveStreamStatusText");

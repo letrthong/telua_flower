@@ -2,6 +2,9 @@ import os
 import sys
 import math
 import uuid
+import time
+import hmac
+import hashlib
 import random
 import string
 from datetime import datetime, timedelta
@@ -476,13 +479,133 @@ def _update_customer_crm_after_order(
     save_customers(customers)
 
 
+
+# ==============================================================================
+# HỆ THỐNG BẢO MẬT CHỐNG BOT / FAKE API REQUEST CHO #QUICK-ORDER (ANTI-SPAM & HMAC)
+# ==============================================================================
+QUICK_ORDER_HMAC_SECRET = os.environ.get("TELUA_QUICK_ORDER_SECRET", "telua_nohoathabinh_quick_order_hmac_secret_2026").encode("utf-8")
+QUICK_ORDER_TOKEN_TTL_SECONDS = 3600  # Token có hiệu lực trong 60 phút
+_CONSUMED_QUICK_ORDER_NONCES: Dict[str, float] = {}
+_QUICK_ORDER_RATE_BUCKETS: Dict[str, List[float]] = {}
+_QUICK_ORDER_RECENT_FINGERPRINTS: Dict[str, float] = {}
+
+
+def generate_quick_order_security_token(now_ts: Optional[int] = None) -> str:
+    """
+    Sinh mã bảo mật chữ ký số HMAC-SHA256 dùng 1 lần (One-Time Challenge Token) cho form #quick-order:
+    Cấu trúc: <timestamp>.<nonce>.<hmac_signature>
+    Giúp chống Hacker dùng cURL/script gọi thẳng API giả mạo hoặc Replay gói tin.
+    """
+    ts = int(now_ts if now_ts is not None else time.time())
+    nonce = uuid.uuid4().hex[:12]
+    payload_str = f"{ts}.{nonce}"
+    sig = hmac.new(QUICK_ORDER_HMAC_SECRET, payload_str.encode("utf-8"), hashlib.sha256).hexdigest()[:24]
+    return f"{ts}.{nonce}.{sig}"
+
+
+def reset_quick_order_security_state() -> None:
+    """Làm sạch bộ nhớ Nonce & Rate Limit (phục vụ kiểm thử hoặc dọn dẹp định kỳ)."""
+    _CONSUMED_QUICK_ORDER_NONCES.clear()
+    _QUICK_ORDER_RATE_BUCKETS.clear()
+    _QUICK_ORDER_RECENT_FINGERPRINTS.clear()
+
+
+def verify_and_consume_quick_order_security(
+    quick_data: Dict[str, Any],
+    client_ip: str = "",
+    security_token: str = "",
+    require_token: bool = False
+) -> Tuple[bool, Optional[str]]:
+    """
+    Kiểm tra đa tầng chống Hacker / Bot tạo yêu cầu giả trên API #quick-order:
+    1. Honeypot Trap: Chặn đứng bot tự động điền các trường bẫy ẩn (websiteUrl, botTrapField, companyWebsite).
+    2. Payload Sanitization: Chặn mã độc XSS / Script injection (<script, javascript:, onerror=...) và số tiền ảo vượt ngưỡng.
+    3. Signed HMAC Token & One-Time Nonce: Xác thực chữ ký số, hạn dùng (TTL) và chống Replay Attack (mỗi token chỉ dùng 1 lần).
+    4. Rate Limiting & Anti-Duplicate: Giới hạn tần suất tạo đơn theo SĐT/IP và chặn spam gửi lặp cùng nội dung.
+    """
+    now = time.time()
+
+    # Dọn dẹp các bản ghi hết hạn trên RAM
+    if len(_CONSUMED_QUICK_ORDER_NONCES) > 2000:
+        expired_nonces = [k for k, exp in _CONSUMED_QUICK_ORDER_NONCES.items() if now - exp > QUICK_ORDER_TOKEN_TTL_SECONDS]
+        for k in expired_nonces:
+            _CONSUMED_QUICK_ORDER_NONCES.pop(k, None)
+
+    # Tầng 1: Kiểm tra Bẫy Bot Tàng Hình (Honeypot Fields)
+    for trap_key in ("websiteUrl", "botTrapField", "companyWebsite", "_hp_trap"):
+        trap_val = str(quick_data.get(trap_key) or "").strip()
+        if trap_val:
+            return False, "Hệ thống bảo mật phát hiện hành vi bot tự động (Honeypot Trap). Yêu cầu đã bị từ chối."
+
+    # Tầng 2: Kiểm tra mã độc Script / Injection trong dữ liệu văn bản
+    text_fields = [
+        str(quick_data.get("name") or quick_data.get("recipientName") or quick_data.get("customerName") or ""),
+        str(quick_data.get("address") or quick_data.get("recipientAddress") or ""),
+        str(quick_data.get("notes") or quick_data.get("deliveryNotes") or ""),
+    ]
+    dangerous_patterns = ("<script", "javascript:", "onerror=", "onload=", "<iframe", "union select", "drop table")
+    for txt in text_fields:
+        lower_txt = txt.lower()
+        for pat in dangerous_patterns:
+            if pat in lower_txt:
+                return False, "Dữ liệu đầu vào chứa mã kịch bản hoặc ký tự không an toàn bị cấm."
+
+    # Tầng 3: Xác thực Chữ Ký Phiên HMAC-SHA256 & One-Time Nonce (Chống giả mạo & Replay Attack)
+    token = (security_token or quick_data.get("quickOrderToken") or quick_data.get("_securityToken") or "").strip()
+    if token or require_token:
+        if not token:
+            return False, "Thiếu mã xác thực bảo mật phiên (QuickOrderToken). Vui lòng đặt đơn trực tiếp từ giao diện #quick-order."
+        parts = token.split(".")
+        if len(parts) != 3:
+            return False, "Mã xác thực bảo mật phiên (QuickOrderToken) sai định dạng hoặc bị giả mạo."
+        ts_str, nonce, sig = parts
+        if not ts_str.isdigit() or not nonce or not sig:
+            return False, "Mã xác thực bảo mật phiên (QuickOrderToken) không hợp lệ."
+
+        expected_sig = hmac.new(
+            QUICK_ORDER_HMAC_SECRET,
+            f"{ts_str}.{nonce}".encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()[:24]
+
+        if not hmac.compare_digest(expected_sig, sig):
+            return False, "Chữ ký bảo mật (QuickOrderToken) không hợp lệ hoặc đã bị can thiệp."
+
+        token_ts = int(ts_str)
+        if now - token_ts > QUICK_ORDER_TOKEN_TTL_SECONDS or token_ts - now > 120:
+            return False, "Phiên đặt hàng nhanh đã hết hạn. Vui lòng tải lại biểu mẫu (#quick-order) và thử lại."
+
+        if nonce in _CONSUMED_QUICK_ORDER_NONCES:
+            return False, "Mã bảo mật phiên này đã được sử dụng (Chống gửi lặp / Replay Attack). Vui lòng thao tác lại trên form."
+
+        _CONSUMED_QUICK_ORDER_NONCES[nonce] = now
+
+    # Tầng 4: Rate Limiting & Chống Spam liên thanh theo SĐT / IP
+    raw_phone = "".join(c for c in str(quick_data.get("phone") or quick_data.get("recipientPhone") or "") if c.isdigit())
+    rate_key = f"phone:{raw_phone}" if raw_phone else f"ip:{client_ip or 'unknown'}"
+    max_requests_per_min = int(quick_data.get("_maxRateLimitPerMin") or 6)
+    window_sec = 60.0
+
+    if rate_key and (token or require_token or quick_data.get("_enforceRateLimit")):
+        history = [t for t in _QUICK_ORDER_RATE_BUCKETS.get(rate_key, []) if now - t < window_sec]
+        if len(history) >= max_requests_per_min:
+            return False, "Hệ thống phát hiện gửi quá nhiều yêu cầu liên tiếp trong thời gian ngắn (Rate Limit). Vui lòng đợi 1 phút trước khi thử lại."
+        history.append(now)
+        _QUICK_ORDER_RATE_BUCKETS[rate_key] = history
+
+    return True, None
+
+
 def create_livestream_quick_order(
     quick_data: Dict[str, Any],
-    proof_image_url: str = ""
+    proof_image_url: str = "",
+    client_ip: str = "",
+    security_token: str = ""
 ) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
     """
     Tạo đơn hàng nhanh từ phiên Live Stream:
     - Yêu cầu cờ enableQuickOrder phải đang bật trong livestreamConfig.json
+    - Kiểm tra bảo mật đa tầng chống Bot / Fake API Request (Honeypot, HMAC Token, Nonce Replay, Rate Limit)
     - Chỉ cần: Tên người nhận/đặt, SĐT, Địa chỉ nhận hoa, Số tiền đã chuyển, và Ảnh chụp bill chuyển khoản
     """
     if not isinstance(quick_data, dict):
@@ -494,11 +617,23 @@ def create_livestream_quick_order(
     if not is_live_enabled:
         return False, None, "Tính năng đặt hàng nhanh Live Stream hiện đang tạm tắt. Quý khách vui lòng đặt qua cửa hàng trực tuyến hoặc liên hệ hotline."
 
+    # 1b. Kiểm tra bảo mật chống Hacker / Bot gọi API giả mạo
+    require_sec_token = bool(live_cfg.get("requireSecurityToken", False) or quick_data.get("_requireSecurityToken", False))
+    sec_ok, sec_err = verify_and_consume_quick_order_security(
+        quick_data,
+        client_ip=client_ip,
+        security_token=security_token,
+        require_token=require_sec_token
+    )
+    if not sec_ok:
+        return False, None, sec_err
+
     # 2. Trích xuất & chuẩn hóa dữ liệu
     customer_name = (quick_data.get("name") or quick_data.get("recipientName") or quick_data.get("customerName") or "").strip()
     phone = (quick_data.get("phone") or quick_data.get("recipientPhone") or "").strip()
     address = (quick_data.get("address") or quick_data.get("recipientAddress") or "").strip()
-    notes = (quick_data.get("notes") or quick_data.get("deliveryNotes") or "").strip()
+    notes = (quick_data.get("notes") or quick_data.get("note") or quick_data.get("deliveryNotes") or "").strip()
+    card_message = (quick_data.get("cardMessage") or notes or "").strip()
     proof_url = (proof_image_url or quick_data.get("paymentProofImage") or quick_data.get("proofImage") or "").strip()
 
     raw_amount = quick_data.get("transferredAmount") or quick_data.get("amount") or quick_data.get("price") or 0
@@ -526,6 +661,8 @@ def create_livestream_quick_order(
         return False, None, "Vui lòng nhập địa chỉ nhận hoa cụ thể"
     if transferred_amount <= 0:
         return False, None, "Vui lòng nhập số tiền đã chuyển khoản (lớn hơn 0₫)"
+    if transferred_amount > 500000000:
+        return False, None, "Số tiền chuyển khoản vượt quá hạn mức giao dịch nhanh cho phép (tối đa 500,000,000₫)"
     if not proof_url:
         return False, None, "Vui lòng đính kèm ảnh chụp biên lai / bill chuyển khoản"
 
@@ -560,7 +697,9 @@ def create_livestream_quick_order(
         or (quick_data.get("delivery") or {}).get("timeSlot")
         or ""
     ).strip()
-    time_slot_str = raw_time_slot if raw_time_slot else "Giao ngay trong ngày (Sớm nhất)"
+    default_next_hour = min(max(datetime.now().hour + 1, 8), 21)
+    default_time_slot = f"{default_next_hour:02d}:00"
+    time_slot_str = raw_time_slot if raw_time_slot else default_time_slot
 
     new_order = {
         "id": order_id,
@@ -579,7 +718,9 @@ def create_livestream_quick_order(
         "assignedTo": "staff_admin",
         "assignedBy": "system",
         "status": "pending",
-        "cardMessage": notes,
+        "notes": notes,
+        "note": notes,
+        "cardMessage": card_message,
         "ribbonBanner": "",
         "sender": {
             "name": customer_name,

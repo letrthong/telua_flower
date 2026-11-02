@@ -319,11 +319,29 @@
                         class="fa-solid fa-chevron-down text-[7px] text-gray-400 absolute right-1.5 pointer-events-none z-10"></i>
                 </div>
 
+                <!-- Đặt nhanh Live Stream (Mobile - chỉ hiện khi enableQuickOrder = true) -->
+                <button id="headerQuickOrderBtnMobile" onclick="openQuickOrderModal()" title="Đặt hoa nhanh Live Stream (#quick-order)"
+                    class="hidden md:hidden items-center justify-center gap-1 px-2.5 h-7 sm:h-8 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:from-rose-700 hover:to-pink-700 transition text-[11px] font-bold shadow-xs cursor-pointer">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                    <i class="fa-solid fa-bolt text-[10px]"></i>
+                    <span>Đặt nhanh</span>
+                </button>
+
                 <!-- Tra cứu đơn hàng (Mobile) -->
                 <button onclick="openOrderLookupModal()" title="Tra cứu đơn hàng qua SĐT"
                     class="md:hidden flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 transition text-xs cursor-pointer">
                     <i class="fa-solid fa-truck-fast"></i>
                 </button>
+
+                <!-- Đặt nhanh Live Stream (Desktop - chỉ hiện khi enableQuickOrder = true) -->
+                <div id="headerQuickOrderBtnDesktop" class="hidden flex-col items-center">
+                    <div onclick="openQuickOrderModal()" title="Đặt hoa nhanh Live Stream (#quick-order)"
+                        class="flex flex-col items-center text-rose-600 hover:text-rose-700 cursor-pointer transition relative group">
+                        <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                        <i class="fa-solid fa-bolt text-xl mb-1 text-rose-600 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-extrabold whitespace-nowrap">Đặt nhanh</span>
+                    </div>
+                </div>
 
                 <!-- Tra cứu đơn hàng (Desktop) -->
                 <div class="hidden md:flex flex-col items-center">
@@ -6756,9 +6774,9 @@
 
     <!-- ================= MODAL ĐẶT HÀNG NHANH LIVE STREAM (QUICK ORDER) ================= -->
     <div id="quickOrderModal" onclick="if (event.target === this) closeQuickOrderModal();"
-        class="fixed inset-0 bg-black/70 backdrop-blur-md z-[240] items-center justify-center p-1.5 sm:p-3"
+        class="fixed inset-0 bg-black/70 backdrop-blur-md z-[240] items-center justify-center p-1 sm:p-2 md:p-2.5"
         style="display: none;">
-        <div class="bg-white w-[98vw] max-w-6xl rounded-3xl shadow-2xl overflow-hidden border border-rose-100 max-h-[96vh] flex flex-col animate-fadeIn relative">
+        <div id="quickOrderModalCard" class="bg-white w-full max-w-[99vw] xl:max-w-[98vw] 2xl:max-w-[99vw] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-rose-100 h-[96vh] max-h-[96vh] flex flex-col animate-fadeIn relative">
             <!-- Header -->
             <div class="px-6 py-4 bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50 border-b border-rose-100 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center space-x-3">
@@ -6856,6 +6874,10 @@
                         <span class="text-gray-500 font-medium">Thời gian nhận hoa:</span>
                         <span id="quickOrderSuccessDeliveryTime" class="font-bold text-emerald-700 text-right">—</span>
                     </div>
+                    <div id="quickOrderSuccessNotesRow" class="hidden flex items-start justify-between">
+                        <span class="text-gray-500 font-medium flex-shrink-0 mr-2">Ghi chú đơn hàng:</span>
+                        <span id="quickOrderSuccessNotes" class="font-medium text-pink-700 italic text-right line-clamp-2">—</span>
+                    </div>
                     <div class="flex items-center justify-between pt-2 border-t border-gray-200/80">
                         <span class="text-gray-600 font-bold">Số tiền đã chuyển:</span>
                         <span id="quickOrderSuccessAmount" class="font-bold text-rose-600 text-sm">0₫</span>
@@ -6881,6 +6903,12 @@
             <!-- Form State (Scrollable) -->
             <div id="quickOrderFormContainer" class="hidden p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-gray-50/40">
                 <form id="quickOrderForm" onsubmit="handleQuickOrderSubmit(event)" class="space-y-4">
+                    <!-- Security Token & Anti-Bot Honeypot Trap -->
+                    <input type="hidden" id="quickOrderSecurityToken" name="quickOrderToken" value="">
+                    <div class="opacity-0 pointer-events-none h-0 w-0 overflow-hidden absolute -z-10" aria-hidden="true">
+                        <label for="quickOrderBotTrapWebsite">Website</label>
+                        <input type="text" id="quickOrderBotTrapWebsite" name="websiteUrl" tabindex="-1" autocomplete="off" value="">
+                    </div>
                     <!-- Error Box -->
                     <div id="quickOrderErrorBox" class="hidden p-3 bg-red-50 text-red-600 text-xs rounded-xl border border-red-200 font-medium"></div>
 
@@ -7061,9 +7089,20 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 mb-1">Lời Chúc Trên Thiệp (Tùy chọn)</label>
-                                <input type="text" id="quickOrderNotes" placeholder="VD: Chúc mừng sinh nhật mẹ yêu..."
+                                <input type="text" id="quickOrderCardMessage" placeholder="VD: Chúc mừng sinh nhật mẹ yêu..."
                                     class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-rose-500 focus:bg-white transition">
                             </div>
+                        </div>
+
+                        <!-- TextBox Ghi Chú Đơn Hàng (Màu giấy gói, dặn dò giao hàng, yêu cầu đặc biệt trên Live...) -->
+                        <div>
+                            <label for="quickOrderNotes" class="block text-xs font-bold text-gray-700 mb-1 flex items-center justify-between">
+                                <span><i class="fa-regular fa-note-sticky text-rose-500 mr-1"></i> Ghi Chú Đơn Hàng (Tùy chọn)</span>
+                                <span class="text-[10px] text-gray-400 font-normal">Dặn dò màu giấy gói, giờ giao, lời nhắn cho shop...</span>
+                            </label>
+                            <textarea id="quickOrderNotes" rows="2"
+                                placeholder="Nhập ghi chú cho đơn hàng (VD: Đổi giấy gói tông hồng pastel, gọi trước khi giao 15 phút, ghi thêm nội dung banner...)"
+                                class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 focus:outline-none focus:border-rose-500 focus:bg-white transition resize-y"></textarea>
                         </div>
 
                         <!-- Upload Biên Lai / Bill Chuyển Khoản -->
@@ -7115,8 +7154,8 @@
     <!-- MODAL TRA CỨU ĐƠN HÀNG THỜI GIAN THỰC (ORDER LOOKUP / TRACKING MODAL)       -->
     <!-- URL Hash: #tra-cuu, #tracking, #lookup                                    -->
     <!-- ========================================================================= -->
-    <div id="orderLookupModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/60 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto" style="display: none;">
-        <div class="bg-white w-[98vw] max-w-6xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-100 my-auto">
+    <div id="orderLookupModal" class="fixed inset-0 z-[230] hidden items-center justify-center bg-black/60 backdrop-blur-xs p-1 sm:p-2 md:p-2.5 overflow-y-auto" style="display: none;">
+        <div id="orderLookupModalCard" class="bg-white w-full max-w-[99vw] xl:max-w-[98vw] 2xl:max-w-[99vw] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[96vh] max-h-[96vh] border border-gray-100 my-auto">
             <!-- Modal Header -->
             <div class="p-4 sm:p-5 bg-gradient-to-r from-rose-50 via-pink-50 to-white border-b border-rose-100 flex items-center justify-between">
                 <div class="flex items-center gap-3">
@@ -7128,10 +7167,18 @@
                         <p class="text-xs text-gray-500">Nhập Số Điện Thoại để xem tiến độ đóng gói, bill chuyển khoản & ảnh hoa thật</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeOrderLookupModal()"
-                    class="w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-400 hover:text-gray-700 flex items-center justify-center transition shadow-2xs cursor-pointer flex-shrink-0">
-                    <i class="fa-solid fa-xmark text-base"></i>
-                </button>
+                <div class="flex items-center gap-1.5">
+                    <button type="button" id="lookupHeaderQuickOrderBtn" onclick="closeOrderLookupModal(); openQuickOrderModal();"
+                        title="Đặt hoa nhanh Live Stream (#quick-order)"
+                        class="hidden text-[11px] font-bold text-white bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 px-3 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                        <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                        <i class="fa-solid fa-bolt"></i> <span>Đặt Nhanh</span>
+                    </button>
+                    <button type="button" onclick="closeOrderLookupModal()"
+                        class="w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-400 hover:text-gray-700 flex items-center justify-center transition shadow-2xs cursor-pointer flex-shrink-0">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Search Form Bar -->
@@ -7142,10 +7189,17 @@
                         <input type="text" id="lookupPhoneInput" placeholder="Nhập Số Điện Thoại của bạn (VD: 0909123456)..."
                             class="w-full pl-9 pr-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-xs sm:text-sm font-semibold text-gray-800 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition shadow-2xs">
                     </div>
-                    <button type="submit" id="btnSubmitLookup"
-                        class="px-5 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-rose-200 transition flex items-center justify-center cursor-pointer">
-                        <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Tra Cứu
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="submit" id="btnSubmitLookup"
+                            class="flex-1 sm:flex-initial px-5 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-rose-200 transition flex items-center justify-center cursor-pointer">
+                            <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Tra Cứu
+                        </button>
+                        <button type="button" id="lookupQuickOrderActionBtn" onclick="closeOrderLookupModal(); openQuickOrderModal();"
+                            title="Mở form Đặt Hoa Nhanh Live Stream"
+                            class="hidden px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-emerald-200 transition flex items-center justify-center gap-1.5 cursor-pointer flex-shrink-0">
+                            <i class="fa-solid fa-bolt"></i> Đặt Nhanh
+                        </button>
+                    </div>
                 </form>
 
                 <!-- Error Box -->
@@ -7195,7 +7249,7 @@
     </div>
 
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="/js/bundle.js?v=20261004_02"></script>
+    <script src="/js/bundle.js?v=20261102_03"></script>
 </body>
 
 </html>

@@ -70,7 +70,9 @@ from order_service import (
     dispatch_order_to_branch,
     filter_tasks_for_staff,
     lookup_orders_by_phone_or_code,
-    add_order_customer_comment
+    add_order_customer_comment,
+    generate_quick_order_security_token,
+    verify_and_consume_quick_order_security
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -354,19 +356,41 @@ def api_livestream_quick_order():
         elif isinstance(b64_val, str) and b64_val.strip():
             proof_url = b64_val.strip()
 
-    # 4. Tạo đơn hàng nhanh
-    success, order, err_msg = create_livestream_quick_order(data, proof_image_url=proof_url)
+    # 4. Tạo đơn hàng nhanh (kèm kiểm tra bảo mật chống Bot / Fake API Request)
+    sec_token = (request.headers.get("X-Quick-Order-Token") or data.get("quickOrderToken") or "").strip()
+    client_ip = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0].strip()
+    success, order, err_msg = create_livestream_quick_order(
+        data,
+        proof_image_url=proof_url,
+        client_ip=client_ip,
+        security_token=sec_token
+    )
     if not success:
         return jsonify({
             "success": False,
-            "message": err_msg or "Không thể tạo đơn hàng nhanh"
+            "message": err_msg or "Không thể tạo đơn hàng nhanh",
+            "nextQuickOrderToken": generate_quick_order_security_token()
         }), 400
 
     return jsonify({
         "success": True,
         "message": "Đặt hàng nhanh qua Live Stream thành công! Cửa hàng sẽ liên hệ xác nhận ngay.",
-        "data": order
+        "data": order,
+        "nextQuickOrderToken": generate_quick_order_security_token()
     }), 201
+
+
+@flower_connect_api.route("/orders/quick-order-token", methods=["GET"])
+def api_get_quick_order_security_token():
+    """Cấp mã bảo mật phiên đặt đơn nhanh (One-Time HMAC Challenge Token) cho giao diện #quick-order."""
+    resp = make_response(jsonify({
+        "success": True,
+        "data": {
+            "quickOrderToken": generate_quick_order_security_token()
+        }
+    }), 200)
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return resp
 
 
 @flower_connect_api.route("/orders/lookup", methods=["GET"])
@@ -457,9 +481,11 @@ def api_get_order(order_id):
                         "message": "Từ chối truy cập: Bạn không có quyền xem dữ liệu đơn hàng của khách hàng khác"
                     }), 403
 
-            # Nhân viên chi nhánh chỉ xem đơn của chi nhánh mình
-            elif role in ["branch_manager", "florist", "sales_consultant"] and branch_id != "all":
-                if order.get("branchId") and order.get("branchId") != branch_id:
+            # Nhân viên chi nhánh chỉ xem đơn của chi nhánh mình (hoặc đơn chung chờ điều phối / đơn Live Stream)
+            elif role in ["branch_manager", "florist", "sales_consultant", "shipper"] and branch_id != "all":
+                o_branch = order.get("branchId") or order.get("assignedBranchId")
+                o_source = str(order.get("source") or "").lower()
+                if o_branch and o_branch not in [branch_id, "admin"] and "live" not in o_source:
                     return jsonify({
                         "success": False,
                         "message": "Từ chối truy cập: Đơn hàng này thuộc chi nhánh khác"
@@ -1979,10 +2005,12 @@ def api_update_admin_banners():
 
 @flower_connect_api.route("/livestream-config", methods=["GET"])
 def api_get_public_livestream_config():
-    """Lấy cấu hình Live Stream & cờ bật/tắt Đặt hàng nhanh cho Storefront (Cập nhật thời gian thực)."""
+    """Lấy cấu hình Live Stream, cờ bật/tắt Đặt hàng nhanh & mã bảo mật QuickOrderToken cho Storefront."""
+    cfg_data = dict(get_livestream_config(use_cache=False) or {})
+    cfg_data["quickOrderToken"] = generate_quick_order_security_token()
     resp = make_response(jsonify({
         "success": True,
-        "data": get_livestream_config(use_cache=False)
+        "data": cfg_data
     }), 200)
     resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     resp.headers["Pragma"] = "no-cache"

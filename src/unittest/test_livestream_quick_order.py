@@ -753,9 +753,11 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         })
         self.assertEqual(res_default.status_code, 201)
         ord_default = res_default.get_json()["data"]
+        expected_next_hour = min(max(datetime.now().hour + 1, 8), 21)
+        expected_slot = f"{expected_next_hour:02d}:00"
         self.assertEqual(ord_default.get("deliveryDate"), today_str)
         self.assertEqual(ord_default.get("delivery", {}).get("deliveryDate"), today_str)
-        self.assertEqual(ord_default.get("delivery", {}).get("timeSlot"), "Giao ngay trong ngày (Sớm nhất)")
+        self.assertEqual(ord_default.get("delivery", {}).get("timeSlot"), expected_slot)
 
         # 2. Đặt đơn có chọn ngày nhận và khung giờ nhận cụ thể
         custom_date = "2026-12-25"
@@ -826,13 +828,16 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
             self.assertIn('handleQuickOrderPickupToggle(this)', html_content)
             self.assertIn('id="quickOrderPickupShopInfo"', html_content)
 
-            # Kiểm tra chiều rộng tối đa của Dialog và kích thước QR lớn
-            self.assertIn('max-w-6xl', html_content)
+            # Kiểm tra chiều rộng tối đa của Dialog (99vw) và kích thước QR lớn
+            self.assertIn('id="quickOrderModalCard"', html_content)
             self.assertIn('id="orderLookupModal"', html_content)
-            self.assertIn('bg-white w-[98vw] max-w-6xl rounded-3xl', html_content)
+            self.assertIn('w-full max-w-[99vw] xl:max-w-[98vw] 2xl:max-w-[99vw]', html_content)
             self.assertIn('id="ordDetailShareHashBar"', html_content)
             self.assertIn('id="ordDetailShareHashUrlInput"', html_content)
             self.assertIn('id="ordDetailCustomerCommentsBox"', html_content)
+            self.assertIn('id="quickOrderNotes"', html_content)
+            self.assertIn('id="quickOrderCardMessage"', html_content)
+            self.assertIn('id="quickOrderSuccessNotesRow"', html_content)
             self.assertIn('w-60 h-60 sm:w-64 sm:h-64 md:w-72 md:h-72', html_content)
 
         qo_js_path = os.path.join(root_dir, "js", "quick_order.js")
@@ -1030,6 +1035,108 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         done_order = res_lookup_done.get_json()["data"][0]
         self.assertFalse(done_order["canComment"])
         self.assertEqual(len(done_order["comments"]), 3)
+
+
+    def test_quick_order_anti_hacker_security_layers(self):
+        """
+        Kiểm tra các lớp bảo mật chống Hacker / Bot tạo yêu cầu giả trên #quick-order:
+        1. Cấp mã QuickOrderToken (HMAC-SHA256 + Nonce) qua /livestream-config và /orders/quick-order-token.
+        2. Chặn Honeypot Trap (websiteUrl có dữ liệu do bot tự điền).
+        3. Chặn mã độc XSS / Script Injection trong tên, địa chỉ, ghi chú.
+        4. Chặn QuickOrderToken bị giả mạo chữ ký hoặc hết hạn.
+        5. Chặn Replay Attack (dùng lại cùng 1 QuickOrderToken lần thứ 2).
+        6. Chặn Rate Limit khi spam quá nhiều yêu cầu liên tiếp trong 1 phút.
+        """
+        from order_service import reset_quick_order_security_state, generate_quick_order_security_token
+        reset_quick_order_security_state()
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
+
+        # 1. Lấy token hợp lệ từ API
+        res_tok = self.client.get("/api/flower/v1/orders/quick-order-token")
+        self.assertEqual(res_tok.status_code, 200)
+        valid_token = res_tok.get_json()["data"]["quickOrderToken"]
+        self.assertTrue(len(valid_token.split(".")) == 3)
+
+        # 2. Honeypot Trap: Bot điền vào trường ẩn websiteUrl -> Bị chặn 400
+        res_hp = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Bot Spam",
+            "phone": "0909111222",
+            "address": "123 Đường Số 1",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/bill.jpg",
+            "websiteUrl": "http://evil-spam-bot.com"
+        })
+        self.assertEqual(res_hp.status_code, 400)
+        self.assertIn("honeypot", res_hp.get_json()["message"].lower())
+
+        # 3. XSS / Script Injection -> Bị chặn 400
+        res_xss = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "<script>alert(1)</script>",
+            "phone": "0909111222",
+            "address": "123 Đường Số 1",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/bill.jpg"
+        })
+        self.assertEqual(res_xss.status_code, 400)
+
+        # 4. Token giả mạo chữ ký HMAC -> Bị chặn 400
+        res_fake_tok = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Hacker Fake Token",
+            "phone": "0909111222",
+            "address": "123 Đường Số 1",
+            "transferredAmount": 500000,
+            "paymentProofImage": "https://example.com/bill.jpg",
+            "quickOrderToken": "1793443570.abcdef123456.000000000000000000000000"
+        })
+        self.assertEqual(res_fake_tok.status_code, 400)
+        self.assertIn("quickordertoken", res_fake_tok.get_json()["message"].lower())
+
+        # 5. Dùng token hợp lệ lần 1 -> Thành công (201)
+        res_ok = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Hợp Lệ",
+            "phone": "0909333444",
+            "address": "88 Đồng Khởi, Quận 1",
+            "transferredAmount": 650000,
+            "paymentProofImage": "https://example.com/bill_ok.jpg",
+            "quickOrderToken": valid_token
+        })
+        self.assertEqual(res_ok.status_code, 201)
+        self.assertTrue(res_ok.get_json().get("nextQuickOrderToken"))
+
+        # Dùng lại cùng valid_token lần 2 (Replay Attack) -> Bị chặn 400
+        res_replay = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Replay",
+            "phone": "0909333444",
+            "address": "88 Đồng Khởi, Quận 1",
+            "transferredAmount": 650000,
+            "paymentProofImage": "https://example.com/bill_ok.jpg",
+            "quickOrderToken": valid_token
+        })
+        self.assertEqual(res_replay.status_code, 400)
+        self.assertIn("replay", res_replay.get_json()["message"].lower())
+
+        # 6. Kiểm tra Rate Limiting khi gửi liên thanh vượt ngưỡng
+        for i in range(6):
+            tok_i = generate_quick_order_security_token()
+            self.client.post("/api/flower/v1/orders/quick-order", json={
+                "recipientName": f"Khách Rate {i}",
+                "phone": "0909888777",
+                "address": "100 Lê Lợi, Q1",
+                "transferredAmount": 400000,
+                "paymentProofImage": "https://example.com/bill.jpg",
+                "quickOrderToken": tok_i
+            })
+        res_rate_blocked = self.client.post("/api/flower/v1/orders/quick-order", json={
+            "recipientName": "Khách Vượt Rate Limit",
+            "phone": "0909888777",
+            "address": "100 Lê Lợi, Q1",
+            "transferredAmount": 400000,
+            "paymentProofImage": "https://example.com/bill.jpg",
+            "quickOrderToken": generate_quick_order_security_token()
+        })
+        self.assertEqual(res_rate_blocked.status_code, 400)
+        self.assertIn("rate limit", res_rate_blocked.get_json()["message"].lower())
+        reset_quick_order_security_state()
 
 if __name__ == "__main__":
     unittest.main()
