@@ -21,11 +21,14 @@ export function syncQuickOrderButtonsVisibility(isEnabled) {
     const lookupActBtn = document.getElementById("lookupQuickOrderActionBtn");
 
     if (mobBtn) {
+        mobBtn.classList.add("md:hidden");
         mobBtn.classList.toggle("hidden", !enabled);
         mobBtn.classList.toggle("flex", enabled);
     }
     if (deskBtn) {
-        deskBtn.classList.toggle("hidden", !enabled);
+        // Luôn giữ class "hidden" ở mobile (< md) để không bị hiện trùng 2 nút trên màn hình nhỏ;
+        // Khi enabled = true thì dùng "hidden md:flex" giống nút Tra cứu đơn (Desktop).
+        deskBtn.classList.add("hidden");
         deskBtn.classList.toggle("md:flex", enabled);
     }
     if (lookupHdrBtn) {

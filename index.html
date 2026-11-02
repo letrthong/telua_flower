@@ -261,13 +261,13 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
 
-            <!-- Logo -->
+            <!-- Logo (Trên Mobile chỉ hiện icon logo, ẩn chữ NỞ HOA THẢ BÌNH để dành không gian cho các nút Đặt nhanh, Tra cứu, Giỏ hàng...) -->
             <a href="/"
                 class="flex-shrink-0 text-center md:text-left cursor-pointer group flex items-center no-underline text-inherit hover:opacity-95 transition">
                 <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no.jpg"
                     alt="Logo Nở Hoa Thả Bình"
-                    class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full object-cover mr-2 md:mr-2.5 shadow-sm border border-pink-100 group-hover:scale-105 transition duration-300">
-                <div>
+                    class="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full object-cover md:mr-2.5 shadow-sm border border-pink-100 group-hover:scale-105 transition duration-300">
+                <div class="hidden md:block">
                     <h1
                         class="font-serif text-base sm:text-xl md:text-3xl lg:text-4xl font-extrabold tracking-tight sm:tracking-normal md:tracking-wide flex items-center justify-center md:justify-start">
                         <span
@@ -468,11 +468,22 @@
             <div class="bg-white w-3/4 max-w-xs h-full overflow-y-auto p-5 transform -translate-x-full transition duration-300 flex flex-col justify-between"
                 id="mobileMenuContent">
                 <div>
-                    <div class="flex justify-between items-center mb-6 border-b pb-4">
-                        <h2 class="font-serif text-xl font-bold text-primary" data-i18n="mobile_menu_title">Danh mục
-                        </h2>
-                        <button id="closeMenuBtn" class="text-gray-500 text-2xl">&times;</button>
+                    <!-- Thương hiệu NỞ HOA THẢ BÌNH hiển thị nổi bật trong Mobile Slider -->
+                    <div class="flex justify-between items-center mb-5 border-b border-pink-100 pb-4">
+                        <a href="/" onclick="if(typeof closeMenu==='function')closeMenu();" class="flex items-center gap-2.5 no-underline">
+                            <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no.jpg"
+                                alt="Logo Nở Hoa Thả Bình"
+                                class="w-10 h-10 rounded-full object-cover shadow-xs border border-pink-200 flex-shrink-0">
+                            <div>
+                                <div class="font-serif text-base font-extrabold tracking-tight bg-gradient-to-r from-[#880e4f] via-[#d81b60] to-[#ff6090] bg-clip-text text-transparent"
+                                    data-i18n="brand_name">NỞ HOA THẢ BÌNH</div>
+                                <p class="text-[10px] text-gray-500 tracking-widest uppercase mt-0.5"
+                                    data-i18n="brand_slogan">Trao gửi yêu thương</p>
+                            </div>
+                        </a>
+                        <button id="closeMenuBtn" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center text-xl leading-none">&times;</button>
                     </div>
+                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3" data-i18n="mobile_menu_title">Danh mục</div>
                     <ul class="space-y-4 font-semibold text-gray-700">
                         <li><a href="#" class="block text-primary" data-i18n="nav_home">Trang Chủ</a></li>
                         <li>
