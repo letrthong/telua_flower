@@ -3460,8 +3460,8 @@ def enrich_order_display_names(
 DEFAULT_LIVESTREAM_CONFIG: Dict[str, Any] = {
     "enabled": False,
     "enableQuickOrder": False,
-    "title": "Đặt Hoa Nhanh Live Stream",
-    "description": "Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!",
+    "title": "Đặt Hoa Nhanh",
+    "description": "",
     "bankInfo": {
         "bankName": "Vietcombank (VCB)",
         "accountNumber": "0976491322",

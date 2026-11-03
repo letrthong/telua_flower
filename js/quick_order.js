@@ -135,8 +135,11 @@ export async function openQuickOrderModal() {
                 liveBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-300 shadow-2xs flex items-center gap-1.5";
                 liveBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Đã Tạm Dừng`;
             }
-            if (titleEl) titleEl.textContent = "Phiên Live Stream Đang Tạm Đóng";
-            if (descEl) descEl.textContent = "Cửa hàng hiện đang tạm dừng nhận đơn tốc hành qua livestream. Quý khách vui lòng xem catalogue cửa hàng!";
+            if (titleEl) titleEl.textContent = "Đặt Hoa Nhanh Đang Tạm Đóng";
+            if (descEl) {
+                descEl.textContent = "";
+                descEl.classList.add("hidden");
+            }
 
             // Xóa sạch thông tin tài khoản hiển thị để không lưu vết
             const bNameEl = document.getElementById("quickOrderBankName");
@@ -167,8 +170,14 @@ export async function openQuickOrderModal() {
                 liveBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200 shadow-2xs flex items-center gap-1.5";
                 liveBadge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span> Đang Phát Trực Tiếp`;
             }
-            if (titleEl) titleEl.textContent = config.title || "Đặt Hoa Nhanh Live Stream";
-            if (descEl) descEl.textContent = config.description || "Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!";
+            if (titleEl) {
+                const cleanedTitle = String(config.title || "Đặt Hoa Nhanh").replace(/\s*Live\s*Stream/gi, "").trim();
+                titleEl.textContent = cleanedTitle || "Đặt Hoa Nhanh";
+            }
+            if (descEl) {
+                descEl.textContent = "";
+                descEl.classList.add("hidden");
+            }
 
             // Nạp thông tin tài khoản ngân hàng
             const bInfo = config.bankInfo || {};

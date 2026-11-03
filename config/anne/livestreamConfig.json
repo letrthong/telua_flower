@@ -1,8 +1,8 @@
 {
-  "enabled": true,
-  "enableQuickOrder": true,
-  "title": "Đặt Hoa Nhanh Live Stream",
-  "description": "Quý khách vui lòng chọn bó hoa, điền thông tin và tải ảnh chuyển khoản để shop đóng gói giao ngay!",
+  "enabled": false,
+  "enableQuickOrder": false,
+  "title": "Đặt Hoa Nhanh",
+  "description": "",
   "bankInfo": {
     "bankName": "Vietcombank (VCB)",
     "accountNumber": "0976491322",
@@ -13,5 +13,5 @@
   "featuredProductIds": [
     "test_b64_1788062614"
   ],
-  "updatedAt": "2026-10-25T13:28:57Z"
+  "updatedAt": "2026-11-03T00:28:55Z"
 }
