@@ -261,9 +261,9 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
 
-            <!-- Logo (Trên Mobile chỉ hiện icon logo, ẩn chữ NỞ HOA THẢ BÌNH để dành không gian cho các nút Đặt nhanh, Tra cứu, Giỏ hàng...) -->
+            <!-- Logo (Ẩn hoàn toàn trên Mobile vì đã đưa vào Menu Slider, giúp tối ưu không gian cho Đặt nhanh, Tra cứu & Giỏ hàng) -->
             <a href="/"
-                class="flex-shrink-0 text-center md:text-left cursor-pointer group flex items-center no-underline text-inherit hover:opacity-95 transition">
+                class="hidden md:flex flex-shrink-0 text-center md:text-left cursor-pointer group items-center no-underline text-inherit hover:opacity-95 transition">
                 <img src="https://raw.githubusercontent.com/letrthong/telua_public_image/main/anne/images/no.jpg"
                     alt="Logo Nở Hoa Thả Bình"
                     class="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full object-cover md:mr-2.5 shadow-sm border border-pink-100 group-hover:scale-105 transition duration-300">
@@ -302,8 +302,8 @@
                 </div>
             </div>
 
-            <!-- Icons (Tài khoản, Ngôn ngữ mobile & Giỏ hàng) -->
-            <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-6">
+            <!-- Icons (Tài khoản, Ngôn ngữ mobile & Giỏ hàng - đồng bộ bố cục Icon trên, Text dưới) -->
+            <div class="flex items-center space-x-3.5 sm:space-x-5 md:space-x-6">
                 <!-- Mobile Language SelectBox (nhỏ gọn không cờ tránh tràn layout) -->
                 <div class="relative inline-flex items-center md:hidden" id="langSelectorMobileTop">
                     <i class="fa-solid fa-globe text-primary absolute left-2 pointer-events-none text-[10px] z-10"></i>
@@ -319,19 +319,20 @@
                         class="fa-solid fa-chevron-down text-[7px] text-gray-400 absolute right-1.5 pointer-events-none z-10"></i>
                 </div>
 
-                <!-- Đặt nhanh Live Stream (Mobile - chỉ hiện khi enableQuickOrder = true) -->
-                <button id="headerQuickOrderBtnMobile" onclick="openQuickOrderModal()" title="Đặt hoa nhanh Live Stream (#quick-order)"
-                    class="hidden md:hidden items-center justify-center gap-1 px-2.5 h-7 sm:h-8 rounded-full bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:from-rose-700 hover:to-pink-700 transition text-[11px] font-bold shadow-xs cursor-pointer">
-                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                    <i class="fa-solid fa-bolt text-[10px]"></i>
-                    <span>Đặt nhanh</span>
-                </button>
+                <!-- Đặt nhanh Live Stream (Mobile - chỉ hiện khi enableQuickOrder = true, đồng bộ Icon + Text với Tài khoản) -->
+                <div id="headerQuickOrderBtnMobile" onclick="openQuickOrderModal()" title="Đặt hoa nhanh Live Stream (#quick-order)"
+                    class="hidden md:hidden flex-col items-center text-rose-600 hover:text-rose-700 cursor-pointer transition relative group">
+                    <span class="absolute -top-0.5 right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                    <i class="fa-solid fa-bolt text-lg md:text-xl mb-1 text-rose-600 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-[11px] md:text-xs font-semibold whitespace-nowrap">Đặt nhanh</span>
+                </div>
 
-                <!-- Tra cứu đơn hàng (Mobile) -->
-                <button onclick="openOrderLookupModal()" title="Tra cứu đơn hàng qua SĐT"
-                    class="md:hidden flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-100 transition text-xs cursor-pointer">
-                    <i class="fa-solid fa-truck-fast"></i>
-                </button>
+                <!-- Tra cứu đơn hàng (Mobile - đồng bộ Icon + Text với Tài khoản) -->
+                <div onclick="openOrderLookupModal()" title="Tra cứu đơn hàng qua SĐT"
+                    class="md:hidden flex flex-col items-center text-gray-600 hover:text-rose-600 cursor-pointer transition">
+                    <i class="fa-solid fa-truck-fast text-lg md:text-xl mb-1 text-rose-500"></i>
+                    <span class="text-[11px] md:text-xs font-semibold whitespace-nowrap">Tra cứu đơn</span>
+                </div>
 
                 <!-- Đặt nhanh Live Stream (Desktop - chỉ hiện khi enableQuickOrder = true) -->
                 <div id="headerQuickOrderBtnDesktop" class="hidden flex-col items-center">
@@ -339,7 +340,7 @@
                         class="flex flex-col items-center text-rose-600 hover:text-rose-700 cursor-pointer transition relative group">
                         <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
                         <i class="fa-solid fa-bolt text-xl mb-1 text-rose-600 group-hover:scale-110 transition-transform"></i>
-                        <span class="text-xs font-extrabold whitespace-nowrap">Đặt nhanh</span>
+                        <span class="text-xs font-semibold whitespace-nowrap">Đặt nhanh</span>
                     </div>
                 </div>
 
@@ -356,18 +357,20 @@
                 <div id="accountBtn" class="flex flex-col items-center">
                     <div onclick="openAuthModal('login')"
                         class="flex flex-col items-center text-gray-600 hover:text-primary cursor-pointer transition">
-                        <i class="fa-regular fa-user text-lg md:text-xl mb-0.5 md:mb-1"></i>
-                        <span class="text-[10px] md:text-xs font-semibold hidden sm:inline" data-i18n="account">Tài khoản</span>
+                        <i class="fa-regular fa-user text-lg md:text-xl mb-1"></i>
+                        <span class="text-[11px] md:text-xs font-semibold whitespace-nowrap" data-i18n="account">Tài khoản</span>
                     </div>
                 </div>
+
+                <!-- Giỏ hàng (Đồng bộ Icon trên, Text dưới với Tài khoản trên cả Mobile & Desktop) -->
                 <div class="relative flex flex-col items-center text-gray-600 hover:text-primary cursor-pointer transition group"
                     onclick="toggleCart()">
                     <i
-                        class="fa-solid fa-bag-shopping text-xl mb-1 group-hover:-translate-y-1 transition transform duration-200"></i>
-                    <span class="text-xs font-semibold hidden md:block" data-i18n="cart">Giỏ hàng</span>
+                        class="fa-solid fa-bag-shopping text-lg md:text-xl mb-1 group-hover:-translate-y-1 transition transform duration-200"></i>
+                    <span class="text-[11px] md:text-xs font-semibold whitespace-nowrap" data-i18n="cart">Giỏ hàng</span>
                     <!-- Badge số lượng -->
                     <span id="cartCount"
-                        class="absolute -top-2 -right-2 md:top-0 md:right-1 bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">0</span>
+                        class="absolute -top-1.5 right-0 md:top-0 md:right-1 bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white leading-none">0</span>
                 </div>
             </div>
         </div>

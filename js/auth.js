@@ -668,8 +668,8 @@ function updateAuthUI() {
     } else {
         const guestHtml = `
             <div onclick="openAuthModal('login')" class="flex flex-col items-center text-gray-600 hover:text-primary cursor-pointer transition">
-                <i class="fa-regular fa-user text-xl mb-1"></i>
-                <span class="text-xs font-semibold" data-i18n="account">Tài khoản</span>
+                <i class="fa-regular fa-user text-lg md:text-xl mb-1"></i>
+                <span class="text-[11px] md:text-xs font-semibold whitespace-nowrap" data-i18n="account">Tài khoản</span>
             </div>
         `;
         if (userContainer) userContainer.innerHTML = guestHtml;
