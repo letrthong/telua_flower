@@ -1,6 +1,6 @@
 {
-  "enabled": false,
-  "enableQuickOrder": false,
+  "enabled": true,
+  "enableQuickOrder": true,
   "title": "Đặt Hoa Nhanh",
   "description": "",
   "bankInfo": {
@@ -13,5 +13,5 @@
   "featuredProductIds": [
     "test_b64_1788062614"
   ],
-  "updatedAt": "2026-11-03T00:28:55Z"
+  "updatedAt": "2026-11-03T17:50:25Z"
 }

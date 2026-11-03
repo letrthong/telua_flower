@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import ssl
 import math
 import uuid
 import time
@@ -1614,6 +1615,10 @@ def send_telegram_message(bot_token: str, chat_id: str, text: str, parse_mode: s
     if not clean_chat_id:
         return False, None, "Chưa cấu hình Telegram Channel / Chat ID"
 
+    # Tự động thêm @ nếu người dùng chỉ nhập tên kênh (ví dụ: nohoathabinh -> @nohoathabinh)
+    if not clean_chat_id.startswith("@") and not clean_chat_id.startswith("-") and not clean_chat_id.isdigit():
+        clean_chat_id = f"@{clean_chat_id}"
+
     api_url = f"https://api.telegram.org/bot{clean_token}/sendMessage"
     payload_bytes = json.dumps({
         "chat_id": clean_chat_id,
@@ -1629,7 +1634,16 @@ def send_telegram_message(bot_token: str, chat_id: str, text: str, parse_mode: s
         method="POST"
     )
     try:
-        with _urllib_request.urlopen(req, timeout=timeout) as resp:
+        try:
+            resp = _urllib_request.urlopen(req, timeout=timeout)
+        except (_urllib_error.URLError, Exception) as ssl_err:
+            if "CERTIFICATE_VERIFY_FAILED" in str(ssl_err) or "certificate verify failed" in str(ssl_err).lower():
+                unverified_ctx = ssl._create_unverified_context()
+                resp = _urllib_request.urlopen(req, timeout=timeout, context=unverified_ctx)
+            else:
+                raise
+
+        with resp:
             raw_body = resp.read().decode("utf-8", errors="replace")
             resp_json = json.loads(raw_body) if raw_body else {}
             status_code = getattr(resp, "status", None) or getattr(resp, "code", 200)
@@ -1640,10 +1654,21 @@ def send_telegram_message(bot_token: str, chat_id: str, text: str, parse_mode: s
         try:
             err_body = he.read().decode("utf-8", errors="replace")
             err_json = json.loads(err_body)
-            desc = err_json.get("description") or f"HTTP {he.code}"
+            raw_desc = err_json.get("description") or f"HTTP {he.code}"
         except Exception:
-            desc = f"HTTP {he.code}"
-        return False, None, f"Lỗi Telegram API: {desc}"
+            raw_desc = f"HTTP {he.code}"
+
+        # Dịch các lỗi phổ biến sang thông báo trực quan, thân thiện
+        desc_lower = raw_desc.lower()
+        if "need administrator rights" in desc_lower:
+            desc = f"Bot chưa được cấp quyền Quản trị viên (Admin) trong kênh {clean_chat_id}. Vui lòng mở Kênh Telegram > Manage Channel > Administrators > Thêm Bot làm Admin và bật quyền 'Post Messages' (Đăng bài)."
+        elif "chat not found" in desc_lower:
+            desc = f"Không tìm thấy kênh hoặc nhóm Telegram '{clean_chat_id}'. Vui lòng kiểm tra lại Username kênh (ví dụ: @nohoathabinh)."
+        elif "unauthorized" in desc_lower:
+            desc = "Token Bot Telegram không hợp lệ. Vui lòng kiểm tra lại Bot Token nhận từ @BotFather."
+        else:
+            desc = f"Lỗi Telegram API: {raw_desc}"
+        return False, None, desc
     except Exception as e:
         return False, None, f"Không thể kết nối Telegram API: {str(e)}"
 
