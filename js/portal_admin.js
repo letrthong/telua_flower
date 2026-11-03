@@ -238,7 +238,7 @@ export {
     closeInventoryManagementModal
 } from './portal_admin_inventory.js';
 
-import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loadAdminLiveStreamConfig, loadAdminBanners, loadAdminPriceLevels, openSystemConfigModal, closeSystemConfigModal, switchSystemConfigTab } from './portal_admin_sysconfig.js';
+import { loadAdminCompanyInfo, loadAdminPaymentConfig, loadAdminAddonConfig, loadAdminLiveStreamConfig, loadAdminNotifyConfig, saveAdminNotifyConfig, testTelegramNotification, toggleTelegramTokenVisibility, loadAdminBanners, loadAdminPriceLevels, openSystemConfigModal, closeSystemConfigModal, switchSystemConfigTab } from './portal_admin_sysconfig.js';
 import { loadAdminCategories, saveCurrentCatI18nDraft } from './portal_admin_categories.js';
 import { loadAdminProducts, onPriceLevelChange, saveCurrentProdI18nDraft, openProductModal, closeProductModal } from './portal_admin_products.js';
 import { loadAdminBranches } from './portal_admin_branches.js';
@@ -423,13 +423,14 @@ export function closeSystemConfigModal() {
 }
 
 export function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream" && tabName !== "notify") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
     const btnPayment = document.getElementById("tabSysBtnPayment");
     const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
     const btnLiveStream = document.getElementById("tabSysBtnLiveStream");
+    const btnNotify = document.getElementById("tabSysBtnNotify");
     const btnBanners = document.getElementById("tabSysBtnBanners");
     const btnPriceLevels = document.getElementById("tabSysBtnPriceLevels");
 
@@ -438,6 +439,7 @@ export function switchSystemConfigTab(tabName) {
     const contentPayment = document.getElementById("tabSysContentPayment");
     const contentAddonVis = document.getElementById("tabSysContentAddonVis");
     const contentLiveStream = document.getElementById("tabSysContentLiveStream");
+    const contentNotify = document.getElementById("tabSysContentNotify");
     const contentBanners = document.getElementById("tabSysContentBanners");
     const contentPriceLevels = document.getElementById("tabSysContentPriceLevels");
 
@@ -452,6 +454,7 @@ export function switchSystemConfigTab(tabName) {
     if (btnPayment) btnPayment.className = idleCls;
     if (btnAddonVis) btnAddonVis.className = idleCls;
     if (btnLiveStream) btnLiveStream.className = liveStreamIdleCls;
+    if (btnNotify) btnNotify.className = idleCls;
     if (btnBanners) btnBanners.className = idleCls;
     if (btnPriceLevels) btnPriceLevels.className = idleCls;
 
@@ -460,6 +463,7 @@ export function switchSystemConfigTab(tabName) {
     if (contentPayment) contentPayment.classList.add("hidden");
     if (contentAddonVis) contentAddonVis.classList.add("hidden");
     if (contentLiveStream) contentLiveStream.classList.add("hidden");
+    if (contentNotify) contentNotify.classList.add("hidden");
     if (contentBanners) contentBanners.classList.add("hidden");
     if (contentPriceLevels) contentPriceLevels.classList.add("hidden");
 
@@ -484,6 +488,11 @@ export function switchSystemConfigTab(tabName) {
         if (contentLiveStream) contentLiveStream.classList.remove("hidden");
         activeBtn = btnLiveStream;
         loadAdminLiveStreamConfig();
+    } else if (tabName === "notify") {
+        if (btnNotify) btnNotify.className = activeCls;
+        if (contentNotify) contentNotify.classList.remove("hidden");
+        activeBtn = btnNotify;
+        loadAdminNotifyConfig();
     } else if (tabName === "banners") {
         if (btnBanners) btnBanners.className = activeCls;
         if (contentBanners) contentBanners.classList.remove("hidden");

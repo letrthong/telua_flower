@@ -39,7 +39,10 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
             "role": "customer"
         })
 
+        from order_service import reset_quick_order_security_state
+        reset_quick_order_security_state()
         self.original_config = get_livestream_config(use_cache=False)
+        save_livestream_config({"enableQuickOrder": True, "enabled": True})
 
     def tearDown(self):
         if hasattr(self, 'original_config') and self.original_config:
@@ -1137,6 +1140,120 @@ class TestLiveStreamQuickOrder(unittest.TestCase):
         self.assertEqual(res_rate_blocked.status_code, 400)
         self.assertIn("rate limit", res_rate_blocked.get_json()["message"].lower())
         reset_quick_order_security_state()
+
+    def test_notify_config_and_telegram_order_notification(self):
+        """
+        Kiểm tra Tab Thông Báo (Notify) trong Cấu Hình Hệ Thống:
+        1. Giao diện có Tab #tabSysBtnNotify và nội dung #tabSysContentNotify trong index.html & config/index.html.
+        2. API GET/PUT /api/flower/v1/admin/notify-config đọc và lưu cấu hình Telegram Channel.
+        3. API POST /api/flower/v1/admin/notify-config/test-telegram gửi thử thông báo qua Telegram Bot API.
+        4. Hàm notify_new_order định dạng và gửi thông báo tới Telegram Channel khi có đơn hàng mới.
+        """
+        from unittest.mock import patch, MagicMock
+        from data_service import get_notify_config, save_notify_config
+        from order_service import notify_new_order, format_telegram_order_message
+
+        # 1. Kiểm tra UI elements trong HTML
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        for rel_html in ["index.html", os.path.join("config", "index.html")]:
+            html_path = os.path.join(root_dir, rel_html)
+            with open(html_path, "r", encoding="utf-8") as f:
+                html_content = f.read()
+            self.assertIn('id="tabSysBtnNotify"', html_content)
+            self.assertIn('id="tabSysContentNotify"', html_content)
+            self.assertIn('id="notifyTelegramBotTokenInput"', html_content)
+            self.assertIn('id="notifyTelegramChatIdInput"', html_content)
+
+        # Backup cấu hình hiện tại để khôi phục sau test
+        original_cfg = get_notify_config(use_cache=False)
+        admin_headers = {"Authorization": f"Bearer {self.admin_token}"}
+        try:
+            # 2. Kiểm tra PUT & GET /api/flower/v1/admin/notify-config
+            test_payload = {
+                "enabled": True,
+                "notifyOnQuickOrder": True,
+                "notifyOnStandardOrder": True,
+                "telegram": {
+                    "enabled": True,
+                    "botToken": "123456789:AAH_test_token_xyz",
+                    "chatId": "@nohoa_orders_test_channel",
+                    "channelName": "Kênh Đơn Hàng Nở Hoa Test",
+                    "parseMode": "HTML",
+                    "includeCustomerPhone": True,
+                    "includeAddress": True,
+                    "includeNotes": True
+                },
+                "email": {
+                    "enabled": False,
+                    "recipientEmail": "shop@nohoathabinh.com"
+                }
+            }
+            res_put = self.client.put(
+                "/api/flower/v1/admin/notify-config",
+                headers=admin_headers,
+                json=test_payload
+            )
+            self.assertEqual(res_put.status_code, 200)
+            self.assertTrue(res_put.get_json()["success"])
+
+            res_get = self.client.get(
+                "/api/flower/v1/admin/notify-config",
+                headers=admin_headers
+            )
+            self.assertEqual(res_get.status_code, 200)
+            saved_data = res_get.get_json()["data"]
+            self.assertTrue(saved_data["enabled"])
+            self.assertEqual(saved_data["telegram"]["chatId"], "@nohoa_orders_test_channel")
+            self.assertEqual(saved_data["telegram"]["botToken"], "123456789:AAH_test_token_xyz")
+
+            # 3. Kiểm tra API test-telegram và notify_new_order với mock urlopen
+            mock_resp = MagicMock()
+            mock_resp.status = 200
+            mock_resp.read.return_value = b'{"ok": true, "result": {"message_id": 999}}'
+            mock_resp.__enter__.return_value = mock_resp
+            mock_resp.__exit__.return_value = False
+
+            with patch("order_service._urllib_request.urlopen", return_value=mock_resp) as mocked_urlopen:
+                res_test_tg = self.client.post(
+                    "/api/flower/v1/admin/notify-config/test-telegram",
+                    headers=admin_headers,
+                    json={}
+                )
+                self.assertEqual(res_test_tg.status_code, 200)
+                self.assertTrue(res_test_tg.get_json()["success"])
+                self.assertEqual(mocked_urlopen.call_count, 1)
+
+                # Kiểm tra gửi thông báo đơn hàng mới đồng bộ (async_send=False)
+                sample_order = {
+                    "id": "ord_test_tg_01",
+                    "orderCode": "LIVE-261103-8888",
+                    "source": "livestream_quick_order",
+                    "orderType": "livestream_quick",
+                    "totalAmount": 750000,
+                    "transferredAmount": 750000,
+                    "deliveryDate": "2026-11-03",
+                    "deliveryTime": "14:00",
+                    "recipient": {
+                        "name": "Chị Mai Telegram",
+                        "phone": "0909123456",
+                        "address": "123 Nguyễn Huệ, Quận 1"
+                    },
+                    "items": [
+                        {"productName": "Bó Hoa Hồng Đỏ Đà Lạt", "quantity": 1, "price": 750000}
+                    ],
+                    "notes": "Giao đúng 14h giúp mình"
+                }
+                msg_text = format_telegram_order_message(sample_order, saved_data["telegram"])
+                self.assertIn("LIVE-261103-8888", msg_text)
+                self.assertIn("Chị Mai Telegram", msg_text)
+                self.assertIn("0909123456", msg_text)
+
+                notify_ok, notify_msg = notify_new_order(sample_order, async_send=False)
+                self.assertTrue(notify_ok)
+                self.assertEqual(mocked_urlopen.call_count, 2)
+        finally:
+            save_notify_config(original_cfg)
+
 
 if __name__ == "__main__":
     unittest.main()

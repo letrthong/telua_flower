@@ -276,6 +276,15 @@ export const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminLiveStreamConfig",
         action: "switchSystemConfigTab('livestream')",
         roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "notify",
+        label: "Thông Báo Đơn Hàng (Notify)",
+        icon: "fa-solid fa-bell",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminNotifyConfig",
+        action: "switchSystemConfigTab('notify')",
+        roles: [ROLES.SUPER_ADMIN]
       }
     ]
   },

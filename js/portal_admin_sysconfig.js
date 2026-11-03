@@ -2148,7 +2148,229 @@ export async function deletePriceLevel(levelId) {
     }
 }
 
+
+// ==========================================
+// CẤU HÌNH THÔNG BÁO ĐƠN HÀNG (notifyConfig.json - Telegram Channel / Email)
+// ==========================================
+
+export let adminNotifyConfig = {
+    enabled: false,
+    notifyOnStandardOrder: true,
+    notifyOnQuickOrder: true,
+    telegram: {
+        enabled: false,
+        botToken: "",
+        chatId: "",
+        channelName: "",
+        parseMode: "HTML",
+        includeCustomerPhone: true,
+        includeAddress: true,
+        includeNotes: true
+    },
+    email: {
+        enabled: false,
+        recipientEmail: ""
+    }
+};
+
+export async function loadAdminNotifyConfig() {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const badge = document.getElementById("notifyConfigStatus");
+    const testBox = document.getElementById("notifyTestResultBox");
+    if (testBox) testBox.classList.add("hidden");
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/notify-config?_t=${Date.now()}`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success || !json.data) {
+            throw new Error(json.message || "Không thể tải cấu hình thông báo");
+        }
+        adminNotifyConfig = json.data;
+        renderAdminNotifyConfig(adminNotifyConfig);
+        if (badge) {
+            const isReady = !!(adminNotifyConfig.enabled && adminNotifyConfig.telegram && adminNotifyConfig.telegram.enabled && adminNotifyConfig.telegram.chatId);
+            badge.className = isReady
+                ? "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"
+                : "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-300";
+            badge.innerHTML = isReady
+                ? `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500"></i> Đang bật Telegram (${adminNotifyConfig.telegram.channelName || adminNotifyConfig.telegram.chatId})`
+                : `<i class="fa-solid fa-circle-pause mr-1 text-[8px] text-gray-400"></i> Đang tắt hoặc chưa điền Channel`;
+        }
+    } catch (e) {
+        if (badge) {
+            badge.className = "inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+            badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Lỗi tải cấu hình`;
+        }
+    }
+}
+
+export function renderAdminNotifyConfig(cfg) {
+    if (!cfg) return;
+    const tg = cfg.telegram || {};
+    const em = cfg.email || {};
+
+    const masterToggle = document.getElementById("notifyMasterEnabledToggle");
+    const quickToggle = document.getElementById("notifyOnQuickOrderToggle");
+    const stdToggle = document.getElementById("notifyOnStandardOrderToggle");
+    const tgToggle = document.getElementById("notifyTelegramEnabledToggle");
+    const botTokenInput = document.getElementById("notifyTelegramBotTokenInput");
+    const chatIdInput = document.getElementById("notifyTelegramChatIdInput");
+    const channelNameInput = document.getElementById("notifyTelegramChannelNameInput");
+    const incPhone = document.getElementById("notifyTelegramIncludePhone");
+    const incAddr = document.getElementById("notifyTelegramIncludeAddress");
+    const incNotes = document.getElementById("notifyTelegramIncludeNotes");
+    const emailInput = document.getElementById("notifyEmailRecipientInput");
+
+    if (masterToggle) masterToggle.checked = !!cfg.enabled;
+    if (quickToggle) quickToggle.checked = cfg.notifyOnQuickOrder !== false;
+    if (stdToggle) stdToggle.checked = cfg.notifyOnStandardOrder !== false;
+    if (tgToggle) tgToggle.checked = !!tg.enabled;
+    if (botTokenInput) botTokenInput.value = tg.botToken || "";
+    if (chatIdInput) chatIdInput.value = tg.chatId || "";
+    if (channelNameInput) channelNameInput.value = tg.channelName || "";
+    if (incPhone) incPhone.checked = tg.includeCustomerPhone !== false;
+    if (incAddr) incAddr.checked = tg.includeAddress !== false;
+    if (incNotes) incNotes.checked = tg.includeNotes !== false;
+    if (emailInput) emailInput.value = em.recipientEmail || "";
+}
+
+export function collectAdminNotifyConfigPayload() {
+    return {
+        enabled: !!document.getElementById("notifyMasterEnabledToggle")?.checked,
+        notifyOnQuickOrder: !!document.getElementById("notifyOnQuickOrderToggle")?.checked,
+        notifyOnStandardOrder: !!document.getElementById("notifyOnStandardOrderToggle")?.checked,
+        telegram: {
+            enabled: !!document.getElementById("notifyTelegramEnabledToggle")?.checked,
+            botToken: (document.getElementById("notifyTelegramBotTokenInput")?.value || "").trim(),
+            chatId: (document.getElementById("notifyTelegramChatIdInput")?.value || "").trim(),
+            channelName: (document.getElementById("notifyTelegramChannelNameInput")?.value || "").trim(),
+            parseMode: "HTML",
+            includeCustomerPhone: !!document.getElementById("notifyTelegramIncludePhone")?.checked,
+            includeAddress: !!document.getElementById("notifyTelegramIncludeAddress")?.checked,
+            includeNotes: !!document.getElementById("notifyTelegramIncludeNotes")?.checked
+        },
+        email: {
+            enabled: false,
+            recipientEmail: (document.getElementById("notifyEmailRecipientInput")?.value || "").trim()
+        }
+    };
+}
+
+export async function saveAdminNotifyConfig() {
+    const payload = collectAdminNotifyConfigPayload();
+    if (payload.enabled && payload.telegram.enabled) {
+        if (!payload.telegram.botToken) {
+            notifyUser("Vui lòng nhập Telegram Bot Token để bật thông báo Telegram!", "warning");
+            return;
+        }
+        if (!payload.telegram.chatId) {
+            notifyUser("Vui lòng nhập Channel ID / Chat ID nhận thông báo Telegram!", "warning");
+            return;
+        }
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang lưu cấu hình thông báo đơn hàng (notifyConfig.json)...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/notify-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể lưu cấu hình thông báo");
+        }
+        adminNotifyConfig = json.data || payload;
+        renderAdminNotifyConfig(adminNotifyConfig);
+        await loadAdminNotifyConfig();
+        notifyUser(json.message || "Đã lưu cấu hình thông báo đơn hàng thành công!", "success");
+    } catch (e) {
+        notifyUser("Lỗi lưu cấu hình thông báo: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+export async function testTelegramNotification() {
+    const payload = collectAdminNotifyConfigPayload();
+    const tg = payload.telegram || {};
+    const testBox = document.getElementById("notifyTestResultBox");
+
+    if (!tg.botToken || !tg.chatId) {
+        if (testBox) {
+            testBox.className = "p-3 rounded-xl text-xs font-medium border bg-amber-50 text-amber-800 border-amber-200";
+            testBox.textContent = "⚠️ Vui lòng nhập đầy đủ Telegram Bot Token và Channel ID / Chat ID trước khi gửi thử!";
+            testBox.classList.remove("hidden");
+        }
+        notifyUser("Vui lòng nhập Telegram Bot Token và Channel ID trước khi gửi thử!", "warning");
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang gửi tin nhắn kiểm thử tới Telegram Channel...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/notify-config/test-telegram`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify({ telegram: tg })
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+            if (testBox) {
+                testBox.className = "p-3 rounded-xl text-xs font-medium border bg-emerald-50 text-emerald-800 border-emerald-200";
+                testBox.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i> ${json.message || "Đã gửi tin nhắn thử nghiệm tới Telegram Channel thành công!"}`;
+                testBox.classList.remove("hidden");
+            }
+            notifyUser(json.message || "Đã gửi tin nhắn kiểm thử tới Telegram Channel thành công!", "success");
+        } else {
+            const errMsg = json.message || "Không thể gửi tin nhắn tới Telegram Channel";
+            if (testBox) {
+                testBox.className = "p-3 rounded-xl text-xs font-medium border bg-red-50 text-red-700 border-red-200";
+                testBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1 text-red-600"></i> ${errMsg}`;
+                testBox.classList.remove("hidden");
+            }
+            notifyUser(errMsg, "error");
+        }
+    } catch (e) {
+        if (testBox) {
+            testBox.className = "p-3 rounded-xl text-xs font-medium border bg-red-50 text-red-700 border-red-200";
+            testBox.textContent = "Lỗi kết nối máy chủ: " + e.message;
+            testBox.classList.remove("hidden");
+        }
+        notifyUser("Lỗi kết nối: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+export function toggleTelegramTokenVisibility() {
+    const input = document.getElementById("notifyTelegramBotTokenInput");
+    const icon = document.getElementById("notifyTelegramTokenEyeIcon");
+    if (!input) return;
+    if (input.type === "password") {
+        input.type = "text";
+        if (icon) icon.className = "fa-solid fa-eye-slash text-sky-600";
+    } else {
+        input.type = "password";
+        if (icon) icon.className = "fa-solid fa-eye";
+    }
+}
+
 if (typeof window !== "undefined") {
+    window.loadAdminNotifyConfig = loadAdminNotifyConfig;
+    window.renderAdminNotifyConfig = renderAdminNotifyConfig;
+    window.saveAdminNotifyConfig = saveAdminNotifyConfig;
+    window.testTelegramNotification = testTelegramNotification;
+    window.toggleTelegramTokenVisibility = toggleTelegramTokenVisibility;
     window.DEFAULT_STATIC_COMPANY_INFO = DEFAULT_STATIC_COMPANY_INFO;
     window.loadAdminCompanyInfo = loadAdminCompanyInfo;
     window.handleCompanyInfoSubmit = handleCompanyInfoSubmit;

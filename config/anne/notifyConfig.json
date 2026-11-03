@@ -1,0 +1,22 @@
+{
+  "enabled": false,
+  "notifyOnStandardOrder": true,
+  "notifyOnQuickOrder": true,
+  "telegram": {
+    "enabled": false,
+    "botToken": "",
+    "chatId": "",
+    "channelName": "",
+    "parseMode": "HTML",
+    "includeCustomerPhone": true,
+    "includeAddress": true,
+    "includeNotes": true
+  },
+  "email": {
+    "enabled": false,
+    "recipientEmail": "",
+    "note": "Đang phát triển (Tạm thời hỗ trợ Telegram trước)"
+  },
+  "updatedAt": "2026-11-03T00:00:00Z"
+}
+

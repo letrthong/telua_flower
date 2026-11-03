@@ -52,6 +52,8 @@ from   data_service import (
     save_banners_config,
     get_livestream_config,
     save_livestream_config,
+    get_notify_config,
+    save_notify_config,
     get_livestream_dates,
     get_livestream_orders_by_date,
     save_uploaded_image,
@@ -72,7 +74,8 @@ from order_service import (
     lookup_orders_by_phone_or_code,
     add_order_customer_comment,
     generate_quick_order_security_token,
-    verify_and_consume_quick_order_security
+    verify_and_consume_quick_order_security,
+    send_telegram_test_notification
 )
 from vietqr_service import (
     build_order_payment_info,
@@ -2430,5 +2433,53 @@ def api_smart_route_order():
     }), 200
 
 
+# ==========================================
+# API CẤU HÌNH THÔNG BÁO ĐƠN HÀNG (TELEGRAM CHANNEL / EMAIL - notifyConfig.json)
+# ==========================================
 
+@flower_connect_api.route("/admin/notify-config", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_admin_get_notify_config():
+    """Lấy cấu hình thông báo đơn hàng (Telegram Channel / Email)."""
+    cfg = get_notify_config(use_cache=False)
+    return jsonify({
+        "success": True,
+        "data": cfg
+    }), 200
+
+
+@flower_connect_api.route("/admin/notify-config", methods=["PUT"])
+@require_role(["super_admin"])
+def api_admin_update_notify_config():
+    """Lưu cấu hình thông báo đơn hàng (Telegram Channel / Email) vào notifyConfig.json."""
+    payload = request.get_json(silent=True) or {}
+    ok, updated, err = save_notify_config(payload)
+    if not ok:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể lưu cấu hình thông báo"
+        }), 400
+    return jsonify({
+        "success": True,
+        "message": "Đã lưu cấu hình thông báo đơn hàng thành công!",
+        "data": updated
+    }), 200
+
+
+@flower_connect_api.route("/admin/notify-config/test-telegram", methods=["POST"])
+@require_role(["super_admin"])
+def api_admin_test_telegram_notify():
+    """Gửi tin nhắn kiểm thử kết nối tới Telegram Channel."""
+    payload = request.get_json(silent=True) or {}
+    ok, result_data, err = send_telegram_test_notification(payload)
+    if not ok:
+        return jsonify({
+            "success": False,
+            "message": err or "Gửi tin nhắn thử nghiệm tới Telegram thất bại"
+        }), 400
+    return jsonify({
+        "success": True,
+        "message": "Đã gửi tin nhắn kiểm thử tới Telegram Channel thành công!",
+        "data": result_data
+    }), 200
 

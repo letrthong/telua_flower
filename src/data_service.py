@@ -3663,11 +3663,120 @@ def get_livestream_dates() -> List[str]:
     return dates
 
 
+# ==========================================
+# CẤU HÌNH THÔNG BÁO ĐƠN HÀNG (notifyConfig.json - Telegram / Email)
+# ==========================================
+
+DEFAULT_NOTIFY_CONFIG: Dict[str, Any] = {
+    "enabled": False,
+    "notifyOnStandardOrder": True,
+    "notifyOnQuickOrder": True,
+    "telegram": {
+        "enabled": False,
+        "botToken": "",
+        "chatId": "",
+        "channelName": "",
+        "parseMode": "HTML",
+        "includeCustomerPhone": True,
+        "includeAddress": True,
+        "includeNotes": True
+    },
+    "email": {
+        "enabled": False,
+        "recipientEmail": "",
+        "note": "Đang phát triển (Tạm thời hỗ trợ Telegram trước)"
+    },
+    "updatedAt": "2026-11-03T00:00:00Z"
+}
 
 
+def get_notify_config(use_cache: bool = True) -> Dict[str, Any]:
+    """
+    Đọc cấu hình thông báo đơn hàng (notifyConfig.json).
+    Khởi tạo mặc định nếu file chưa tồn tại.
+    """
+    filepath = get_config_path("notifyConfig.json")
+    if not os.path.exists(filepath):
+        write_json(filepath, DEFAULT_NOTIFY_CONFIG)
+        return json.loads(json.dumps(DEFAULT_NOTIFY_CONFIG))
+
+    data = read_json_cached(filepath, default={}) if use_cache else read_json(filepath, default={})
+    if not isinstance(data, dict):
+        data = json.loads(json.dumps(DEFAULT_NOTIFY_CONFIG))
+        write_json(filepath, data)
+        return data
+
+    result = json.loads(json.dumps(DEFAULT_NOTIFY_CONFIG))
+    for k in ("enabled", "notifyOnStandardOrder", "notifyOnQuickOrder", "updatedAt"):
+        if k in data and data[k] is not None:
+            result[k] = data[k]
+
+    if isinstance(data.get("telegram"), dict):
+        for tk, tv in data["telegram"].items():
+            if tv is not None:
+                result["telegram"][tk] = tv
+
+    if isinstance(data.get("email"), dict):
+        for ek, ev in data["email"].items():
+            if ev is not None:
+                result["email"][ek] = ev
+
+    result["enabled"] = bool(result.get("enabled", False))
+    result["notifyOnStandardOrder"] = bool(result.get("notifyOnStandardOrder", True))
+    result["notifyOnQuickOrder"] = bool(result.get("notifyOnQuickOrder", True))
+    result["telegram"]["enabled"] = bool(result["telegram"].get("enabled", False))
+    result["email"]["enabled"] = bool(result["email"].get("enabled", False))
+    return result
 
 
+def save_notify_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Lưu cấu hình thông báo đơn hàng (Telegram Channel / Email) vào notifyConfig.json.
+    """
+    if not isinstance(config_dict, dict):
+        return False, None, "Dữ liệu cấu hình thông báo không hợp lệ"
 
+    current = get_notify_config(use_cache=False)
 
+    if "enabled" in config_dict:
+        current["enabled"] = bool(config_dict["enabled"])
+    if "notifyOnStandardOrder" in config_dict:
+        current["notifyOnStandardOrder"] = bool(config_dict["notifyOnStandardOrder"])
+    if "notifyOnQuickOrder" in config_dict:
+        current["notifyOnQuickOrder"] = bool(config_dict["notifyOnQuickOrder"])
 
+    tg_in = config_dict.get("telegram")
+    if isinstance(tg_in, dict):
+        tg_curr = current.get("telegram") or {}
+        if "enabled" in tg_in:
+            tg_curr["enabled"] = bool(tg_in["enabled"])
+        if "botToken" in tg_in and tg_in["botToken"] is not None:
+            tg_curr["botToken"] = str(tg_in["botToken"]).strip()
+        if "chatId" in tg_in and tg_in["chatId"] is not None:
+            tg_curr["chatId"] = str(tg_in["chatId"]).strip()
+        if "channelName" in tg_in and tg_in["channelName"] is not None:
+            tg_curr["channelName"] = str(tg_in["channelName"]).strip()
+        if "parseMode" in tg_in and tg_in["parseMode"] is not None:
+            tg_curr["parseMode"] = str(tg_in["parseMode"]).strip() or "HTML"
+        for bool_k in ("includeCustomerPhone", "includeAddress", "includeNotes"):
+            if bool_k in tg_in:
+                tg_curr[bool_k] = bool(tg_in[bool_k])
+        current["telegram"] = tg_curr
+
+    em_in = config_dict.get("email")
+    if isinstance(em_in, dict):
+        em_curr = current.get("email") or {}
+        if "enabled" in em_in:
+            em_curr["enabled"] = bool(em_in["enabled"])
+        if "recipientEmail" in em_in and em_in["recipientEmail"] is not None:
+            em_curr["recipientEmail"] = str(em_in["recipientEmail"]).strip()
+        current["email"] = em_curr
+
+    current["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+    filepath = get_config_path("notifyConfig.json")
+    success = write_json(filepath, current)
+    if success:
+        return True, current, None
+    return False, None, "Không thể ghi file cấu hình notifyConfig.json"
 

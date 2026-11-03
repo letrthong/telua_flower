@@ -17,6 +17,7 @@
 - **Tương tác đa kênh:** Nút Hotline nổi với hiệu ứng rung chuông (`pulse-hotline`) và nút Chat Zalo Official Account (`pulse-zalo`) hỗ trợ 24/7.
 - **Tối ưu hiệu năng vượt trội:** Lazy Loading cho toàn bộ hình ảnh kết hợp hiệu ứng Skeleton Shimmer Loader chống giật layout (CLS).
 - **Bán hàng trực tiếp Live Stream & Chốt đơn tốc hành (Quick Order):** Hỗ trợ chia sẻ link hash `/#quick-order` chốt đơn trong 15s cho livestream (TikTok/Facebook Live), tự động tạo mã VietQR theo số tiền, chọn bó hoa ghim, đính kèm ảnh bill chuyển khoản và xuất dữ liệu ra file Excel/CSV chuẩn tiếng Việt UTF-8 BOM.
+- **Thông báo đơn hàng tự động qua Telegram Channel (`notifyConfig.json`):** Tự động bắn thông báo tức thì (kèm mã đơn, người nhận, số điện thoại, ngày giờ giao hoa, danh sách sản phẩm, số tiền chuyển khoản, ghi chú, thiệp chúc mừng và link tra cứu) vào kênh Telegram nội bộ của shop ngay khi có đơn hàng mới (cả Đơn đặt nhanh Live Stream và Đơn giỏ hàng Website).
 - **Thiết kế Responsive hoàn hảo:** Tương thích mượt mà trên mọi thiết bị: Mobile (iOS/Android), Tablet và Desktop.
 
 ---
@@ -146,6 +147,54 @@ Khi phát triển giao diện hoặc chỉnh sửa các module JavaScript trong 
 4. **Về file `config/index.html`:** Đây là artifact trích xuất tự động từ container Docker (`cli_docker.sh start`), dùng làm bản sao lưu dự phòng. Trong quá trình phát triển code, lập trình viên chỉnh sửa trực tiếp trên file gốc [`index.html`](file:///d:/wmshare/telua_flower/index.html).
 
 ---
+
+---
+
+## 🔔 Hướng Dẫn Cấu Hình Thông Báo Đơn Hàng Qua Telegram Channel (notifyConfig.json)
+
+Hệ thống hỗ trợ gửi thông báo tức thời về Telegram Channel/Group mỗi khi có đơn hàng mới (cả Đơn đặt nhanh Live Stream `/#quick-order` và Đơn giỏ hàng thông thường trên Website).
+
+### Bước 1: Tạo Telegram Bot qua `@BotFather`
+1. Mở ứng dụng Telegram, tìm kiếm bot chính thức **[@BotFather](https://t.me/botfather)** (có dấu tích xanh).
+2. Nhấn **Start** (hoặc gửi `/start`), sau đó gửi lệnh `/newbot`.
+3. Nhập tên hiển thị cho bot (ví dụ: `No Hoa Tha Binh Notifier`).
+4. Nhập username cho bot (phải kết thúc bằng chữ `bot`, ví dụ: `nohoathabinh_order_bot`).
+5. `@BotFather` sẽ gửi lại thông tin chứa **HTTP API Bot Token** có dạng:
+   ```text
+   7123456789:AAHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   ```
+   > 📌 *Sao chép mã Token này để điền vào hệ thống ở Bước 4.*
+
+### Bước 2: Tạo Telegram Channel (Kênh nhận thông báo)
+1. Trên Telegram (ứng dụng điện thoại hoặc Telegram Desktop):
+   - **Điện thoại:** Nhấn biểu tượng cây bút soạn tin ✍️ -> Chọn **New Channel** (Kênh mới).
+   - **Desktop:** Nhấn biểu tượng menu ☰ góc trên bên trái -> Chọn **New Channel**.
+2. Đặt tên Channel (ví dụ: `🌸 Nở Hoa Thả Bình - Đơn Hàng Mới`) và tải ảnh đại diện (nếu muốn) -> Nhấn **Create Channel / Tiếp tục**.
+3. Chọn loại Kênh:
+   - **Public Channel (Kênh công khai - Khuyên dùng cho shop):** Đặt username liên kết cho kênh (ví dụ: `nohoa_donhang`). Khi đó `Channel ID` của bạn chính là `@nohoa_donhang`.
+   - **Private Channel (Kênh riêng tư):** Telegram sẽ cấp link mời riêng tư. Để lấy Chat ID số âm (ví dụ: `-1001987654321`), bạn có thể thêm bot `@userinfobot` hoặc `@getmyid_bot` vào kênh, hoặc xem ID trên thanh địa chỉ của Telegram Web (`https://web.telegram.org/a/#-100...`).
+
+### Bước 3: Thêm Bot làm Quản Trị Viên (Administrator) của Channel
+> ⚠️ **BƯỚC QUAN TRỌNG:** Mặc định Bot không thể gửi tin nhắn vào Channel nếu chưa được cấp quyền Quản trị viên (Admin).
+1. Mở Channel vừa tạo trên Telegram -> Nhấn vào tên Channel ở thanh trên cùng để mở trang thông tin.
+2. Chọn **Manage Channel** (hoặc biểu tượng ⚙️ Cài đặt) -> Chọn **Administrators** (Quản trị viên).
+3. Chọn **Add Administrator** -> Gõ tìm username của Bot vừa tạo ở Bước 1 (ví dụ `@nohoathabinh_order_bot`) -> Chọn Bot.
+4. Bật quyền **Post Messages** (Đăng tin nhắn) -> Nhấn **Save / Hoàn tất**.
+
+### Bước 4: Cấu Hình & Kiểm Thử Trên Web Quản Trị
+1. Đăng nhập trang Admin Nở Hoa Thả Bình (`/` hoặc trang quản trị).
+2. Nhấn biểu tượng **Cấu Hình Hệ Thống** ⚙️ -> Chuyển sang tab **🔔 Thông Báo**.
+3. Bật công tắc: **"Kích hoạt thông báo tự động khi có đơn hàng mới"**.
+4. Chọn loại đơn hàng muốn nhận thông báo (*Đơn Live Stream* và/hoặc *Đơn giỏ hàng*).
+5. Điền thông tin kết nối Telegram:
+   - **Telegram Bot Token:** Dán mã Bot Token nhận được từ `@BotFather` ở Bước 1.
+   - **Channel ID / Chat ID:** Điền `@ten_channel` (nếu kênh công khai) hoặc ID số âm `-100...` (nếu kênh riêng tư).
+   - **Tên hiển thị Channel:** Nhập tên gợi nhớ (ví dụ: `Kênh Đơn Hàng Nở Hoa`).
+   - Tích chọn các thông tin muốn hiển thị: *Số điện thoại khách, Địa chỉ giao hàng, Lời chúc thiệp & Ghi chú*.
+6. Nhấn nút **Gửi Thử Tin Nhắn**:
+   - Hệ thống sẽ gọi API Telegram và gửi ngay 1 tin nhắn kiểm thử mẫu vào Channel.
+   - Nếu Channel nhận được tin nhắn tức là cấu hình đã thành công 100%!
+7. Nhấn nút **Lưu Cấu Hình Thông Báo** để hoàn tất.
 
 ## 🧪 Quy Chuẩn Kiểm Thử Bắt Buộc (Mandatory Unit Tests)
 

@@ -3995,6 +3995,10 @@
                     class="py-3 px-2.5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-rose-600 hover:text-rose-700 bg-rose-50/80 hover:bg-rose-100/70 transition flex items-center flex-shrink-0 rounded-t-lg cursor-pointer">
                     <i class="fa-solid fa-video mr-1.5 text-base text-rose-600 animate-pulse"></i> Live Stream <span class="ml-1.5 px-2 py-0.5 text-[10px] bg-red-600 text-white rounded-full font-extrabold uppercase shadow-2xs">Live</span>
                 </button>
+                <button onclick="switchSystemConfigTab('notify')" id="tabSysBtnNotify"
+                    class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer">
+                    <i class="fa-solid fa-bell mr-1.5 text-base text-sky-500"></i> Thông Báo (Notify)
+                </button>
             </div>
 
             <!-- Modal Body (Scrollable) -->
@@ -5026,6 +5030,220 @@
                             <i class="fa-solid fa-floppy-disk"></i>
                             <span>Lưu Cấu Hình Live Stream</span>
                         </button>
+                    </div>
+                </section>
+
+                <!-- ================= TAB 8: THÔNG BÁO ĐƠN HÀNG (NOTIFY - TELEGRAM / EMAIL) ================= -->
+                <section id="tabSysContentNotify" class="space-y-6 hidden">
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shadow-inner border border-sky-100">
+                                <i class="fa-solid fa-bell"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="text-sm font-bold text-gray-800">Cấu Hình Thông Báo Đơn Hàng Tự Động (notifyConfig.json)</h4>
+                                    <span id="notifyConfigStatus"
+                                        class="inline-flex items-center text-[10px] font-mono px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                                        <i class="fa-solid fa-circle-check mr-1 text-[8px] text-sky-500"></i> Sẵn sàng
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500 mt-0.5">Tự động bắn tin nhắn thông báo tới Telegram Channel ngay khi khách hàng đặt đơn hoa mới hoặc chốt đơn nhanh.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button type="button" onclick="testTelegramNotification()"
+                                class="px-3.5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                                <i class="fa-brands fa-telegram text-sm text-sky-600"></i> Gửi Thử Telegram
+                            </button>
+                            <button type="button" onclick="saveAdminNotifyConfig()"
+                                class="px-5 py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Master Toggle & Event Triggers -->
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4">
+                        <div class="flex items-center justify-between gap-4 pb-4 border-b border-gray-100">
+                            <div class="flex items-start gap-3.5">
+                                <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0 border border-emerald-100">
+                                    <i class="fa-solid fa-satellite-dish"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-gray-800">Bật Thông Báo Tự Động Khi Có Đơn Hàng Mới</h5>
+                                    <p class="text-xs text-gray-500 mt-0.5">Khi bật công tắc tổng này, hệ thống sẽ tự động đẩy thông tin đơn hàng mới về kênh nhận thông báo bên dưới.</p>
+                                </div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input type="checkbox" id="notifyMasterEnabledToggle" class="sr-only peer">
+                                <div class="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label for="notifyOnQuickOrderToggle" class="flex items-center justify-between p-3.5 rounded-xl bg-rose-50/50 border border-rose-100 cursor-pointer hover:bg-rose-50 transition">
+                                <div class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-bolt text-rose-600 text-sm"></i>
+                                    <div>
+                                        <span class="text-xs font-bold text-gray-800 block">Thông báo Đơn Đặt Hoa Nhanh (#quick-order)</span>
+                                        <span class="text-[11px] text-gray-500">Gửi ngay khi khách gửi form Đặt Hoa Nhanh kèm bill</span>
+                                    </div>
+                                </div>
+                                <input type="checkbox" id="notifyOnQuickOrderToggle" checked class="w-4 h-4 accent-rose-600 rounded cursor-pointer">
+                            </label>
+
+                            <label for="notifyOnStandardOrderToggle" class="flex items-center justify-between p-3.5 rounded-xl bg-pink-50/50 border border-pink-100 cursor-pointer hover:bg-pink-50 transition">
+                                <div class="flex items-center gap-2.5">
+                                    <i class="fa-solid fa-bag-shopping text-primary text-sm"></i>
+                                    <div>
+                                        <span class="text-xs font-bold text-gray-800 block">Thông báo Đơn Đặt Hàng Website (Giỏ hàng)</span>
+                                        <span class="text-[11px] text-gray-500">Gửi ngay khi khách hoàn tất đặt hoa từ trang chủ</span>
+                                    </div>
+                                </div>
+                                <input type="checkbox" id="notifyOnStandardOrderToggle" checked class="w-4 h-4 accent-pink-600 rounded cursor-pointer">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Channel 1: Telegram Channel Configuration (8 cols) -->
+                        <div class="lg:col-span-8 bg-white rounded-2xl p-5 border border-sky-200 shadow-2xs space-y-4">
+                            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-xl bg-sky-500 text-white flex items-center justify-center text-lg shadow-xs">
+                                        <i class="fa-brands fa-telegram"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h5 class="font-bold text-xs sm:text-sm text-gray-800 uppercase tracking-wide">1. Kênh Telegram Channel / Group</h5>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">Đang hỗ trợ</span>
+                                        </div>
+                                        <p class="text-[11px] text-gray-500">Kết nối qua Telegram Bot API để gửi thông báo đơn hàng thời gian thực vào Channel hoặc Group</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                    <input type="checkbox" id="notifyTelegramEnabledToggle" class="sr-only peer">
+                                    <div class="w-12 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-sky-500"></div>
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">
+                                        <i class="fa-solid fa-key text-sky-600 mr-1"></i> Telegram Bot Token (từ @BotFather) *
+                                    </label>
+                                    <div class="relative">
+                                        <input type="password" id="notifyTelegramBotTokenInput"
+                                            placeholder="VD: 7123456789:AAH_xYz1234567890abcdefGHIJKLMN"
+                                            class="w-full pl-3.5 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold text-gray-800 focus:outline-none focus:border-sky-500 focus:bg-white transition">
+                                        <button type="button" onclick="toggleTelegramTokenVisibility()"
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-xs cursor-pointer"
+                                            title="Ẩn/Hiện Bot Token">
+                                            <i id="notifyTelegramTokenEyeIcon" class="fa-solid fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 mt-1">Mã token do <code>@BotFather</code> cấp khi tạo Bot trên Telegram.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">
+                                        <i class="fa-solid fa-hashtag text-sky-600 mr-1"></i> Channel ID / Chat ID Nhận Thông Báo *
+                                    </label>
+                                    <input type="text" id="notifyTelegramChatIdInput"
+                                        placeholder="VD: -1001987654321 hoặc @nohoathabinh_orders"
+                                        class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-mono font-bold text-gray-800 focus:outline-none focus:border-sky-500 focus:bg-white transition">
+                                    <p class="text-[10px] text-gray-400 mt-1">Nhập <code>@username_channel</code> (Channel công khai) hoặc ID âm <code>-100...</code> (Channel riêng tư / Group).</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">
+                                        <i class="fa-solid fa-tag text-sky-600 mr-1"></i> Tên Gợi Nhớ Channel / Nhóm (Tùy chọn)
+                                    </label>
+                                    <input type="text" id="notifyTelegramChannelNameInput"
+                                        placeholder="VD: Channel Đơn Hàng Nở Hoa Thả Bình"
+                                        class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:border-sky-500 focus:bg-white transition">
+                                    <p class="text-[10px] text-gray-400 mt-1">Giúp quản trị viên dễ nhận biết kênh đang kết nối.</p>
+                                </div>
+                            </div>
+
+                            <!-- Tùy chọn trường thông tin hiển thị trong tin nhắn -->
+                            <div class="p-3.5 rounded-xl bg-sky-50/50 border border-sky-100 space-y-2.5">
+                                <span class="text-xs font-bold text-gray-700 block">Nội dung hiển thị trong tin nhắn gửi tới Channel:</span>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="notifyTelegramIncludePhone" checked class="w-4 h-4 accent-sky-600 rounded">
+                                        <span class="font-medium text-gray-700">Hiện SĐT người nhận</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="notifyTelegramIncludeAddress" checked class="w-4 h-4 accent-sky-600 rounded">
+                                        <span class="font-medium text-gray-700">Hiện Địa chỉ giao hoa</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" id="notifyTelegramIncludeNotes" checked class="w-4 h-4 accent-sky-600 rounded">
+                                        <span class="font-medium text-gray-700">Hiện Ghi chú & Lời chúc</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Hướng dẫn nhanh -->
+                            <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-[11px] text-gray-600 space-y-1.5 leading-relaxed">
+                                <div class="font-bold text-gray-800 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-question text-sky-600"></i> Hướng dẫn 3 bước kết nối Telegram Channel:
+                                </div>
+                                <ol class="list-decimal list-inside space-y-1 text-gray-600">
+                                    <li>Mở Telegram, nhắn <code>/newbot</code> cho <strong>@BotFather</strong> để lấy <strong>Bot Token</strong>.</li>
+                                    <li>Tạo một <strong>Telegram Channel</strong> (hoặc Group), vào phần <em>Administrators</em> thêm Bot vừa tạo làm <strong>Admin</strong> (cấp quyền <em>Post Messages</em>).</li>
+                                    <li>Điền <strong>Bot Token</strong> và <strong>Channel ID</strong> (VD: <code>@ten_channel</code> hoặc <code>-100xxxxxxxxxx</code>) vào ô trên rồi bấm <strong>Gửi Thử Telegram</strong>.</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <!-- Channel 2: Email Notification (Coming Soon - 4 cols) -->
+                        <div class="lg:col-span-4 space-y-5">
+                            <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4 opacity-80">
+                                <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-9 h-9 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center text-base">
+                                            <i class="fa-solid fa-envelope"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-bold text-xs text-gray-700 uppercase tracking-wide">2. Thông Báo Qua Email</h5>
+                                            <span class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Sắp hỗ trợ (Coming Soon)</span>
+                                        </div>
+                                    </div>
+                                    <input type="checkbox" id="notifyEmailEnabledToggle" disabled class="w-4 h-4 rounded cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Email Quản Trị Nhận Đơn</label>
+                                    <input type="email" id="notifyEmailRecipientInput" placeholder="cskh@nohoathabinh.vn"
+                                        class="w-full px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-600 focus:outline-none">
+                                    <p class="text-[10px] text-gray-400 mt-1.5">Hiện tại hệ thống ưu tiên gửi thông báo tức thời qua Telegram Channel. Tính năng gửi SMTP Email sẽ được kích hoạt trong bản cập nhật tiếp theo.</p>
+                                </div>
+                            </div>
+
+                            <!-- Box Kết quả Test & Lưu cấu hình -->
+                            <div class="bg-gradient-to-br from-sky-50 to-indigo-50/60 rounded-2xl p-5 border border-sky-200 shadow-2xs space-y-3">
+                                <h6 class="text-xs font-bold text-sky-900 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-paper-plane text-sky-600"></i> Kiểm Thử & Lưu Cấu Hình
+                                </h6>
+                                <p class="text-[11px] text-gray-600 leading-relaxed">
+                                    Bạn có thể bấm <strong>Gửi Tin Nhắn Test</strong> để kiểm tra ngay xem Bot đã gửi được tin nhắn mẫu vào Channel chưa trước khi lưu chính thức.
+                                </p>
+                                <div id="notifyTestResultBox" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
+                                <div class="flex flex-col gap-2 pt-1">
+                                    <button type="button" onclick="testTelegramNotification()"
+                                        class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <i class="fa-brands fa-telegram"></i> Gửi Tin Nhắn Test Tới Channel
+                                    </button>
+                                    <button type="button" onclick="saveAdminNotifyConfig()"
+                                        class="w-full py-2.5 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình Thông Báo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -6835,7 +7053,7 @@
                 <div class="max-w-md mx-auto space-y-2">
                     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-300">
                         <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                        <span id="quickOrderClosedStatusBadge">Trạng Thái: Đã Tạm Dừng Nhận Đơn (enable: false)</span>
+                        <span id="quickOrderClosedStatusBadge">Trạng Thái: Đã Tạm Dừng Nhận Đơn</span>
                     </div>
                     <h4 class="text-base font-bold text-gray-800">Phiên Đặt Hàng Live Stream Đang Tạm Đóng</h4>
                     <p class="text-xs text-gray-500 leading-relaxed">

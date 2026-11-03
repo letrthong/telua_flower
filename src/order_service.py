@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import math
 import uuid
 import time
@@ -34,6 +35,7 @@ from data_service import (
     build_user_lookup_cache,
     build_branch_lookup_cache,
     get_livestream_config,
+    get_notify_config,
     get_order_shortcuts_for_month
 )
 from vietqr_service import (
@@ -432,6 +434,9 @@ def create_order(
     earned_points = final_total // 10000
     _update_customer_crm_after_order(sender_phone, sender_name, sender.get("email", ""), earned_points, final_total)
 
+    # 11. Gửi thông báo đơn hàng mới tới Telegram Channel (nếu được bật trong Cấu Hình Hệ Thống)
+    notify_new_order(new_order, async_send=True)
+
     return True, new_order, None
 
 
@@ -795,6 +800,9 @@ def create_livestream_quick_order(
     # 7. Tự động đồng bộ vào hồ sơ khách hàng & tích điểm CRM
     earned_points = transferred_amount // 10000
     _update_customer_crm_after_order(phone, customer_name, "", earned_points, transferred_amount)
+
+    # 8. Gửi thông báo đơn đặt nhanh tới Telegram Channel (nếu được bật trong Cấu Hình Hệ Thống)
+    notify_new_order(new_order, async_send=True)
 
     return True, new_order, None
 
@@ -1515,4 +1523,217 @@ def filter_tasks_for_staff(
         return tasks
 
     return orders
+
+
+# ==============================================================================
+# DỊCH VỤ THÔNG BÁO ĐƠN HÀNG TỰ ĐỘNG QUA TELEGRAM CHANNEL (ORDER NOTIFICATION)
+# ==============================================================================
+import html as _html_lib
+import threading as _threading
+import urllib.request as _urllib_request
+import urllib.error as _urllib_error
+
+
+def format_telegram_order_message(order: Dict[str, Any], tg_cfg: Optional[Dict[str, Any]] = None) -> str:
+    """
+    Định dạng nội dung thông báo đơn hàng gửi tới Telegram Channel (chuẩn HTML).
+    """
+    tg = tg_cfg or {}
+    include_phone = tg.get("includeCustomerPhone", True) is not False
+    include_address = tg.get("includeAddress", True) is not False
+    include_notes = tg.get("includeNotes", True) is not False
+
+    source = (order.get("source") or "").lower()
+    is_quick = "live" in source or "quick" in source or (order.get("orderType") or "").lower() == "livestream"
+
+    header = "⚡ <b>ĐƠN ĐẶT HOA NHANH MỚI (#QUICK-ORDER)</b>" if is_quick else "🌸 <b>ĐƠN ĐẶT HOA MỚI TRÊN WEBSITE</b>"
+    order_code = _html_lib.escape(str(order.get("orderCode") or order.get("id") or "—"))
+
+    recipient = order.get("recipient") or {}
+    rec_name = _html_lib.escape(str(recipient.get("name") or order.get("customerName") or "Khách hàng"))
+    rec_phone = _html_lib.escape(str(recipient.get("phone") or order.get("phone") or "—"))
+    rec_addr = _html_lib.escape(str(recipient.get("address") or order.get("address") or "—"))
+
+    delivery = order.get("delivery") or {}
+    del_date = _html_lib.escape(str(delivery.get("deliveryDate") or order.get("deliveryDate") or "Hôm nay"))
+    del_time = _html_lib.escape(str(delivery.get("timeSlot") or order.get("deliveryTime") or "Giao sớm nhất"))
+    fulfillment = (delivery.get("fulfillmentType") or order.get("fulfillmentType") or "delivery").lower()
+    fulfillment_label = "🏪 Nhận trực tiếp tại Shop" if fulfillment == "pickup" else "🚚 Giao tận nơi"
+
+    items = order.get("items") or []
+    item_lines = []
+    for it in items:
+        if isinstance(it, dict):
+            iname = _html_lib.escape(str(it.get("productName") or it.get("name") or "Mẫu hoa"))
+            iqty = int(it.get("quantity") or 1)
+            iprice = int(it.get("price") or 0)
+            item_lines.append(f"  • {iname} (x{iqty}) — {iprice:,.0f}₫")
+    items_str = "\n".join(item_lines) if item_lines else "  • Mẫu hoa đặt theo yêu cầu"
+
+    total_amount = int(order.get("totalAmount") or (order.get("financials") or {}).get("totalAmount") or 0)
+    pay_method = _html_lib.escape(str(order.get("paymentMethod") or (order.get("payment") or {}).get("method") or "vietqr").upper())
+
+    lines = [
+        header,
+        "━━━━━━━━━━━━━━━━━━━━",
+        f"🧾 <b>Mã đơn:</b> <code>{order_code}</code>",
+        f"👤 <b>Người nhận:</b> {rec_name}",
+    ]
+    if include_phone:
+        lines.append(f"📞 <b>SĐT nhận:</b> <code>{rec_phone}</code>")
+    lines.append(f"📦 <b>Hình thức:</b> {fulfillment_label}")
+    if include_address and fulfillment != "pickup":
+        lines.append(f"📍 <b>Địa chỉ:</b> {rec_addr}")
+    lines.extend([
+        f"⏰ <b>Thời gian nhận:</b> {del_date} | <b>{del_time}</b>",
+        f"💐 <b>Sản phẩm:</b>\n{items_str}",
+        f"💰 <b>Tổng thanh toán:</b> <b>{total_amount:,.0f}₫</b> ({pay_method})",
+    ])
+
+    if include_notes:
+        notes_val = (order.get("notes") or order.get("note") or "").strip()
+        card_val = (order.get("cardMessage") or (order.get("customization") or {}).get("cardMessage") or "").strip()
+        if card_val:
+            lines.append(f"💌 <b>Lời chúc thiệp:</b> {_html_lib.escape(card_val)}")
+        if notes_val and notes_val != card_val:
+            lines.append(f"📝 <b>Ghi chú đơn:</b> {_html_lib.escape(notes_val)}")
+
+    lines.append("━━━━━━━━━━━━━━━━━━━━")
+    lines.append(f"🔗 Tra cứu: <code>#order={order_code}</code>")
+    return "\n".join(lines)
+
+
+def send_telegram_message(bot_token: str, chat_id: str, text: str, parse_mode: str = "HTML", timeout: int = 6) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Gửi tin nhắn tới Telegram Channel / Group qua Telegram Bot HTTP API.
+    """
+    clean_token = (bot_token or "").strip()
+    clean_chat_id = (chat_id or "").strip()
+    if not clean_token:
+        return False, None, "Chưa cấu hình Telegram Bot Token"
+    if not clean_chat_id:
+        return False, None, "Chưa cấu hình Telegram Channel / Chat ID"
+
+    api_url = f"https://api.telegram.org/bot{clean_token}/sendMessage"
+    payload_bytes = json.dumps({
+        "chat_id": clean_chat_id,
+        "text": text,
+        "parse_mode": parse_mode or "HTML",
+        "disable_web_page_preview": True
+    }).encode("utf-8")
+
+    req = _urllib_request.Request(
+        api_url,
+        data=payload_bytes,
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+    try:
+        with _urllib_request.urlopen(req, timeout=timeout) as resp:
+            raw_body = resp.read().decode("utf-8", errors="replace")
+            resp_json = json.loads(raw_body) if raw_body else {}
+            status_code = getattr(resp, "status", None) or getattr(resp, "code", 200)
+            if (status_code in (200, 201) or getattr(resp, "status", None) is None) and resp_json.get("ok"):
+                return True, resp_json.get("result") or resp_json, None
+            return False, resp_json, resp_json.get("description") or "Telegram API trả về lỗi"
+    except _urllib_error.HTTPError as he:
+        try:
+            err_body = he.read().decode("utf-8", errors="replace")
+            err_json = json.loads(err_body)
+            desc = err_json.get("description") or f"HTTP {he.code}"
+        except Exception:
+            desc = f"HTTP {he.code}"
+        return False, None, f"Lỗi Telegram API: {desc}"
+    except Exception as e:
+        return False, None, f"Không thể kết nối Telegram API: {str(e)}"
+
+
+def send_telegram_test_notification(override_cfg: Optional[Dict[str, Any]] = None) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Gửi tin nhắn kiểm thử kết nối tới Telegram Channel từ trang Cấu Hình Hệ Thống.
+    """
+    saved_cfg = get_notify_config(use_cache=False)
+    tg_cfg = dict(saved_cfg.get("telegram") or {})
+    if isinstance(override_cfg, dict):
+        if isinstance(override_cfg.get("telegram"), dict):
+            tg_cfg.update(override_cfg["telegram"])
+        else:
+            tg_cfg.update(override_cfg)
+
+    bot_token = (tg_cfg.get("botToken") or "").strip()
+    chat_id = (tg_cfg.get("chatId") or "").strip()
+    channel_name = (tg_cfg.get("channelName") or chat_id or "Channel").strip()
+
+    sample_order = {
+        "orderCode": "TEST-NOTIFY-01",
+        "source": "livestream_quick_order",
+        "recipient": {
+            "name": "Nguyễn Thị Thu Hà (Đơn Test)",
+            "phone": "0909123456",
+            "address": "62A Nguyễn Hồng Đào, P. Tân Bình, TP.HCM"
+        },
+        "delivery": {
+            "deliveryDate": datetime.now().strftime("%Y-%m-%d"),
+            "timeSlot": f"{min(max(datetime.now().hour + 1, 8), 21):02d}:00",
+            "fulfillmentType": "delivery"
+        },
+        "items": [
+            {"productName": "Bó Hoa Hồng Ohara Pastel (Test Thông Báo)", "quantity": 1, "price": 650000}
+        ],
+        "totalAmount": 650000,
+        "paymentMethod": "VIETQR",
+        "cardMessage": "Chúc mừng sinh nhật rực rỡ!",
+        "notes": f"Tin nhắn kiểm thử kết nối kênh Telegram [{channel_name}] từ Nở Hoa Thả Bình."
+    }
+    msg_text = "🔔 <b>[KIỂM THỬ KẾT NỐI TELEGRAM CHANNEL]</b>\n" + format_telegram_order_message(sample_order, tg_cfg)
+    return send_telegram_message(bot_token, chat_id, msg_text, parse_mode=tg_cfg.get("parseMode") or "HTML")
+
+
+def notify_new_order(order: Dict[str, Any], async_send: bool = True) -> Tuple[bool, Optional[str]]:
+    """
+    Kiểm tra cấu hình notifyConfig.json và tự động gửi thông báo tới Telegram Channel
+    ngay sau khi có đơn hàng mới (Standard Order hoặc Quick Order).
+    Không bao giờ làm gián đoạn luồng tạo đơn của khách hàng nếu mạng lỗi.
+    """
+    try:
+        if not order or not isinstance(order, dict):
+            return False, "Đơn hàng không hợp lệ"
+
+        cfg = get_notify_config(use_cache=False)
+        if not cfg.get("enabled"):
+            return False, "Chức năng thông báo đang tắt"
+
+        source = (order.get("source") or "").lower()
+        is_quick = "live" in source or "quick" in source or (order.get("orderType") or "").lower() == "livestream"
+
+        if is_quick and not cfg.get("notifyOnQuickOrder", True):
+            return False, "Bỏ qua thông báo cho đơn đặt nhanh"
+        if not is_quick and not cfg.get("notifyOnStandardOrder", True):
+            return False, "Bỏ qua thông báo cho đơn thường"
+
+        tg = cfg.get("telegram") or {}
+        if not tg.get("enabled"):
+            return False, "Kênh Telegram đang tắt"
+
+        bot_token = (tg.get("botToken") or "").strip()
+        chat_id = (tg.get("chatId") or "").strip()
+        if not bot_token or not chat_id:
+            return False, "Thiếu botToken hoặc chatId Telegram"
+
+        msg_text = format_telegram_order_message(order, tg)
+        parse_mode = tg.get("parseMode") or "HTML"
+
+        if async_send:
+            t = _threading.Thread(
+                target=send_telegram_message,
+                args=(bot_token, chat_id, msg_text, parse_mode),
+                daemon=True
+            )
+            t.start()
+            return True, "Đã kích hoạt gửi thông báo Telegram bất đồng bộ"
+        else:
+            ok, _, err = send_telegram_message(bot_token, chat_id, msg_text, parse_mode)
+            return ok, err
+    except Exception as e:
+        return False, str(e)
 
