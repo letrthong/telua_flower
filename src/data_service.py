@@ -3780,3 +3780,23 @@ def save_notify_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict
         return True, current, None
     return False, None, "Không thể ghi file cấu hình notifyConfig.json"
 
+
+# ==========================================
+# GIÁM SÁT CỤM INSTANCES & LOAD BALANCER (instancesMonitor.json)
+# ==========================================
+from instance_monitor_service import (
+    get_cluster_monitor_data,
+    heartbeat_current_instance,
+    register_external_instance,
+    delete_instance,
+    prune_offline_instances,
+    update_cluster_settings,
+    increment_request_counter,
+    get_current_instance_id,
+    get_current_instance_name,
+    get_system_memory_info,
+    get_process_cpu_percent,
+    get_system_load_average
+)
+
+

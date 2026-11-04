@@ -18,6 +18,7 @@
 - **Tối ưu hiệu năng vượt trội:** Lazy Loading cho toàn bộ hình ảnh kết hợp hiệu ứng Skeleton Shimmer Loader chống giật layout (CLS).
 - **Bán hàng trực tiếp Live Stream & Chốt đơn tốc hành (Quick Order):** Hỗ trợ chia sẻ link hash `/#quick-order` chốt đơn trong 15s cho livestream (TikTok/Facebook Live), tự động tạo mã VietQR theo số tiền, chọn bó hoa ghim, đính kèm ảnh bill chuyển khoản và xuất dữ liệu ra file Excel/CSV chuẩn tiếng Việt UTF-8 BOM.
 - **Thông báo đơn hàng tự động qua Telegram Channel (`notifyConfig.json`):** Tự động bắn thông báo tức thì (kèm mã đơn, người nhận, số điện thoại, ngày giờ giao hoa, danh sách sản phẩm, số tiền chuyển khoản, ghi chú, thiệp chúc mừng và link tra cứu) vào kênh Telegram nội bộ của shop ngay khi có đơn hàng mới (cả Đơn đặt nhanh Live Stream và Đơn giỏ hàng Website).
+- **Giám sát cụm đa instance & Load Balancer (instancesMonitor.json):** Hỗ trợ kiến trúc mở rộng theo chiều ngang (scale-out) sau Load Balancer (Nginx, AWS ALB, Traefik). Mỗi instance tự động đăng ký thông tin (Host, Port, PID, Uptime, RAM, số request xử lý, nhịp tim Heartbeat) vào mảng JSON tập trung và hiển thị trực quan node đang phục vụ phiên làm việc.
 - **Thiết kế Responsive hoàn hảo:** Tương thích mượt mà trên mọi thiết bị: Mobile (iOS/Android), Tablet và Desktop.
 
 ---

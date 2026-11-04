@@ -285,6 +285,15 @@ export const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminNotifyConfig",
         action: "switchSystemConfigTab('notify')",
         roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "monitor",
+        label: "Giám Sát Cụm (Cluster Monitor)",
+        icon: "fa-solid fa-server",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminMonitorInstances",
+        action: "switchSystemConfigTab('monitor')",
+        roles: [ROLES.SUPER_ADMIN]
       }
     ]
   },

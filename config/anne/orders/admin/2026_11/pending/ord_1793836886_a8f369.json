@@ -1,0 +1,85 @@
+{
+  "id": "ord_1793836886_a8f369",
+  "orderCode": "LIVE-261105-571A",
+  "trackingCode": "096876878678",
+  "createdAt": "2026-11-05T00:01:26Z",
+  "orderDate": "2026-11-05",
+  "orderDay": "2026-11-05",
+  "livestreamDate": "2026-11-05",
+  "updatedAt": "2026-11-05T00:01:26Z",
+  "source": "livestream_quick_order",
+  "branchId": "admin",
+  "assignedBranchId": "admin",
+  "customerId": null,
+  "createdBy": "096876878678",
+  "assignedTo": "staff_admin",
+  "assignedBy": "system",
+  "status": "pending",
+  "notes": "",
+  "note": "",
+  "cardMessage": "",
+  "ribbonBanner": "",
+  "sender": {
+    "name": "c",
+    "realName": "c",
+    "phone": "096876878678",
+    "email": "",
+    "isAnonymous": false
+  },
+  "recipient": {
+    "name": "c",
+    "phone": "096876878678",
+    "address": "Nhận trực tiếp tại Shop",
+    "deliveryNotes": ""
+  },
+  "fulfillmentType": "pickup",
+  "deliveryDate": "2026-11-05",
+  "deliveryTime": "08:00",
+  "delivery": {
+    "deliveryDate": "2026-11-05",
+    "timeSlot": "08:00",
+    "isExpress2H": false,
+    "fulfillmentType": "pickup"
+  },
+  "requiresArranging": false,
+  "items": [
+    {
+      "productId": "test_b64_1788062614",
+      "productName": "Bình Hoa Gốm Nghệ Thuật Base64",
+      "price": 1500000,
+      "quantity": 1,
+      "itemTotal": 1500000,
+      "image": "/api/flower/v1/images/prod_1788076257_0a5d4c57.jpg"
+    }
+  ],
+  "financials": {
+    "subtotal": 1500000,
+    "arrangingFee": 0,
+    "shippingFee": 0,
+    "discountAmount": 0,
+    "totalAmount": 1500000
+  },
+  "totalAmount": 1500000,
+  "paymentMethod": "vietqr",
+  "payment": {
+    "method": "vietqr",
+    "status": "pending_confirmation",
+    "transferredAmount": 1500000,
+    "proofImage": "/api/flower/v1/images/proof_1793836885_1e112e20.jpg",
+    "transferContent": "LIVE-261105-571A"
+  },
+  "paymentProofImage": "/api/flower/v1/images/proof_1793836885_1e112e20.jpg",
+  "shareHash": "#order=LIVE-261105-571A",
+  "comments": [],
+  "history": [
+    {
+      "status": "pending",
+      "updatedAt": "2026-11-05T00:01:26Z",
+      "note": "Khách đặt đơn nhanh Live Stream. Mã đơn: LIVE-261105-571A. Số tiền đã chuyển: 1,500,000₫.",
+      "updatedBy": "096876878678"
+    }
+  ],
+  "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+  "creatorName": "c",
+  "assigneeName": "Super Admin (staff_admin)"
+}

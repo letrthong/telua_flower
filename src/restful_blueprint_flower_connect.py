@@ -5,6 +5,7 @@ Hỗ trợ url_prefix='/api/flower/v1' chuẩn hóa tương tự Lu Quan (/api/h
 
 import os
 import sys
+import time
 import logging
 from datetime import datetime
 from flask import Blueprint, jsonify, request, make_response, send_file
@@ -2482,4 +2483,125 @@ def api_admin_test_telegram_notify():
         "message": "Đã gửi tin nhắn kiểm thử tới Telegram Channel thành công!",
         "data": result_data
     }), 200
+
+
+# ==========================================
+# GIÁM SÁT CỤM INSTANCES & LOAD BALANCER (instancesMonitor.json)
+# ==========================================
+from instance_monitor_service import (
+    get_cluster_monitor_data,
+    heartbeat_current_instance,
+    register_external_instance,
+    delete_instance,
+    prune_offline_instances,
+    update_cluster_settings,
+    increment_request_counter,
+    get_current_instance_id
+)
+
+
+@flower_connect_api.route("/health", methods=["GET"])
+def api_public_health_check():
+    """
+    Điểm kiểm tra sức khỏe công khai (Healthcheck endpoint) dành riêng cho Load Balancer
+    (Nginx, AWS ALB, Traefik, HAProxy, Kubernetes Liveness/Readiness Probe).
+    """
+    increment_request_counter()
+    inst_id = get_current_instance_id()
+    return jsonify({
+        "status": "healthy",
+        "instanceId": inst_id,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    }), 200
+
+
+@flower_connect_api.route("/admin/monitor/instances", methods=["GET"])
+@require_role(["super_admin", "branch_manager"])
+def api_admin_get_monitor_instances():
+    """Lấy danh sách các instances trong cụm và trạng thái Load Balancer."""
+    increment_request_counter()
+    data = get_cluster_monitor_data(auto_heartbeat=True)
+    return jsonify({
+        "success": True,
+        "data": data
+    }), 200
+
+
+@flower_connect_api.route("/admin/monitor/heartbeat", methods=["POST"])
+def api_admin_post_monitor_heartbeat():
+    """Cập nhật heartbeat của instance hiện tại hoặc instance bên ngoài trong cụm."""
+    increment_request_counter()
+    payload = request.get_json(silent=True) or {}
+    if payload and isinstance(payload, dict) and payload.get("instanceId"):
+        ok, inst_data, err = register_external_instance(payload)
+        if not ok:
+            return jsonify({
+                "success": False,
+                "message": err or "Không thể ghi nhận heartbeat"
+            }), 400
+        return jsonify({
+            "success": True,
+            "data": inst_data
+        }), 200
+
+    current_data = heartbeat_current_instance()
+    return jsonify({
+        "success": True,
+        "data": current_data
+    }), 200
+
+
+@flower_connect_api.route("/admin/monitor/cluster-config", methods=["PUT"])
+@require_role(["super_admin"])
+def api_admin_update_cluster_config():
+    """Cập nhật cấu hình Cụm và thông số Load Balancer."""
+    increment_request_counter()
+    payload = request.get_json(silent=True) or {}
+    ok, updated, err = update_cluster_settings(payload)
+    if not ok:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể cập nhật cấu hình cụm"
+        }), 400
+    return jsonify({
+        "success": True,
+        "message": "Đã lưu cấu hình Cụm & Load Balancer thành công!",
+        "data": updated
+    }), 200
+
+
+@flower_connect_api.route("/admin/monitor/instances/<instance_id>", methods=["DELETE"])
+@require_role(["super_admin"])
+def api_admin_delete_instance(instance_id: str):
+    """Gỡ bỏ một instance khỏi danh sách cụm."""
+    increment_request_counter()
+    ok, err = delete_instance(instance_id)
+    if not ok:
+        return jsonify({
+            "success": False,
+            "message": err or "Không thể xóa instance"
+        }), 400
+    return jsonify({
+        "success": True,
+        "message": f"Đã gỡ bỏ instance '{instance_id}' khỏi danh sách cụm thành công!"
+    }), 200
+
+
+@flower_connect_api.route("/admin/monitor/cleanup-stale", methods=["POST"])
+@require_role(["super_admin"])
+def api_admin_cleanup_stale_instances():
+    """Dọn dẹp các instance đã offline khỏi danh sách cụm."""
+    increment_request_counter()
+    count, err = prune_offline_instances()
+    if err:
+        return jsonify({
+            "success": False,
+            "message": err
+        }), 400
+    return jsonify({
+        "success": True,
+        "message": f"Đã dọn dẹp thành công {count} instance(s) offline!",
+        "prunedCount": count
+    }), 200
+
 

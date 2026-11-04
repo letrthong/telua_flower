@@ -1,0 +1,27 @@
+[
+  {
+    "id": "ord_1793836886_a8f369",
+    "orderCode": "LIVE-261105-571A",
+    "createdAt": "2026-11-05T00:01:26Z",
+    "updatedAt": "2026-11-05T00:01:26Z",
+    "orderDate": "2026-11-05",
+    "livestreamDate": "2026-11-05",
+    "deliveryDate": "2026-11-05",
+    "deliveryTime": "08:00",
+    "timeSlot": "08:00",
+    "status": "pending",
+    "customerName": "c",
+    "phone": "096876878678",
+    "address": "Nhận trực tiếp tại Shop",
+    "totalAmount": 1500000.0,
+    "transferredAmount": 1500000.0,
+    "proofImage": "/api/flower/v1/images/proof_1793836885_1e112e20.jpg",
+    "paymentStatus": "pending_confirmation",
+    "branchId": "admin",
+    "branchName": "Tổng Quản Trị / Trung Tâm (Admin)",
+    "shipperName": "",
+    "shipperPhone": "",
+    "notes": "",
+    "comments": []
+  }
+]

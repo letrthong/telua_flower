@@ -3999,6 +3999,10 @@
                     class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer">
                     <i class="fa-solid fa-bell mr-1.5 text-base text-sky-500"></i> Thông Báo (Notify)
                 </button>
+                <button onclick="switchSystemConfigTab('monitor')" id="tabSysBtnMonitor"
+                    class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer">
+                    <i class="fa-solid fa-server mr-1.5 text-base text-emerald-500"></i> Giám Sát Cụm (Monitor)
+                </button>
             </div>
 
             <!-- Modal Body (Scrollable) -->
@@ -5246,6 +5250,378 @@
                         </div>
                     </div>
                 </section>
+                <!-- ================= TAB 9: GIÁM SÁT CỤM INSTANCES & LOAD BALANCER (CLUSTER MONITOR - instancesMonitor.json) ================= -->
+                <section id="tabSysContentMonitor" class="space-y-6 hidden">
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner border border-emerald-100">
+                                <i class="fa-solid fa-server"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="text-sm font-bold text-gray-800">Giám Sát Cụm Đa Instance & Load Balancer (instancesMonitor.json)</h4>
+                                    <span id="clusterHealthBadge"
+                                        class="inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <i class="fa-solid fa-circle-notch fa-spin mr-1 text-[8px] text-emerald-500"></i> Đang nạp...
+                                    </span>
+                                </div>
+                                <p class="text-[11px] text-gray-500 mt-0.5">Theo dõi thời gian thực các node chạy sau Load Balancer, tài nguyên RAM/CPU, heartbeat và node đang phục vụ phiên này.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+                            <label class="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition">
+                                <input type="checkbox" id="monitorAutoRefreshToggle" onchange="toggleMonitorAutoRefresh(this.checked)" class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
+                                <span class="font-medium text-[11px]">Tự làm mới (15s)</span>
+                            </label>
+                            <button type="button" onclick="cleanupAllStaleInstances()"
+                                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                                <i class="fa-solid fa-broom text-gray-500"></i> Dọn Node Cũ
+                            </button>
+                            <button type="button" onclick="loadAdminMonitorInstances(true)"
+                                class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-arrows-rotate"></i> Làm Mới
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4 KPI Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- KPI 1: Tổng Nodes -->
+                        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg border border-blue-100 flex-shrink-0">
+                                <i class="fa-solid fa-network-wired"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tổng Số Instances</div>
+                                <div class="text-xl font-extrabold text-gray-900 mt-0.5"><span id="monStatTotalNodes">0</span> <span class="text-xs font-normal text-gray-500">nodes</span></div>
+                                <div class="text-[10px] text-gray-500 truncate mt-0.5" id="monStatRoleBreakdown">Cấu hình array đa node</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 2: Trạng thái Online -->
+                        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg border border-emerald-100 flex-shrink-0">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nodes Hoạt Động</div>
+                                <div class="text-xl font-extrabold text-emerald-600 mt-0.5"><span id="monStatOnlineNodes">0</span> / <span id="monStatTotalNodes2" class="text-gray-400 text-sm font-semibold">0</span></div>
+                                <div class="text-[10px] text-gray-500 truncate mt-0.5" id="monStatDegradedOffline">0 trễ • 0 offline</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 3: Current Node -->
+                        <div class="bg-white p-4 rounded-2xl border border-purple-200 shadow-2xs flex items-center space-x-3.5 bg-gradient-to-br from-purple-50/50 to-white">
+                            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg border border-purple-200 flex-shrink-0">
+                                <i class="fa-solid fa-microchip"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] font-bold text-purple-600 uppercase tracking-wider flex items-center gap-1">
+                                    <span>Node Phản Hồi Hiện Tại</span>
+                                </div>
+                                <div class="text-xs font-mono font-extrabold text-gray-900 truncate mt-0.5" id="monStatCurrentNodeId">...</div>
+                                <div class="text-[10px] text-purple-700 truncate mt-0.5" id="monStatCurrentNodeSub">Load Balancer định tuyến đến</div>
+                            </div>
+                        </div>
+
+                        <!-- KPI 4: Tài nguyên & Lưu lượng -->
+                        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-2xs flex items-center space-x-3.5">
+                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg border border-amber-100 flex-shrink-0">
+                                <i class="fa-solid fa-memory"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tổng RAM / Requests</div>
+                                <div class="text-xl font-extrabold text-gray-900 mt-0.5" id="monStatTotalMem">0 MB</div>
+                                <div class="text-[10px] text-gray-500 truncate mt-0.5"><span id="monStatTotalReqs" class="font-semibold text-gray-700">0</span> requests đã xử lý</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách Instances Table -->
+                    <div class="bg-white rounded-2xl border border-gray-200 shadow-2xs overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                            <div>
+                                <h5 class="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-cubes text-emerald-600"></i> Danh Sách Các Instance Trong Cụm (Cluster Nodes)
+                                </h5>
+                                <p class="text-[11px] text-gray-500 mt-0.5">Mỗi instance khi khởi chạy hoặc nhận request đều tự động cập nhật ngày & nhịp tim vào mảng <code>instancesMonitor.json</code>. Các node không cập nhật sau <strong>1 tuần (7 ngày)</strong> sẽ được hệ thống tự động dọn dẹp sạch.</p>
+                            </div>
+                            <div class="text-[11px] font-mono text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200">
+                                Health Check: <code class="text-emerald-600">/api/flower/v1/health</code>
+                            </div>
+                        </div>
+                        <div id="adminMonitorInstancesList" class="p-0">
+                            <!-- Injected by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Cấu Hình Cụm & Load Balancer -->
+                    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-2xs space-y-4">
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-100 flex-wrap gap-2">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-base border border-indigo-100">
+                                    <i class="fa-solid fa-sliders"></i>
+                                </div>
+                                <div>
+                                    <h5 class="font-bold text-xs sm:text-sm text-gray-800 uppercase tracking-wide">Cấu Hình Cụm & Cân Bằng Tải (Load Balancer Settings)</h5>
+                                    <p class="text-[11px] text-gray-500">Thiết lập các thông số heartbeat, ngưỡng offline và thông tin Load Balancer tầng trước.</p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="saveAdminClusterConfig()"
+                                class="px-4 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình Cụm
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Tên Cụm Hệ Thống (Cluster Name)</label>
+                                <input type="text" id="clusterNameInput" placeholder="Nở Hoa Thả Bình - Production Cluster"
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-emerald-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Nhà Cung Cấp Load Balancer</label>
+                                <input type="text" id="clusterLbProviderInput" placeholder="Nginx / Cloudflare / AWS ALB / Traefik"
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-emerald-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Thuật Toán Cân Bằng Tải</label>
+                                <select id="clusterLbAlgorithmSelect"
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-emerald-500">
+                                    <option value="Round Robin">Round Robin (Mặc định)</option>
+                                    <option value="Least Connections">Least Connections (Ưu tiên ít kết nối)</option>
+                                    <option value="IP Hash">IP Hash (Duy trì session theo IP)</option>
+                                    <option value="Random">Random (Ngẫu nhiên)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Chu Kỳ Gửi Heartbeat (Giây)</label>
+                                <input type="number" id="clusterHeartbeatIntervalInput" min="5" max="300" value="30"
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-emerald-500">
+                                <p class="text-[10px] text-gray-400 mt-1">Khoảng thời gian mỗi instance cập nhật nhịp tim định kỳ.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Ngưỡng Timeout Coi Là Offline (Giây)</label>
+                                <input type="number" id="clusterStaleTimeoutInput" min="15" max="600" value="90"
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-emerald-500">
+                                <p class="text-[10px] text-gray-400 mt-1">Nếu quá thời gian này instance không có nhịp tim sẽ chuyển sang Offline.</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">
+                                    <i class="fa-regular fa-calendar-xmark text-red-500 mr-1"></i> Tự Động Xóa Node Cũ Sau (Ngày)
+                                </label>
+                                <input type="number" id="clusterAutoPruneDaysInput" min="1" max="30" value="7"
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-emerald-500">
+                                <p class="text-[10px] text-gray-400 mt-1">Mặc định 7 ngày (1 tuần): Các node không cập nhật quá 7 ngày sẽ tự động xóa sạch.</p>
+                            </div>
+
+                            <div class="flex items-center pt-5">
+                                <label class="flex items-center gap-2.5 cursor-pointer">
+                                    <input type="checkbox" id="clusterLbEnabledToggle" checked class="w-4 h-4 accent-emerald-600 rounded">
+                                    <span class="text-xs font-bold text-gray-800">Kích Hoạt Chế Độ Cụm Phân Tải (Cluster Mode)</span>
+                                </label>
+                            </div>
+
+                            <div class="sm:col-span-2 lg:col-span-3">
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Ghi Chú Triển Khai / Môi Trường</label>
+                                <input type="text" id="clusterNotesInput" placeholder="Ví dụ: Cụm Docker Swarm trên VPS OVH + AWS ALB phân phối lưu lượng"
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:bg-white focus:border-emerald-500">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL CHI TIẾT INSTANCE & TÀI NGUYÊN CPU / RAM ================= -->
+    <div id="clusterInstanceDetailModal" onclick="if (event.target === this) closeClusterInstanceDetailModal();"
+        class="fixed inset-0 bg-black/75 backdrop-blur-sm z-[230] items-center justify-center p-3 sm:p-4 overflow-y-auto"
+        style="display: none;">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-sky-100 flex flex-col animate-fadeIn my-auto max-h-[90vh]">
+            <!-- Header -->
+            <div class="px-6 py-4 bg-gradient-to-r from-sky-50 via-slate-50 to-white border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center text-lg shadow-sm flex-shrink-0">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 id="instanceDetailTitle" class="font-bold text-base text-gray-800 truncate">Chi Tiết Instance</h3>
+                            <span id="instanceDetailStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 flex-shrink-0">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online
+                            </span>
+                        </div>
+                        <p id="instanceDetailSubtitle" class="text-xs text-gray-500 font-mono mt-0.5 truncate">ID: node-xxx | Host: 127.0.0.1:5000</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button type="button" onclick="refreshCurrentInstanceDetail()" title="Làm mới thông số node"
+                        class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-500 hover:text-sky-600 border border-gray-200 flex items-center justify-center transition cursor-pointer">
+                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                    </button>
+                    <button type="button" onclick="closeClusterInstanceDetailModal()"
+                        class="w-8 h-8 rounded-full bg-white hover:bg-gray-100 text-gray-400 hover:text-gray-700 border border-gray-200 flex items-center justify-center transition cursor-pointer">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1">
+                <!-- CPU & RAM Resource Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- CPU Card -->
+                    <div class="p-4 rounded-xl border border-sky-100 bg-sky-50/50 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-sky-800 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-microchip text-sky-600"></i> CPU Tải Tiến Trình
+                                </span>
+                                <span id="instanceDetailCpuValue" class="text-xl font-black text-sky-700 font-mono">0.0%</span>
+                            </div>
+                            <!-- CPU Progress Bar -->
+                            <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden mb-2">
+                                <div id="instanceDetailCpuBar" class="bg-sky-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                            <span id="instanceDetailCpuCores"><i class="fa-solid fa-layer-group text-sky-500 mr-1"></i>Số Cores: 1</span>
+                            <span id="instanceDetailLoadAvg" class="font-mono text-gray-500">Load: N/A</span>
+                        </div>
+                    </div>
+
+                    <!-- RAM Card -->
+                    <div class="p-4 rounded-xl border border-purple-100 bg-purple-50/50 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-purple-800 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-memory text-purple-600"></i> RAM Tiến Trình (RSS)
+                                </span>
+                                <span id="instanceDetailRamValue" class="text-xl font-black text-purple-700 font-mono">-- MB</span>
+                            </div>
+                            <!-- RAM Progress Bar -->
+                            <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden mb-2">
+                                <div id="instanceDetailRamBar" class="bg-purple-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-gray-600 mt-1">
+                            <span id="instanceDetailSysRamTotal"><i class="fa-solid fa-server text-purple-500 mr-1"></i>RAM Máy Chủ: -- GB</span>
+                            <span id="instanceDetailSysRamUsage" class="font-mono text-gray-500">Hệ thống: --%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thông Tin Hạ Tầng & Kết Nối (Grid 2 cột) -->
+                <div class="bg-gray-50/80 rounded-xl p-4 border border-gray-200">
+                    <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-network-wired text-gray-500"></i> Thông Tin Hạ Tầng & Kết Nối
+                    </h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Instance ID:</span>
+                            <span id="instanceDetailId" class="font-mono font-bold text-gray-800 select-all">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Tên Node / Worker:</span>
+                            <span id="instanceDetailName" class="font-semibold text-gray-800">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Vai trò (Role):</span>
+                            <span id="instanceDetailRole" class="font-mono text-gray-800 font-bold">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Địa chỉ Host / Port:</span>
+                            <span id="instanceDetailHostPort" class="font-mono text-gray-800 font-bold">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Process PID:</span>
+                            <span id="instanceDetailPid" class="font-mono text-gray-800 font-bold">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Lượt Requests Đã Xử Lý:</span>
+                            <span id="instanceDetailRequests" class="font-mono text-emerald-700 font-bold">0</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Thời Gian Khởi Động:</span>
+                            <span id="instanceDetailStartTime" class="text-gray-800">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Thời Lượng Hoạt Động (Uptime):</span>
+                            <span id="instanceDetailUptime" class="text-gray-800 font-semibold">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Ngày Cập Nhật:</span>
+                            <span id="instanceDetailUpdatedDate" class="text-gray-800 font-bold">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Nhịp Tim Cuối (Heartbeat):</span>
+                            <span id="instanceDetailLastHb" class="text-gray-800">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Môi Trường & Hệ Điều Hành -->
+                <div class="bg-gray-50/80 rounded-xl p-4 border border-gray-200">
+                    <h5 class="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                        <i class="fa-brands fa-linux text-gray-500"></i> Môi Trường & Phần Mềm
+                    </h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Hệ Điều Hành (OS):</span>
+                            <span id="instanceDetailOs" class="text-gray-800 truncate max-w-[200px]" title="">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Python Version:</span>
+                            <span id="instanceDetailPython" class="font-mono text-gray-800 font-bold">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Phiên Bản Ứng Dụng:</span>
+                            <span id="instanceDetailVersion" class="font-mono text-gray-800 font-bold">--</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/80">
+                            <span class="text-gray-500">Ghi Chú:</span>
+                            <span id="instanceDetailNotes" class="text-gray-800 italic">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Raw JSON Accordion -->
+                <div class="border border-gray-200 rounded-xl overflow-hidden">
+                    <button type="button" onclick="toggleInstanceJsonView()"
+                        class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 flex items-center justify-between text-xs font-bold text-gray-700 transition cursor-pointer">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-code text-gray-500"></i> Xem Dữ Liệu Raw JSON
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <span id="instanceJsonToggleIcon" class="text-xs text-gray-500"><i class="fa-solid fa-chevron-down"></i></span>
+                        </div>
+                    </button>
+                    <div id="instanceJsonContainer" class="hidden p-3 bg-gray-900 relative">
+                        <button type="button" onclick="copyCurrentInstanceJson()"
+                            class="absolute top-2 right-2 px-2.5 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-200 text-[10px] font-bold border border-gray-700 transition flex items-center gap-1 cursor-pointer">
+                            <i class="fa-regular fa-copy"></i> Sao chép
+                        </button>
+                        <pre id="instanceRawJson" class="text-[11px] font-mono text-emerald-400 overflow-x-auto p-1 max-h-60 select-all whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center flex-shrink-0">
+                <span class="text-[11px] text-gray-500">
+                    <i class="fa-solid fa-shield-halved text-sky-600 mr-1"></i> Giám sát tải đa node tự động
+                </span>
+                <button type="button" onclick="closeClusterInstanceDetailModal()"
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-xl transition cursor-pointer">
+                    Đóng
+                </button>
             </div>
         </div>
     </div>
@@ -7480,7 +7856,7 @@
     </div>
 
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="/js/bundle.js?v=20261102_03"></script>
+    <script src="/js/bundle.js?v=20261105_01"></script>
 </body>
 
 </html>

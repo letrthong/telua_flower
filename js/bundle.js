@@ -1781,6 +1781,15 @@ const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminNotifyConfig",
         action: "switchSystemConfigTab('notify')",
         roles: [ROLES.SUPER_ADMIN]
+      },
+      {
+        tabKey: "monitor",
+        label: "Giám Sát Cụm (Cluster Monitor)",
+        icon: "fa-solid fa-server",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminMonitorInstances",
+        action: "switchSystemConfigTab('monitor')",
+        roles: [ROLES.SUPER_ADMIN]
       }
     ]
   },
@@ -15192,12 +15201,642 @@ function toggleTelegramTokenVisibility() {
     }
 }
 
+// ==========================================
+// CẤU HÌNH GIÁM SÁT CỤM INSTANCES & LOAD BALANCER (instancesMonitor.json)
+// ==========================================
+
+let adminClusterMonitorData = null;
+let monitorAutoRefreshTimer = null;
+
+async function loadAdminMonitorInstances(showLoading = true) {
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    const listEl = document.getElementById("adminMonitorInstancesList");
+    const healthBadge = document.getElementById("clusterHealthBadge");
+
+    if (showLoading && listEl) {
+        listEl.innerHTML = `
+            <div class="p-8 text-center text-gray-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-500 mb-2"></i>
+                <p class="text-xs font-medium">Đang tải trạng thái các instance trong cụm...</p>
+            </div>
+        `;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/monitor/instances?_t=${Date.now()}`, {
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success || !json.data) {
+            throw new Error(json.message || "Không thể tải danh sách instance");
+        }
+        adminClusterMonitorData = json.data;
+        renderAdminMonitorInstances(adminClusterMonitorData);
+    } catch (e) {
+        if (listEl) {
+            listEl.innerHTML = `
+                <div class="p-6 text-center text-red-500 bg-red-50/50 rounded-xl border border-red-100">
+                    <i class="fa-solid fa-triangle-exclamation text-xl mb-1 text-red-400"></i>
+                    <p class="text-xs font-bold">Lỗi nạp dữ liệu giám sát cụm: ${e.message}</p>
+                </div>
+            `;
+        }
+        if (healthBadge) {
+            healthBadge.className = "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+            healthBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-red-500"></i> Mất kết nối`;
+        }
+    }
+}
+
+function formatUptimeDuration(seconds) {
+    if (!seconds || seconds <= 0) return "0s";
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+}
+
+function formatHeartbeatAge(ageSec) {
+    if (typeof ageSec !== "number" || ageSec < 0) return "Không rõ";
+    if (ageSec < 5) return "vừa xong";
+    if (ageSec < 60) return `${ageSec}s trước`;
+    const m = Math.floor(ageSec / 60);
+    if (m < 60) return `${m}m trước`;
+    const h = Math.floor(m / 60);
+    return `${h}h trước`;
+}
+
+function formatDateTimeDisplay(isoStr) {
+    if (!isoStr) return "N/A";
+    try {
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return isoStr;
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, "0");
+        const min = String(d.getMinutes()).padStart(2, "0");
+        const ss = String(d.getSeconds()).padStart(2, "0");
+        return `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+    } catch (_) {
+        return isoStr;
+    }
+}
+
+function renderAdminMonitorInstances(data) {
+    if (!data) return;
+    const stats = data.stats || {};
+    const instances = Array.isArray(data.instances) ? data.instances : [];
+    const lb = data.loadBalancer || {};
+
+    // 1. Health Badge
+    const healthBadge = document.getElementById("clusterHealthBadge");
+    if (healthBadge) {
+        const health = stats.clusterHealth || "healthy";
+        if (health === "healthy") {
+            healthBadge.className = "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+            healthBadge.innerHTML = `<i class="fa-solid fa-circle-check mr-1 text-[8px] text-emerald-500 animate-pulse"></i> Cụm Khỏe Mạnh (${stats.onlineInstances}/${stats.totalInstances} nodes online)`;
+        } else if (health === "warning") {
+            healthBadge.className = "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200";
+            healthBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1 text-[8px] text-amber-500"></i> Cảnh Báo (${stats.degradedInstances || 0} node trễ, ${stats.offlineInstances || 0} offline)`;
+        } else {
+            healthBadge.className = "inline-flex items-center text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200";
+            healthBadge.innerHTML = `<i class="fa-solid fa-circle-xmark mr-1 text-[8px] text-red-500"></i> Nghiêm Trọng (Không có node online)`;
+        }
+    }
+
+    // 2. KPI Cards
+    const elTot = document.getElementById("monStatTotalNodes");
+    const elTot2 = document.getElementById("monStatTotalNodes2");
+    const elOnl = document.getElementById("monStatOnlineNodes");
+    const elCurr = document.getElementById("monStatCurrentNodeId");
+    const elCurrSub = document.getElementById("monStatCurrentNodeSub");
+    const elDegOff = document.getElementById("monStatDegradedOffline");
+    const elMem = document.getElementById("monStatTotalMem");
+    const elReqs = document.getElementById("monStatTotalReqs");
+
+    if (elTot) elTot.textContent = stats.totalInstances || 0;
+    if (elTot2) elTot2.textContent = stats.totalInstances || 0;
+    if (elOnl) elOnl.textContent = stats.onlineInstances || 0;
+    if (elDegOff) {
+        elDegOff.textContent = `${stats.degradedInstances || 0} node trễ • ${stats.offlineInstances || 0} offline`;
+    }
+    if (elCurr) {
+        elCurr.textContent = data.currentInstanceId || "node-default";
+    }
+    if (elCurrSub) {
+        elCurrSub.textContent = `Tên: ${data.currentInstanceName || "Local Node"} • Phản hồi phiên này`;
+    }
+    if (elMem) {
+        elMem.textContent = stats.totalMemoryMb ? `${stats.totalMemoryMb} MB` : "N/A";
+    }
+    if (elReqs) {
+        elReqs.textContent = (stats.totalRequests || 0).toLocaleString();
+    }
+
+    // 3. Cluster Settings Form Inputs
+    const clusterNameInput = document.getElementById("clusterNameInput");
+    const clusterLbEnabled = document.getElementById("clusterLbEnabledToggle");
+    const clusterLbProvider = document.getElementById("clusterLbProviderInput");
+    const clusterLbAlgo = document.getElementById("clusterLbAlgorithmSelect");
+    const clusterHbInterval = document.getElementById("clusterHeartbeatIntervalInput");
+    const clusterStaleTimeout = document.getElementById("clusterStaleTimeoutInput");
+    const clusterAutoPrune = document.getElementById("clusterAutoPruneDaysInput");
+    const clusterNotes = document.getElementById("clusterNotesInput");
+
+    if (clusterNameInput) clusterNameInput.value = data.clusterName || "";
+    if (clusterLbEnabled) clusterLbEnabled.checked = lb.enabled !== false;
+    if (clusterLbProvider) clusterLbProvider.value = lb.provider || "Nginx / Cloudflare / AWS ALB";
+    if (clusterLbAlgo) clusterLbAlgo.value = lb.algorithm || "Round Robin";
+    if (clusterHbInterval) clusterHbInterval.value = data.heartbeatIntervalSeconds || 30;
+    if (clusterStaleTimeout) clusterStaleTimeout.value = data.staleTimeoutSeconds || 90;
+    if (clusterAutoPrune) clusterAutoPrune.value = data.autoPruneDays || 7;
+    if (clusterNotes) clusterNotes.value = lb.notes || "";
+
+    // 4. Instances List
+    const listEl = document.getElementById("adminMonitorInstancesList");
+    if (!listEl) return;
+
+    if (instances.length === 0) {
+        listEl.innerHTML = `
+            <div class="p-8 text-center text-gray-400 bg-white rounded-xl border border-gray-100">
+                <i class="fa-solid fa-server text-3xl mb-2 text-gray-300"></i>
+                <p class="text-xs font-semibold text-gray-600">Chưa có instance nào đăng ký vào cụm</p>
+                <p class="text-[11px] text-gray-400 mt-1">Instance hiện tại sẽ tự động ghi nhận khi bạn tải lại trang.</p>
+            </div>
+        `;
+        return;
+    }
+
+    let rowsHtml = "";
+    instances.forEach((inst) => {
+        const isCurrent = !!inst.isCurrentInstance;
+        const status = inst.status || "offline";
+        const uptimeStr = formatUptimeDuration(inst.uptimeSeconds);
+        const ageStr = formatHeartbeatAge(inst.ageSeconds);
+        const lastUpdatedFormatted = formatDateTimeDisplay(inst.updatedAt || inst.lastHeartbeat);
+
+        let statusBadge = "";
+        let rowBorder = "border-gray-100";
+        if (status === "online") {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <i class="fa-solid fa-circle text-[7px] text-emerald-500 mr-1 animate-pulse"></i> Online
+            </span>`;
+        } else if (status === "degraded") {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                <i class="fa-solid fa-triangle-exclamation text-[7px] text-amber-500 mr-1"></i> Trễ (${ageStr})
+            </span>`;
+            rowBorder = "border-amber-200 bg-amber-50/20";
+        } else {
+            statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-300">
+                <i class="fa-solid fa-circle-xmark text-[7px] text-gray-400 mr-1"></i> Offline (${ageStr})
+            </span>`;
+            rowBorder = "border-red-100 bg-gray-50/40";
+        }
+
+        const currentBadge = isCurrent ? `
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase bg-primary text-white shadow-2xs">
+                <i class="fa-solid fa-star text-[8px] mr-1 text-yellow-300"></i> Đang Phục Vụ Bạn
+            </span>
+        ` : "";
+
+        const memDisplay = inst.memoryMb ? `${inst.memoryMb} MB` : "N/A";
+        const reqDisplay = typeof inst.requestCount === "number" ? inst.requestCount.toLocaleString() : "0";
+        const hostDisplay = `${inst.host || "0.0.0.0"}:${inst.port || 5000}`;
+
+        rowsHtml += `
+            <tr class="hover:bg-gray-50/70 transition border-b ${rowBorder}">
+                <td class="px-4 py-3 text-left">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-bold text-xs text-gray-900">${inst.name || inst.instanceId}</span>
+                        ${currentBadge}
+                    </div>
+                    <div class="text-[10px] font-mono text-gray-400 mt-0.5 flex items-center gap-2">
+                        <span>ID: ${inst.instanceId}</span>
+                        <span>•</span>
+                        <span>PID: ${inst.pid || "N/A"}</span>
+                        <span>•</span>
+                        <span class="px-1.5 py-0.2 rounded bg-gray-100 text-gray-600 font-sans">${inst.role || "worker"}</span>
+                    </div>
+                    ${inst.notes ? `<div class="text-[10px] text-gray-500 italic mt-0.5">${inst.notes}</div>` : ""}
+                </td>
+                <td class="px-3 py-3 text-left">
+                    <span class="font-mono text-xs text-gray-700 bg-gray-100 px-2 py-0.5 rounded">${hostDisplay}</span>
+                </td>
+                <td class="px-3 py-3 text-center">
+                    ${statusBadge}
+                    <div class="text-[10px] text-gray-400 mt-0.5">${ageStr}</div>
+                </td>
+                <td class="px-3 py-3 text-left text-xs">
+                    <div class="font-semibold text-gray-800 flex items-center gap-1.5">
+                        <i class="fa-regular fa-calendar-check text-emerald-600 text-[10px]"></i>
+                        <span>${lastUpdatedFormatted}</span>
+                    </div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">Ngày: ${inst.updatedDate || "N/A"}</div>
+                </td>
+                <td class="px-3 py-3 text-left text-xs">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-sky-50 text-sky-700 border border-sky-200" title="Mức tải CPU tiến trình">
+                            <i class="fa-solid fa-microchip text-[10px]"></i> ${typeof inst.cpuPercent === 'number' ? inst.cpuPercent.toFixed(1) + '%' : '0.0%'}
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-purple-50 text-purple-700 border border-purple-200" title="Bộ nhớ RAM tiến trình (RSS)">
+                            <i class="fa-solid fa-memory text-[10px]"></i> ${memDisplay}
+                        </span>
+                    </div>
+                    <div class="text-[10px] text-gray-500 mt-1 font-mono">Xử lý: ${reqDisplay} reqs</div>
+                </td>
+                <td class="px-3 py-3 text-left text-xs">
+                    <div class="font-semibold text-gray-700">Uptime: ${uptimeStr}</div>
+                    <div class="text-[10px] text-gray-400 font-mono mt-0.5 truncate max-w-[130px]" title="${inst.os || ''}">${inst.os || 'Linux/Windows'}</div>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                    <div class="flex items-center justify-end gap-1.5">
+                        <button type="button" onclick="openClusterInstanceDetailModal('${inst.instanceId}')"
+                            title="Xem chi tiết & tài nguyên CPU / RAM"
+                            class="px-2.5 py-1.5 rounded-lg text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 transition cursor-pointer text-xs flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-chart-simple"></i> Chi Tiết
+                        </button>
+                        ${!isCurrent ? `
+                            <button type="button" onclick="pruneOfflineInstance('${inst.instanceId}')"
+                                title="Xóa node khỏi danh sách"
+                                class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer text-xs">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    listEl.innerHTML = `
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100/80 text-[11px] font-bold text-gray-600 uppercase border-b border-gray-200">
+                        <th class="px-4 py-2.5">Node / Instance</th>
+                        <th class="px-3 py-2.5">Host & Port</th>
+                        <th class="px-3 py-2.5 text-center">Trạng Thái</th>
+                        <th class="px-3 py-2.5">Ngày Cập Nhật</th>
+                        <th class="px-3 py-2.5">Tài Nguyên</th>
+                        <th class="px-3 py-2.5">Thời Gian Chạy</th>
+                        <th class="px-3 py-2.5 text-right">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                    ${rowsHtml}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+async function saveAdminClusterConfig() {
+    const clusterName = (document.getElementById("clusterNameInput")?.value || "").trim();
+    const lbEnabled = !!document.getElementById("clusterLbEnabledToggle")?.checked;
+    const provider = (document.getElementById("clusterLbProviderInput")?.value || "").trim();
+    const algorithm = (document.getElementById("clusterLbAlgorithmSelect")?.value || "").trim();
+    const hbInterval = parseInt(document.getElementById("clusterHeartbeatIntervalInput")?.value || "30", 10);
+    const staleTimeout = parseInt(document.getElementById("clusterStaleTimeoutInput")?.value || "90", 10);
+    const autoPruneDays = parseInt(document.getElementById("clusterAutoPruneDaysInput")?.value || "7", 10);
+    const notes = (document.getElementById("clusterNotesInput")?.value || "").trim();
+
+    const payload = {
+        clusterName: clusterName || "No Hoa Tha Binh Production Cluster",
+        heartbeatIntervalSeconds: hbInterval,
+        staleTimeoutSeconds: staleTimeout,
+        autoPruneDays: autoPruneDays,
+        loadBalancer: {
+            enabled: lbEnabled,
+            provider: provider,
+            algorithm: algorithm,
+            notes: notes
+        }
+    };
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang lưu cấu hình Cụm & Load Balancer (instancesMonitor.json)...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/monitor/cluster-config`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể lưu cấu hình cụm");
+        }
+        notifyUser(json.message || "Đã lưu cấu hình Cụm & Load Balancer thành công!", "success");
+        await loadAdminMonitorInstances(false);
+    } catch (e) {
+        notifyUser("Lỗi lưu cấu hình: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+async function pruneOfflineInstance(instanceId) {
+    if (!instanceId) return;
+    if (!confirm(`Bạn có chắc chắn muốn gỡ bỏ instance '${instanceId}' khỏi cấu hình cụm?`)) {
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen(`Đang gỡ bỏ instance ${instanceId}...`);
+    try {
+        const res = await fetch(`${API_BASE}/admin/monitor/instances/${encodeURIComponent(instanceId)}`, {
+            method: "DELETE",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {}
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể xóa instance");
+        }
+        notifyUser(json.message || `Đã gỡ bỏ instance ${instanceId} thành công!`, "success");
+        await loadAdminMonitorInstances(false);
+    } catch (e) {
+        notifyUser("Lỗi: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+async function cleanupAllStaleInstances() {
+    if (!confirm("Hệ thống sẽ dọn dẹp toàn bộ các instance đang ở trạng thái Offline khỏi danh sách. Bạn có muốn tiếp tục?")) {
+        return;
+    }
+
+    const token = typeof getAuthToken === "function" ? getAuthToken() : "";
+    lockScreen("Đang dọn dẹp các node offline...");
+    try {
+        const res = await fetch(`${API_BASE}/admin/monitor/cleanup-stale`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            }
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || "Không thể dọn dẹp node offline");
+        }
+        notifyUser(json.message || "Đã dọn dẹp thành công!", "success");
+        await loadAdminMonitorInstances(false);
+    } catch (e) {
+        notifyUser("Lỗi: " + e.message, "error");
+    } finally {
+        unlockScreen();
+    }
+}
+
+function toggleMonitorAutoRefresh(enable) {
+    if (monitorAutoRefreshTimer) {
+        clearInterval(monitorAutoRefreshTimer);
+        monitorAutoRefreshTimer = null;
+    }
+    if (enable) {
+        monitorAutoRefreshTimer = setInterval(() => {
+            const modal = document.getElementById("systemConfigModal");
+            const content = document.getElementById("tabSysContentMonitor");
+            if (modal && !modal.classList.contains("hidden") && content && !content.classList.contains("hidden")) {
+                loadAdminMonitorInstances(false);
+            }
+        }, 15000);
+        notifyUser("Đã bật tự động làm mới trạng thái cụm mỗi 15 giây.", "info");
+    }
+}
+
+let currentViewingInstanceId = null;
+
+function openClusterInstanceDetailModal(instanceId) {
+    if (!adminClusterMonitorData || !Array.isArray(adminClusterMonitorData.instances)) return;
+    const inst = adminClusterMonitorData.instances.find(x => x.instanceId === instanceId);
+    if (!inst) {
+        notifyUser("Không tìm thấy thông tin instance: " + instanceId, "warning");
+        return;
+    }
+    currentViewingInstanceId = instanceId;
+
+    const modal = document.getElementById("clusterInstanceDetailModal");
+    if (!modal) {
+        alert(`[Chi tiết Instance: ${inst.name || inst.instanceId}]\n\n` + JSON.stringify(inst, null, 2));
+        return;
+    }
+
+    const isCurrent = adminClusterMonitorData && adminClusterMonitorData.currentInstanceId === inst.instanceId;
+    const status = (inst.status || "offline").toLowerCase();
+
+    // 1. Header elements
+    const titleEl = document.getElementById("instanceDetailTitle");
+    if (titleEl) {
+        const safeName = String(inst.name || inst.instanceId).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        titleEl.innerHTML = `${safeName} ${isCurrent ? '<span class="text-xs font-normal text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 ml-1.5"><i class="fa-solid fa-bolt mr-1"></i>Node Hiện Tại</span>' : ''}`;
+    }
+
+    const subEl = document.getElementById("instanceDetailSubtitle");
+    if (subEl) {
+        subEl.textContent = `ID: ${inst.instanceId} | Role: ${inst.role || 'worker'} | Host: ${inst.host || '127.0.0.1'}:${inst.port || 5000}`;
+    }
+
+    const badgeEl = document.getElementById("instanceDetailStatusBadge");
+    if (badgeEl) {
+        if (status === "online") {
+            badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 flex-shrink-0";
+            badgeEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online`;
+        } else if (status === "degraded") {
+            badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1.5 flex-shrink-0";
+            badgeEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Degraded`;
+        } else {
+            badgeEl.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-700 border border-gray-200 flex items-center gap-1.5 flex-shrink-0";
+            badgeEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-gray-400"></span> Offline`;
+        }
+    }
+
+    // 2. CPU Gauge & Metrics
+    const cpuPct = typeof inst.cpuPercent === "number" ? inst.cpuPercent : 0.0;
+    const cpuValEl = document.getElementById("instanceDetailCpuValue");
+    if (cpuValEl) cpuValEl.textContent = `${cpuPct.toFixed(1)}%`;
+
+    const cpuBarEl = document.getElementById("instanceDetailCpuBar");
+    if (cpuBarEl) {
+        const barWidth = Math.min(Math.max(cpuPct, 0), 100);
+        cpuBarEl.style.width = `${barWidth}%`;
+        if (cpuPct > 80) {
+            cpuBarEl.className = "bg-red-500 h-full rounded-full transition-all duration-500";
+        } else if (cpuPct > 50) {
+            cpuBarEl.className = "bg-amber-500 h-full rounded-full transition-all duration-500";
+        } else {
+            cpuBarEl.className = "bg-sky-500 h-full rounded-full transition-all duration-500";
+        }
+    }
+
+    const cpuCoresEl = document.getElementById("instanceDetailCpuCores");
+    if (cpuCoresEl) {
+        cpuCoresEl.innerHTML = `<i class="fa-solid fa-layer-group text-sky-500 mr-1"></i>Số Cores: <b>${inst.cpuCores || 1}</b>`;
+    }
+
+    const loadAvgEl = document.getElementById("instanceDetailLoadAvg");
+    if (loadAvgEl) {
+        if (Array.isArray(inst.loadAvg) && inst.loadAvg.length > 0) {
+            loadAvgEl.textContent = `Load (1/5/15m): ${inst.loadAvg.join(', ')}`;
+        } else {
+            loadAvgEl.textContent = `Load: Tốt`;
+        }
+    }
+
+    // 3. RAM Gauge & Metrics
+    const procMemMb = typeof inst.memoryMb === "number" ? inst.memoryMb : null;
+    const ramValEl = document.getElementById("instanceDetailRamValue");
+    if (ramValEl) {
+        ramValEl.textContent = procMemMb !== null ? `${procMemMb.toFixed(1)} MB` : "N/A";
+    }
+
+    const sysMem = inst.systemMemory;
+    const sysRamTotalEl = document.getElementById("instanceDetailSysRamTotal");
+    const sysRamUsageEl = document.getElementById("instanceDetailSysRamUsage");
+    const ramBarEl = document.getElementById("instanceDetailRamBar");
+
+    if (sysMem && typeof sysMem.totalMb === "number" && sysMem.totalMb > 0) {
+        const totalGb = (sysMem.totalMb / 1024).toFixed(1);
+        const usedGb = ((sysMem.usedMb || 0) / 1024).toFixed(1);
+        const usagePct = sysMem.usagePercent !== undefined ? sysMem.usagePercent : (sysMem.usedMb / sysMem.totalMb * 100);
+        if (sysRamTotalEl) {
+            sysRamTotalEl.innerHTML = `<i class="fa-solid fa-server text-purple-500 mr-1"></i>RAM Máy Chủ: <b>${usedGb} / ${totalGb} GB</b>`;
+        }
+        if (sysRamUsageEl) {
+            sysRamUsageEl.textContent = `Hệ thống: ${usagePct.toFixed(1)}%`;
+        }
+        if (ramBarEl) {
+            const barW = Math.min(Math.max(usagePct, 0), 100);
+            ramBarEl.style.width = `${barW}%`;
+            if (usagePct > 85) {
+                ramBarEl.className = "bg-red-500 h-full rounded-full transition-all duration-500";
+            } else if (usagePct > 70) {
+                ramBarEl.className = "bg-amber-500 h-full rounded-full transition-all duration-500";
+            } else {
+                ramBarEl.className = "bg-purple-500 h-full rounded-full transition-all duration-500";
+            }
+        }
+    } else {
+        if (sysRamTotalEl) sysRamTotalEl.innerHTML = `<i class="fa-solid fa-memory text-purple-500 mr-1"></i>RAM Tiến Trình: <b>${procMemMb ? procMemMb + ' MB' : '--'}</b>`;
+        if (sysRamUsageEl) sysRamUsageEl.textContent = "";
+        if (ramBarEl) {
+            const simulatedW = procMemMb ? Math.min(procMemMb / 5, 100) : 0;
+            ramBarEl.style.width = `${simulatedW}%`;
+            ramBarEl.className = "bg-purple-500 h-full rounded-full transition-all duration-500";
+        }
+    }
+
+    // 4. Details Grid
+    const setTxt = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val || "--";
+    };
+    setTxt("instanceDetailId", inst.instanceId);
+    setTxt("instanceDetailName", inst.name || inst.instanceId);
+    setTxt("instanceDetailRole", inst.role || "worker");
+    setTxt("instanceDetailHostPort", `${inst.host || '127.0.0.1'}:${inst.port || 5000}`);
+    setTxt("instanceDetailPid", inst.pid ? String(inst.pid) : "N/A");
+    setTxt("instanceDetailRequests", (inst.requestCount || 0).toLocaleString("vi-VN"));
+    setTxt("instanceDetailStartTime", formatDateTimeDisplay(inst.startTime));
+    setTxt("instanceDetailUptime", formatUptimeDuration(inst.uptimeSeconds));
+    setTxt("instanceDetailUpdatedDate", `${formatDateTimeDisplay(inst.updatedAt || inst.lastHeartbeat)} (Ngày: ${inst.updatedDate || 'N/A'})`);
+    setTxt("instanceDetailLastHb", `${formatHeartbeatAge(inst.lastHeartbeatTimestamp || inst.lastUpdatedTimestamp)} (${formatDateTimeDisplay(inst.lastHeartbeat)})`);
+
+    const osEl = document.getElementById("instanceDetailOs");
+    if (osEl) {
+        osEl.textContent = inst.os || "Linux / Windows / Docker";
+        osEl.title = inst.os || "";
+    }
+    setTxt("instanceDetailPython", inst.pythonVersion ? `Python ${inst.pythonVersion}` : "N/A");
+    setTxt("instanceDetailVersion", inst.version || "1.0.0");
+    setTxt("instanceDetailNotes", inst.notes || "Node phục vụ qua Load Balancer");
+
+    // 5. Raw JSON
+    const rawPre = document.getElementById("instanceRawJson");
+    if (rawPre) {
+        rawPre.textContent = JSON.stringify(inst, null, 2);
+    }
+
+    const jsonContainer = document.getElementById("instanceJsonContainer");
+    if (jsonContainer) jsonContainer.classList.add("hidden");
+    const jsonIcon = document.getElementById("instanceJsonToggleIcon");
+    if (jsonIcon) jsonIcon.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+
+    modal.style.display = "flex";
+}
+
+function closeClusterInstanceDetailModal() {
+    const modal = document.getElementById("clusterInstanceDetailModal");
+    if (modal) modal.style.display = "none";
+    currentViewingInstanceId = null;
+}
+
+async function refreshCurrentInstanceDetail() {
+    if (!currentViewingInstanceId) return;
+    await loadAdminMonitorInstances(false);
+    openClusterInstanceDetailModal(currentViewingInstanceId);
+}
+
+function toggleInstanceJsonView() {
+    const container = document.getElementById("instanceJsonContainer");
+    const icon = document.getElementById("instanceJsonToggleIcon");
+    if (!container) return;
+    const isHidden = container.classList.contains("hidden");
+    if (isHidden) {
+        container.classList.remove("hidden");
+        if (icon) icon.innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
+    } else {
+        container.classList.add("hidden");
+        if (icon) icon.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+    }
+}
+
+function copyCurrentInstanceJson() {
+    const rawPre = document.getElementById("instanceRawJson");
+    if (!rawPre || !rawPre.textContent) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(rawPre.textContent).then(() => {
+            notifyUser("Đã sao chép JSON của instance vào clipboard!", "success");
+        }).catch(() => {
+            notifyUser("Không thể sao chép tự động", "warning");
+        });
+    } else {
+        notifyUser("Trình duyệt không hỗ trợ sao chép tự động", "warning");
+    }
+}
+
+function showInstanceJsonDetail(instanceId) {
+    openClusterInstanceDetailModal(instanceId);
+}
+
+
 if (typeof window !== "undefined") {
     window.loadAdminNotifyConfig = loadAdminNotifyConfig;
     window.renderAdminNotifyConfig = renderAdminNotifyConfig;
     window.saveAdminNotifyConfig = saveAdminNotifyConfig;
     window.testTelegramNotification = testTelegramNotification;
     window.toggleTelegramTokenVisibility = toggleTelegramTokenVisibility;
+    window.loadAdminMonitorInstances = loadAdminMonitorInstances;
+    window.renderAdminMonitorInstances = renderAdminMonitorInstances;
+    window.saveAdminClusterConfig = saveAdminClusterConfig;
+    window.pruneOfflineInstance = pruneOfflineInstance;
+    window.cleanupAllStaleInstances = cleanupAllStaleInstances;
+    window.toggleMonitorAutoRefresh = toggleMonitorAutoRefresh;
+    window.showInstanceJsonDetail = showInstanceJsonDetail;
+    window.openClusterInstanceDetailModal = openClusterInstanceDetailModal;
+    window.closeClusterInstanceDetailModal = closeClusterInstanceDetailModal;
+    window.refreshCurrentInstanceDetail = refreshCurrentInstanceDetail;
+    window.toggleInstanceJsonView = toggleInstanceJsonView;
+    window.copyCurrentInstanceJson = copyCurrentInstanceJson;
+    window.formatDateTimeDisplay = formatDateTimeDisplay;
     window.DEFAULT_STATIC_COMPANY_INFO = DEFAULT_STATIC_COMPANY_INFO;
     window.loadAdminCompanyInfo = loadAdminCompanyInfo;
     window.handleCompanyInfoSubmit = handleCompanyInfoSubmit;
@@ -19879,7 +20518,7 @@ function closeSystemConfigModal() {
 }
 
 function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream" && tabName !== "notify") tabName = "company";
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream" && tabName !== "notify" && tabName !== "monitor") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
@@ -19887,6 +20526,7 @@ function switchSystemConfigTab(tabName) {
     const btnAddonVis = document.getElementById("tabSysBtnAddonVis");
     const btnLiveStream = document.getElementById("tabSysBtnLiveStream");
     const btnNotify = document.getElementById("tabSysBtnNotify");
+    const btnMonitor = document.getElementById("tabSysBtnMonitor");
     const btnBanners = document.getElementById("tabSysBtnBanners");
     const btnPriceLevels = document.getElementById("tabSysBtnPriceLevels");
 
@@ -19896,6 +20536,7 @@ function switchSystemConfigTab(tabName) {
     const contentAddonVis = document.getElementById("tabSysContentAddonVis");
     const contentLiveStream = document.getElementById("tabSysContentLiveStream");
     const contentNotify = document.getElementById("tabSysContentNotify");
+    const contentMonitor = document.getElementById("tabSysContentMonitor");
     const contentBanners = document.getElementById("tabSysContentBanners");
     const contentPriceLevels = document.getElementById("tabSysContentPriceLevels");
 
@@ -19911,6 +20552,7 @@ function switchSystemConfigTab(tabName) {
     if (btnAddonVis) btnAddonVis.className = idleCls;
     if (btnLiveStream) btnLiveStream.className = liveStreamIdleCls;
     if (btnNotify) btnNotify.className = idleCls;
+    if (btnMonitor) btnMonitor.className = idleCls;
     if (btnBanners) btnBanners.className = idleCls;
     if (btnPriceLevels) btnPriceLevels.className = idleCls;
 
@@ -19920,6 +20562,7 @@ function switchSystemConfigTab(tabName) {
     if (contentAddonVis) contentAddonVis.classList.add("hidden");
     if (contentLiveStream) contentLiveStream.classList.add("hidden");
     if (contentNotify) contentNotify.classList.add("hidden");
+    if (contentMonitor) contentMonitor.classList.add("hidden");
     if (contentBanners) contentBanners.classList.add("hidden");
     if (contentPriceLevels) contentPriceLevels.classList.add("hidden");
 
@@ -19949,6 +20592,11 @@ function switchSystemConfigTab(tabName) {
         if (contentNotify) contentNotify.classList.remove("hidden");
         activeBtn = btnNotify;
         loadAdminNotifyConfig();
+    } else if (tabName === "monitor") {
+        if (btnMonitor) btnMonitor.className = activeCls;
+        if (contentMonitor) contentMonitor.classList.remove("hidden");
+        activeBtn = btnMonitor;
+        loadAdminMonitorInstances();
     } else if (tabName === "banners") {
         if (btnBanners) btnBanners.className = activeCls;
         if (contentBanners) contentBanners.classList.remove("hidden");
