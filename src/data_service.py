@@ -58,6 +58,7 @@ def get_config_path(filename: str) -> str:
 def read_json(filepath: str, default: Any = None) -> Any:
     """
     Đọc dữ liệu từ file JSON một cách an toàn.
+    Tự động giải mã nếu file được lưu dưới dạng mã hóa Base64 Envelope (__encrypted__: true).
     Nếu file không tồn tại hoặc lỗi định dạng, trả về default hoặc [] / {}.
     """
     if not os.path.exists(filepath):
@@ -65,8 +66,22 @@ def read_json(filepath: str, default: Any = None) -> Any:
 
     try:
         with open(filepath, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, IOError, UnicodeDecodeError):
+            raw = f.read().strip()
+        if not raw:
+            return default if default is not None else []
+
+        data = json.loads(raw)
+        if isinstance(data, dict) and data.get("__encrypted__") is True:
+            from config_crypto_service import decrypt_json
+            return decrypt_json(data)
+        return data
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        try:
+            from config_crypto_service import decrypt_json
+            return decrypt_json(raw)
+        except Exception:
+            return default if default is not None else []
+    except Exception:
         return default if default is not None else []
 
 
@@ -917,7 +932,8 @@ def get_staff_users(use_cache: bool = True) -> List[Dict[str, Any]]:
 
 def save_staff_users(staff_users: List[Dict[str, Any]]) -> bool:
     target_path = get_config_path("staff_users.json")
-    success = write_json(target_path, staff_users)
+    from config_crypto_service import set_encrypted_config
+    success = set_encrypted_config(target_path, staff_users, encrypt=True)
     invalidate_file_cache(target_path)
     return success
 
@@ -3053,7 +3069,9 @@ def save_company_info(info_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict[st
     }
 
     filepath = get_config_path("infoCompany.json")
-    success = write_json(filepath, updated)
+    from config_crypto_service import set_encrypted_config
+    success = set_encrypted_config(filepath, updated, encrypt=True)
+    invalidate_file_cache(filepath)
     if success:
         return True, updated, None
     return False, None, "Không thể ghi file cấu hình infoCompany.json"
@@ -3775,7 +3793,9 @@ def save_notify_config(config_dict: Dict[str, Any]) -> Tuple[bool, Optional[Dict
     current["updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
     filepath = get_config_path("notifyConfig.json")
-    success = write_json(filepath, current)
+    from config_crypto_service import set_encrypted_config
+    success = set_encrypted_config(filepath, current, encrypt=True)
+    invalidate_file_cache(filepath)
     if success:
         return True, current, None
     return False, None, "Không thể ghi file cấu hình notifyConfig.json"
@@ -3798,5 +3818,22 @@ from instance_monitor_service import (
     get_process_cpu_percent,
     get_system_load_average
 )
+
+# ==========================================
+# MÃ HÓA & GIẢI MÃ CẤU HÌNH JSON (BASE64 ENCRYPTION)
+# ==========================================
+from config_crypto_service import (
+    encrypt_bytes,
+    decrypt_bytes,
+    encrypt_string,
+    decrypt_string,
+    encrypt_json,
+    decrypt_json,
+    get_encrypted_config,
+    set_encrypted_config,
+    is_encrypted_config,
+    get_or_create_master_key
+)
+
 
 

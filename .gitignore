@@ -151,3 +151,7 @@ vite.config.ts.timestamp-*
 # Docker cleanup timestamp tracking
 .docker_last_clean
 
+
+# Security & Secret Keys
+*.key
+.secret.key

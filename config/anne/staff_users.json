@@ -1,80 +1,8 @@
-[
-  {
-    "id": "staff_admin",
-    "phone": "0900000000",
-    "email": "admin@nohoathabinh.vn",
-    "fullName": "Tổng Quản Trị Hệ Thống",
-    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
-    "role": "super_admin",
-    "branchId": null,
-    "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z",
-    "updatedAt": "2026-09-12T02:49:39Z"
-  },
-  {
-    "id": "staff_001",
-    "phone": "0909123456",
-    "email": "mai.tran@nohoathabinh.vn",
-    "fullName": "Trần Thị Mai",
-    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
-    "role": "branch_manager",
-    "branchId": "branch_q10",
-    "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z"
-  },
-  {
-    "id": "staff_002",
-    "phone": "0909654321",
-    "email": "lan.le@nohoathabinh.vn",
-    "fullName": "Lê Ngọc Lan",
-    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
-    "role": "florist",
-    "branchId": "branch_q10",
-    "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z"
-  },
-  {
-    "id": "staff_003",
-    "phone": "0909777888",
-    "email": "hoa.nguyen@nohoathabinh.vn",
-    "fullName": "Nguyễn Thanh Hòa",
-    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
-    "role": "sales_consultant",
-    "branchId": "branch_q10",
-    "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z"
-  },
-  {
-    "id": "staff_004",
-    "phone": "0909111222",
-    "email": "manager.q1@nohoathabinh.vn",
-    "fullName": "Nguyễn Văn Q1",
-    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
-    "role": "branch_manager",
-    "branchId": "branch_q1",
-    "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z"
-  },
-  {
-    "id": "staff_005",
-    "phone": "0909333444",
-    "email": "florist.q1@nohoathabinh.vn",
-    "fullName": "Trần Hoa Q1",
-    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
-    "role": "florist",
-    "branchId": "branch_q1",
-    "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z"
-  },
-  {
-    "id": "staff_006",
-    "phone": "0909555666",
-    "email": "manager.td@nohoathabinh.vn",
-    "fullName": "Lê Thảo Điền",
-    "passwordHash": "pbkdf2:sha256:260000$u86I0vfgyQoDoXdM$2e114fe7c26b13344898dbe7c586abea0763e7b9c3d88f1ce50f0b629b1a6630",
-    "role": "branch_manager",
-    "branchId": "branch_thao_dien",
-    "isActive": true,
-    "createdAt": "2026-08-21T00:00:00Z"
-  }
-]
+{
+  "__encrypted__": true,
+  "algorithm": "ChaCha20-HMAC-SHA256",
+  "version": 1,
+  "format": "base64",
+  "updatedAt": "2026-11-05T00:38:21Z",
+  "data": "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"
+}

@@ -40,6 +40,10 @@ except Exception:
     pass
 
 
+_CACHED_INSTANCE_ID: Optional[str] = None
+_CACHED_INSTANCE_NAME: Optional[str] = None
+
+
 def increment_request_counter() -> int:
     """Tăng số lượng request đã phục vụ bởi instance này."""
     global _REQUEST_COUNTER
@@ -53,25 +57,74 @@ def get_current_request_count() -> int:
     return _REQUEST_COUNTER
 
 
+def get_instance_identity_filepath() -> str:
+    """Đường dẫn lưu file định danh instance cục bộ trên máy/container (không lưu trong volume chung)."""
+    import tempfile
+    custom_path = os.environ.get("INSTANCE_ID_FILE")
+    if custom_path and custom_path.strip():
+        return custom_path.strip()
+    return os.path.join(tempfile.gettempdir(), ".telua_instance_id")
+
+
 def get_current_instance_id() -> str:
     """
-    Trả về định danh duy nhất của instance hiện tại.
-    Ưu tiên: ENV INSTANCE_ID > CONTAINER_ID > HOSTNAME > node-{hostname}-{pid}
+    Trả về định danh duy nhất của instance hiện tại và đảm bảo KHÔNG bị gen lại.
+    Thứ tự ưu tiên:
+    1. Bộ nhớ RAM process (_CACHED_INSTANCE_ID)
+    2. Biến môi trường ENV: INSTANCE_ID > CONTAINER_ID
+    3. File định danh cục bộ trên ổ đĩa container (.telua_instance_id)
+    4. Sinh mới theo hostname + PID và lưu vĩnh viễn vào file cục bộ
     """
+    global _CACHED_INSTANCE_ID
+    if _CACHED_INSTANCE_ID:
+        return _CACHED_INSTANCE_ID
+
+    # 1. Kiểm tra biến môi trường
     env_id = os.environ.get("INSTANCE_ID") or os.environ.get("CONTAINER_ID")
     if env_id and env_id.strip():
-        return env_id.strip()
+        _CACHED_INSTANCE_ID = env_id.strip()
+        return _CACHED_INSTANCE_ID
+
+    # 2. Kiểm tra file định danh cục bộ đã lưu trước đó trên container
+    id_file = get_instance_identity_filepath()
+    try:
+        if os.path.isfile(id_file):
+            with open(id_file, "r", encoding="utf-8") as f:
+                saved_id = f.read().strip()
+                if saved_id:
+                    _CACHED_INSTANCE_ID = saved_id
+                    return _CACHED_INSTANCE_ID
+    except Exception:
+        pass
+
+    # 3. Sinh ID mới 1 lần duy nhất và lưu vào file cục bộ
     hostname = socket.gethostname() or "node"
-    return f"node-{hostname}-{os.getpid()}"
+    generated_id = f"node-{hostname}-{os.getpid()}"
+    try:
+        os.makedirs(os.path.dirname(id_file), exist_ok=True)
+        with open(id_file, "w", encoding="utf-8") as f:
+            f.write(generated_id)
+    except Exception:
+        pass
+
+    _CACHED_INSTANCE_ID = generated_id
+    return _CACHED_INSTANCE_ID
 
 
 def get_current_instance_name() -> str:
     """Trả về tên gợi nhớ của instance (VD: Node-01, Worker-A)."""
+    global _CACHED_INSTANCE_NAME
+    if _CACHED_INSTANCE_NAME:
+        return _CACHED_INSTANCE_NAME
+
     env_name = os.environ.get("INSTANCE_NAME") or os.environ.get("NODE_NAME")
     if env_name and env_name.strip():
-        return env_name.strip()
-    hostname = socket.gethostname() or "local"
-    return f"Node-{hostname}"
+        _CACHED_INSTANCE_NAME = env_name.strip()
+        return _CACHED_INSTANCE_NAME
+
+    inst_id = get_current_instance_id()
+    _CACHED_INSTANCE_NAME = inst_id.replace("node-", "Node-")
+    return _CACHED_INSTANCE_NAME
 
 
 def get_current_instance_host() -> str:

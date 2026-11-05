@@ -1,21 +1,8 @@
 {
-  "enabled": true,
-  "notifyOnStandardOrder": true,
-  "notifyOnQuickOrder": true,
-  "telegram": {
-    "enabled": true,
-    "botToken": "8943130850:AAG0bDnfrbNlrVRXoSaagAQ6CXdVffEX4UY",
-    "chatId": "@nohoathabinh",
-    "channelName": "Đơn hàng",
-    "parseMode": "HTML",
-    "includeCustomerPhone": true,
-    "includeAddress": true,
-    "includeNotes": true
-  },
-  "email": {
-    "enabled": false,
-    "recipientEmail": "",
-    "note": "Đang phát triển (Tạm thời hỗ trợ Telegram trước)"
-  },
-  "updatedAt": "2026-11-03T17:50:12Z"
+  "__encrypted__": true,
+  "algorithm": "ChaCha20-HMAC-SHA256",
+  "version": 1,
+  "format": "base64",
+  "updatedAt": "2026-11-05T00:33:17Z",
+  "data": "VExFTkMBfOdblKBalSnCCFrlH2IdyoF52ymhmh6YxZblFVtdLot5+Rx0g8NXA/pFYp8AVnKA3WGgnRvU8mgt83N/kDllQvmFrfLAk2RG8yQ1p/1XjN+LsJelGwMBr2FopjMwk/w5rLNFOKIAGfVPJpOJJC1h/2E8qRV5+k7REvk9CH8f0fEgqKukbKWzWT+GoQAcyrKCKrOHsz0xySnD0e2mAOWzgZqTzdybhLigaZ9OuHjFeM1KxcT6goGYYakddGcPTYSNyHNXhPaQP2W+Z0q2LKGjoCV4VTPam/tMVZBad3BN2FDFCe+CLsnp6/1O29IXcWtEc0bLdo9HK7yVwh5WiWEVo5ykbtivgNboySdeiHXliocGTbEJ2WkJt55wpwuininmXS7bjeJqdD80PnAJaM/3eDOCHjH6sL83ebCckUKezK7CbUKvbWBMDFc2OvEPSBQCa12qGq6hOsNuLWaQtM/gpa7DakR6I61+Ad9p79dZIAtAX8Ch+oI2Outl/ixAqa7Emd0R5WmLukdlmHK0WNZxJAz2KvAiCOuapclstup7Ah4X0QSE1vMKGJWvKm89lQSVhZSP5quvu8M5F9K6mAUHdCKy/J+Y+YsBzuwv6lFBElzB/xfcKAJYA+N5It3Y9qoU19F+l3bt3IRAm1c4kS/Gei89IvSdszkKvM5dxQK/zltiIvEnnoMBm9YWcmIHC5rzDkhrLIvHAmopc8zSAH7CBC77R/toEjT7HLy0f/m8TFN6Pp/aYaOKbsfR7AfVvWmmq/B1BI5xtpr8YmSBPJ+vHrqwgAUlwLC9aTeiju5uqUj0HZza"
 }
