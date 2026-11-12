@@ -193,14 +193,15 @@ class TestClusterMonitor(unittest.TestCase):
         self.assertEqual(data["loadBalancer"]["algorithm"], "Least Connections")
 
     def test_ui_tab_monitor_elements_in_html(self):
-        """Kiểm tra giao diện có tab #tabSysBtnMonitor và nội dung #tabSysContentMonitor trong HTML"""
+        """Kiểm tra giao diện có modal riêng #clusterOpsModal, tab #tabOpsBtnMonitor và nội dung #tabSysContentMonitor trong HTML"""
         root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
         for rel_html in ["index.html", os.path.join("config", "index.html")]:
             html_path = os.path.join(root_dir, rel_html)
             with open(html_path, "r", encoding="utf-8") as f:
                 content = f.read()
-            self.assertIn('id="tabSysBtnMonitor"', content)
-            self.assertIn("switchSystemConfigTab('monitor')", content)
+            self.assertIn('id="clusterOpsModal"', content)
+            self.assertIn('id="tabOpsBtnMonitor"', content)
+            self.assertIn("switchClusterOpsTab('monitor')", content)
             self.assertIn('id="tabSysContentMonitor"', content)
             self.assertIn('id="adminMonitorInstancesList"', content)
             self.assertIn('id="clusterHealthBadge"', content)
@@ -305,13 +306,21 @@ class TestClusterMonitor(unittest.TestCase):
             self.assertIn('id="instanceDetailRamValue"', content, f"Missing instanceDetailRamValue in {fn}")
             self.assertIn('id="instanceDetailCpuBar"', content, f"Missing instanceDetailCpuBar in {fn}")
             self.assertIn('id="instanceDetailRamBar"', content, f"Missing instanceDetailRamBar in {fn}")
+            # Kiểm tra modal tách riêng clusterOpsModal và nút mở
+            self.assertIn('id="clusterOpsModal"', content, f"Missing clusterOpsModal in {fn}")
+            self.assertIn('onclick="openClusterOpsModal()"', content, f"Missing openClusterOpsModal button in {fn}")
+            self.assertIn('id="tabOpsBtnMonitor"', content, f"Missing tabOpsBtnMonitor in {fn}")
+            self.assertIn('id="tabOpsBtnNotify"', content, f"Missing tabOpsBtnNotify in {fn}")
 
-        # 3. Kiểm tra bundle.js có chứa openClusterInstanceDetailModal
+        # 3. Kiểm tra bundle.js có chứa openClusterInstanceDetailModal và openClusterOpsModal
         bundle_path = os.path.join(base_dir, "js", "bundle.js")
         with open(bundle_path, "r", encoding="utf-8") as f:
             bundle_content = f.read()
         self.assertIn("openClusterInstanceDetailModal", bundle_content)
         self.assertIn("closeClusterInstanceDetailModal", bundle_content)
+        self.assertIn("openClusterOpsModal", bundle_content)
+        self.assertIn("closeClusterOpsModal", bundle_content)
+        self.assertIn("switchClusterOpsTab", bundle_content)
 
 
 if __name__ == "__main__":

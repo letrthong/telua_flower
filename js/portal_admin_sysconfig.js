@@ -2767,9 +2767,10 @@ export function toggleMonitorAutoRefresh(enable) {
     }
     if (enable) {
         monitorAutoRefreshTimer = setInterval(() => {
-            const modal = document.getElementById("systemConfigModal");
+            const modal = document.getElementById("clusterOpsModal") || document.getElementById("systemConfigModal");
             const content = document.getElementById("tabSysContentMonitor");
-            if (modal && !modal.classList.contains("hidden") && content && !content.classList.contains("hidden")) {
+            const isModalOpen = modal && modal.style.display !== "none" && !modal.classList.contains("hidden");
+            if (isModalOpen && content && !content.classList.contains("hidden")) {
                 loadAdminMonitorInstances(false);
             }
         }, 15000);

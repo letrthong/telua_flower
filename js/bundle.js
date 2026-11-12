@@ -1772,6 +1772,25 @@ const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminLiveStreamConfig",
         action: "switchSystemConfigTab('livestream')",
         roles: [ROLES.SUPER_ADMIN]
+      }
+    ]
+  },
+  {
+    groupId: "cluster_ops",
+    title: "Giám Sát & Thông Báo",
+    icon: "fa-solid fa-server",
+    targetModal: "clusterOpsModal",
+    action: "openClusterOpsModal",
+    roles: [ROLES.SUPER_ADMIN],
+    children: [
+      {
+        tabKey: "monitor",
+        label: "Giám Sát Cụm (Cluster Monitor)",
+        icon: "fa-solid fa-server",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminMonitorInstances",
+        action: "openClusterOpsModal('monitor')",
+        roles: [ROLES.SUPER_ADMIN]
       },
       {
         tabKey: "notify",
@@ -1779,16 +1798,7 @@ const ADMIN_NAVIGATION_CONFIG = [
         icon: "fa-solid fa-bell",
         module: "portal_admin_sysconfig.js",
         loadFn: "loadAdminNotifyConfig",
-        action: "switchSystemConfigTab('notify')",
-        roles: [ROLES.SUPER_ADMIN]
-      },
-      {
-        tabKey: "monitor",
-        label: "Giám Sát Cụm (Cluster Monitor)",
-        icon: "fa-solid fa-server",
-        module: "portal_admin_sysconfig.js",
-        loadFn: "loadAdminMonitorInstances",
-        action: "switchSystemConfigTab('monitor')",
+        action: "openClusterOpsModal('notify')",
         roles: [ROLES.SUPER_ADMIN]
       }
     ]
@@ -5398,6 +5408,9 @@ function updateAuthUI() {
                     <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                     </button>
+                    <button onclick="openClusterOpsModal('monitor')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50/80 hover:bg-emerald-100 transition rounded-xl border border-emerald-200 shadow-2xs">
+                        <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                    </button>
                     ` : ''}
                 </div>
             `;
@@ -5460,6 +5473,11 @@ function updateAuthUI() {
                     <button onclick="openUserProfileModal()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-pink-50/60 border-t border-gray-100 transition">
                         <i class="fa-solid fa-user-gear mr-2 text-primary"></i> Hồ Sơ & Bảo Mật
                     </button>
+                    ${user.role === 'super_admin' ? `
+                    <button onclick="openClusterOpsModal('monitor')" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50/60 border-t border-gray-100 transition">
+                        <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                    </button>
+                    ` : ''}
 
                     <button onclick="logout()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 border-t border-gray-50 transition">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
@@ -5504,6 +5522,9 @@ function updateAuthUI() {
                             <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                                 <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                             </button>
+                            <button onclick="openClusterOpsModal('monitor'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                                <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                            </button>
                             ` : ''}
                         </div>
                     ` : isFlorist ? `
@@ -5537,6 +5558,12 @@ function updateAuthUI() {
                     <button onclick="openUserProfileModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 transition rounded-xl border border-gray-200 shadow-2xs">
                         <i class="fa-solid fa-user-gear mr-2 text-primary"></i> Hồ Sơ & Bảo Mật
                     </button>
+
+                    ${user.role === 'super_admin' ? `
+                    <button onclick="openClusterOpsModal('monitor'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                        <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                    </button>
+                    ` : ''}
 
                     <button onclick="logout(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-red-600 bg-red-50/70 hover:bg-red-100 transition rounded-xl border border-red-200 shadow-2xs">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
@@ -15603,9 +15630,10 @@ function toggleMonitorAutoRefresh(enable) {
     }
     if (enable) {
         monitorAutoRefreshTimer = setInterval(() => {
-            const modal = document.getElementById("systemConfigModal");
+            const modal = document.getElementById("clusterOpsModal") || document.getElementById("systemConfigModal");
             const content = document.getElementById("tabSysContentMonitor");
-            if (modal && !modal.classList.contains("hidden") && content && !content.classList.contains("hidden")) {
+            const isModalOpen = modal && modal.style.display !== "none" && !modal.classList.contains("hidden");
+            if (isModalOpen && content && !content.classList.contains("hidden")) {
                 loadAdminMonitorInstances(false);
             }
         }, 15000);
@@ -20517,8 +20545,60 @@ function closeSystemConfigModal() {
     }
 }
 
+function openClusterOpsModal(tabName = "monitor") {
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+    const modal = document.getElementById("clusterOpsModal");
+    if (modal) {
+        modal.style.display = "flex";
+        modal.classList.remove("hidden");
+        switchClusterOpsTab(tabName);
+    }
+}
+
+function closeClusterOpsModal() {
+    const modal = document.getElementById("clusterOpsModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+function switchClusterOpsTab(tabName) {
+    if (tabName !== "notify" && tabName !== "monitor") tabName = "monitor";
+
+    const btnMonitor = document.getElementById("tabOpsBtnMonitor");
+    const btnNotify = document.getElementById("tabOpsBtnNotify");
+    const contentMonitor = document.getElementById("tabSysContentMonitor");
+    const contentNotify = document.getElementById("tabSysContentNotify");
+
+    const activeCls = "py-3 px-3 font-bold text-xs sm:text-sm border-b-2 border-emerald-600 text-emerald-700 transition flex items-center flex-shrink-0 cursor-pointer";
+    const idleCls = "py-3 px-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer";
+
+    if (btnMonitor) btnMonitor.className = idleCls;
+    if (btnNotify) btnNotify.className = idleCls;
+    if (contentMonitor) contentMonitor.classList.add("hidden");
+    if (contentNotify) contentNotify.classList.add("hidden");
+
+    if (tabName === "notify") {
+        if (btnNotify) btnNotify.className = activeCls;
+        if (contentNotify) contentNotify.classList.remove("hidden");
+        if (typeof loadAdminNotifyConfig === "function") loadAdminNotifyConfig();
+    } else {
+        if (btnMonitor) btnMonitor.className = activeCls;
+        if (contentMonitor) contentMonitor.classList.remove("hidden");
+        if (typeof loadAdminMonitorInstances === "function") loadAdminMonitorInstances();
+    }
+}
+
 function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream" && tabName !== "notify" && tabName !== "monitor") tabName = "company";
+    if (tabName === "notify" || tabName === "monitor") {
+        closeSystemConfigModal();
+        openClusterOpsModal(tabName);
+        return;
+    }
+
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
@@ -20733,6 +20813,9 @@ if (typeof window !== "undefined") {
     window.openSystemConfigModal = openSystemConfigModal;
     window.closeSystemConfigModal = closeSystemConfigModal;
     window.switchSystemConfigTab = switchSystemConfigTab;
+    window.openClusterOpsModal = openClusterOpsModal;
+    window.closeClusterOpsModal = closeClusterOpsModal;
+    window.switchClusterOpsTab = switchClusterOpsTab;
     window.checkAdminAccess = checkAdminAccess;
     window.saveCurrentProdI18nDraft = saveCurrentProdI18nDraft;
     window.syncSingleKeyInputToDictionary = syncSingleKeyInputToDictionary;

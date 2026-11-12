@@ -1693,13 +1693,19 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6 flex-shrink-0">
-                        <button type="button" onclick="closeUserProfileModal()"
-                            class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Đóng</button>
-                        <button type="button" onclick="switchProfileTab('password')"
-                            class="px-5 py-2.5 bg-gradient-to-r from-primary to-accent hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-key"></i> Đổi Mật Khẩu
+                    <div class="flex items-center justify-between gap-3 pt-4 border-t border-gray-100 mt-6 flex-shrink-0">
+                        <button type="button" onclick="closeUserProfileModal(); openClusterOpsModal('monitor');"
+                            class="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200 transition flex items-center gap-1.5 shadow-2xs">
+                            <i class="fa-solid fa-server text-emerald-600"></i> Giám Sát Cụm & Thông Báo
                         </button>
+                        <div class="flex items-center gap-3">
+                            <button type="button" onclick="closeUserProfileModal()"
+                                class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">Đóng</button>
+                            <button type="button" onclick="switchProfileTab('password')"
+                                class="px-5 py-2.5 bg-gradient-to-r from-primary to-accent hover:opacity-95 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-key"></i> Đổi Mật Khẩu
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -2588,6 +2594,11 @@
                         class="flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl border border-blue-200 transition shadow-2xs"
                         title="Mở Cấu Hình Hệ Thống (Đa ngôn ngữ & Doanh nghiệp)">
                         <i class="fa-solid fa-sliders text-blue-600"></i> Cấu Hình Hệ Thống
+                    </button>
+                    <button onclick="openClusterOpsModal()" type="button"
+                        class="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200 transition shadow-2xs cursor-pointer"
+                        title="Mở Giám Sát Cụm Đa Instance & Cấu Hình Thông Báo (Telegram / Email)">
+                        <i class="fa-solid fa-server text-emerald-600"></i> Giám Sát & Thông Báo
                     </button>
                     <button onclick="closeAdminPortalModal()"
                         class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition">
@@ -3954,6 +3965,11 @@
                 </div>
 
                 <div class="flex items-center space-x-3">
+                    <button onclick="closeSystemConfigModal(); openClusterOpsModal();" type="button"
+                        class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200 transition shadow-2xs cursor-pointer"
+                        title="Mở Bảng Điều Khiển Giám Sát Cụm & Cấu Hình Thông Báo">
+                        <i class="fa-solid fa-server text-emerald-600"></i> Giám Sát & Thông Báo
+                    </button>
                     <button onclick="closeSystemConfigModal(); openAdminPortalModal();" type="button"
                         class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-primary text-xs font-bold rounded-xl border border-pink-200 transition shadow-2xs">
                         <i class="fa-solid fa-gauge-high text-primary"></i> Quản Trị Nghiệp Vụ (CMS)
@@ -3995,14 +4011,7 @@
                     class="py-3 px-2.5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-rose-600 hover:text-rose-700 bg-rose-50/80 hover:bg-rose-100/70 transition flex items-center flex-shrink-0 rounded-t-lg cursor-pointer">
                     <i class="fa-solid fa-video mr-1.5 text-base text-rose-600 animate-pulse"></i> Live Stream <span class="ml-1.5 px-2 py-0.5 text-[10px] bg-red-600 text-white rounded-full font-extrabold uppercase shadow-2xs">Live</span>
                 </button>
-                <button onclick="switchSystemConfigTab('notify')" id="tabSysBtnNotify"
-                    class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer">
-                    <i class="fa-solid fa-bell mr-1.5 text-base text-sky-500"></i> Thông Báo (Notify)
-                </button>
-                <button onclick="switchSystemConfigTab('monitor')" id="tabSysBtnMonitor"
-                    class="py-3 px-2 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer">
-                    <i class="fa-solid fa-server mr-1.5 text-base text-emerald-500"></i> Giám Sát Cụm (Monitor)
-                </button>
+
             </div>
 
             <!-- Modal Body (Scrollable) -->
@@ -5037,7 +5046,77 @@
                     </div>
                 </section>
 
-                <!-- ================= TAB 8: THÔNG BÁO ĐƠN HÀNG (NOTIFY - TELEGRAM / EMAIL) ================= -->
+                <!-- Thông báo chuyển tab sang Cửa sổ Giám Sát & Thông Báo -->
+                <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="fa-solid fa-server"></i>
+                        </div>
+                        <div>
+                            <h5 class="text-xs font-bold text-emerald-900">Giám Sát Cụm Đa Instance & Thông Báo Đơn Hàng</h5>
+                            <p class="text-[11px] text-emerald-700">Hai chức năng Giám Sát Cụm (instancesMonitor.json) và Cấu Hình Thông Báo (notifyConfig.json) đã được tách thành Cửa Sổ Bảng Điều Khiển riêng biệt.</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeSystemConfigModal(); openClusterOpsModal();"
+                        class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow-2xs flex items-center gap-1.5 flex-shrink-0 cursor-pointer">
+                        <i class="fa-solid fa-up-right-from-square"></i> Mở Giám Sát & Thông Báo
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= CLUSTER OPS MODAL (GIÁM SÁT CỤM & THÔNG BÁO HỆ THỐNG) ================= -->
+    <div id="clusterOpsModal" onclick="if (event.target === this) closeClusterOpsModal();"
+        class="fixed inset-0 bg-black/70 backdrop-blur-md z-[215] items-center justify-center p-1 sm:p-3 md:p-4"
+        style="display: none;">
+        <div class="bg-white w-full max-w-[98vw] 2xl:max-w-[1700px] rounded-2xl shadow-2xl overflow-hidden border border-emerald-100 h-[94vh] max-h-[94vh] flex flex-col animate-fadeIn relative">
+            <!-- Top Header -->
+            <div class="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-base shadow-inner">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-serif text-lg font-bold text-gray-800">Giám Sát Cụm & Cấu Hình Thông Báo (Cluster & Notifications)</h3>
+                        <p class="text-xs text-gray-500">Giám sát tải đa instance Load Balancer (instancesMonitor.json) • Cấu hình thông báo Telegram / Email (notifyConfig.json)</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button onclick="closeClusterOpsModal(); openSystemConfigModal();" type="button"
+                        class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl border border-blue-200 transition shadow-2xs cursor-pointer"
+                        title="Mở Cấu Hình Hệ Thống">
+                        <i class="fa-solid fa-sliders text-blue-600"></i> Cấu Hình Hệ Thống
+                    </button>
+                    <button onclick="closeClusterOpsModal(); openAdminPortalModal();" type="button"
+                        class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-primary text-xs font-bold rounded-xl border border-pink-200 transition shadow-2xs cursor-pointer"
+                        title="Quay lại Cổng Quản Trị CMS">
+                        <i class="fa-solid fa-gauge-high text-primary"></i> Quản Trị Nghiệp Vụ (CMS)
+                    </button>
+                    <button onclick="closeClusterOpsModal()"
+                        class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-600 flex items-center justify-center transition cursor-pointer">
+                        <i class="fa-solid fa-xmark text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar for Cluster Ops -->
+            <div class="flex border-b border-gray-200 bg-gray-50/70 px-4 sm:px-6 space-x-2 sm:space-x-4 flex-shrink-0 overflow-x-auto scroll-smooth">
+                <button onclick="switchClusterOpsTab('monitor')" id="tabOpsBtnMonitor"
+                    class="py-3 px-3 font-bold text-xs sm:text-sm border-b-2 border-emerald-600 text-emerald-700 transition flex items-center flex-shrink-0 cursor-pointer">
+                    <i class="fa-solid fa-server mr-2 text-base text-emerald-600"></i> Giám Sát Cụm (Cluster Monitor)
+                </button>
+                <button onclick="switchClusterOpsTab('notify')" id="tabOpsBtnNotify"
+                    class="py-3 px-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer">
+                    <i class="fa-solid fa-bell mr-2 text-base text-sky-500"></i> Thông Báo Đơn Hàng (Notify)
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-6 bg-gray-50/50">
+<!-- ================= TAB 8: THÔNG BÁO ĐƠN HÀNG (NOTIFY - TELEGRAM / EMAIL) ================= -->
                 <section id="tabSysContentNotify" class="space-y-6 hidden">
                     <!-- Header -->
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs">
@@ -5251,7 +5330,7 @@
                     </div>
                 </section>
                 <!-- ================= TAB 9: GIÁM SÁT CỤM INSTANCES & LOAD BALANCER (CLUSTER MONITOR - instancesMonitor.json) ================= -->
-                <section id="tabSysContentMonitor" class="space-y-6 hidden">
+                <section id="tabSysContentMonitor" class="space-y-6">
                     <!-- Header -->
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-5 rounded-2xl border border-gray-200 shadow-2xs">
                         <div class="flex items-center space-x-3.5">
@@ -7856,7 +7935,7 @@
     </div>
 
     <!-- Single Consolidated JavaScript Bundle -->
-    <script src="/js/bundle.js?v=20261105_01"></script>
+    <script src="/js/bundle.js?v=20261112_02"></script>
 </body>
 
 </html>

@@ -276,6 +276,25 @@ export const ADMIN_NAVIGATION_CONFIG = [
         loadFn: "loadAdminLiveStreamConfig",
         action: "switchSystemConfigTab('livestream')",
         roles: [ROLES.SUPER_ADMIN]
+      }
+    ]
+  },
+  {
+    groupId: "cluster_ops",
+    title: "Giám Sát & Thông Báo",
+    icon: "fa-solid fa-server",
+    targetModal: "clusterOpsModal",
+    action: "openClusterOpsModal",
+    roles: [ROLES.SUPER_ADMIN],
+    children: [
+      {
+        tabKey: "monitor",
+        label: "Giám Sát Cụm (Cluster Monitor)",
+        icon: "fa-solid fa-server",
+        module: "portal_admin_sysconfig.js",
+        loadFn: "loadAdminMonitorInstances",
+        action: "openClusterOpsModal('monitor')",
+        roles: [ROLES.SUPER_ADMIN]
       },
       {
         tabKey: "notify",
@@ -283,16 +302,7 @@ export const ADMIN_NAVIGATION_CONFIG = [
         icon: "fa-solid fa-bell",
         module: "portal_admin_sysconfig.js",
         loadFn: "loadAdminNotifyConfig",
-        action: "switchSystemConfigTab('notify')",
-        roles: [ROLES.SUPER_ADMIN]
-      },
-      {
-        tabKey: "monitor",
-        label: "Giám Sát Cụm (Cluster Monitor)",
-        icon: "fa-solid fa-server",
-        module: "portal_admin_sysconfig.js",
-        loadFn: "loadAdminMonitorInstances",
-        action: "switchSystemConfigTab('monitor')",
+        action: "openClusterOpsModal('notify')",
         roles: [ROLES.SUPER_ADMIN]
       }
     ]

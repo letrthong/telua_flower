@@ -519,6 +519,9 @@ function updateAuthUI() {
                     <button onclick="openSystemConfigModal('company')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                         <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                     </button>
+                    <button onclick="openClusterOpsModal('monitor')" class="w-full flex items-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50/80 hover:bg-emerald-100 transition rounded-xl border border-emerald-200 shadow-2xs">
+                        <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                    </button>
                     ` : ''}
                 </div>
             `;
@@ -581,6 +584,11 @@ function updateAuthUI() {
                     <button onclick="openUserProfileModal()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-pink-50/60 border-t border-gray-100 transition">
                         <i class="fa-solid fa-user-gear mr-2 text-primary"></i> Hồ Sơ & Bảo Mật
                     </button>
+                    ${user.role === 'super_admin' ? `
+                    <button onclick="openClusterOpsModal('monitor')" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50/60 border-t border-gray-100 transition">
+                        <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                    </button>
+                    ` : ''}
 
                     <button onclick="logout()" class="w-full text-left flex items-center px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 border-t border-gray-50 transition">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất
@@ -625,6 +633,9 @@ function updateAuthUI() {
                             <button onclick="openSystemConfigModal('company'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 transition rounded-xl border border-blue-200">
                                 <i class="fa-solid fa-sliders mr-2 text-blue-600"></i> Cấu Hình Hệ Thống
                             </button>
+                            <button onclick="openClusterOpsModal('monitor'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                                <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                            </button>
                             ` : ''}
                         </div>
                     ` : isFlorist ? `
@@ -658,6 +669,12 @@ function updateAuthUI() {
                     <button onclick="openUserProfileModal(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 transition rounded-xl border border-gray-200 shadow-2xs">
                         <i class="fa-solid fa-user-gear mr-2 text-primary"></i> Hồ Sơ & Bảo Mật
                     </button>
+
+                    ${user.role === 'super_admin' ? `
+                    <button onclick="openClusterOpsModal('monitor'); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition rounded-xl border border-emerald-200">
+                        <i class="fa-solid fa-server mr-2 text-emerald-600"></i> Giám Sát Cụm & Thông Báo
+                    </button>
+                    ` : ''}
 
                     <button onclick="logout(); if(typeof closeMenu==='function')closeMenu();" class="w-full flex items-center justify-center px-3 py-2 text-xs font-bold text-red-600 bg-red-50/70 hover:bg-red-100 transition rounded-xl border border-red-200 shadow-2xs">
                         <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng Xuất

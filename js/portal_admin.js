@@ -422,8 +422,60 @@ export function closeSystemConfigModal() {
     }
 }
 
+export function openClusterOpsModal(tabName = "monitor") {
+    const dropdown = document.getElementById("userDropdownMenu");
+    if (dropdown) dropdown.classList.add("hidden");
+    const modal = document.getElementById("clusterOpsModal");
+    if (modal) {
+        modal.style.display = "flex";
+        modal.classList.remove("hidden");
+        switchClusterOpsTab(tabName);
+    }
+}
+
+export function closeClusterOpsModal() {
+    const modal = document.getElementById("clusterOpsModal");
+    if (modal) {
+        modal.style.display = "none";
+        modal.classList.add("hidden");
+    }
+}
+
+export function switchClusterOpsTab(tabName) {
+    if (tabName !== "notify" && tabName !== "monitor") tabName = "monitor";
+
+    const btnMonitor = document.getElementById("tabOpsBtnMonitor");
+    const btnNotify = document.getElementById("tabOpsBtnNotify");
+    const contentMonitor = document.getElementById("tabSysContentMonitor");
+    const contentNotify = document.getElementById("tabSysContentNotify");
+
+    const activeCls = "py-3 px-3 font-bold text-xs sm:text-sm border-b-2 border-emerald-600 text-emerald-700 transition flex items-center flex-shrink-0 cursor-pointer";
+    const idleCls = "py-3 px-3 font-bold text-xs sm:text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition flex items-center flex-shrink-0 cursor-pointer";
+
+    if (btnMonitor) btnMonitor.className = idleCls;
+    if (btnNotify) btnNotify.className = idleCls;
+    if (contentMonitor) contentMonitor.classList.add("hidden");
+    if (contentNotify) contentNotify.classList.add("hidden");
+
+    if (tabName === "notify") {
+        if (btnNotify) btnNotify.className = activeCls;
+        if (contentNotify) contentNotify.classList.remove("hidden");
+        if (typeof loadAdminNotifyConfig === "function") loadAdminNotifyConfig();
+    } else {
+        if (btnMonitor) btnMonitor.className = activeCls;
+        if (contentMonitor) contentMonitor.classList.remove("hidden");
+        if (typeof loadAdminMonitorInstances === "function") loadAdminMonitorInstances();
+    }
+}
+
 export function switchSystemConfigTab(tabName) {
-    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream" && tabName !== "notify" && tabName !== "monitor") tabName = "company";
+    if (tabName === "notify" || tabName === "monitor") {
+        closeSystemConfigModal();
+        openClusterOpsModal(tabName);
+        return;
+    }
+
+    if (tabName !== "company" && tabName !== "translations" && tabName !== "payment" && tabName !== "addonvis" && tabName !== "banners" && tabName !== "price_levels" && tabName !== "livestream") tabName = "company";
 
     const btnCompany = document.getElementById("tabSysBtnCompany");
     const btnTranslations = document.getElementById("tabSysBtnTranslations");
@@ -638,6 +690,9 @@ if (typeof window !== "undefined") {
     window.openSystemConfigModal = openSystemConfigModal;
     window.closeSystemConfigModal = closeSystemConfigModal;
     window.switchSystemConfigTab = switchSystemConfigTab;
+    window.openClusterOpsModal = openClusterOpsModal;
+    window.closeClusterOpsModal = closeClusterOpsModal;
+    window.switchClusterOpsTab = switchClusterOpsTab;
     window.checkAdminAccess = checkAdminAccess;
     window.saveCurrentProdI18nDraft = saveCurrentProdI18nDraft;
     window.syncSingleKeyInputToDictionary = syncSingleKeyInputToDictionary;
